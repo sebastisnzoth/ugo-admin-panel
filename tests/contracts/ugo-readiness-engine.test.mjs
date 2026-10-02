@@ -151,7 +151,7 @@ test('HUMAN_REQUIRED dependencies block autonomous descendants until physical ev
 })
 
 
-test('DONE lock cannot bypass an unresolved human dependency', () => {
+test('verified software evidence remains valid while human-final proof stays separate', () => {
   const base=fixture()
   const locks=[
     {
@@ -168,10 +168,11 @@ test('DONE lock cannot bypass an unresolved human dependency', () => {
   ]
   const {readiness,summary}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
   const items=readiness.groups[0].items
+  const a=items.find(x=>x.id==='a')
   const b=items.find(x=>x.id==='b')
-  assert.equal(b.status,'NEEDS_RUNTIME_PROOF')
-  assert.equal(b.gate_state,'BLOCKED_DEPENDENCY')
-  assert.equal(b.blocked_verified_lock,true)
-  assert.deepEqual(b.blocked_verified_dependencies,['a'])
+  assert.equal(a.gate_state,'HUMAN_REQUIRED')
+  assert.notEqual(a.status,'VERIFIED')
+  assert.equal(b.status,'VERIFIED')
+  assert.equal(b.gate_state,'VERIFIED')
   assert.ok(!summary.runnable_ids.includes('b'))
 })
