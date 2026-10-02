@@ -22,16 +22,35 @@ const {readiness:evaluated,summary}=evaluateFunctionalReadiness({
 const items=evaluated.groups.flatMap(group=>group.items)
 const finalId='end-to-end-command-center-gate'
 const scoped=items.filter(item=>item.id!==finalId)
+const byId=new Map(items.map(item=>[item.id,item]))
+const humanBlockedMemo=new Map()
+const blockedByHuman=(id,visiting=new Set())=>{
+ if(humanBlockedMemo.has(id))return humanBlockedMemo.get(id)
+ if(visiting.has(id))return false
+ const item=byId.get(id)
+ if(!item)return false
+ if(item.status==='HUMAN_REQUIRED'||item.declared_status==='HUMAN_FINAL'){
+  humanBlockedMemo.set(id,true)
+  return true
+ }
+ const next=new Set(visiting);next.add(id)
+ const blocked=(item.depends_on||[]).some(dep=>blockedByHuman(dep,next))
+ humanBlockedMemo.set(id,blocked)
+ return blocked
+}
 const autonomousOpen=scoped.filter(item=>
  item.status!=='VERIFIED' &&
  item.status!=='HUMAN_REQUIRED' &&
- item.declared_status!=='HUMAN_FINAL'
+ item.declared_status!=='HUMAN_FINAL' &&
+ !blockedByHuman(item.id)
 )
 const invalidRemaining=scoped.filter(item=>
  item.status!=='VERIFIED' &&
  item.gate_state!=='HUMAN_REQUIRED' &&
- item.gate_state!=='HUMAN_DEFERRED'
+ item.gate_state!=='HUMAN_DEFERRED' &&
+ !blockedByHuman(item.id)
 )
+assert.equal(summary.remaining_autonomous,0,'SUMMARY_AUTONOMOUS_CONTROLS_REMAIN:'+summary.remaining_autonomous)
 assert.equal(autonomousOpen.length,0,'AUTONOMOUS_CONTROLS_REMAIN:'+autonomousOpen.map(x=>x.id).join(','))
 assert.equal(invalidRemaining.length,0,'INVALID_REMAINING_CONTROLS:'+invalidRemaining.map(x=>x.id+':'+x.gate_state).join(','))
 
