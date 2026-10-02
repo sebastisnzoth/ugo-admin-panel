@@ -154,7 +154,7 @@ function usablePosition(position:GeolocationPosition){const lat=Number(position.
 function positionAge(position:GeolocationPosition){return Math.max(0,Date.now()-Number(position.timestamp||0))}
 function acceptablePosition(position:GeolocationPosition){return usablePosition(position)&&positionAge(position)<=GPS_FRESH_MS&&Number(position.coords.accuracy)<=GPS_ACCEPTABLE_ACCURACY_M}
 function geolocationError(error:GeolocationPositionError){
- if(error.code===1)return new Error('Necesitamos tu ubicación para confirmar la llegada. Habilitá Ubicación precisa para UGO y reintentá.')
+ if(error.code===1)return new Error('UGO necesita tu ubicación para ponerte Online y enviarte pedidos. Habilitá Ubicación precisa para este sitio y reintentá.')
  if(error.code===2)return new Error('El teléfono todavía no pudo fijar tu posición. Salí a un lugar con mejor señal y reintentá.')
  return new Error('El GPS está demorando en fijar tu posición. Mantené UGO abierto y reintentá.')
 }
