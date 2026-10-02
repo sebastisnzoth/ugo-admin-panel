@@ -6,7 +6,9 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 test('provider realtime rebuilds after foreground recovery',async()=>{
  const src=await read('src/mvp/provider/useProviderRealtime.ts')
  assert.match(src,/visibilityState==='visible'\)\{resync\(\);reconnect\(\)\}/)
- assert.match(src,/CHANNEL_ERROR.*TIMED_OUT.*CLOSED/)\n assert.match(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)resync\(\)\},20_000\)/)\n assert.match(src,/addEventListener\('focus',onFocus\)/)
+ assert.match(src,/CHANNEL_ERROR.*TIMED_OUT.*CLOSED/)
+ assert.match(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)resync\(\)\},20_000\)/)
+ assert.match(src,/addEventListener\('focus',onFocus\)/)
 })
 
 test('realtime notification insert alerts immediately before reconciliation',async()=>{
@@ -24,19 +26,19 @@ test('client payment choice reacts immediately while backend persistence complet
  assert.match(src,/if\(persisted===false\)setOptimisticMethod\(''\)/)
 })
 
-test('provider Hugo fails fast instead of hanging forever',async()=>{
- const src=await read('src/mvp/provider/ProviderHugoBridge.tsx')
- assert.match(src,/setTimeout\(\(\)=>/)
- assert.match(src,/,9000\)/)
- assert.match(src,/Hugo no pudo conectar con el servicio de voz/)
+test('provider Hugo visual surface stays detached from provider root',async()=>{
+ const[root,bridge]=await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/provider/ProviderHugoBridge.tsx')])
+ assert.doesNotMatch(root,/ProviderHugoBridge/)
+ assert.doesNotMatch(root,/ConversationalOrb/)
+ assert.match(bridge,/PROVIDER_VOICE_CONNECT_TIMEOUT_MS=16_000/)
 })
 
-test('client voice guides optional repair photo and cannot hang on connect',async()=>{
- const src=await read('src/features/client/hugo/ClientVoiceHugoDock.tsx')
- assert.match(src,/clientRequestPhoto/)
- assert.match(src,/ahora sacá una foto de lo que hay que arreglar/)
- assert.match(src,/Hugo no pudo conectar con el servicio de voz/)
- assert.match(src,/,9000\)/)
+test('client Hugo visual surface stays detached from client root',async()=>{
+ const[root,dock]=await Promise.all([read('src/features/client/ClientRoot.tsx'),read('src/features/client/hugo/ClientVoiceHugoDock.tsx')])
+ assert.doesNotMatch(root,/ClientVoiceHugoDock/)
+ assert.doesNotMatch(root,/ClientHugoBridge/)
+ assert.match(dock,/clientRequestPhoto/)
+ assert.match(dock,/ahora sacá una foto de lo que hay que arreglar/)
 })
 
 test('provider offer insert is an independent realtime alert source with dedupe',async()=>{
