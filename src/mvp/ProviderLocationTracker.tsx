@@ -12,8 +12,8 @@ const AVAILABILITY_HEARTBEAT_MS=20_000
 const ARRIVAL_RADIUS_M=200
 const MAX_ACCEPTABLE_ACCURACY_M=250
 const MAX_POSITION_AGE_MS=30_000
-const GEO_COMPATIBLE_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:15_000,timeout:12_000}
-const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:15_000,timeout:15_000}
+const GEO_COMPATIBLE_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:0,timeout:12_000}
+const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:15_000}
 
 function usableBrowserPosition(pos:GeolocationPosition){
  const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
@@ -67,7 +67,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  useEffect(()=>{
   if(!navigator.geolocation||(!available&&!enRoute))return
   let alive=true,watchId:number|null=null,restartTimer:number|undefined
-  let lastWrite=0,lastPoint:[number,number]|null=null,writing=false,latestPosition:GeolocationPosition|null=null
+  let lastWrite=0,lastPoint:[number,number]|null=null,writing=false,heartbeatBusy=false,latestPosition:GeolocationPosition|null=null
   const rpc=supabase as unknown as LocationRpcClient
   const serviceId=service?.estado==='en_camino'?service.id:null
 
@@ -118,18 +118,36 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   const startWatch=()=>{
    if(!alive)return
    if(watchId!=null)navigator.geolocation.clearWatch(watchId)
-   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(startWatch,3_000)}},{enableHighAccuracy:true,maximumAge:5_000,timeout:15_000})
+   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(startWatch,3_000)}},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
   }
 
-  const refresh=()=>{if(document.visibilityState==='hidden')return;const age=latestPosition?Date.now()-Number(latestPosition.timestamp||0):Infinity;if(latestPosition&&age<=MAX_POSITION_AGE_MS)void publish(latestPosition,true);void acquire(true)}
+  const publishHeartbeat=async()=>{
+   if(!available||enRoute||!navigator.geolocation)return
+   if(heartbeatBusy)return
+   heartbeatBusy=true
+   try{
+    const pos=await getFreshBrowserPosition()
+    if(!alive)return
+    latestPosition=pos
+    await publish(pos,true)
+   }catch(error){
+    if(!alive)return
+    const geoError=error as GeolocationPositionError
+    if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+    setLocationError(geoError.code===1?'UGO perdió el permiso de ubicación precisa. Permití la ubicación para seguir Online y recibir pedidos.':geoError.code===2?'El navegador no pudo determinar tu ubicación. UGO sigue intentando recuperar el GPS.':'El GPS tardó demasiado en responder. Reintentando automáticamente.')
+   }finally{heartbeatBusy=false}
+  }
+  const refresh=()=>{if(document.visibilityState==='hidden')return;if(enRoute){const age=latestPosition?Date.now()-Number(latestPosition.timestamp||0):Infinity;if(latestPosition&&age<=MAX_POSITION_AGE_MS)void publish(latestPosition,true);void acquire(true);return}void publishHeartbeat()}
   const onForeground=()=>{if(document.visibilityState!=='visible')return;startWatch();refresh()}
 
   startWatch()
-  void acquire(true)
+  if(enRoute)void acquire(true)
+  else void publishHeartbeat()
   const refreshTimer=window.setInterval(refresh,10_000)
+  const availabilityHeartbeatTimer=window.setInterval(()=>void publishHeartbeat(),AVAILABILITY_HEARTBEAT_MS)
   window.addEventListener('focus',onForeground)
   document.addEventListener('visibilitychange',onForeground)
-  return()=>{alive=false;if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(restartTimer)window.clearTimeout(restartTimer);window.clearInterval(refreshTimer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
+  return()=>{alive=false;if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(restartTimer)window.clearTimeout(restartTimer);window.clearInterval(refreshTimer);window.clearInterval(availabilityHeartbeatTimer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
  },[available,enRoute,service?.id,service?.estado,supabase])
 
  const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
