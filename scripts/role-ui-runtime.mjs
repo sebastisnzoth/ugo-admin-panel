@@ -255,7 +255,7 @@ async function testAdminAuthBoundary(viewport,name){
    const page=await browser.newPage({viewport})
    try{
      if(item.session)await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),item.session)
-     await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
+     await page.goto(base+'/?app=admin&auth=1',{waitUntil:'domcontentloaded'})
      await page.getByRole('heading',{name:/Panel de control|Desarrollo UGO/}).waitFor({state:'visible',timeout:20000})
      assert.equal(await page.getByRole('navigation',{name:'Navegación Admin'}).count(),0,item.actor+' must not receive Admin navigation')
      if(item.expectsError)await page.getByRole('alert').filter({hasText:/Acceso denegado/}).waitFor({state:'visible',timeout:10000})
