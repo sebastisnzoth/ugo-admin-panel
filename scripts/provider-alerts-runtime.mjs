@@ -2,6 +2,9 @@ import assert from'node:assert/strict'
 import{mkdir,writeFile}from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
 import{chromium}from'playwright'
+import{execFile}from'node:child_process'
+import{promisify}from'node:util'
+const execFileAsync=promisify(execFile)
 
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
@@ -16,16 +19,17 @@ const token=sha.slice(0,10)+'-'+Date.now()
 const email=`ugo-provider-alert-${token}@example.test`
 const password='UGO-Test-'+token+'-A9!'
 let uid=null,noticeId=null,browser=null
-const evidence={schema_version:'UGO_READINESS_EVIDENCE_V1',readiness_id:'provider-alerts',sha,environment:'UGO TEST',provider_id:null,notification_id:null,realtime:{banner:false},attention:{tone:false,vibrate:false},production_touched:false,result:'FAIL'}
+const evidence={schema_version:'UGO_READINESS_EVIDENCE_V1',readiness_id:'provider-alerts',sha,environment:'UGO TEST',provider_id:null,notification_id:null,realtime:{banner:false},attention:{tone:false,vibrate:false},production_touched:false,offer_origin:'DIRECT_NOTIFICATION_PROBE',physical_gps_verified:false,physical_audio_verified:false,physical_vibration_verified:false,result:'FAIL'}
 
+async function checkedCleanup(query){const {error}=await query;if(error)throw error}
 async function cleanup(){
- if(noticeId)await admin.from('notificaciones').delete().eq('id',noticeId)
+ if(browser){await browser.close();browser=null}
  if(uid){
-  await admin.from('perfiles_proveedor').delete().eq('usuario_id',uid)
-  await admin.from('usuarios').delete().eq('id',uid)
-  await admin.auth.admin.deleteUser(uid)
+  await checkedCleanup(admin.from('notificaciones').delete().eq('usuario_id',uid))
+  await checkedCleanup(admin.from('perfiles_proveedor').delete().eq('usuario_id',uid))
+  await checkedCleanup(admin.from('usuarios').delete().eq('id',uid))
+  await checkedCleanup(admin.auth.admin.deleteUser(uid))
  }
- if(browser)await browser.close()
 }
 try{
  const created=await admin.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{nombre:'UGO Alert Runtime',tipo:'proveedor'}})
@@ -40,7 +44,9 @@ try{
  if(q.error)throw q.error
 
  browser=await chromium.launch({headless:true})
- const page=await browser.newPage()
+ // Synthetic TEST browser location; preserve the product's permission guard.
+ const context=await browser.newContext({permissions:['geolocation'],geolocation:{latitude:-27.438,longitude:-48.477,accuracy:10}})
+ const page=await context.newPage()
  await page.addInitScript(()=>{
   window.__ugoToneCount=0;window.__ugoVibrateCount=0
   const makeParam=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}})
@@ -89,6 +95,7 @@ try{
  await mkdir('artifacts',{recursive:true})
  await writeFile('artifacts/provider-alerts-runtime.json',JSON.stringify(evidence,null,2)+'\n')
  await page.screenshot({path:'artifacts/provider-alerts-runtime.png',fullPage:true})
+ const judge=await execFileAsync(process.execPath,['scripts/provider-alerts-persistence-judge.mjs'],{env:process.env});console.log(judge.stdout)
  console.log(JSON.stringify({status:'PASS',sha,provider_id:uid,notification_id:noticeId,tone:true,vibrate:true,realtime_banner:true}))
 }finally{
  await cleanup()

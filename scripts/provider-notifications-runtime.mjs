@@ -14,6 +14,8 @@ async function mk(kind){const email=`ugo-${kind}-notice-${token}@example.test`;c
 async function checkedCleanup(query,label){const{error}=await query;if(error)throw new Error(label+': '+error.message)}
 async function cleanup(){
  try{
+  // Stop live consumers before removing the authenticated ephemeral actor.
+  if(browser){await browser.close();browser=null}
   if(serviceId){
    const{data:owned,error}=await admin.from('servicios').select('cliente_id,proveedor_id,metadata').eq('id',serviceId).maybeSingle()
    if(error)throw error

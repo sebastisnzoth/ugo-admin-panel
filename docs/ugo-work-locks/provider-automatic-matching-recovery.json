@@ -20,15 +20,15 @@
   "source_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
   "started_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
   "started_at": "2026-10-03T00:02:13.304512+00:00",
-  "heartbeat_at": "2026-10-03T00:11:06.487400+00:00",
+  "heartbeat_at": "2026-10-03T00:18:21.862981+00:00",
   "lease_expires_at": "2026-10-03T00:47:13.304512+00:00",
   "correlation_id": "automatic-matching-recovery-20261003",
-  "attempt": 2,
+  "attempt": 3,
   "validators": [
     "Judge",
     "Sentinel"
   ],
-  "current_step": "VERIFY_AUTOMATIC_MATCHING_AND_PROVIDER_UI_ACCEPTANCE",
+  "current_step": "VERIFY_REPAIRED_LEGACY_ALERT_HARNESS",
   "acceptance_criteria": [
     "Actual authenticated SQL role can invoke owned service matching",
     "Non-owner and anonymous access rejected",
@@ -41,7 +41,17 @@
       "run_id": 37080731560,
       "sha": "05ab4ad84881d55ba82721c0f4ed9388aa117138",
       "cause": "Browser geolocation permission was prompt; actual product correctly set fixture Offline. Harness now grants only synthetic TEST context geolocation."
+    },
+    {
+      "run_id": 37081054227,
+      "sha": "60fa1677faa3d71774f0641249477ea1b7e235a5",
+      "cause": "Legacy standalone alert browser permission prompt caused product to set provider Offline; repaired TEST context. Main automatic matching/UI acceptance proof passed same SHA."
     }
   ],
-  "local_consumer_regressions": 11
+  "local_consumer_regressions": 11,
+  "evidence_ids": [
+    "github-run:37081054367:PASS",
+    "github-artifact:11259425363",
+    "tested-sha:60fa1677faa3d71774f0641249477ea1b7e235a5"
+  ]
 }
