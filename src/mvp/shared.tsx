@@ -81,7 +81,7 @@ export function useRoleSession(role:UgoRole){
     channel.subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
   },[loadProfile,profileChannelEpoch,profileChannelInstance,role,session,supabase])
-  const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut()}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,profile,loading,error,setError,signOut,clearAccess}
+  const retryProfile=useCallback(async()=>{if(!session)return;setLoading(true);try{await loadProfile(session);setError('')}catch(e){setError(e instanceof Error?e.message:'No pudimos recuperar tu perfil.')}finally{setLoading(false)}},[loadProfile,session]);const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut()}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,profile,loading,error,setError,retryProfile,signOut,clearAccess}
 }
 
 export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:UgoRole;supabase:SupabaseClient;error:string;onError:(v:string)=>void;onResetAccess?:()=>Promise<void>}){
