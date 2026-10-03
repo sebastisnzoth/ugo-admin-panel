@@ -1,0 +1,66 @@
+{
+  "task_id": "provider-automatic-matching-recovery",
+  "tested_sha": "355b5a2e9d66a3758d243d3ba7fbd120a20ffc86",
+  "environment": "UGO TEST",
+  "result": "PASS",
+  "run_id": 37081816627,
+  "job_id": 111083765045,
+  "artifact_id": 11259262212,
+  "artifact_digest": "sha256:2c5ae2d1e5637e865da49bfa7b9878f332881b8152cc66d3789f128d7d3c3892",
+  "provider_alerts_run": 37081816564,
+  "core_ci_run": 37081816562,
+  "scope": [
+    "authenticated automatic matching",
+    "provider foreground realtime alert",
+    "exact offer opening",
+    "provider UI acceptance",
+    "reactivation attention cycle",
+    "independent persisted ownership/offer/audit/notice reads",
+    "independent DB/Auth fixture removal"
+  ],
+  "offer_origin": "CLIENT_AUTH_AUTOMATIC_PROXIMITY",
+  "offer_opened_in_ui": true,
+  "acceptance_via": "PROVIDER_UI",
+  "consumer_regressions": 12,
+  "tests": {
+    "pass": 1290,
+    "fail": 0,
+    "skip": 8
+  },
+  "lint": {
+    "errors": 0,
+    "warnings": 1098
+  },
+  "build": "PASS",
+  "Judge": "INDEPENDENT_DB_READS_PASS",
+  "Sentinel": "INDEPENDENT_DB_AND_AUTH_READS_PASS",
+  "fixtures": "REMOVAL_VERIFIED",
+  "migration_applied_to": "UGO TEST only",
+  "migration": "20261003000211_authenticated_matching_gateway.sql",
+  "rollback": "revoke execute on function private.iniciar_matching_impl(uuid) from authenticated; revert scoped NotificationCenter changes",
+  "production_touched": false,
+  "vercel_publication": "CANCELED_IGNORED_BUILD_STEP",
+  "vercel_deployment_id": "dpl_8XYDb9szsejQbevgj5RYw1VxVcz5",
+  "physical_gps_verified": false,
+  "physical_audio_verified": false,
+  "physical_vibration_verified": false,
+  "checklist_changed": false,
+  "open_sentinel_actions_outside_scope": [
+    "provider.agenda.load:CLOSED",
+    "client.rating.sync:CLOSED"
+  ],
+  "accessibility_failure_outside_scope": 37081816607,
+  "historical_failures": [
+    {
+      "run_id": 37080731560,
+      "sha": "05ab4ad84881d55ba82721c0f4ed9388aa117138",
+      "cause": "Browser geolocation permission was prompt; actual product correctly set fixture Offline. Harness now grants only synthetic TEST context geolocation."
+    },
+    {
+      "run_id": 37081054227,
+      "sha": "60fa1677faa3d71774f0641249477ea1b7e235a5",
+      "cause": "Legacy standalone alert browser permission prompt caused product to set provider Offline; repaired TEST context. Main automatic matching/UI acceptance proof passed same SHA."
+    }
+  ],
+  "closed_at": "2026-10-03T00:25:39.856144+00:00"
+}

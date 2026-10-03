@@ -3,7 +3,7 @@
   "job_id": "UGO-AUTOMATIC-MATCHING-RECOVERY-20261003",
   "title": "Restore authenticated client access to automatic matching gateway",
   "objective": "Real client-auth automatic matching creates provider offer and visible alert",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "owner": "Codex",
   "department": "Cliente \u2194 Proveedor",
   "assigned_agent": "Codex",
@@ -20,15 +20,15 @@
   "source_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
   "started_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
   "started_at": "2026-10-03T00:02:13.304512+00:00",
-  "heartbeat_at": "2026-10-03T00:22:08.072415+00:00",
-  "lease_expires_at": "2026-10-03T00:47:13.304512+00:00",
+  "heartbeat_at": "2026-10-03T00:25:39.856144+00:00",
+  "lease_expires_at": null,
   "correlation_id": "automatic-matching-recovery-20261003",
   "attempt": 3,
   "validators": [
     "Judge",
     "Sentinel"
   ],
-  "current_step": "VERIFY_REACTIVATED_OFFER_ATTENTION_CYCLE",
+  "current_step": "COMPLETE",
   "acceptance_criteria": [
     "Actual authenticated SQL role can invoke owned service matching",
     "Non-owner and anonymous access rejected",
@@ -50,13 +50,21 @@
   ],
   "local_consumer_regressions": 12,
   "evidence_ids": [
-    "github-run:37081054367:PASS",
-    "github-artifact:11259425363",
-    "tested-sha:60fa1677faa3d71774f0641249477ea1b7e235a5"
+    "github-run:37081816627:PASS",
+    "github-artifact:11259262212",
+    "github-run:37081816564:PASS",
+    "github-run:37081816562:PASS",
+    "tested-sha:355b5a2e9d66a3758d243d3ba7fbd120a20ffc86"
   ],
   "reactivation_regression": {
     "baseline": "REPRODUCED_TIMEOUT",
     "cause": "Offer UUID-only attention key silences a reactivated offer with a fresh expiry",
     "fix": "Normalize expiry timestamp as part of common offer/notice attention key"
+  },
+  "finished_at": "2026-10-03T00:25:39.856144+00:00",
+  "tested_sha": "355b5a2e9d66a3758d243d3ba7fbd120a20ffc86",
+  "validators_result": {
+    "Judge": "PASS_INDEPENDENT_DB_READS",
+    "Sentinel": "PASS_INDEPENDENT_DB_AND_AUTH_READS"
   }
 }
