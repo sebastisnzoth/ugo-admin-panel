@@ -10,15 +10,15 @@ test('auth QA snapshots autonomy mode before privilege probe',()=>{
 })
 
 test('superadmin OFF probe uses a unique audit reason',()=>{
-  assert.match(source,/autonomyProbeReason=`QA superadmin privilege-boundary probe:${crypto.randomUUID()}`/)
-  assert.match(source,/p_reason:autonomyProbeReason/)
+  assert.ok(source.includes("const autonomyProbeReason=`QA superadmin privilege-boundary probe:${crypto.randomUUID()}`"))
+  assert.ok(source.includes("p_reason:autonomyProbeReason"))
 })
 
 test('QA restores only when its own temporary OFF state is still current',()=>{
   const finallyBlock=source.slice(source.indexOf('}finally{'))
-  assert.match(finallyBlock,/currentAutonomy?.mode==='OFF'/)
-  assert.match(finallyBlock,/currentAutonomy?.reason===autonomyProbeReason/)
-  assert.match(finallyBlock,/superadmin_set_autonomy_mode/)
-  assert.match(finallyBlock,/p_mode:initialAutonomy.mode/)
+  assert.ok(finallyBlock.includes("currentAutonomy?.mode==='OFF'"))
+  assert.ok(finallyBlock.includes("currentAutonomy?.reason===autonomyProbeReason"))
+  assert.ok(finallyBlock.includes("superadmin_set_autonomy_mode"))
+  assert.ok(finallyBlock.includes("p_mode:initialAutonomy.mode"))
   assert.ok(finallyBlock.indexOf("currentAutonomy?.reason===autonomyProbeReason")<finallyBlock.indexOf("superadmin_set_autonomy_mode"))
 })
