@@ -55,3 +55,26 @@
  .ugo-client-root.ugo-client-screen-request .prototype-hugo .ugo-real-state i{margin:0!important}
  .ugo-client-root.ugo-client-screen-request .ugo-hugo-stage-card{position:absolute!important;left:82px!important;bottom:0!important;width:320px!important;margin:0!important;border-radius:20px!important}
 }
+
+/* Client request UX polish */
+.ugo-client-root .ugo-need-screen{background:linear-gradient(180deg,#f7faf9 0%,#f9fbfa 100%)}
+.ugo-client-root .ugo-need-top{box-shadow:0 1px 0 rgba(15,35,48,.03)}
+.ugo-client-root .ugo-need-progress i{height:5px}
+.ugo-client-root .ugo-need-category{padding:14px;border:1px solid #e4ebe8;border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(16,40,52,.035)}
+.ugo-client-root .ugo-need-category>span{flex:0 0 auto}
+.ugo-client-root .ugo-need-body textarea{min-height:145px;border-radius:17px}
+.ugo-client-root .ugo-need-quick{gap:9px}
+.ugo-client-root .ugo-need-quick button{min-height:46px;padding:10px 14px;background:#fff;border:1px solid #e2e9e6}
+.ugo-client-root .ugo-need-quick button.selected{border-color:#a8dec9;background:#edf9f4}
+.ugo-client-root .ugo-need-footer-inner>button{min-height:58px;border-radius:16px}
+@media(max-width:699px){
+ .ugo-client-root .ugo-need-body{padding:18px 16px 126px}
+ .ugo-client-root .ugo-need-category{margin-bottom:16px}
+ .ugo-client-root .ugo-need-category h1{font-size:26px}
+ .ugo-client-root .ugo-need-quick{display:grid;grid-template-columns:1fr 1fr}
+ .ugo-client-root .ugo-need-quick button{border-radius:14px;text-align:left}
+ .ugo-client-root .ugo-need-screen footer{padding-left:16px;padding-right:16px;background:linear-gradient(180deg,rgba(248,250,249,0),rgba(248,250,249,.96) 25%,#f8faf9 44%)}
+}
+@media(max-width:390px){
+ .ugo-client-root .ugo-need-quick{grid-template-columns:1fr}
+}
