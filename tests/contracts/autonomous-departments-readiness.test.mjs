@@ -12,6 +12,8 @@ test('department readiness runtime is TEST-only and covers D1-D12 plus D14',()=>
  assert.match(runtime,/input_evidence/)
  assert.match(runtime,/result/)
  assert.match(runtime,/auto_departments_readiness/)
+ assert.match(runtime,/permissions\?\.advisory_only/)
+ assert.match(runtime,/No mutation-capable responsible agent/)
 })
 test('independent Judge and Sentinel enforce persisted proof and production guard',()=>{
  assert.match(judge,/validator:'Judge'/)
