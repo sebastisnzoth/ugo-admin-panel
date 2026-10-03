@@ -34,7 +34,7 @@ test('Recovery epic encodes the required dependency gates', () => {
 
 test('Recovery controls remain proof-gated and reconcile equivalent existing controls', () => {
   for (const item of group.items) {
-    assert.ok(['NEEDS_RUNTIME_PROOF','HUMAN_FINAL','VERIFIED'].includes(item.status), `${item.id}: ${item.status}`)
+    assert.ok(['NEEDS_RUNTIME_PROOF','HUMAN_FINAL','VERIFIED','DEFERRED_BY_PRODUCT_DECISION'].includes(item.status), `${item.id}: ${item.status}`)
     assert.match(item.improvement_focus, /runtime/)
     assert.equal(typeof item.done_evidence, 'string')
     assert.ok(item.done_evidence.trim().length > 12)
@@ -43,4 +43,8 @@ test('Recovery controls remain proof-gated and reconcile equivalent existing con
   assert.ok(byId.get('provider-proximity-alert').reconciles_with.includes('provider-notifications'))
   assert.deepEqual(byId.get('request-payment-before-dispatch').reconciles_with, ['client-payment'])
   assert.deepEqual(byId.get('hugo-conversation-continuity').reconciles_with, ['hugo-continuity'])
+  for(const id of ['hugo-gemini-live-core','hugo-client-order-by-voice','hugo-provider-actions','hugo-admin-actions','hugo-real-runtime-proof']){
+    assert.equal(byId.get(id).status,'DEFERRED_BY_PRODUCT_DECISION')
+    assert.equal(byId.get(id).product_scope,'DEFERRED')
+  }
 })
