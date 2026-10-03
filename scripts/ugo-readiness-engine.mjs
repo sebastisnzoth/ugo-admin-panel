@@ -1,5 +1,6 @@
 const ACTIVE_LOCK_STATUSES = new Set(['QUEUED','IN_PROGRESS','WAITING_EVIDENCE'])
 const HUMAN_LOCK_STATUSES = new Set(['HUMAN_REQUIRED'])
+const PRODUCT_DEFERRED_STATUS = 'DEFERRED_BY_PRODUCT_DECISION'
 const PRIORITY_SCORE = {CRITICAL:100,HIGH:80,NORMAL:50,LOW:20,FINAL:0}
 
 const parseTime = value => {
@@ -66,6 +67,12 @@ export function evaluateFunctionalReadiness({
     const lock = lockById.get(item.id) || null
     item.lock = lock
     item.declared_status = item.status
+
+    if (item.declared_status === PRODUCT_DEFERRED_STATUS || item.product_scope === 'DEFERRED') {
+      item.status = PRODUCT_DEFERRED_STATUS
+      item.evidence_source = 'PRODUCT_SCOPE'
+      continue
+    }
 
     if (validatorPass(lock)) {
       item.status = 'VERIFIED'
@@ -141,7 +148,7 @@ export function evaluateFunctionalReadiness({
     }
   }
 
-  const dependencySatisfied = id => byId.get(id)?.status === 'VERIFIED'
+  const dependencySatisfied = id => ['VERIFIED',PRODUCT_DEFERRED_STATUS].includes(byId.get(id)?.status)
 
   const humanBlockedMemo = new Map()
   const dependsOnHumanFinal = (id, visiting = new Set()) => {
@@ -149,6 +156,10 @@ export function evaluateFunctionalReadiness({
     if (visiting.has(id)) return false
     const item = byId.get(id)
     if (!item) return false
+    if (item.status === PRODUCT_DEFERRED_STATUS) {
+      humanBlockedMemo.set(id, false)
+      return false
+    }
     if (item.status === 'HUMAN_REQUIRED' || item.declared_status === 'HUMAN_FINAL') {
       humanBlockedMemo.set(id, true)
       return true
@@ -198,6 +209,7 @@ export function evaluateFunctionalReadiness({
 
   const remainingAutonomousBeforeHuman = items.filter(
     item => item.status !== 'VERIFIED'
+      && item.status !== PRODUCT_DEFERRED_STATUS
       && item.status !== 'HUMAN_REQUIRED'
       && item.declared_status !== 'HUMAN_FINAL'
       && !dependsOnHumanFinal(item.id)
@@ -210,6 +222,9 @@ export function evaluateFunctionalReadiness({
     if (item.status === 'VERIFIED') {
       item.gate_state = 'VERIFIED'
       item.gate_reason = 'Judge + Sentinel PASS con evidencia persistida.'
+    } else if (item.status === PRODUCT_DEFERRED_STATUS) {
+      item.gate_state = 'DEFERRED_BY_PRODUCT_DECISION'
+      item.gate_reason = item.deferred_reason || 'Fuera del alcance de lanzamiento actual por decisión explícita de producto.'
     } else if (item.status === 'STALE_LOCK') {
       item.gate_state = 'STALE_LOCK'
       item.gate_reason = 'El lease del control venció y debe reconciliarse antes de reintentar.'
@@ -274,8 +289,9 @@ export function evaluateFunctionalReadiness({
   const summary = {
     total:items.length,
     verified:items.filter(x => x.status === 'VERIFIED').length,
-    remaining_total:items.filter(x => x.status !== 'VERIFIED').length,
-    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_REQUIRED' && x.declared_status !== 'HUMAN_FINAL' && !dependsOnHumanFinal(x.id)).length,
+    deferred_by_product:items.filter(x => x.status === PRODUCT_DEFERRED_STATUS).length,
+    remaining_total:items.filter(x => x.status !== 'VERIFIED' && x.status !== PRODUCT_DEFERRED_STATUS).length,
+    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.status !== PRODUCT_DEFERRED_STATUS && x.status !== 'HUMAN_REQUIRED' && x.declared_status !== 'HUMAN_FINAL' && !dependsOnHumanFinal(x.id)).length,
     human_final:items.filter(x => x.declared_status === 'HUMAN_FINAL' && x.status !== 'VERIFIED').length,
     available_now:items.filter(x => x.gate_state === 'AVAILABLE').length,
     in_progress:items.filter(x => x.gate_state === 'IN_PROGRESS').length,
@@ -297,7 +313,8 @@ export function evaluateFunctionalReadiness({
       title:group.title,
       total:group.items.length,
       verified:group.items.filter(x => x.status === 'VERIFIED').length,
-      remaining:group.items.filter(x => x.status !== 'VERIFIED').length,
+      remaining:group.items.filter(x => x.status !== 'VERIFIED' && x.status !== PRODUCT_DEFERRED_STATUS).length,
+      deferred_by_product:group.items.filter(x => x.status === PRODUCT_DEFERRED_STATUS).length,
       available_now:group.items.filter(x => x.gate_state === 'AVAILABLE').length,
     })),
   }

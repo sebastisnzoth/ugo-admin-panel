@@ -7,7 +7,8 @@
     "NEEDS_RUNTIME_PROOF",
     "IN_PROGRESS",
     "BLOCKED",
-    "HUMAN_FINAL"
+    "HUMAN_FINAL",
+    "DEFERRED_BY_PRODUCT_DECISION"
   ],
   "groups": [
     {
@@ -496,7 +497,7 @@
           "id": "hugo-presence",
           "title": "Hugo visible por rol",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Cliente, Proveedor y Admin muestran Hugo donde corresponde.",
           "done_evidence": "Runtime por rol.",
           "improvement_focus": "Posición consistente y no invasiva.",
@@ -505,13 +506,15 @@
           "priority": "CRITICAL",
           "resources": [
             "hugo-shell"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-intent",
           "title": "Reconocimiento de intención",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Entender pedidos como pintor/plomero y acciones del flujo.",
           "done_evidence": "Suite de intents TEST.",
           "improvement_focus": "Sinónimos y lenguaje natural.",
@@ -522,7 +525,9 @@
           "priority": "HIGH",
           "resources": [
             "hugo-intent"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-authority",
@@ -545,7 +550,7 @@
           "id": "hugo-action",
           "title": "Acciones reales sobre UI/backend",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "No chat decorativo: INTENT→ACTION→EFFECT.",
           "done_evidence": "Efecto persistido + audit trail.",
           "improvement_focus": "Confirmación breve del efecto.",
@@ -557,13 +562,15 @@
           "priority": "NORMAL",
           "resources": [
             "hugo-actions"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-continuity",
           "title": "Conversación continua",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Mantener contexto útil sin repetir ni perder estado.",
           "done_evidence": "Sesiones TEST multi-turn.",
           "improvement_focus": "Menos latencia y respuestas más cortas.",
@@ -574,24 +581,28 @@
           "priority": "NORMAL",
           "resources": [
             "hugo-session"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-voice",
           "title": "Voz / orbe conversacional",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Entrada/salida de voz y fallback textual.",
           "done_evidence": "Runtime browser; hardware/micrófono final si aplica.",
           "improvement_focus": "Estados escuchar/pensar/actuar claros.",
-          "real_test_required": true,
+          "real_test_required": false,
           "depends_on": [
             "hugo-continuity"
           ],
           "priority": "NORMAL",
           "resources": [
             "hugo-voice"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-timeout",
@@ -651,7 +662,7 @@
           "id": "hugo-responsive",
           "title": "Responsive de Hugo",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Orbe/panel no tapa controles ni rompe layout.",
           "done_evidence": "Viewports + teclado móvil.",
           "improvement_focus": "Tamaño y posición adaptativos.",
@@ -662,7 +673,9 @@
           "priority": "NORMAL",
           "resources": [
             "hugo-shell"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         }
       ]
     },
@@ -1486,8 +1499,7 @@
           "real_test_required": false,
           "depends_on": [
             "provider-proximity-alert",
-            "provider-active-jobs",
-            "hugo-real-runtime-proof"
+            "provider-active-jobs"
           ],
           "priority": "CRITICAL",
           "resources": [
@@ -1508,11 +1520,11 @@
           "id": "hugo-gemini-live-core",
           "title": "Gemini Live como voz principal",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Audio entrada/salida natural, conversación continua, interrupciones, contexto, ES/PT, timeout, reconexión y fallback honesto.",
           "done_evidence": "Conversación real verificable con Gemini Live.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
-          "real_test_required": true,
+          "real_test_required": false,
           "depends_on": [],
           "priority": "CRITICAL",
           "resources": [
@@ -1522,17 +1534,19 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "hugo-voice"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-client-order-by-voice",
           "title": "Pedido real por voz",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Conversación natural obtiene categoría, trabajo, ubicación/lugar guardado, cuándo, foto contextual, pago y faltantes; confirma y crea serviceId real.",
           "done_evidence": "Pedido creado exclusivamente por voz y visible en Cliente/Admin/backend.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
-          "real_test_required": true,
+          "real_test_required": false,
           "depends_on": [
             "hugo-conversation-continuity",
             "request-payment-before-dispatch"
@@ -1546,17 +1560,19 @@
           "reconciles_with": [
             "hugo-intent",
             "hugo-action"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-provider-actions",
           "title": "Acciones reales Proveedor por voz",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Online/offline, oportunidades, trabajo activo, aceptar/rechazar, voy, llegada con GPS/geofence, comenzar y finalizar usando guards reales.",
           "done_evidence": "Comando hablado → mutación backend → UI Cliente/Proveedor/Admin consistente.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
-          "real_test_required": true,
+          "real_test_required": false,
           "depends_on": [
             "hugo-client-order-by-voice",
             "provider-realtime-location"
@@ -1573,17 +1589,19 @@
           ],
           "evidence_path": "docs/evidence/readiness-hugo-provider-actions-20261001.json",
           "reconciled_from_persisted_evidence": true,
-          "automated_proof": "VERIFIED"
+          "automated_proof": "VERIFIED",
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-admin-actions",
           "title": "Acciones Admin autorizadas por voz",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Consultar operación, buscar servicio/usuario, navegar, abrir servicio y refrescar; sin mutaciones peligrosas sin workflow específico.",
           "done_evidence": "Comandos autorizados ejecutan acciones reales del panel.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
-          "real_test_required": true,
+          "real_test_required": false,
           "depends_on": [
             "hugo-provider-actions"
           ],
@@ -1595,7 +1613,9 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "hugo-action"
-          ]
+          ],
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "hugo-conversation-continuity",
@@ -1622,11 +1642,11 @@
           "id": "hugo-real-runtime-proof",
           "title": "Prueba real Hugo",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "DEFERRED_BY_PRODUCT_DECISION",
           "verify": "Separar CONTRACT/BROWSER/REAL AUDIO/REAL ACTION; requerir micrófono→Gemini→voz→tool→backend→UI y HUMAN_REQUIRED cuando corresponda.",
           "done_evidence": "Micrófono/audio real + tool/backend/UI chain; automatización previa ya PASS.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
-          "real_test_required": true,
+          "real_test_required": false,
           "depends_on": [
             "hugo-admin-actions"
           ],
@@ -1640,7 +1660,9 @@
             "hugo-voice"
           ],
           "reconciled_from_persisted_evidence": true,
-          "automated_scope": "VERIFIED"
+          "automated_scope": "VERIFIED",
+          "product_scope": "DEFERRED",
+          "deferred_reason": "Hugo/orbe/voz visual fue retirado del alcance de lanzamiento actual por decisión de producto el 2026-10-02. El backend seguro puede permanecer dormido sin bloquear UGO."
         },
         {
           "id": "cross-realtime-consistency",
