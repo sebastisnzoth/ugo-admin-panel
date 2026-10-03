@@ -9,8 +9,23 @@ const runtimeRevision =
   process.env.GITHUB_SHA ||
   'local'
 
+const devPort = Number(process.env.PORT || 4173)
+
 export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_REVISION': JSON.stringify(runtimeRevision),
+  },
+  server: {
+    host: '0.0.0.0',
+    port: devPort,
+    strictPort: false,
+    hmr: {
+      host: '127.0.0.1',
+      port: devPort,
+    },
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: devPort,
   },
 })
