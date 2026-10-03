@@ -75,17 +75,18 @@ export function AdminPhase2(){
  },[])
  useEffect(()=>{
   let alive=true
-  const reconcileTimers=new Set<number>()
+  const reconcileTimers=new Map<number,number>()
   const scheduleReconcile=(delay:number)=>{
+   if(reconcileTimers.has(delay))return
    const timer=window.setTimeout(()=>{
-    reconcileTimers.delete(timer)
+    reconcileTimers.delete(delay)
     if(alive)void load({silent:true})
    },delay)
-   reconcileTimers.add(timer)
+   reconcileTimers.set(delay,timer)
   }
   const sync=()=>{
    if(!alive)return
-   void load({silent:true})
+   scheduleReconcile(0)
    scheduleReconcile(250)
    scheduleReconcile(1000)
    scheduleReconcile(2500)
@@ -108,7 +109,7 @@ export function AdminPhase2(){
     if(status==='SUBSCRIBED'){setLiveStatus('live');sync();return}
     if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){setLiveStatus('degraded');window.setTimeout(()=>{if(alive)setChannelEpoch(v=>v+1)},1500)}
    })
-  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')void load({silent:true})},10000)
   return()=>{alive=false;window.clearInterval(fallback);reconcileTimers.forEach(timer=>window.clearTimeout(timer));reconcileTimers.clear();window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
  },[channelEpoch,load])
  const adminToken=useCallback(async(force=false)=>{const result=force?await supabase.auth.refreshSession():await supabase.auth.getSession(),token=result.data.session?.access_token;if(result.error||!token)throw new Error('Sesión Admin vencida.');return token},[])
@@ -116,6 +117,7 @@ export function AdminPhase2(){
  const gmailAction=useCallback(async(body:Record<string,unknown>)=>{const request=async(token:string)=>fetch('/api/scout/gmail',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(body)});let r=await request(await adminToken());if(r.status===401)r=await request(await adminToken(true));const p=await r.json().catch(()=>({}));if(!r.ok)throw new Error(p.error||`Gmail respondió HTTP ${r.status}`);return p},[adminToken])
  const connectGmail=useCallback(async()=>{if(gmailBusy)return;if(gmail.connected){setSection('operations');setOperationView('scout');return}setGmailBusy(true);setGmailMessage('');try{const p=await gmailAction({action:'start'});if(!p.url)throw new Error('Google no devolvió la URL de autorización.');window.location.assign(String(p.url))}catch(error){setGmailMessage(error instanceof Error?error.message:'No se pudo conectar Gmail.');setGmailBusy(false)}},[gmailBusy,gmail.connected,gmailAction])
  useEffect(()=>{void loadGmail()},[loadGmail])
+ useEffect(()=>{if(!gmailMessage)return;const timer=window.setTimeout(()=>setGmailMessage(''),5000);return()=>window.clearTimeout(timer)},[gmailMessage])
  useEffect(()=>{const params=new URLSearchParams(window.location.search),result=params.get('scout_gmail');if(result==='connected'){setGmailMessage('Gmail conectado correctamente.');void loadGmail()}else if(result==='error')setGmailMessage('Google no pudo completar la conexión de Gmail.');if(result){params.delete('scout_gmail');const query=params.toString();window.history.replaceState({},'',`${window.location.pathname}${query?`?${query}`:''}${window.location.hash}`)}},[loadGmail])
  const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración',superadmin:'Super Admin'}[section]),[section])
  const pendingTotal=metrics.pendingProviders+metrics.pendingPix+metrics.pendingDebtReconciliations

@@ -30,3 +30,12 @@ test('active Admin shell exposes Gmail connection globally',async()=>{
  assert.match(src,/gmail\.connected/)
  assert.match(src,/setOperationView\('scout'\)/)
 })
+
+
+test('transient Admin Gmail notices remain dismissible and auto-close after five seconds',async()=>{
+ const src=await read('src/mvp/AdminPhase2.tsx')
+ assert.match(src,/gmailMessage&&<div className={`ugo-admin2-gmail-message/)
+ assert.match(src,/onClick={()=>setGmailMessage\(''\)}/)
+ assert.match(src,/setTimeout\(\(\)=>setGmailMessage\(''\),5000\)/)
+ assert.match(src,/clearTimeout\(timer\)/)
+})
