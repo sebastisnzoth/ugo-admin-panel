@@ -1,0 +1,3 @@
+UGO Vercel deployment trigger
+Source functional SHA: 84c518ec89ee583f3a7fc535ce993686e4d1855b
+Purpose: force Git-integrated Vercel production deployment after validated main merge.
