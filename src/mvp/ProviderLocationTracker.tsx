@@ -4,7 +4,7 @@ import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
 
 type Props={service?:Service|null;onAutoArrival?:()=>Promise<boolean>|boolean|void}
-type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
+type TrackingProfile={online?:boolean|null;disponible?:boolean|null;ubicacion_updated_at?:string|null;ubicacion_accuracy_m?:number|null}
 type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:unknown}>}
 const MIN_WRITE_MS=5_000
 const MIN_MOVE_M=5
@@ -24,7 +24,22 @@ function oneBrowserPosition(options:PositionOptions):Promise<GeolocationPosition
 async function getFreshBrowserPosition(){
  let compatibleError:GeolocationPositionError|null=null
  try{const compatible=await oneBrowserPosition(GEO_COMPATIBLE_OPTIONS);if(usableBrowserPosition(compatible))return compatible}catch(error){compatibleError=error as GeolocationPositionError;if(compatibleError.code===1)throw compatibleError}
- try{return await oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)}catch(error){const highError=error as GeolocationPositionError;if(highError.code===1)throw highError;throw compatibleError||highError}
+ try{
+  const high=await oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)
+  if(usableBrowserPosition(high))return high
+ }catch(error){
+  const highError=error as GeolocationPositionError
+  if(highError.code===1)throw highError
+  compatibleError=compatibleError||highError
+ }
+ return await new Promise<GeolocationPosition>((resolve,reject)=>{
+  let settled=false,timer:number|undefined,watchId:number|undefined
+  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer)window.clearTimeout(timer)}
+  const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
+  const fail=(error:GeolocationPositionError)=>{if(settled)return;settled=true;cleanup();reject(error)}
+  timer=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
+  watchId=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
+ })
 }
 
 
@@ -54,12 +69,28 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   supabase.auth.getUser().then(async({data})=>{
    if(!alive||!data.user)return
    const userId=data.user.id
-   const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible').eq('usuario_id',userId).maybeSingle()
+   const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',userId).maybeSingle()
    const trackingProfile=profile as TrackingProfile|null
-   if(alive)setAvailable(Boolean(trackingProfile&&trackingProfile.online&&trackingProfile.disponible))
+   if(alive){
+    setAvailable(Boolean(trackingProfile&&trackingProfile.online&&trackingProfile.disponible))
+    const persistedAt=trackingProfile?.ubicacion_updated_at?Date.parse(trackingProfile.ubicacion_updated_at):NaN
+    const persistedAccuracy=Number(trackingProfile?.ubicacion_accuracy_m)
+    if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M&&Date.now()-persistedAt<=MATCHING_POSITION_AGE_MS){
+     lastValidFixAtRef.current=Date.now()
+     setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
+    }
+   }
    channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},payload=>{
     const row=(payload.new||{}) as TrackingProfile
-    if(alive)setAvailable(Boolean(row.online&&row.disponible))
+    if(alive){
+     setAvailable(Boolean(row.online&&row.disponible))
+     const persistedAt=row.ubicacion_updated_at?Date.parse(row.ubicacion_updated_at):NaN
+     const persistedAccuracy=Number(row.ubicacion_accuracy_m)
+     if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M){
+      setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
+      lastValidFixAtRef.current=Date.now()
+     }
+    }
    }).subscribe()
   }).catch(()=>{})
   return()=>{alive=false;if(channel)supabase.removeChannel(channel)}
@@ -83,9 +114,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    if(!alive)return
    const point:[number,number]=[Number(pos.coords.latitude),Number(pos.coords.longitude)]
    const accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
-   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001)){setLocationError('El navegador devolvió una ubicación inválida. UGO sigue buscando una posición real.');return}
-   if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M){setLocationError('La señal de ubicación todavía no es suficientemente precisa. UGO sigue buscando una posición mejor.');return}
-   if(age>MAX_POSITION_AGE_MS){setLocationError('La ubicación del navegador quedó antigua. UGO está solicitando una posición nueva.');return}
+   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001)){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError('El navegador devolvió una ubicación inválida. UGO sigue buscando una posición real.');return}
+   if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError('La señal de ubicación todavía no es suficientemente precisa. UGO sigue buscando una posición mejor.');return}
+   if(age>MAX_POSITION_AGE_MS){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError('La ubicación del navegador quedó antigua. UGO está solicitando una posición nueva.');return}
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M,heartbeatDue=lastWrite===0||now-lastWrite>=10_000
    if(writing||now-lastWrite<MIN_WRITE_MS||(!force&&!moved&&!heartbeatDue))return
    writing=true
