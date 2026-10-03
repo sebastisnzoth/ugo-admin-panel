@@ -5,6 +5,7 @@ if(!url.includes('tmossnqfwfwjrtzwcbmm')||!anon||!sk)throw new Error('UGO_TEST_O
 const service=createClient(url,sk,{auth:{persistSession:false}})
 async function login(email,password){const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}});const r=await sb.auth.signInWithPassword({email,password});if(r.error)throw r.error;return{sb,id:r.data.user.id}}
 const c=await login(process.env.UGO_TEST_CLIENT_EMAIL,process.env.UGO_TEST_CLIENT_PASSWORD),p=await login(process.env.UGO_TEST_PROVIDER_EMAIL,process.env.UGO_TEST_PROVIDER_PASSWORD),sa=await login(process.env.UGO_TEST_ADMIN_EMAIL,process.env.UGO_TEST_ADMIN_PASSWORD)
+const {data:initialAutonomy,error:initialAutonomyError}=await service.from('autonomous_company_state').select('mode,reason').eq('singleton',true).single();if(initialAutonomyError)throw initialAutonomyError
 let admin=null,adminId=null
 try{
  const cr=await c.sb.from('usuarios').select('tipo').eq('id',c.id).single(),pr=await p.sb.from('usuarios').select('tipo').eq('id',p.id).single(),sar=await sa.sb.from('usuarios').select('tipo').eq('id',sa.id).single()
@@ -42,6 +43,10 @@ try{
 }
  console.log(JSON.stringify({authenticated:true,roles:[cr.data.tipo,pr.data.tipo,adr.data.tipo,sar.data.tipo],observations}))
 }finally{
+ if(initialAutonomy?.mode){
+  const restore=await sa.sb.rpc('superadmin_set_autonomy_mode',{p_mode:initialAutonomy.mode,p_reason:initialAutonomy.reason||'QA auth runtime restored previous autonomy mode'})
+  if(restore.error)throw restore.error
+ }
  await Promise.allSettled([c.sb.auth.signOut(),p.sb.auth.signOut(),sa.sb.auth.signOut(),admin?.sb?.auth.signOut()])
  if(adminId){await service.from('usuarios').delete().eq('id',adminId);await service.auth.admin.deleteUser(adminId)}
 }
