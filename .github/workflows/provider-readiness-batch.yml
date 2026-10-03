@@ -21,6 +21,7 @@ on:
       - 'tests/contracts/provider-*.test.mjs'
       - 'supabase/migrations/20260924162000_provider_arrival_gps_gate.sql'
       - 'supabase/migrations/20260930105814_reconcile_qa_p0_secret_key_compat.sql'
+      - 'supabase/migrations/20261002235900_fix_qa_p0_atomic_provider_online.sql'
       - 'supabase/migrations/20260930110213_provider_debt_readiness_probe.sql'
       - 'supabase/migrations/20260930110510_provider_debt_readiness_probe_restore_profile.sql'
       - 'supabase/migrations/20260930110826_cleanup_provider_accept_readiness_fixture.sql'
