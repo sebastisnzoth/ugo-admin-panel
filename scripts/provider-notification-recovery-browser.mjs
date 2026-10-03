@@ -17,7 +17,7 @@ try{
  import ReactDOM from '/node_modules/.vite/deps/react-dom_client.js';
  import {NotificationCenter} from '/src/mvp/NotificationCenter.tsx';
  window.__root=ReactDOM.createRoot(document.getElementById('test-root'));
- window.__render=enabled=>window.__root.render(React.createElement(NotificationCenter,{role:'provider',attentionEnabled:enabled}));
+ window.__render=enabled=>window.__root.render(React.createElement(NotificationCenter,{role:'provider',attentionEnabled:enabled,onOpenNotice:notice=>window.__lastOpened=notice}));
  window.__render(true);
  </script>`}))
  await page.addInitScript(()=>{
@@ -32,7 +32,8 @@ try{
   const realInterval=window.setInterval.bind(window)
   window.setInterval=(fn,ms,...args)=>{if(ms===20000)window.__safetyResync=fn;return realInterval(fn,ms,...args)}
   const db={auth:{getSession:async()=>({data:{session:{user:{id:'provider-test'}}}})},from:table=>{
-   const query={select(){return this},eq(){return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){return this},then(resolve){
+   const query={select(){return this},eq(column,value){if(column==='id')this.noticeId=value;return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){this.isUpdate=true;return this},then(resolve){
+    if(this.isUpdate&&this.noticeId?.startsWith('offer:'))return Promise.resolve({data:null,error:{message:'invalid input syntax for type uuid'}}).then(resolve)
     if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
     window.__noticeReads++;return Promise.resolve({data:table==='notificaciones'?window.__noticeRows:[],error:null}).then(resolve)
    }};return query
@@ -62,6 +63,10 @@ try{
  await page.evaluate(()=>{const n=window.__offer('notice-for-offer');n.datos.oferta_id='offer-only';window.__emit(n)})
  assert.deepEqual(await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount})),offerAttention)
  evidence.checks.offer_and_notice_share_attention_key=true
+ await page.locator('.ugo-notification-live').click()
+ await page.waitForFunction(()=>window.__lastOpened?.datos.oferta_id==='offer-only',{},{timeout:3000})
+ evidence.checks.offer_only_banner_opens_exact_offer=true
+ await page.evaluate(()=>window.__emit(window.__offer('after-open')))
  // Mount again to release the intentionally hung SELECT. Keep the seen set.
  await page.evaluate(()=>{window.__holdReads=false;window.__render(false)})
  await page.waitForFunction(()=>window.__channels.length>=2)

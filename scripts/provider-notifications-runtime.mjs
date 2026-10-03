@@ -48,7 +48,7 @@ try{
  const maxq=await admin.from('servicios').select('numero').order('numero',{ascending:false}).limit(1).single();if(maxq.error)throw maxq.error
  serviceId=crypto.randomUUID();const sq=await admin.from('servicios').insert({id:serviceId,numero:Number(maxq.data.numero)+100001,cliente_id:clientId,categoria_id:cat.data.id,estado:'buscando',descripcion:'UGO provider notification E2E TEST',tarifa:100,ambiente:'demo',metadata:{readiness_id:'provider-notifications',sha,ephemeral:true,request_draft_id:crypto.randomUUID(),payment_method:'efectivo',requested_payment_method:'efectivo'}});if(sq.error)throw sq.error
  const loc=await clientAuth.rpc('guardar_ubicacion_servicio_cliente',{p_servicio_id:serviceId,p_lat:latitude,p_lng:longitude});if(loc.error)throw loc.error
- browser=await chromium.launch({headless:true});const page=await browser.newPage()
+ browser=await chromium.launch({headless:true});const context=await browser.newContext({permissions:['geolocation'],geolocation:{latitude,longitude,accuracy:10}});const page=await context.newPage()
  await page.addInitScript(()=>{window.__ugoToneCount=0;window.__ugoVibrateCount=0;const p=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}});class A{constructor(){this.state='running';this.currentTime=0;this.destination={}}createOscillator(){return{type:'sine',frequency:p(),connect(){},start(){window.__ugoToneCount++},stop(){}}}createGain(){return{gain:p(),connect(){}}}resume(){return Promise.resolve()}}window.AudioContext=A;navigator.vibrate=()=>{window.__ugoVibrateCount++;return true}})
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(provider.email);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click();await page.getByRole('button',{name:/Notificaciones UGO/}).waitFor({state:'visible',timeout:30000});await page.waitForTimeout(1500)
  // Exercise the actual client PostgREST role, not a SECURITY DEFINER QA function.
@@ -65,11 +65,22 @@ try{
  const offerNotice=await admin.from('notificaciones').select('id,titulo').eq('usuario_id',providerId).eq('tipo','nueva_oferta').eq('datos->>servicio_id',serviceId).maybeSingle();if(offerNotice.error)throw offerNotice.error;if(!offerNotice.data?.id)throw new Error('E2E matching did not create nueva_oferta notification')
  evidence.persisted_entities={service_id:serviceId,provider_id:providerId,client_id:clientId,offer_id:offer.data.id,offer_notice_id:offerNotice.data.id};noticeIds.push(offerNotice.data.id);await page.locator('.ugo-notification-live.is-provider-call').waitFor({state:'visible',timeout:12000});evidence.channels.offer=true
  await admin.from('notificaciones').update({leida_at:new Date().toISOString()}).eq('id',offerNotice.data.id);await page.waitForTimeout(300)
- const accepted=await providerAuth.rpc('aceptar_oferta',{p_oferta_id:offer.data.id});if(accepted.error)throw accepted.error
+ await page.locator('.ugo-notification-live.is-provider-call').click()
+ await page.getByRole('button',{name:'ACEPTAR TRABAJO',exact:true}).waitFor({state:'visible',timeout:12000})
+ await page.getByText('UGO provider notification E2E TEST',{exact:true}).waitFor({state:'visible',timeout:12000})
+ evidence.offer_opened_in_ui=true
+ await page.getByRole('button',{name:'ACEPTAR TRABAJO',exact:true}).click()
+ let acceptedInDb=false
+ for(let attempt=0;attempt<30;attempt++){
+  const assigned=await admin.from('servicios').select('estado,proveedor_id').eq('id',serviceId).single();if(assigned.error)throw assigned.error
+  if(assigned.data.proveedor_id===providerId&&['asignado','confirmado'].includes(assigned.data.estado)){acceptedInDb=true;break}
+  await page.waitForTimeout(500)
+ }
+ assert.ok(acceptedInDb,'PROVIDER_UI_ACCEPTANCE_MUST_PERSIST')
  const persistedAssignment=await admin.from('servicios').select('estado,proveedor_id').eq('id',serviceId).single();if(persistedAssignment.error)throw persistedAssignment.error
  assert.equal(persistedAssignment.data.proveedor_id,providerId,'accepted offer must assign provider')
  assert.ok(['asignado','confirmado'].includes(String(persistedAssignment.data.estado)),'accepted offer must persist assigned state')
- evidence.offer_acceptance={result:'PASS',provider_id:providerId,service_state:persistedAssignment.data.estado}
+ evidence.offer_acceptance={result:'PASS',via:'PROVIDER_UI',provider_id:providerId,service_state:persistedAssignment.data.estado}
  const assignedNotice=await admin.from('notificaciones').select('id,titulo').eq('usuario_id',providerId).eq('tipo','trabajo_asignado').eq('datos->>servicio_id',serviceId).maybeSingle()
  if(assignedNotice.error)throw assignedNotice.error
  if(assignedNotice.data?.id){noticeIds.push(assignedNotice.data.id);await page.locator('.ugo-notification-live').getByText(assignedNotice.data.titulo).waitFor({state:'visible',timeout:12000});evidence.channels.assignment=true;await admin.from('notificaciones').update({leida_at:new Date().toISOString()}).eq('id',assignedNotice.data.id);await page.waitForTimeout(300)}
