@@ -28,7 +28,7 @@ test('online provider never hides a failed or stale GPS heartbeat',async()=>{
  const source=await read('src/mvp/ProviderLocationTracker.tsx')
  assert.match(source,/if\(!available&&!enRoute\)return/)
  assert.match(source,/setLocationError\(geoError\.code===1\?'UGO perdió el permiso de ubicación precisa/)
- assert.match(source,/const idleGpsStale=available&&\(!lastFix\|\|fixAgeMs==null\|\|fixAgeMs>MAX_POSITION_AGE_MS\)/)
+ assert.match(source,/const idleGpsStale=available&&\(!lastFix\|\|fixAgeMs==null\|\|fixAgeMs>MATCHING_POSITION_AGE_MS\)/)
  assert.match(source,/Online, pero fuera del matching/)
  assert.match(source,/UGO necesita renovar tu GPS para poder enviarte nuevos pedidos/)
 })

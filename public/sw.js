@@ -9,6 +9,7 @@ self.addEventListener('push',event=>{
     if(Number.isFinite(expiry)&&expiry<=Date.now())return;
   }
   const title=payload.title||'U.GO';
+  const appBase=new URL('./',self.registration.scope);
   const role=payload?.data?.role;
   const serviceId=payload?.data?.servicio_id;
   const offerId=payload?.data?.oferta_id;
@@ -18,13 +19,13 @@ self.addEventListener('push',event=>{
   const providerHistorySuffix=providerHistoryTypes.has(payload.type)&&serviceId?`&historyServiceId=${encodeURIComponent(serviceId)}`:'';
   const providerScreenSuffix=payload.type==='pago_liberado'?'&providerScreen=earnings':'';
   const providerRoute=offerSuffix||providerHistorySuffix||providerScreenSuffix||serviceSuffix;
-  const roleUrl=role==='provider'?`/?app=provider${providerRoute}`:role==='client'?`/?app=client${serviceSuffix}`:(payload.url||'/');
+  const roleUrl=role==='provider'?new URL(`?app=provider${providerRoute}`,appBase).href:role==='client'?new URL(`?app=client${serviceSuffix}`,appBase).href:(payload.url?new URL(payload.url,appBase).href:appBase.href);
   const serviceLifecycleTypes=new Set(['proveedor_asignado','trabajo_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','trabajo_aprobado','servicio_cancelado','servicio_disputado']);
   const lifecycleTag=serviceId&&serviceLifecycleTypes.has(payload.type)?`ugo-service-${serviceId}`:null;
   const options={
     body:payload.body||'Tenés una actualización en U.GO.',
-    icon:'/favicon.svg',
-    badge:'/favicon.svg',
+    icon:new URL('favicon.svg',appBase).href,
+    badge:new URL('favicon.svg',appBase).href,
     tag:lifecycleTag||payload.notificationId||payload.type||'ugo',
     renotify:true,
     vibrate:[160,70,220],

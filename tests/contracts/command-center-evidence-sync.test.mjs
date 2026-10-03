@@ -7,7 +7,9 @@ const workflow=fs.readFileSync('.github/workflows/github-pages.yml','utf8')
 const page=fs.readFileSync('pages/index.html','utf8')
 
 test('Command Center republishes when authoritative evidence changes',()=>{
-  assert.match(workflow,/docs\/evidence\/\*\*/)
+  const pushBlock=workflow.slice(workflow.indexOf('  push:'),workflow.indexOf('  workflow_dispatch:'))
+  assert.match(pushBlock,/branches: \[main\]/)
+  assert.doesNotMatch(pushBlock,/\n\s+paths:/)
   assert.match(generator,/evidence_registry/)
   assert.match(generator,/evidence_summary/)
   assert.match(generator,/state_drift/)

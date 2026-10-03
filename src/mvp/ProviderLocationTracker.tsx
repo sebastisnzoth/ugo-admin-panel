@@ -12,6 +12,7 @@ const AVAILABILITY_HEARTBEAT_MS=20_000
 const ARRIVAL_RADIUS_M=200
 const MAX_ACCEPTABLE_ACCURACY_M=250
 const MAX_POSITION_AGE_MS=30_000
+const MATCHING_POSITION_AGE_MS=90_000
 const GEO_COMPATIBLE_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:0,timeout:12_000}
 const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:15_000}
 
@@ -151,8 +152,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  },[available,enRoute,service?.id,service?.estado,supabase])
 
  const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
- const freshness=lastFix?`${fixAgeMs!=null&&fixAgeMs<=MAX_POSITION_AGE_MS?'GPS reciente':'GPS desactualizado'} · hace ${Math.floor((fixAgeMs||0)/1_000)} s · precisión ±${Math.round(lastFix.accuracy)} m`:'Esperando primera ubicación reciente…'
- const idleGpsStale=available&&(!lastFix||fixAgeMs==null||fixAgeMs>MAX_POSITION_AGE_MS)
+ const freshnessLimit=enRoute?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS
+ const freshness=lastFix?`${fixAgeMs!=null&&fixAgeMs<=freshnessLimit?'GPS reciente':'GPS desactualizado'} · hace ${Math.floor((fixAgeMs||0)/1_000)} s · precisión ±${Math.round(lastFix.accuracy)} m`:'Esperando primera ubicación reciente…'
+ const idleGpsStale=available&&(!lastFix||fixAgeMs==null||fixAgeMs>MATCHING_POSITION_AGE_MS)
  if(service?.estado!=='en_camino'){
   if(!available)return null
   if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>Online sin GPS válido</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>

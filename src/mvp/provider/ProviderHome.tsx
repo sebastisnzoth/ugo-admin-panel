@@ -11,13 +11,15 @@ export function ProviderHome(){
    ?{eyebrow:'COMISIONES UGO',title:'Pagá a UGO para volver al radar',text:`Tenés ${d.pendingDebtCount} servicios con comisión pendiente. Al llegar a 3, no podés recibir ni aceptar nuevos pedidos.`,action:flow.actions.openEarnings,label:'Pagar UGO'}
   :d.opportunities.length
    ?{eyebrow:'NUEVOS PEDIDOS',title:`Tenés ${d.opportunities.length} pedido${d.opportunities.length===1?'':'s'} para vos`,text:'Mirá qué hay que resolver, dónde, cuándo y cuánto. Aceptá sólo lo que realmente podés hacer.',action:flow.actions.openOpportunities,label:'Ver pedidos'}
+  :d.online&&!d.matchingReady
+   ?{eyebrow:'GPS NECESITA ATENCIÓN',title:'Estás Online, pero todavía fuera del radar',text:'UGO necesita una ubicación reciente para poder enviarte pedidos. Renovala ahora sin apagar tu disponibilidad.',action:()=>void d.setOnline(true),label:'Actualizar ubicación'}
   :d.online
-   ?{eyebrow:'LISTO PARA TRABAJAR',title:'Estás en el radar de UGO',text:'No tenés pedidos compatibles ahora. Podés dejar la app abierta: UGO te avisa cuando llegue uno.',action:()=>void d.reload(),label:'Actualizar ahora'}
+   ?{eyebrow:'LISTO PARA TRABAJAR',title:'Estás en el radar de UGO',text:'Tu GPS está vigente y podés recibir pedidos compatibles. Podés dejar la app abierta: UGO te avisa cuando llegue uno.',action:()=>void d.reload(),label:'Actualizar ahora'}
    :{eyebrow:'FUERA DEL RADAR',title:'Ponete Online para recibir trabajos',text:'Cuando estés disponible, activá tu estado y UGO empezará a buscar pedidos compatibles.',action:d.toggleOnline,label:'Ponerme Online'}
  return <section className="provider-screen provider-home" aria-labelledby="provider-home-title">
-  <SectionHeader eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`⭐ ${d.karma.toFixed(1)} · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online}>{d.online?'Online':'Offline'}</Button>}/>
+  <SectionHeader eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`⭐ ${d.karma.toFixed(1)} · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online&&d.matchingReady}>{d.online?(d.matchingReady?'Online':'GPS'):'Offline'}</Button>}/>
   <Card className="provider-hero provider-focus-card">
-   <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
+   <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online&&!d.matchingReady?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
    <h2>{next.title}</h2><p>{next.text}</p>
    <Button variant="primary" size="lg" className="provider-primary provider-main-action" onClick={next.action} disabled={d.busy}>{d.busy?'Procesando…':next.label}</Button>
   </Card>

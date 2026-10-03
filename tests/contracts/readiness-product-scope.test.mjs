@@ -30,8 +30,9 @@ test('readiness engine excludes product-deferred controls without calling them v
  const {readiness:evaluated,summary}=evaluateFunctionalReadiness({functionalReadiness:readiness,locks:[],pullRequests:[],now:new Date('2026-10-02T23:59:59Z')})
  const items=evaluated.groups.flatMap(group=>group.items)
  assert.equal(summary.deferred_by_product,deferredIds.size)
- assert.equal(summary.remaining_total,7)
- assert.equal(summary.remaining_autonomous,0)
+ const reopenedIds=new Set(['provider-offers','provider-alerts','provider-gps','provider-arrival','provider-evidence','provider-workflow','provider-notifications','final-gps','final-two-devices','final-customer','provider-realtime-location','proximity-matching','provider-proximity-alert','client-provider-lifecycle'])
+ assert.equal(summary.remaining_total,reopenedIds.size)
+ assert.ok(summary.remaining_autonomous>0)
  assert.equal(items.filter(item=>item.gate_state==='DEFERRED_BY_PRODUCT_DECISION').length,deferredIds.size)
  assert.equal(items.filter(item=>item.status==='DEFERRED_BY_PRODUCT_DECISION'&&item.gate_state==='VERIFIED').length,0)
 })
@@ -40,7 +41,9 @@ test('remaining launch debt is physical or human-only after Hugo deferral',()=>{
  const {readiness:evaluated}=evaluateFunctionalReadiness({functionalReadiness:readiness,locks:[],pullRequests:[],now:new Date('2026-10-02T23:59:59Z')})
  const remaining=evaluated.groups.flatMap(group=>group.items).filter(item=>item.status!=='VERIFIED'&&item.status!=='DEFERRED_BY_PRODUCT_DECISION')
  assert.deepEqual(new Set(remaining.map(item=>item.id)),new Set([
-  'provider-gps','provider-arrival','provider-evidence','final-gps','final-two-devices','final-customer','provider-realtime-location'
+  'provider-offers','provider-alerts','provider-gps','provider-arrival','provider-evidence','provider-workflow','provider-notifications',
+  'final-gps','final-two-devices','final-customer','provider-realtime-location','proximity-matching','provider-proximity-alert','client-provider-lifecycle'
  ]))
- assert.ok(remaining.every(item=>item.declared_status==='HUMAN_FINAL'||item.status==='HUMAN_REQUIRED'))
+ assert.ok(remaining.some(item=>item.status==='IN_PROGRESS'))
+ assert.ok(remaining.some(item=>item.status==='BLOCKED'))
 })

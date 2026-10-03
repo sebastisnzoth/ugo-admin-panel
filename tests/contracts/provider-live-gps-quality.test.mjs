@@ -31,7 +31,8 @@ test('provider en-route UI exposes GPS freshness and precision without trusting 
  assert.match(s,/GPS desactualizado/)
  assert.match(s,/precisión ±/)
  assert.match(s,/setLastFix\(\{capturedAt:capturedAtMs,accuracy\}\)/)
- assert.match(s,/fixAgeMs<=MAX_POSITION_AGE_MS/)
+ assert.match(s,/freshnessLimit=enRoute\?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS/)
+ assert.match(s,/fixAgeMs<=freshnessLimit/)
  assert.match(s,/setInterval\(\(\)=>setNowMs\(Date\.now\(\)\),1_000\)/)
 })
 
