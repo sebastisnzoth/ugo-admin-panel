@@ -121,3 +121,45 @@
 .ugo-superadmin .ugo-admin2-module-card>strong{font-size:12px}
 .ugo-superadmin .ugo-admin2-module-card>p{margin:5px 0 0!important;font-size:10px!important;line-height:1.45!important}
 .ugo-superadmin nav.ugo-admin2-submenu{overflow-x:auto!important;scrollbar-width:thin}
+
+
+/* Super Admin control hierarchy 2026-10-03 */
+.ugo-superadmin-reload{
+  min-height:42px;
+  padding:0 13px;
+  border:1px solid var(--ugo-color-outline-variant);
+  border-radius:10px;
+  background:var(--ugo-color-surface-lowest);
+  color:var(--ugo-color-on-surface);
+  font-weight:850;
+  cursor:pointer;
+}
+.ugo-superadmin-reload:hover:not(:disabled){border-color:var(--ugo-color-primary);background:color-mix(in srgb,var(--ugo-color-primary) 5%,var(--ugo-color-surface-lowest))}
+.ugo-superadmin-statebar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ugo-superadmin-statebar button{
+  min-width:0;
+  min-height:78px;
+  padding:11px 12px;
+  border:1px solid var(--ugo-color-outline-variant);
+  border-radius:12px;
+  background:var(--ugo-color-surface-lowest);
+  color:var(--ugo-color-on-surface);
+  text-align:left;
+  cursor:pointer;
+}
+.ugo-superadmin-statebar button:hover{border-color:var(--ugo-color-primary);background:color-mix(in srgb,var(--ugo-color-primary) 5%,var(--ugo-color-surface-lowest))}
+.ugo-superadmin-statebar button.ok{border-color:color-mix(in srgb,var(--ugo-color-success) 36%,var(--ugo-color-outline-variant));background:color-mix(in srgb,var(--ugo-color-success) 7%,var(--ugo-color-surface-lowest))}
+.ugo-superadmin-statebar button.attention{border-color:color-mix(in srgb,var(--ugo-color-warning) 42%,var(--ugo-color-outline-variant));background:color-mix(in srgb,var(--ugo-color-warning) 8%,var(--ugo-color-surface-lowest))}
+.ugo-superadmin-statebar small,.ugo-superadmin-statebar strong,.ugo-superadmin-statebar span{display:block}
+.ugo-superadmin-statebar small{font-size:9px!important;font-weight:900;letter-spacing:.08em}
+.ugo-superadmin-statebar strong{margin-top:6px;font-size:17px;line-height:1.1}
+.ugo-superadmin-statebar span{margin-top:4px;font-size:10px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ugo-superadmin .ugo-admin2-submenu{position:sticky;top:0;z-index:22;background:color-mix(in srgb,var(--ugo-color-surface) 92%,transparent);backdrop-filter:blur(12px)}
+.ugo-superadmin .ugo-admin2-module-card h3{margin-top:0}
+.ugo-superadmin .ugo-admin2-module-card table thead th{top:0}
+@media(max-width:980px){.ugo-superadmin-statebar{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){
+ .ugo-superadmin-statebar{grid-template-columns:1fr 1fr}
+ .ugo-superadmin-statebar button{min-height:70px;padding:9px}
+ .ugo-superadmin-reload{width:100%}
+}
