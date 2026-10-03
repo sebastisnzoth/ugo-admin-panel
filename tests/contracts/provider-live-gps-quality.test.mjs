@@ -58,12 +58,13 @@ test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acqu
 })
 
 
-test('provider online requires browser geolocation permission and removes persisted online when permission is missing',async()=>{
+test('provider online requests browser geolocation without signing out or silently forcing auth changes',async()=>{
  const data=await read('src/mvp/provider/providerData.tsx')
  const service=await read('src/mvp/provider/providerService.ts')
- assert.match(data,/navigator\.permissions\.query\(\{name:'geolocation'\}/)
- assert.match(data,/update\(\{disponible:false,online:false\}\)/)
- assert.match(data,/tocá “Ponerme Online” y permití tu ubicación/)
+ assert.match(data,/navigator\.geolocation\.getCurrentPosition/)
+ assert.match(data,/tu sesión de UGO seguirá abierta/)
+ assert.match(data,/if\(provider\.online&&provider\.disponible\)/)
+ assert.doesNotMatch(data,/auth\.signOut\(\).*geolocation/s)
  assert.match(service,/if\(online\)\{/)
  assert.match(service,/const position=await currentPosition\(\)/)
  assert.match(service,/activar_disponibilidad_proveedor/)
