@@ -10,6 +10,7 @@ if(!key)throw new Error('UGO_TEST_SUPABASE_SERVICE_ROLE_KEY required')
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
 const canonical=[1,2,3,4,5,6,7,8,9,10,11,12,14]
 const statusRank={RUNNING:0,IDLE:1,QUEUED:2,BLOCKED:3,SAFE_MODE:4,DISABLED:9}
+const isAdvisoryOnly=(agent)=>Boolean(agent?.permissions?.advisory_only)
 const q=async(table,select='*')=>{const r=await db.from(table).select(select);if(r.error)throw r.error;return r.data||[]}
 const departments=await q('autonomous_departments')
 const agents=await q('autonomous_agents')
@@ -18,8 +19,8 @@ if(missing.length)throw new Error('Missing canonical departments: '+missing.join
 const proof=[]
 for(const departmentId of canonical){
  const department=departments.find(d=>d.department_id===departmentId)
- const candidates=agents.filter(a=>a.department_id===departmentId&&a.status!=='DISABLED').sort((a,b)=>(statusRank[a.status]??5)-(statusRank[b.status]??5)||String(a.agent_key).localeCompare(String(b.agent_key)))
- if(!candidates.length)throw new Error('No enabled responsible agent for D'+departmentId)
+ const candidates=agents.filter(a=>a.department_id===departmentId&&a.status!=='DISABLED'&&!isAdvisoryOnly(a)).sort((a,b)=>(statusRank[a.status]??5)-(statusRank[b.status]??5)||String(a.agent_key).localeCompare(String(b.agent_key)))
+ if(!candidates.length)throw new Error('No mutation-capable responsible agent for D'+departmentId)
  const agent=candidates[0]
  const correlationId=randomUUID()
  const idempotencyKey=`readiness:auto-departments:${runtimeSha}:D${departmentId}`
