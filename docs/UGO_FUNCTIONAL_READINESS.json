@@ -256,7 +256,7 @@
           "id": "provider-offers",
           "title": "Recepción de ofertas",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "IN_PROGRESS",
           "verify": "Ofertas elegibles ≤20 km al proveedor correcto.",
           "done_evidence": "Matching TEST + aislamiento.",
           "improvement_focus": "Priorizar distancia, valor y urgencia.",
@@ -267,13 +267,19 @@
             "provider-demand"
           ],
           "evidence_path": "docs/evidence/readiness-provider-offers-20260929.json",
-          "reconciled_from_persisted_evidence": true
+          "reconciled_from_persisted_evidence": true,
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-alerts",
           "title": "Alerta/sonido de oferta",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "IN_PROGRESS",
           "verify": "Oferta nueva debe notificar según capacidades.",
           "done_evidence": "Runtime TEST del canal soportado.",
           "improvement_focus": "Fallback visible si sonido bloqueado.",
@@ -287,7 +293,13 @@
             "notifications"
           ],
           "evidence_path": "docs/evidence/readiness-provider-alerts-20260929.json",
-          "reconciled_from_persisted_evidence": true
+          "reconciled_from_persisted_evidence": true,
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-accept",
@@ -312,7 +324,7 @@
           "id": "provider-gps",
           "title": "GPS reciente y publicación de ubicación",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "IN_PROGRESS",
           "verify": "Rechazar 0,0/fake/stale; publicar antes de llegada.",
           "done_evidence": "Prueba TEST + GPS físico final.",
           "improvement_focus": "Indicador de frescura GPS.",
@@ -323,13 +335,19 @@
           "priority": "NORMAL",
           "resources": [
             "provider-location"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-arrival",
           "title": "YA LLEGUÉ / geofence 200 m",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "BLOCKED",
           "verify": "No avanzar fuera del geofence ni ante fallo GPS.",
           "done_evidence": "Backend TEST + geofence PASS/FAIL; físico final.",
           "improvement_focus": "Mostrar distancia restante y motivo.",
@@ -340,13 +358,19 @@
           "priority": "NORMAL",
           "resources": [
             "provider-location"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-evidence",
           "title": "Evidencia inicial/final",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "BLOCKED",
           "verify": "Capturar/subir evidencia en etapas correctas.",
           "done_evidence": "Rows/bytes persistidos + UI.",
           "improvement_focus": "Checklist visual.",
@@ -357,13 +381,19 @@
           "priority": "NORMAL",
           "resources": [
             "provider-media"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-workflow",
           "title": "Comenzar/finalizar trabajo",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "BLOCKED",
           "verify": "Transiciones autorizadas y secuenciales.",
           "done_evidence": "Máquina de estados TEST.",
           "improvement_focus": "Botón principal contextual.",
@@ -375,7 +405,13 @@
           "priority": "NORMAL",
           "resources": [
             "provider-job-state"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-debt",
@@ -453,7 +489,7 @@
           "id": "provider-notifications",
           "title": "Notificaciones Proveedor",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "IN_PROGRESS",
           "verify": "Oferta, asignación, cambios y mensajes.",
           "done_evidence": "Push/web TEST.",
           "improvement_focus": "Sonido configurable.",
@@ -466,7 +502,13 @@
             "notifications"
           ],
           "evidence_path": "docs/evidence/readiness-provider-notifications-20260930.json",
-          "reconciled_from_persisted_evidence": true
+          "reconciled_from_persisted_evidence": true,
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-responsive",
@@ -1275,7 +1317,13 @@
           "priority": "FINAL",
           "resources": [
             "physical-gps"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test",
+            "reason": "Final physical gate remains open; do not infer readiness from synthetic CI."
+          }
         },
         {
           "id": "final-two-devices",
@@ -1293,7 +1341,13 @@
           "priority": "FINAL",
           "resources": [
             "customer1-device-test"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test",
+            "reason": "Final physical gate remains open; do not infer readiness from synthetic CI."
+          }
         },
         {
           "id": "final-customer",
@@ -1310,7 +1364,13 @@
           "priority": "FINAL",
           "resources": [
             "customer1"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test",
+            "reason": "Final physical gate remains open; do not infer readiness from synthetic CI."
+          }
         }
       ]
     },
@@ -1322,7 +1382,7 @@
           "id": "provider-realtime-location",
           "title": "Ubicación realtime del proveedor",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "IN_PROGRESS",
           "verify": "Restaurar ubicación real y continua del proveedor.",
           "done_evidence": "Proveedor TEST desplazándose/actualizándose y ubicación real reflejada correctamente.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1335,7 +1395,13 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "provider-gps"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-profile-photo",
@@ -1377,7 +1443,7 @@
           "id": "proximity-matching",
           "title": "Matching por proximidad y elegibilidad",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "IN_PROGRESS",
           "verify": "Combinar categoría, habilitación, online, ubicación reciente, radio, distancia, deuda, disponibilidad y reglas de servicios.",
           "done_evidence": "Casos TEST dentro/fuera del radio producen resultados correctos.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1393,13 +1459,19 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "provider-offers"
-          ]
+          ],
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "provider-proximity-alert",
           "title": "Alerta al proveedor elegible",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "IN_PROGRESS",
           "verify": "Pedido elegible dentro del radio genera oferta, realtime, push/web/sonido soportado y navegación correcta sin duplicados.",
           "done_evidence": "Pedido TEST genera alerta verificable al proveedor correcto.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1418,7 +1490,13 @@
             "provider-notifications"
           ],
           "evidence_path": "docs/evidence/readiness-provider-proximity-alert-20261001.json",
-          "reconciled_from_persisted_evidence": true
+          "reconciled_from_persisted_evidence": true,
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "request-payment-before-dispatch",
@@ -1492,7 +1570,7 @@
           "id": "client-provider-lifecycle",
           "title": "Lifecycle Cliente ↔ Proveedor completo",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "BLOCKED",
           "verify": "Solicitud completa → matching → oferta → aceptación → en camino → llegada → evidencias → trabajo → aprobación → pago → ratings → historial, con guards.",
           "done_evidence": "E2E TEST completo con audit trail.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1514,7 +1592,13 @@
             "provider-workflow"
           ],
           "evidence_path": "docs/ugo-work-locks/readiness-client-provider-lifecycle.json",
-          "reconciled_from_persisted_lock": true
+          "reconciled_from_persisted_lock": true,
+          "physical_validation": {
+            "date": "2026-10-02",
+            "result": "FAILED",
+            "source": "user physical test + UGO Arena persisted/log evidence",
+            "reason": "Real provider flow did not complete; provider dispatch observed eligible_count=0 while compatible nearby providers were excluded by missing/stale GPS. Reopened until same-SHA browser/device proof passes."
+          }
         },
         {
           "id": "hugo-gemini-live-core",
