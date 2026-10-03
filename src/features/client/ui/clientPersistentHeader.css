@@ -20,3 +20,22 @@
 .ugo-client-root.ugo-client-screen-profile .ugo-client-profile-panel{
   margin-top:0!important;
 }
+
+/* Client redesign v2 header lock */
+.ugo-client-root.ugo-client-screen-home .ugo-client-persistent-header{
+  height:calc(60px + env(safe-area-inset-top))!important;
+  background:rgba(255,255,255,.96)!important;
+  border-bottom:1px solid #e3e9e7!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(14px)!important;
+}
+.ugo-client-root.ugo-client-screen-home .ugo-client-header-menu{
+  color:#0b1720!important;
+  background:#f1f4f3!important;
+  border-radius:12px!important;
+}
+.ugo-client-root.ugo-client-screen-home .ugo-client-header-logo{
+  color:#0b1720!important;
+  font-size:23px!important;
+}
+.ugo-client-root.ugo-client-screen-home .ugo-client-header-logo span{color:#07966f!important}
