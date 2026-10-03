@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{AdminHomeStitch}from'./AdminHomeStitch'
 import{AdminUsersPanel}from'./AdminUsersPanel'
@@ -40,7 +40,6 @@ export function AdminPhase2(){
  const[peopleView,setPeopleView]=useState<PeopleView>(()=>{const v=initialParams.get('view');return(['users','providers','verification','documents','kyc','import'] as PeopleView[]).includes(v as PeopleView)?v as PeopleView:'users'})
  const[financeView,setFinanceView]=useState<FinanceView>(()=>{const v=initialParams.get('view');return(['pix','vault','tariffs'] as FinanceView[]).includes(v as FinanceView)?v as FinanceView:'pix'})
  const[settingsView,setSettingsView]=useState<SettingsView>(()=>{const v=initialParams.get('view');return(['categories','analytics','notifications','reports','system'] as SettingsView[]).includes(v as SettingsView)?v as SettingsView:'categories'})
- const urlSyncMounted=useRef(false)
  const[selectedServiceId,setSelectedServiceId]=useState<string|null>(null)
  const[hugoVoiceActive,setHugoVoiceActive]=useState(false)
  const[adminRole,setAdminRole]=useState<AdminRole|null>(null),[roleError,setRoleError]=useState('')
@@ -121,7 +120,7 @@ export function AdminPhase2(){
  const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración',superadmin:'Super Admin'}[section]),[section])
  const pendingTotal=metrics.pendingProviders+metrics.pendingPix+metrics.pendingDebtReconciliations
  const sectionContext=section==='operations'?operationView:section==='people'?peopleView:section==='finance'?financeView:section==='settings'?settingsView:section
- useEffect(()=>{if(!urlSyncMounted.current){urlSyncMounted.current=true;return}const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section',section);if(['operations','people','finance','settings'].includes(section))url.searchParams.set('view',sectionContext);else url.searchParams.delete('view');window.history.replaceState({},'',url.toString())},[section,sectionContext])
+ useEffect(()=>{const url=new URL(window.location.href);const currentSection=(url.searchParams.get('section')||'home') as Section;const defaultView=currentSection==='operations'?'overview':currentSection==='people'?'users':currentSection==='finance'?'pix':currentSection==='settings'?'categories':'';const currentView=url.searchParams.get('view')||defaultView;const nested=['operations','people','finance','settings'].includes(section);if(currentSection===section&&(!nested||currentView===sectionContext))return;url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section',section);if(nested)url.searchParams.set('view',sectionContext);else url.searchParams.delete('view');window.history.replaceState({},'',url.toString())},[section,sectionContext])
  const hugoSection=useMemo(()=>section==='operations'?`operations:${operationView}`:section==='people'?`people:${peopleView}`:section==='finance'?`finance:${financeView}`:section==='settings'?`settings:${settingsView}`:section,[section,operationView,peopleView,financeView,settingsView])
  const opMeta:Record<OperationView,{eyebrow:string;title:string}>={overview:{eyebrow:'RESUMEN OPERATIVO',title:'Estado general de la operación'},map:{eyebrow:'MAPA EN VIVO',title:'Proveedores y servicios sobre el territorio'},services:{eyebrow:'SERVICIOS',title:'Pedidos y trabajos activos'},alerts:{eyebrow:'ALERTAS',title:'Eventos que requieren atención'},disputes:{eyebrow:'DISPUTAS',title:'Conflictos y resoluciones'},scout:{eyebrow:'SCOUT UGO',title:'Prospección y detección de oportunidades'},history:{eyebrow:'HISTORIAL',title:'Trazabilidad completa de UGO'},messages:{eyebrow:'MENSAJES',title:'WhatsApp y atención operativa'}}
  const openPeople=(view:PeopleView)=>{setSection('people');setPeopleView(view)}
