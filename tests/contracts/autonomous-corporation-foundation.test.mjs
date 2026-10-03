@@ -57,5 +57,5 @@ test('Department 14 has exactly six independent assurance agents',()=>{
 
 test('autonomy mode control explains persisted state and preserves audited backend mutation',()=>{
  assert.match(ui,/Estado actual/);assert.match(ui,/MODO SEGURO/);assert.match(ui,/GREEN puede ser automático/);assert.match(ui,/motivo auditable/)
- assert.match(shell,/superadmin_set_autonomy_mode/);assert.match(shell,/p_reason:reason\.trim\(\)/);assert.match(shell,/No se cambió el modo de autonomía/)
+ assert.match(shell,/superadmin_set_autonomy_mode/);assert.match(shell,/p_reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/)
 })
