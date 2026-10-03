@@ -18,7 +18,11 @@ if(missing.length)throw new Error('Missing canonical departments: '+missing.join
 const proof=[]
 for(const departmentId of canonical){
  const department=departments.find(d=>d.department_id===departmentId)
- const candidates=agents.filter(a=>a.department_id===departmentId&&a.status!=='DISABLED').sort((a,b)=>(statusRank[a.status]??5)-(statusRank[b.status]??5)||String(a.agent_key).localeCompare(String(b.agent_key)))
+ const candidates=agents.filter(a=>a.department_id===departmentId&&a.status!=='DISABLED').sort((a,b)=>{
+  const aAdvisory=Array.isArray(a.permissions)&&a.permissions.includes('advisory_only')?1:0
+  const bAdvisory=Array.isArray(b.permissions)&&b.permissions.includes('advisory_only')?1:0
+  return aAdvisory-bAdvisory||(statusRank[a.status]??5)-(statusRank[b.status]??5)||String(a.agent_key).localeCompare(String(b.agent_key))
+ })
  if(!candidates.length)throw new Error('No enabled responsible agent for D'+departmentId)
  const agent=candidates[0]
  const correlationId=randomUUID()
