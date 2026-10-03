@@ -55,3 +55,20 @@
  .ugo-client-root.ugo-client-screen-request .prototype-hugo .ugo-real-state i{margin:0!important}
  .ugo-client-root.ugo-client-screen-request .ugo-hugo-stage-card{position:absolute!important;left:82px!important;bottom:0!important;width:320px!important;margin:0!important;border-radius:20px!important}
 }
+
+/* Client redesign v2 request step */
+.ugo-client-root .ugo-need-screen{background:#f4f6f5!important;color:#0b1720!important}
+.ugo-client-root .ugo-need-top{background:#fff!important;border-bottom:1px solid #e3e9e7!important}
+.ugo-client-root .ugo-need-body{max-width:560px!important}
+.ugo-client-root .ugo-need-category{padding:14px!important;border:1px solid #e1e8e5!important;border-radius:18px!important;background:#fff!important}
+.ugo-client-root .ugo-need-body textarea{min-height:148px!important;border-radius:16px!important;border-color:#dfe7e4!important;box-shadow:none!important}
+.ugo-client-root .ugo-need-body textarea:focus{border-color:#07966f!important;box-shadow:0 0 0 4px rgba(7,150,111,.08)!important}
+.ugo-client-root .ugo-need-quick{gap:9px!important}
+.ugo-client-root .ugo-need-quick button{min-height:46px!important;border:1px solid #e1e8e5!important;border-radius:14px!important;background:#fff!important}
+.ugo-client-root .ugo-need-quick button.selected{background:#edf8f3!important;border-color:#a8dac7!important}
+.ugo-client-root .ugo-need-footer-inner>button{min-height:58px!important;border-radius:16px!important;background:#07966f!important;box-shadow:none!important}
+@media(max-width:699px){
+  .ugo-client-root .ugo-need-body{padding:18px 16px 128px!important}
+  .ugo-client-root .ugo-need-quick{display:grid!important;grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:390px){.ugo-client-root .ugo-need-quick{grid-template-columns:1fr!important}}
