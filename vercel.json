@@ -3,6 +3,7 @@
   "git": {
     "deploymentEnabled": true
   },
+  "ignoreCommand": "node scripts/ugo-test-only-vercel-ignore.mjs",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",

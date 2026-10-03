@@ -1,0 +1,39 @@
+{
+  "task_id": "provider-automatic-matching-recovery",
+  "job_id": "UGO-AUTOMATIC-MATCHING-RECOVERY-20261003",
+  "title": "Restore authenticated client access to automatic matching gateway",
+  "objective": "Real client-auth automatic matching creates provider offer and visible alert",
+  "status": "IN_PROGRESS",
+  "owner": "Codex",
+  "department": "Cliente \u2194 Proveedor",
+  "assigned_agent": "Codex",
+  "skills": [
+    "ugo-job-execution",
+    "ugo-code-engineering",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "resources": [
+    "notifications",
+    "provider-demand"
+  ],
+  "source_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
+  "started_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
+  "started_at": "2026-10-03T00:02:13.304512+00:00",
+  "heartbeat_at": "2026-10-03T00:02:13.304512+00:00",
+  "lease_expires_at": "2026-10-03T00:47:13.304512+00:00",
+  "correlation_id": "automatic-matching-recovery-20261003",
+  "attempt": 1,
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "current_step": "REPRODUCE_AUTHENTICATED_GATEWAY_ACL",
+  "acceptance_criteria": [
+    "Actual authenticated SQL role can invoke owned service matching",
+    "Non-owner and anonymous access rejected",
+    "Client-auth automatic matching emits correlated offer and realtime UI alert",
+    "Independent DB persistence and DB/Auth cleanup checks PASS"
+  ],
+  "production_touched": false
+}

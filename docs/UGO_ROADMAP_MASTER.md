@@ -617,3 +617,13 @@ Validación adicional del mismo bloque: run `37029628074`, SHA `e02d6a855f9215ee
 La regresión agrega un octavo caso: una consulta atrasada de una suscripción retirada no puede alertar luego de pasar Offline. `load()` valida la vigencia del consumidor después de cada await antes de modificar estado o emitir atención. Los resync de un canal retirado no afectan a su reemplazo.
 
 Run `37030359501`: Persistence Judge PASS por lecturas independientes, pero Sentinel FAIL detectó cleanup silencioso: `pagos` impide borrar el servicio por FK. El harness ahora valida ownership/sha/ephemeral antes de limpiar, elimina primero el pago temporal y comprueba errores de cada operación. El residuo exacto de ese run se retiró en una transacción acotada a TEST; DB/Auth confirmados vacíos. El fallo histórico permanece registrado y no se convierte en verde.
+
+## Matching automático autenticado · 03/10/2026
+
+Base `e148a4b224e17183fe19a12b6e2419b0027e4b15`. Incidentes recientes `client.request.matching` no quedan explicados por la alerta foreground: se reprodujo SQLSTATE 42501 `permission denied for function iniciar_matching_impl` usando el rol SQL real authenticated sobre un servicio propio. La puerta pública `iniciar_matching` es SECURITY INVOKER, pero la implementación privada sólo tenía EXECUTE para service_role. Los QA SECURITY DEFINER podían pasar con un JWT cambiado sin ejercitar este permiso.
+
+La migración `20261003000211_authenticated_matching_gateway.sql` concede sólo EXECUTE authenticated sobre la implementación privada ya protegida por auth.uid y owner/admin. No cambia SECURITY DEFINER/INVOKER, RLS, GPS, radio, deuda, estados ni políticas. PUBLIC/anon siguen sin ejecución. Aplicada exclusivamente a TEST. Rollback: revocar EXECUTE authenticated de la función privada. Probe transaccional bajo rol authenticated: una oferta para fixture con ubicación TEST fresca; no-owner rechazado por wrapper y privada; anon rechazado 42501. Todo ROLLBACK.
+
+El runtime web deja de usar matching dirigido: invoca iniciar_matching con cliente autenticado real, prueba negativos no-owner/anon, refresca posición sintética TEST antes del matching y conserva Judge independiente DB + Sentinel DB/Auth. El harness de consumidor ahora distingue callbacks por tabla/evento y cubre offer INSERT sin aviso y deduplicación offer/notice. Diez regresiones PASS; suite 1282 PASS / 8 SKIP / 0 FAIL, build y lint de archivos modificados PASS. Pendiente evidencia del SHA integrado. GPS/audio/vibración físicos no demostrados.
+
+Para respetar no-deploy se conserva la reactivación existente de deploymentEnabled, pero Vercel ignoreCommand omite commits marcados [ugo-test-only]. Estos commits también llevan [skip netlify]. No se ejecuta publicación ni se toca Supabase producción.

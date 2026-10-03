@@ -1,0 +1,30 @@
+{
+  "task_id": "provider-automatic-matching-recovery",
+  "source_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
+  "environment": "UGO TEST",
+  "baseline": {
+    "sql_role": "authenticated",
+    "sqlstate": "42501",
+    "message": "permission denied for function iniciar_matching_impl"
+  },
+  "after": {
+    "owned_service_offer_count": 1,
+    "non_owner_wrapper": "No autorizado",
+    "non_owner_private": "No autorizado",
+    "anonymous_sqlstate": "42501",
+    "transaction": "ROLLBACK"
+  },
+  "migration": "20261003000211_authenticated_matching_gateway.sql",
+  "consumer_regressions": 10,
+  "tests": {
+    "pass": 1282,
+    "fail": 0,
+    "skip": 8
+  },
+  "build": "PASS",
+  "production_touched": false,
+  "runtime_exact_sha": "PENDING",
+  "physical_gps_verified": false,
+  "physical_audio_verified": false,
+  "physical_vibration_verified": false
+}

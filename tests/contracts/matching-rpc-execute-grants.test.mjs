@@ -19,3 +19,16 @@ test('provider offer feed rejects non-provider authenticated actors inside SECUR
  assert.match(sql,/o\.proveedor_id = v_uid/)
  assert.match(sql,/revoke all on function public\.obtener_ofertas_proveedor\(\) from public, anon/)
 })
+
+
+test('invoker matching gateway can reach its guarded private implementation',async()=>{
+ const sql=await read('supabase/migrations/20261003000211_authenticated_matching_gateway.sql')
+ assert.match(sql,/grant execute on function private\.iniciar_matching_impl\(uuid\) to authenticated/)
+ assert.match(sql,/revoke all on function private\.iniciar_matching_impl\(uuid\) from public, anon/)
+ assert.doesNotMatch(sql,/create or replace function public\.iniciar_matching/)
+ const runtime=await read('scripts/provider-notifications-runtime.mjs')
+ assert.match(runtime,/clientAuth\.rpc\('iniciar_matching'/)
+ assert.doesNotMatch(runtime,/clientAuth\.rpc\('iniciar_matching_dirigido'/)
+ assert.match(runtime,/NON_OWNER_MUST_BE_REJECTED/)
+ assert.match(runtime,/ANON_MATCHING_MUST_BE_REJECTED/)
+})

@@ -36,10 +36,11 @@ try{
     if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
     window.__noticeReads++;return Promise.resolve({data:table==='notificaciones'?window.__noticeRows:[],error:null}).then(resolve)
    }};return query
-  },channel:()=>{const channel={callbacks:{},on(_type,filter,fn){this.callbacks[filter.event]=fn;return this},subscribe(fn){window.__channels.push(this);fn('SUBSCRIBED');return this}};return channel},removeChannel:async()=>{window.__removed++}}
+  },channel:()=>{const channel={callbacks:{},on(_type,filter,fn){this.callbacks[filter.table+':'+filter.event]=fn;return this},subscribe(fn){window.__channels.push(this);fn('SUBSCRIBED');return this}};return channel},removeChannel:async()=>{window.__removed++}}
   window.__noticeDb=db
   window.__offer=(id,ttl=300000)=>({id,tipo:'nueva_oferta',titulo:'Offer '+id,cuerpo:'TEST',datos:{oferta_id:id,servicio_id:'service-'+id,expira_at:new Date(Date.now()+ttl).toISOString()},created_at:new Date().toISOString(),leida_at:null})
-  window.__emit=notice=>window.__channels.at(-1).callbacks.INSERT({new:notice})
+  window.__emitOffer=offer=>window.__channels.at(-1).callbacks['ofertas_servicio:INSERT']({new:offer})
+  window.__emit=notice=>window.__channels.at(-1).callbacks['notificaciones:INSERT']({new:notice})
  })
  await page.goto(base+'/__notification_recovery__')
  await page.waitForFunction(()=>window.__channels.length>0,{},{timeout:3000})
@@ -53,6 +54,14 @@ try{
  await page.evaluate(()=>window.__emit(window.__noticeRows[0]))
  assert.deepEqual(await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount})),attention)
  evidence.checks.duplicate_insert_does_not_repeat_attention=true
+ // The offer table can arrive first; the correlated notice must not ring twice.
+ await page.evaluate(()=>window.__emitOffer({id:'offer-only',servicio_id:'service-offer-only',estado:'pendiente',expira_at:new Date(Date.now()+300000).toISOString(),created_at:new Date().toISOString()}))
+ await page.getByText('Nuevo servicio en tu zona',{exact:true}).waitFor({timeout:3000})
+ evidence.checks.offer_insert_alerts_without_notice=true
+ const offerAttention=await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount}))
+ await page.evaluate(()=>{const n=window.__offer('notice-for-offer');n.datos.oferta_id='offer-only';window.__emit(n)})
+ assert.deepEqual(await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount})),offerAttention)
+ evidence.checks.offer_and_notice_share_attention_key=true
  // Mount again to release the intentionally hung SELECT. Keep the seen set.
  await page.evaluate(()=>{window.__holdReads=false;window.__render(false)})
  await page.waitForFunction(()=>window.__channels.length>=2)
