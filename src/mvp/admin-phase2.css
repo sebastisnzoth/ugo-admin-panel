@@ -64,3 +64,106 @@
 .ugo-admin2-gmail-message.ok{border-color:color-mix(in srgb,var(--ugo-color-primary) 30%,transparent);background:color-mix(in srgb,var(--ugo-color-primary) 6%,var(--ugo-color-surface-lowest))}
 .ugo-admin2-gmail-message button{border:0;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer}
 @media(max-width:760px){.ugo-admin2-head-actions{gap:5px}.ugo-admin2-gmail{max-width:145px;padding:8px 10px;font-size:10px}.ugo-admin2-gmail.connected{max-width:165px}}
+
+
+/* Admin control-center UX 2026-10-03 */
+.ugo-admin2-main>header{position:relative}
+.ugo-admin2-contextbar{
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) auto auto;
+  gap:12px;
+  align-items:center;
+  margin:-8px 0 18px;
+  padding:10px 12px;
+  border:1px solid var(--ugo-color-outline-variant);
+  border-radius:14px;
+  background:color-mix(in srgb,var(--ugo-color-surface-lowest) 94%,transparent);
+  box-shadow:var(--ugo-shadow-card);
+}
+.ugo-admin2-contextbar>div:first-child{display:grid;gap:3px}
+.ugo-admin2-live-status{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--ugo-color-on-surface)}
+.ugo-admin2-live-status i{width:8px;height:8px;border-radius:50%;background:var(--ugo-color-warning)}
+.ugo-admin2-live-status.live i{background:var(--ugo-color-success);box-shadow:0 0 0 4px color-mix(in srgb,var(--ugo-color-success) 15%,transparent)}
+.ugo-admin2-live-status.degraded i{background:var(--ugo-color-error)}
+.ugo-admin2-contextbar small{color:var(--ugo-color-on-surface-variant);font-size:10px}
+.ugo-admin2-context-kpis{display:flex;align-items:stretch;gap:6px}
+.ugo-admin2-context-kpis button{
+  min-width:72px;
+  min-height:44px;
+  padding:5px 9px;
+  border:1px solid var(--ugo-color-outline-variant);
+  border-radius:10px;
+  background:var(--ugo-color-surface-lowest);
+  color:var(--ugo-color-on-surface);
+  text-align:center;
+  cursor:pointer;
+}
+.ugo-admin2-context-kpis button:hover{border-color:var(--ugo-color-primary);background:color-mix(in srgb,var(--ugo-color-primary) 5%,var(--ugo-color-surface-lowest))}
+.ugo-admin2-context-kpis button.attention{border-color:color-mix(in srgb,var(--ugo-color-warning) 40%,var(--ugo-color-outline-variant));background:color-mix(in srgb,var(--ugo-color-warning) 8%,var(--ugo-color-surface-lowest))}
+.ugo-admin2-context-kpis strong,.ugo-admin2-context-kpis span{display:block}
+.ugo-admin2-context-kpis strong{font-size:16px;line-height:1.1;font-variant-numeric:tabular-nums}
+.ugo-admin2-context-kpis span{margin-top:3px;color:var(--ugo-color-on-surface-variant);font-size:9px;font-weight:800}
+.ugo-admin2-priority-signal{display:flex;align-items:center;gap:7px;min-height:44px;padding:0 11px;border-radius:10px;border:1px solid var(--ugo-color-outline-variant);white-space:nowrap}
+.ugo-admin2-priority-signal b{font-size:17px}
+.ugo-admin2-priority-signal span{font-size:10px;font-weight:850}
+.ugo-admin2-priority-signal.ok{background:color-mix(in srgb,var(--ugo-color-success) 7%,var(--ugo-color-surface-lowest));color:var(--ugo-color-success)}
+.ugo-admin2-priority-signal.attention{background:color-mix(in srgb,var(--ugo-color-warning) 9%,var(--ugo-color-surface-lowest));color:var(--ugo-color-warning)}
+
+/* Dense, readable operational data across Admin and Super Admin. */
+.ugo-admin2 table{border-collapse:separate;border-spacing:0}
+.ugo-admin2 thead th{
+  position:sticky;
+  top:0;
+  z-index:3;
+  padding:10px 12px;
+  background:var(--ugo-color-surface-low);
+  color:var(--ugo-color-on-surface-variant);
+  border-bottom:1px solid var(--ugo-color-outline-variant);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-align:left;
+}
+.ugo-admin2 tbody td{padding:10px 12px;vertical-align:middle}
+.ugo-admin2 tbody tr:nth-child(even){background:color-mix(in srgb,var(--ugo-color-surface-low) 45%,transparent)}
+.ugo-admin2 tbody tr:hover{background:color-mix(in srgb,var(--ugo-color-primary) 6%,transparent)!important}
+.ugo-admin2 input,.ugo-admin2 select,.ugo-admin2 textarea{
+  border:1px solid var(--ugo-color-outline-variant);
+  border-radius:10px;
+  background:var(--ugo-color-surface-lowest);
+  color:var(--ugo-color-on-surface);
+}
+.ugo-admin2 input:focus-visible,.ugo-admin2 select:focus-visible,.ugo-admin2 textarea:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--ugo-color-focus) 28%,transparent);
+  outline-offset:1px;
+  border-color:var(--ugo-color-focus);
+}
+.ugo-admin2-section-head{position:relative;overflow:hidden}
+.ugo-admin2-section-head:before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:4px;
+  background:var(--ugo-color-primary);
+}
+.ugo-admin2-module-card{box-shadow:var(--ugo-shadow-card)}
+.ugo-admin2-submenu,.ugo-admin2-operations-menu{box-shadow:0 5px 18px rgba(16,24,40,.06)}
+.ugo-admin2-sidebar nav button:hover{background:var(--ugo-color-surface-low);color:var(--ugo-color-on-surface)}
+.ugo-admin2-sidebar nav button:focus-visible{outline:3px solid color-mix(in srgb,var(--ugo-color-focus) 35%,transparent);outline-offset:2px}
+.ugo-admin2-refresh,.ugo-admin2-gmail{transition:transform .14s ease,border-color .14s ease,background .14s ease}
+.ugo-admin2-refresh:active,.ugo-admin2-gmail:active{transform:translateY(1px)}
+
+@media(max-width:1050px){
+  .ugo-admin2-contextbar{grid-template-columns:1fr auto}
+  .ugo-admin2-priority-signal{grid-column:1/-1;justify-self:start}
+}
+@media(max-width:760px){
+  .ugo-admin2-contextbar{grid-template-columns:1fr;margin-top:-2px;padding:9px}
+  .ugo-admin2-context-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+  .ugo-admin2-context-kpis button{min-width:0;padding-inline:4px}
+  .ugo-admin2-priority-signal{grid-column:auto;justify-self:stretch;justify-content:center}
+  .ugo-admin2 thead th{top:0}
+}
+@media(max-width:430px){
+  .ugo-admin2-context-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
