@@ -20,7 +20,7 @@
   "source_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
   "started_sha": "e148a4b224e17183fe19a12b6e2419b0027e4b15",
   "started_at": "2026-10-03T00:02:13.304512+00:00",
-  "heartbeat_at": "2026-10-03T00:18:21.862981+00:00",
+  "heartbeat_at": "2026-10-03T00:22:08.072415+00:00",
   "lease_expires_at": "2026-10-03T00:47:13.304512+00:00",
   "correlation_id": "automatic-matching-recovery-20261003",
   "attempt": 3,
@@ -28,7 +28,7 @@
     "Judge",
     "Sentinel"
   ],
-  "current_step": "VERIFY_REPAIRED_LEGACY_ALERT_HARNESS",
+  "current_step": "VERIFY_REACTIVATED_OFFER_ATTENTION_CYCLE",
   "acceptance_criteria": [
     "Actual authenticated SQL role can invoke owned service matching",
     "Non-owner and anonymous access rejected",
@@ -48,10 +48,15 @@
       "cause": "Legacy standalone alert browser permission prompt caused product to set provider Offline; repaired TEST context. Main automatic matching/UI acceptance proof passed same SHA."
     }
   ],
-  "local_consumer_regressions": 11,
+  "local_consumer_regressions": 12,
   "evidence_ids": [
     "github-run:37081054367:PASS",
     "github-artifact:11259425363",
     "tested-sha:60fa1677faa3d71774f0641249477ea1b7e235a5"
-  ]
+  ],
+  "reactivation_regression": {
+    "baseline": "REPRODUCED_TIMEOUT",
+    "cause": "Offer UUID-only attention key silences a reactivated offer with a fresh expiry",
+    "fix": "Normalize expiry timestamp as part of common offer/notice attention key"
+  }
 }

@@ -40,7 +40,7 @@ try{
   },channel:()=>{const channel={callbacks:{},on(_type,filter,fn){this.callbacks[filter.table+':'+filter.event]=fn;return this},subscribe(fn){window.__channels.push(this);fn('SUBSCRIBED');return this}};return channel},removeChannel:async()=>{window.__removed++}}
   window.__noticeDb=db
   window.__offer=(id,ttl=300000)=>({id,tipo:'nueva_oferta',titulo:'Offer '+id,cuerpo:'TEST',datos:{oferta_id:id,servicio_id:'service-'+id,expira_at:new Date(Date.now()+ttl).toISOString()},created_at:new Date().toISOString(),leida_at:null})
-  window.__emitOffer=offer=>window.__channels.at(-1).callbacks['ofertas_servicio:INSERT']({new:offer})
+  window.__emitOffer=offer=>{window.__lastEmittedOffer=offer;window.__channels.at(-1).callbacks['ofertas_servicio:INSERT']({new:offer})}
   window.__emit=notice=>window.__channels.at(-1).callbacks['notificaciones:INSERT']({new:notice})
  })
  await page.goto(base+'/__notification_recovery__')
@@ -60,12 +60,16 @@ try{
  await page.getByText('Nuevo servicio en tu zona',{exact:true}).waitFor({timeout:3000})
  evidence.checks.offer_insert_alerts_without_notice=true
  const offerAttention=await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount}))
- await page.evaluate(()=>{const n=window.__offer('notice-for-offer');n.datos.oferta_id='offer-only';window.__emit(n)})
+ await page.evaluate(()=>{const n=window.__offer('notice-for-offer');n.datos.oferta_id='offer-only';n.datos.expira_at=window.__lastEmittedOffer.expira_at;window.__emit(n)})
  assert.deepEqual(await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount})),offerAttention)
  evidence.checks.offer_and_notice_share_attention_key=true
  await page.locator('.ugo-notification-live').click()
  await page.waitForFunction(()=>window.__lastOpened?.datos.oferta_id==='offer-only',{},{timeout:3000})
  evidence.checks.offer_only_banner_opens_exact_offer=true
+ // Backend reactivation may reuse the offer UUID with a new expiry cycle.
+ await page.evaluate(()=>{const n=window.__offer('renewed-cycle',600000);n.datos.oferta_id='offer-only';window.__emit(n)})
+ await page.getByText('Offer renewed-cycle',{exact:true}).waitFor({timeout:3000})
+ evidence.checks.reactivated_offer_uuid_can_alert_new_cycle=true
  await page.evaluate(()=>window.__emit(window.__offer('after-open')))
  // Mount again to release the intentionally hung SELECT. Keep the seen set.
  await page.evaluate(()=>{window.__holdReads=false;window.__render(false)})
