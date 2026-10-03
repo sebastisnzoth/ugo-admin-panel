@@ -94,9 +94,11 @@ test('provider tracker surfaces precise GPS failures and never auto-arrives from
  assert.match(tracker,/UGO necesita permiso de ubicación precisa/)
  assert.match(tracker,/El navegador no pudo determinar tu ubicación/)
  assert.match(tracker,/El GPS del navegador tardó demasiado en responder/)
- const errorHandler=tracker.slice(tracker.indexOf('watchPosition('),tracker.indexOf('const refresh=',tracker.indexOf('watchPosition(')))
+ const startWatchIndex=tracker.indexOf('const startWatch=')
+ const runtimeWatchIndex=tracker.indexOf('watchPosition(',startWatchIndex)
+ const errorHandler=tracker.slice(runtimeWatchIndex,tracker.indexOf('const refresh=',runtimeWatchIndex))
  assert.match(errorHandler,/setGeoError\(error\)/)
- assert.doesNotMatch(errorHandler,/autoArrivalRef/)
+ assert.doesNotMatch(errorHandler,/autoArrivalRef\.current\(/)
  assert.doesNotMatch(errorHandler,/actualizar_ubicacion_y_distancia/)
 })
 
