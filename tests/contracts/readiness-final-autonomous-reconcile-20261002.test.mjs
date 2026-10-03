@@ -22,10 +22,12 @@ test('final autonomous Command Center gate is reconciled only from persisted ver
   assert.ok(fs.existsSync(item.evidence_path))
 })
 
-test('Hugo real runtime proof is not counted as autonomous once only physical microphone/audio evidence remains',()=>{
+test('Hugo real runtime proof remains historically evidenced but is deferred from current product scope',()=>{
   const item=byId.get('hugo-real-runtime-proof')
   assert.ok(item)
-  assert.equal(item.status,'HUMAN_FINAL')
+  assert.equal(item.status,'DEFERRED_BY_PRODUCT_DECISION')
+  assert.equal(item.product_scope,'DEFERRED')
+  assert.match(item.deferred_reason,/retirado del alcance de lanzamiento actual/)
   assert.equal(item.reconciled_from_persisted_evidence,true)
   assert.equal(item.automated_scope,'VERIFIED')
 
@@ -33,6 +35,7 @@ test('Hugo real runtime proof is not counted as autonomous once only physical mi
   assert.equal(lock.status,'HUMAN_REQUIRED')
   assert.equal(lock.automated_scope?.result,'PASS')
   assert.equal(lock.human_final_required?.required,true)
+  assert.equal(item.real_test_required,false)
   assert.equal(lock.production_touched,false)
 })
 
