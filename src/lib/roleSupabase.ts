@@ -15,6 +15,15 @@ export function clearRoleSession(role: UgoRole) {
     localStorage.removeItem('supabase.auth.token')
     sessionStorage.removeItem('supabase.auth.token')
   } catch {}
+
+  try {
+    localStorage.removeItem('ugo-oauth-intended-role')
+  } catch {}
+}
+
+export function resetRoleSupabase(role: UgoRole) {
+  clients.delete(role)
+  clearRoleSession(role)
 }
 
 export function getRoleSupabase(role: UgoRole): SupabaseClient {
@@ -33,4 +42,19 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
 
   clients.set(role, client)
   return client
+}
+
+export async function signOutRole(role: UgoRole) {
+  const active = clients.get(role)
+  const cleanup = () => {
+    resetRoleSupabase(role)
+  }
+
+  try {
+    if (active) {
+      await active.auth.signOut()
+    }
+  } catch {}
+
+  cleanup()
 }
