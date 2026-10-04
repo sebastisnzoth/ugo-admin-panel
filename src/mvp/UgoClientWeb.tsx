@@ -124,7 +124,7 @@ function PaymentsPage(){
 }
 
 function ProfilePage({setActive}:{setActive:(page:PageId)=>void}){
- return <div className="ucw-dashboard"><section className="ucw-main"><Panel kicker="Cliente UGO" title="Mariana Costa"><div className="ucw-profile-card"><div className="ucw-result-avatar lg">MC</div><div><strong>Perfil verificado</strong><span>Cliente desde 2024 · 12 servicios</span></div></div><div className="ucw-meta-grid"><div><small>Dirección</small><strong>Canasvieiras, Floripa</strong></div><div><small>Preferencias</small><strong>Urgencias + atención</strong></div></div><button type="button" className="ucw-primary" style={{marginTop:14}} onClick={()=>setActive('settings')}>Configurar notificaciones</button></div></Panel></section></div>
+ return <div className="ucw-dashboard"><section className="ucw-main"><Panel kicker="Cliente UGO" title="Mariana Costa"><div className="ucw-profile-card"><div className="ucw-result-avatar lg">MC</div><div><strong>Perfil verificado</strong><span>Cliente desde 2024 · 12 servicios</span></div></div><div className="ucw-meta-grid"><div><small>Dirección</small><strong>Canasvieiras, Floripa</strong></div><div><small>Preferencias</small><strong>Urgencias + atención</strong></div></div><button type="button" className="ucw-primary" style={{marginTop:14}} onClick={()=>setActive('settings')}>Configurar notificaciones</button></Panel></section></div>
 }
 
 function SupportPage({title}:{title:string}){
