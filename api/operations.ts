@@ -211,6 +211,9 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
 
   try {
     const { sb, user } = await requireAdmin(req)
+    const auditSb = SUPABASE_SERVICE_ROLE_KEY
+      ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+      : sb
     const { data: current, error: currentError } = await sb
       .from('perfiles_proveedor')
       .select('usuario_id,estado_verificacion')
@@ -232,7 +235,7 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
       .single()
 
     if (updateError) throw updateError
-    const { error: auditError } = await sb.from('audit_log').insert({
+    const { error: auditError } = await auditSb.from('audit_log').insert({
       evento: 'admin.provider_verification.update',
       actor_id: user.id,
       entidad_tipo: 'proveedor',
