@@ -7,6 +7,8 @@ type ProviderRow={usuario_id:string;estado_verificacion:VerificationState;motivo
 type ProviderDoc={id:string;usuario_id:string;tipo:string;estado:string;url_storage:string;descripcion:string|null;notas:string|null;notas_rechazo:string|null;ocr_valido:boolean|null;ocr_confianza:number|null;created_at:string;updated_at:string|null;revisado_at:string|null}
 type VerificationResponse={error?:string;success?:boolean}
 
+const OPERATIONS_ORIGIN='https://ugo-admin-panel.vercel.app'
+const operationsUrl=(op:string)=>`${window.location.hostname.endsWith('github.io')?OPERATIONS_ORIGIN:''}/api/operations?op=${encodeURIComponent(op)}`
 const expected=['identidad_frente','identidad_dorso','selfie','comprobante_domicilio']
 const label=(s:VerificationState)=>({registrado:'Registrado',pendiente:'Pendiente',verificado:'Verificado',rechazado:'Rechazado',suspendido:'Suspendido'}[s])
 const docLabel=(s:string)=>({identidad_frente:'Identidad · frente',identidad_dorso:'Identidad · dorso',selfie:'Selfie',comprobante_domicilio:'Comprobante de domicilio'} as Record<string,string>)[s]||s.replaceAll('_',' ')
@@ -42,7 +44,7 @@ export function AdminProviderVerificationPanel(){
   try{
    const{data:{session}}=await supabase.auth.getSession();const token=session?.access_token
    if(!token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
-   const response=await fetch('/api/operations?op=provider-verification',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({providerId:row.usuario_id,state,reason:reason||null})})
+   const response=await fetch(operationsUrl('provider-verification'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({providerId:row.usuario_id,state,reason:reason||null})})
    const payload=await response.json().catch(()=>({})) as VerificationResponse
    if(!response.ok)throw new Error(payload.error||'No se pudo actualizar el proveedor.')
    setMessage(state==='verificado'?'Proveedor verificado correctamente.':state==='rechazado'?'Proveedor rechazado con motivo registrado.':'Estado actualizado.')
