@@ -55,3 +55,18 @@ test('runtime dedupe proof is scoped to the single visible Executive Inbox surfa
  assert.match(runtime,/INBOX_VISIBLE_SECTION_COUNT_INVALID/)
  assert.match(runtime,/\.ugo-autonomous-inbox-job:visible/)
 })
+
+test('Executive Inbox supports safe bulk human approval without bypassing existing governance',()=>{
+ assert.match(dashboard,/onBulkDecision:\(ids:string\[\]\)=>void/)
+ assert.match(dashboard,/selectedApprovalIds/)
+ assert.match(dashboard,/Seleccionar todos los trabajos pendientes/)
+ assert.match(dashboard,/eligiblePending=useMemo\(\(\)=>pending\.filter\(j=>j\.status==='WAITING_APPROVAL'\)/)
+ assert.match(dashboard,/Aprobar seleccionados/)
+ assert.match(dashboard,/p\.onBulkDecision\(selectedApprovalIds\)/)
+ assert.match(command,/requestBulkAutonomousJobApproval/)
+ assert.match(command,/superadmin_decide_autonomous_job/)
+ assert.match(command,/Aprobado en bloque desde Super Admin/)
+ assert.match(command,/Cada aprobación será registrada individualmente en el Decision Ledger/)
+ assert.match(command,/AUTONOMY_NOT_EXECUTABLE/)
+ assert.match(command,/INDEPENDENT_SECOND_APPROVER_REQUIRED/)
+})
