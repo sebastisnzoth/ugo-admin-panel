@@ -7,7 +7,7 @@ const dash=fs.readFileSync('src/mvp/AutonomousCorporationDashboard.tsx','utf8')
 const css=fs.readFileSync('src/mvp/autonomous-corporation.css','utf8')
 
 test('autonomy mode changes no longer depend on window.prompt',()=>{
-  const modeBlock=shell.slice(shell.indexOf('onModeChange='),shell.indexOf(' onEvaluateGate=',shell.indexOf('onModeChange=')))
+  const modeBlock=shell.slice(shell.lastIndexOf('onModeChange={handleAutonomyModeChange}'),shell.indexOf(' onEvaluateGate=',shell.lastIndexOf('onModeChange={handleAutonomyModeChange}')))
   assert.doesNotMatch(modeBlock,/window\.prompt/)
   assert.match(modeBlock,/superadmin_set_autonomy_mode/)
   assert.match(modeBlock,/p_reason:auditReason/)
