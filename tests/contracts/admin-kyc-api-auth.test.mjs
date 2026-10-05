@@ -33,7 +33,7 @@ test('provider verification uses the authenticated Admin API instead of a missin
  assert.match(source,/actor_id: user\.id/)
  assert.doesNotMatch(providerPanel,/admin_cambiar_verificacion_proveedor/)
  assert.match(providerPanel,/supabase\.auth\.getSession\(\)/)
- assert.match(providerPanel,/fetch\('\/api\/operations\?op=provider-verification'/)
+ assert.match(providerPanel,/operationsUrl\('provider-verification'\)/)
  assert.match(providerPanel,/Authorization:`Bearer \$\{token\}`/)
 })
 
