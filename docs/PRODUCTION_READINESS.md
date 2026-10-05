@@ -91,3 +91,8 @@ Critical failures in AUTH, GPS, MATCHING, REALTIME, SECURITY, LIFECYCLE or SAME-
 Do not introduce additional functional changes unless a test exposes a real defect. First validate the latest CI/Vercel deployment. If green, execute the physical Provider test and then regenerate the complete same-SHA evidence set.
 
 **Last documented engineering fixes:** provider auth session guard + provider readiness CI coverage.
+
+
+## AUTONOMY GATE LIVE CHECK — 2026-10-05T18:40:48.696Z
+
+Current gate evaluation must require a recent successful `UGO Scheduled Worker Proof TEST` whose persisted verification includes `worker=true` and `workflow_passed=true`. This entry documents the live-gate investigation; it does not grant or bypass readiness.
