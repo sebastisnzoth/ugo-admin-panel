@@ -4,6 +4,7 @@ import fs from 'node:fs'
 
 const sql=fs.readFileSync('supabase/migrations/20260927234500_autonomous_corporation_foundation.sql','utf8')
 const shell=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8')
+const operations=fs.readFileSync('api/operations.ts','utf8')
 const dashboard=fs.readFileSync('src/mvp/AutonomousCorporationDashboard.tsx','utf8')
 const ui=shell+'\n'+dashboard
 
@@ -57,5 +58,5 @@ test('Department 14 has exactly six independent assurance agents',()=>{
 
 test('autonomy mode control explains persisted state and preserves audited backend mutation',()=>{
  assert.match(ui,/Estado actual/);assert.match(ui,/MODO SEGURO/);assert.match(ui,/GREEN puede ser automático/);assert.match(ui,/motivo auditable/)
- assert.match(shell,/superadmin_set_autonomy_mode/);assert.match(shell,/p_reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/)
+ assert.match(shell,/api\/operations\?op=autonomy-mode/);assert.match(shell,/reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/);assert.match(operations,/superadmin_set_autonomy_mode/);assert.match(operations,/role !== 'superadmin'/)
 })
