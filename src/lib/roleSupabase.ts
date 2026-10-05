@@ -5,6 +5,27 @@ export type UgoRole = 'client' | 'provider'
 
 const clients = new Map<UgoRole, SupabaseClient>()
 
+export function clearRoleSession(role: UgoRole) {
+  try {
+    localStorage.removeItem(`ugo-test-${role}-auth`)
+    sessionStorage.removeItem(`ugo-test-${role}-auth`)
+  } catch {}
+
+  try {
+    localStorage.removeItem('supabase.auth.token')
+    sessionStorage.removeItem('supabase.auth.token')
+  } catch {}
+
+  try {
+    localStorage.removeItem('ugo-oauth-intended-role')
+  } catch {}
+}
+
+export function resetRoleSupabase(role: UgoRole) {
+  clients.delete(role)
+  clearRoleSession(role)
+}
+
 export function getRoleSupabase(role: UgoRole): SupabaseClient {
   const existing = clients.get(role)
   if (existing) return existing
@@ -21,4 +42,19 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
 
   clients.set(role, client)
   return client
+}
+
+export async function signOutRole(role: UgoRole) {
+  const active = clients.get(role)
+  const cleanup = () => {
+    resetRoleSupabase(role)
+  }
+
+  try {
+    if (active) {
+      await active.auth.signOut()
+    }
+  } catch {}
+
+  cleanup()
 }
