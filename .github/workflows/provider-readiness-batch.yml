@@ -7,6 +7,8 @@ on:
     paths:
       - '.github/workflows/provider-readiness-batch.yml'
       - 'src/mvp/provider/**'
+      - 'src/mvp/ProviderOnboardingGate.tsx'
+      - 'tests/contracts/auth-token-refresh-storm.test.mjs'
       - 'src/mvp/ProviderLocationTracker.tsx'
       - 'src/features/provider/**'
       - 'scripts/provider-ui-runtime.mjs'
@@ -76,7 +78,7 @@ jobs:
 
       - name: Provider contract gates
         run: |
-          node --test tests/contracts/provider-arrival-gps-gate.test.mjs tests/contracts/provider-arrival-location.test.mjs tests/contracts/provider-live-gps-quality.test.mjs tests/contracts/provider-gps-readiness-runtime.test.mjs
+          node --test tests/contracts/auth-token-refresh-storm.test.mjs tests/contracts/provider-arrival-gps-gate.test.mjs tests/contracts/provider-arrival-location.test.mjs tests/contracts/provider-live-gps-quality.test.mjs tests/contracts/provider-gps-readiness-runtime.test.mjs
           node --test tests/contracts/provider-debt-acceptance-gate.test.mjs tests/contracts/provider-ugo-debt-limit.test.mjs tests/contracts/cash-provider-ugo-debt.test.mjs
           node --test tests/contracts/provider-test-runtime-concurrency.test.mjs
 
