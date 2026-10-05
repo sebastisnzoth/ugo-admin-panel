@@ -17,10 +17,10 @@ test('auth state callback never performs profile queries during TOKEN_REFRESHED'
 
 test('SIGNED_OUT is confirmed from storage before provider session is cleared',()=>{
   assert.match(providerGate,/event==='SIGNED_OUT'/)
-  assert.match(providerGate,/supabase\.auth\.getSession\(\)\.then/)
-  assert.match(providerGate,/if\(data\.session\)\{setSession\(data\.session\);return\}setSession\(null\);setProfile\(null\)/)
+  assert.match(providerGate,/sb\.auth\.getSession\(\)\.then/)
+  assert.match(providerGate,/if\(data\.session\)\{setSession\(data\.session\);return\}setSession\(null\);setUser\(null\);setP\(null\)/)
 })
 
 test('profile refresh is deferred outside onAuthStateChange callback lock',()=>{
-  assert.match(providerGate,/window\.setTimeout\(\(\)=>\{if\(!active\)return;void loadProfile\(next\)/)
+  assert.match(providerGate,/window\.setTimeout\(\(\)=>\{if\(!active\)return;void load\(s\)/)
 })
