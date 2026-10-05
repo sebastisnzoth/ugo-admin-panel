@@ -124,6 +124,30 @@ function adminErrorResponse(res: VercelResponse, error: unknown, fallback: strin
   })
 }
 
+async function changeAutonomyMode(req: VercelRequest, res: VercelResponse) {
+  const mode = typeof req.body?.mode === 'string' ? req.body.mode.trim() : ''
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 1000) : ''
+  if (!['OFF','SHADOW','ON','SAFE_MODE'].includes(mode)) return res.status(400).json({ error: 'Modo de autonomía inválido.' })
+  try {
+    const { user, role } = await requireAdmin(req)
+    if (role !== 'superadmin') return res.status(403).json({ error: 'Super Admin requerido.' })
+    const token = accessToken(req)
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+    const { data, error } = await sb.rpc('superadmin_set_autonomy_mode', {
+      p_mode: mode,
+      p_reason: reason || 'Cambio desde Super Admin',
+    })
+    if (error) return res.status(409).json({ error: error.message })
+    if (!data) return res.status(500).json({ error: 'Supabase no devolvió el nuevo estado de autonomía.' })
+    return res.status(200).json({ success: true, mode: data.mode, updated_by: user.id })
+  } catch (error) {
+    return adminErrorResponse(res, error, 'No se pudo cambiar el modo de autonomía.')
+  }
+}
+
 async function verifyKyc(req: VercelRequest, res: VercelResponse) {
   const documentoId = typeof req.body?.documentoId === 'string' ? req.body.documentoId.trim() : ''
   const aprobado = req.body?.aprobado
@@ -563,6 +587,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'cash-select': return selectCash(req, res)
     case 'cash-confirm': return confirmCash(req, res)
     case 'kyc-verify': return verifyKyc(req, res)
+    case 'autonomy-mode': return changeAutonomyMode(req, res)
     case 'provider-verification': return changeProviderVerification(req, res)
     case 'admin-create-user': return createAdminManagedUser(req, res)
     case 'admin-reset-password': return resetAdminManagedUserPassword(req, res)
