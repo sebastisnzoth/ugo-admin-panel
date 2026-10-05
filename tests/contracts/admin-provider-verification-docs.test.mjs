@@ -25,7 +25,7 @@ test('provider verification opens private files and reviews each document',()=>{
 })
 
 test('provider-level verification remains on authenticated operations bridge',()=>{
- assert.match(panel,/\/api\/operations\?op=provider-verification/)
+ assert.match(panel,/operationsUrl\('provider-verification'\)/)
  assert.match(panel,/Authorization:`Bearer \$\{token\}`/)
  assert.match(panel,/providerState\(r,'verificado'\)/)
  assert.match(panel,/providerState\(r,'suspendido'\)/)
