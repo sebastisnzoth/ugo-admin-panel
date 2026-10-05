@@ -223,6 +223,23 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
     if (currentError) throw currentError
     if (!current) return res.status(404).json({ error: 'Proveedor no encontrado.' })
 
+    if (state === 'verificado') {
+      const { data: docs, error: docsError } = await sb
+        .from('documentos')
+        .select('tipo,estado')
+        .eq('usuario_id', providerId)
+      if (docsError) throw docsError
+      const requiredDocs = ['identidad_frente', 'identidad_dorso', 'selfie', 'domicilio']
+      const approvedTypes = new Set((docs || []).filter((d: any) => d.estado === 'aprobado').map((d: any) => d.tipo))
+      const missing = requiredDocs.filter((type) => !approvedTypes.has(type))
+      if (missing.length) {
+        return res.status(409).json({
+          error: 'No se puede verificar el proveedor: faltan documentos KYC aprobados.',
+          missing_documents: missing,
+        })
+      }
+    }
+
     const { data: updated, error: updateError } = await sb
       .from('perfiles_proveedor')
       .update({
