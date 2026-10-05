@@ -528,6 +528,15 @@ async function persistHugoAudit(req: VercelRequest, res: VercelResponse) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const origin = req.headers.origin || ''
+  const allowedOrigin = origin === 'https://sebastisnzoth.github.io' || origin === 'https://ugo-admin-panel.vercel.app' || origin === 'http://localhost:5173' ? origin : ''
+  if (allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
+    res.setHeader('Vary', 'Origin')
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type')
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  }
+  if (req.method === 'OPTIONS') return res.status(204).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   switch (operation(req)) {
     case 'hugo-audit': return persistHugoAudit(req, res)
