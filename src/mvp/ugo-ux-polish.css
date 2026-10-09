@@ -1,0 +1,203 @@
+/* UGO UX Polish — Kinetic Trust refinements (global, after design-system)
+   Focus: typography scale, 8px rhythm, 48px touch, tertiary focus 3px, motion 140-220ms, Plus Jakarta Sans
+   Preserves logic, only presentation. Respects prefers-reduced-motion and safe-area.
+*/
+
+/* Typography scale — DESIGN.md display/headline/body */
+:root {
+  --ugo-text-display: 36px;
+  --ugo-leading-display: 44px;
+  --ugo-text-headline-lg: 30px;
+  --ugo-leading-headline-lg: 38px;
+  --ugo-text-headline-md: 22px;
+  --ugo-text-body-md: 14px;
+  --ugo-leading-body-md: 20px;
+}
+
+/* Global primitives polish — ensure Plus Jakarta Sans everywhere interactive */
+button, input, select, textarea {
+  font-family: var(--ugo-font);
+}
+
+/* Buttons: ensure 48px, md radius, motion, focus tertiary */
+.ugo-ds-button,
+.ugo-ds-icon-button,
+button[class*="ugo-"],
+button[class*="provider-"],
+button[class*="admin"] {
+  min-height: var(--ugo-touch-target);
+  transition: background var(--ugo-duration-standard) ease, border-color var(--ugo-duration-fast) ease, transform var(--ugo-duration-fast) ease, box-shadow var(--ugo-duration-fast) ease, color var(--ugo-duration-fast) ease;
+}
+.ugo-ds-button:active:not(:disabled),
+button[class*="ugo-"]:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.ugo-ds-button:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ugo-color-focus) 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* Cards: consistent lg radius, surface-lowest, shadow-card, 8px rhythm */
+.ugo-ds-card,
+.ugo-home-hero,
+.ugo-home-services,
+.ugo-home-map-card,
+.ugo-provider-structural-opportunity,
+.ugo-provider-structural-service,
+.provider-card,
+.ugo-admin2 section,
+.ugo-admin2 article {
+  border-radius: var(--ugo-radius-lg);
+  background: var(--ugo-color-surface-lowest);
+  box-shadow: var(--ugo-shadow-card);
+  border: 1px solid color-mix(in srgb, var(--ugo-color-outline-variant) 72%, transparent);
+}
+
+/* Inputs: 48px, md radius, surface-lowest */
+.ugo-ds-field,
+.ugo-home-search,
+input[type="search"],
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  min-height: var(--ugo-touch-target);
+  border-radius: var(--ugo-radius-md);
+  background: var(--ugo-color-surface-lowest);
+}
+
+/* Skeleton pulse 1.5s — respects reduced-motion */
+.ugo-ds-skeleton {
+  animation: ugo-ux-shimmer 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--ugo-color-surface-container), var(--ugo-color-surface-high), var(--ugo-color-surface-container));
+  background-size: 200% 100%;
+}
+@keyframes ugo-ux-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Client Home refinements */
+.ugo-home-hero h1 {
+  font: 800 var(--ugo-text-display)/var(--ugo-leading-display) var(--ugo-font);
+  letter-spacing: -0.03em;
+  color: var(--ugo-color-on-surface);
+}
+.ugo-home-hero > p {
+  font: 400 var(--ugo-text-body-md)/var(--ugo-leading-body-md) var(--ugo-font);
+  color: var(--ugo-color-on-surface-variant);
+  max-width: 60ch;
+}
+.ugo-home-search {
+  box-shadow: var(--ugo-shadow-card);
+}
+.ugo-home-search:focus-within {
+  border-color: var(--ugo-color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ugo-color-primary) 12%, transparent), var(--ugo-shadow-card);
+}
+.ugo-home-categories > button,
+.ugo-home-all-results button {
+  min-height: 92px;
+  padding: var(--ugo-space-sm);
+  gap: var(--ugo-space-sm);
+}
+.ugo-home-categories > button:hover,
+.ugo-home-all-results button:hover {
+  border-color: color-mix(in srgb, var(--ugo-color-primary) 24%, var(--ugo-color-outline-variant));
+  background: color-mix(in srgb, var(--ugo-color-primary) 4%, var(--ugo-color-surface-lowest));
+  box-shadow: var(--ugo-shadow-card);
+}
+.ugo-home-categories > button:active {
+  transform: scale(0.99);
+}
+.ugo-home-map {
+  background: var(--ugo-color-surface-container);
+}
+.ugo-home-map-label,
+.ugo-home-map-recenter {
+  box-shadow: var(--ugo-shadow-float);
+}
+.ugo-home-hugo-cta {
+  min-height: 56px;
+  border-radius: var(--ugo-radius-lg);
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--ugo-color-primary) 18%, transparent);
+}
+.ugo-home-hugo-cta:hover {
+  filter: brightness(1.04);
+}
+.ugo-home-hugo-cta:active {
+  transform: scale(0.98);
+}
+
+/* Provider refinements */
+.ugo-provider-structural-opportunity:hover,
+.ugo-provider-structural-service:hover {
+  border-color: color-mix(in srgb, var(--ugo-color-primary) 18%, var(--ugo-color-outline-variant));
+  box-shadow: var(--ugo-shadow-float);
+  transform: translateY(-1px);
+}
+.ugo-provider-structural-metrics div,
+.provider-quick-card {
+  border-radius: var(--ugo-radius-lg);
+}
+.ugo-provider-structural-nav {
+  height: calc(60px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.provider-bottom-nav {
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Admin refinements */
+.ugo-admin2-sidebar nav button,
+.ugo-admin2-operations-menu button {
+  min-height: var(--ugo-touch-target);
+}
+.ugo-admin2 table thead th {
+  font: 600 10px/14px var(--ugo-font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ugo-admin2 tbody tr:hover {
+  background: color-mix(in srgb, var(--ugo-color-primary) 4%, transparent);
+}
+.ugo-admin2 input:focus-visible,
+.ugo-admin2 select:focus-visible,
+.ugo-admin2 textarea:focus-visible {
+  border-color: var(--ugo-color-focus);
+}
+
+/* Safe-area ensures mobile sheets/nav don't clip */
+.ugo-ds-bottom-sheet,
+.ugo-ds-bottom-nav,
+.ugo-home-mobile-nav,
+.provider-bottom-nav,
+.ugo-provider-structural-nav {
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+/* Reduced-motion: disable all polish motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ugo-ds-skeleton {
+    animation: none;
+    background: var(--ugo-color-surface-container);
+  }
+}
+
+/* High-contrast focus for forced-colors */
+@media (forced-colors: active) {
+  button:focus-visible,
+  input:focus-visible {
+    outline: 3px solid CanvasText;
+  }
+}
