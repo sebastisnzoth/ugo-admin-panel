@@ -72,7 +72,7 @@ export function providerRadarForCategory(categoryId:string,{onlyAvailable=false}
   if(provider.estado_verificacion!=='verificado')return false
   const categoryIds=Array.isArray(provider.categoria_ids)?provider.categoria_ids:[]
   if(provider.categoria_principal_id!==categoryId&&!categoryIds.includes(categoryId))return false
-  if(onlyAvailable&&!Boolean(provider.online&&provider.disponible))return false
+  if(onlyAvailable&&!(provider.online&&provider.disponible))return false
   return true
  })
 }
