@@ -1,8 +1,12 @@
 import{useEffect}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
+import{UGO_ENVIRONMENT}from'../../../lib/supabaseProject'
 
 export function DemoSebastianPaymentBridge(){
  useEffect(()=>{
+  // P0 guard: nunca interceptar pagos reales fuera de UGO TEST + ?demo
+  if(UGO_ENVIRONMENT!=='test')return
+  if(typeof window!=='undefined'&&!window.location.search.includes('demo'))return
   const original=window.fetch.bind(window)
   window.fetch=async(input:RequestInfo|URL,init?:RequestInit)=>{
    const url=typeof input==='string'?input:input instanceof URL?input.toString():input.url

@@ -15,7 +15,26 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_REVISION': JSON.stringify(runtimeRevision),
   },
+  build: {
+    chunkSizeWarningLimit: 1050,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@supabase')) return 'vendor-supabase'
+            if (id.includes('maplibre')) return 'vendor-maplibre'
+            if (id.includes('@tomtom')) return 'vendor-tomtom'
+            if (id.includes('react')) return 'vendor-react'
+            return 'vendor'
+          }
+          if (id.includes('src/mvp/NotificationCenter')) return 'notification-center'
+        },
+      },
+    },
+  },
   server: {
+    // @ts-ignore — allow Arena preview host without listing each sandbox id
+    allowedHosts: true as unknown as string[],
     host: '0.0.0.0',
     port: devPort,
     strictPort: false,
@@ -23,9 +42,15 @@ export default defineConfig({
       host: '127.0.0.1',
       port: devPort,
     },
+    // Allow Arena preview proxy host (e.g. 4173-xxx.e2b.app)
+    cors: true,
+    headers: {
+      'X-Frame-Options': 'ALLOWALL',
+    },
   },
   preview: {
     host: '0.0.0.0',
     port: devPort,
+    cors: true,
   },
 })

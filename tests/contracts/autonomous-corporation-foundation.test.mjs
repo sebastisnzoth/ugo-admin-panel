@@ -57,5 +57,8 @@ test('Department 14 has exactly six independent assurance agents',()=>{
 
 test('autonomy mode control explains persisted state and preserves audited backend mutation',()=>{
  assert.match(ui,/Estado actual/);assert.match(ui,/MODO SEGURO/);assert.match(ui,/GREEN puede ser automático/);assert.match(ui,/motivo auditable/)
- assert.match(shell,/superadmin_set_autonomy_mode/);assert.match(shell,/p_reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/)
+ const operations=fs.readFileSync('api/operations.ts','utf8')
+ // Shell delegates to backend; backend preserves audited RPC mutation
+ assert.match(shell,/api\/operations\?op=autonomy-mode/);assert.match(shell,/reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/)
+ assert.match(operations,/superadmin_set_autonomy_mode/);assert.match(operations,/p_reason/)
 })

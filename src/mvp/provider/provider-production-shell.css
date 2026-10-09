@@ -3,17 +3,18 @@
    Its job is to stabilize spacing, hierarchy and navigation without changing business logic. */
 
 .ugo-provider-root{
-  --provider-prod-bg:#f5f7f6;
-  --provider-prod-surface:#ffffff;
-  --provider-prod-ink:#142019;
-  --provider-prod-muted:#66736b;
-  --provider-prod-line:#dfe7e2;
-  --provider-prod-green:#128c4a;
-  --provider-prod-green-dark:#0b6f3a;
-  --provider-prod-soft:#eef7f2;
+  --provider-prod-bg:var(--ugo-color-surface);
+  --provider-prod-surface:var(--ugo-color-surface-lowest);
+  --provider-prod-ink:var(--ugo-color-on-surface);
+  --provider-prod-muted:var(--ugo-color-on-surface-variant);
+  --provider-prod-line:color-mix(in srgb,var(--ugo-color-outline-variant) 78%,transparent);
+  --provider-prod-green:var(--ugo-color-primary);
+  --provider-prod-green-dark:color-mix(in srgb,var(--ugo-color-primary) 88%,black);
+  --provider-prod-soft:color-mix(in srgb,var(--ugo-color-primary) 8%,var(--ugo-color-surface-lowest));
   min-height:100dvh!important;
   background:var(--provider-prod-bg)!important;
   color:var(--provider-prod-ink)!important;
+  font-family:var(--ugo-font)!important;
 }
 
 .ugo-provider-root .provider-screen{
@@ -275,3 +276,100 @@
   .ugo-provider-root .provider-focus-card{max-width:820px!important}
   .ugo-provider-root .provider-quick-grid{max-width:820px!important}
 }
+/* Provider Kinetic Trust — token mapping last layer (after production shell)
+   Maps legacy #087f5b/#159a63/#128c4a → --ugo-color-primary #006948,
+   --ink #172421/#142019 → --ugo-color-on-surface #131b2e,
+   muted #66736b/#64706b/#52665c → --ugo-color-on-surface-variant #3d4a42,
+   surface #f3f5f3/#edf1ee/#e3f3e9 → --ugo-color-surface*,
+   line #dfe7e2/#e1e9e3 → --ugo-color-outline-variant #bccac0,
+   Ensures Plus Jakarta Sans, 8px rhythm 16/24 edges, 48px touch, tertiary focus 3px, 140-220ms motion.
+*/
+
+/* Structural home — legacy #087f5b is primary */
+.ugo-provider-structural-home .ugo-provider-structural-brand span,
+.ugo-provider-structural-sheet-head small,
+.ugo-provider-structural-kpi,
+.ugo-provider-structural-opportunity small,
+.ugo-provider-structural-opportunity>b,
+.ugo-provider-structural-service-top span,
+.ugo-provider-structural-empty span,
+.ugo-provider-structural-nav button.active{color:var(--ugo-color-primary)!important}
+.ugo-provider-structural-home .ugo-provider-structural-brand span,
+.ugo-provider-structural-kpi,
+.ugo-provider-structural-service-top span{background:color-mix(in srgb,var(--ugo-color-primary) 10%,var(--ugo-color-surface-lowest))!important}
+
+/* Primary CTAs — #087f5b background → primary */
+.ugo-provider-structural-actions button:last-child,
+.ugo-provider-structural-cta,
+.ugo-provider-structural-progress i.done{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
+.ugo-provider-structural-actions button:last-child,
+.ugo-provider-structural-cta{box-shadow:0 8px 18px color-mix(in srgb,var(--ugo-color-primary) 22%,transparent)!important}
+
+/* Sheet + nav surfaces */
+.ugo-provider-structural-sheet{background:var(--ugo-color-surface)!important}
+.ugo-provider-structural-nav{background:var(--ugo-color-surface-lowest)!important;border-top:1px solid color-mix(in srgb,var(--ugo-color-outline-variant) 70%,transparent)!important}
+.ugo-provider-structural-header{background:var(--ugo-color-surface-lowest)!important;border-bottom:1px solid color-mix(in srgb,var(--ugo-color-outline-variant) 78%,transparent)!important}
+
+/* Text muted → on-surface-variant */
+.ugo-provider-structural-greeting small,
+.ugo-provider-structural-sheet-head p,
+.ugo-provider-structural-opportunity p,
+.ugo-provider-structural-service p,
+.ugo-provider-structural-empty p{color:var(--ugo-color-on-surface-variant)!important}
+.ugo-provider-structural-nav button{color:var(--ugo-color-outline)!important}
+
+/* Provider marker & availability */
+.ugo-provider-marker{background-color:var(--ugo-color-primary)!important}
+.ugo-provider-structural-presence.on{background:var(--ugo-color-on-surface)!important}
+.ugo-provider-structural-presence.on i{background:color-mix(in srgb,var(--ugo-color-primary) 72%,white)!important}
+
+/* Legacy provider-home (#087f5b family) -> primary where present */
+.ugo-provider-home-summary .ugo-provider-presence.on,
+.ugo-provider-home-copy + .ugo-provider-presence.on,
+.ugo-provider-status-card span,
+.ugo-provider-identity .ugo-provider-logo span{color:var(--ugo-color-primary)!important;background:color-mix(in srgb,var(--ugo-color-primary) 10%,var(--ugo-color-surface-lowest))!important}
+.ugo-provider-home-toggle.on,
+.ugo-provider-actions .accept,
+.ugo-provider-primary,
+.ugo-provider-online.on,
+.ugo-provider-active .ugo-provider-presence i{background:var(--ugo-color-primary)!important}
+
+/* Kinetic motion 140-220ms + focus tertiary */
+.ugo-provider-structural-actions button,
+.ugo-provider-structural-cta,
+.ugo-provider-structural-presence,
+.ugo-provider-structural-nav button,
+.ugo-provider-root .provider-primary,
+.ugo-provider-root .provider-main-action,
+.ugo-provider-root .provider-bottom-nav button{transition:background var(--ugo-duration-standard) ease,border-color var(--ugo-duration-fast) ease,box-shadow var(--ugo-duration-fast) ease,transform var(--ugo-duration-fast) ease}
+.ugo-provider-structural-actions button:active,
+.ugo-provider-structural-cta:active,
+.ugo-provider-root .provider-primary:active{transform:scale(.98)}
+.ugo-provider-structural-actions button:focus-visible,
+.ugo-provider-structural-cta:focus-visible,
+.ugo-provider-root .provider-primary:focus-visible,
+.ugo-provider-structural-nav button:focus-visible,
+.ugo-provider-structural-presence:focus-visible{outline:3px solid color-mix(in srgb,var(--ugo-color-focus) 35%,transparent)!important;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){
+  .ugo-provider-structural-actions button,
+  .ugo-provider-structural-cta,
+  .ugo-provider-structural-nav button,
+  .ugo-provider-root .provider-primary{transition:none}
+}
+
+/* Ensure touch 48px where legacy was 40-44 */
+.ugo-provider-structural-actions button,
+.ugo-provider-structural-cta{min-height:var(--ugo-touch-target)!important}
+.ugo-provider-structural-nav button{min-height:var(--ugo-touch-target)!important}
+.ugo-provider-root .provider-bottom-nav button{min-height:52px!important}
+
+/* Surface + shadow token alignment for cards */
+.ugo-provider-structural-opportunity,
+.ugo-provider-structural-service,
+.ugo-provider-structural-empty{box-shadow:var(--ugo-shadow-card)!important;border:1px solid color-mix(in srgb,var(--ugo-color-outline-variant) 72%,transparent)!important}
+
+/* Provider production shell alias already tokenized; ensure font */
+.ugo-provider-root{font-family:var(--ugo-font)!important}
+.ugo-provider-root .provider-screen,
+.ugo-provider-root .provider-focus-card,
+.ugo-provider-root .provider-card{font-family:var(--ugo-font)!important}
