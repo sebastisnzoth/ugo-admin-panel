@@ -33,6 +33,8 @@ export default defineConfig({
     },
   },
   server: {
+    // @ts-ignore — allow Arena preview host without listing each sandbox id
+    allowedHosts: true as unknown as string[],
     host: '0.0.0.0',
     port: devPort,
     strictPort: false,
@@ -40,9 +42,15 @@ export default defineConfig({
       host: '127.0.0.1',
       port: devPort,
     },
+    // Allow Arena preview proxy host (e.g. 4173-xxx.e2b.app)
+    cors: true,
+    headers: {
+      'X-Frame-Options': 'ALLOWALL',
+    },
   },
   preview: {
     host: '0.0.0.0',
     port: devPort,
+    cors: true,
   },
 })
