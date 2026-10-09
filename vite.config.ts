@@ -15,6 +15,23 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_REVISION': JSON.stringify(runtimeRevision),
   },
+  build: {
+    chunkSizeWarningLimit: 1050,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('@supabase')) return 'vendor-supabase'
+            if (id.includes('maplibre')) return 'vendor-maplibre'
+            if (id.includes('@tomtom')) return 'vendor-tomtom'
+            if (id.includes('react')) return 'vendor-react'
+            return 'vendor'
+          }
+          if (id.includes('src/mvp/NotificationCenter')) return 'notification-center'
+        },
+      },
+    },
+  },
   server: {
     host: '0.0.0.0',
     port: devPort,
