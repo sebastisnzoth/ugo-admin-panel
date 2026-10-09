@@ -9,8 +9,8 @@ const css=fs.readFileSync('src/mvp/autonomous-corporation.css','utf8')
 test('autonomy mode changes no longer depend on window.prompt',()=>{
   const start=shell.indexOf('const handleAutonomyModeChange='); const end=shell.indexOf('if(!authorized&&!loading)return',start); const modeBlock=shell.slice(start,end)
   assert.doesNotMatch(modeBlock,/window\.prompt/)
-  assert.match(modeBlock,/api\\/operations\\?op=autonomy-mode/)
-  assert.match(modeBlock,/p_reason:auditReason/)
+  assert.match(modeBlock,/api\/operations\?op=autonomy-mode/)
+  assert.match(modeBlock,/reason:auditReason/)
 })
 
 test('Empresa Autónoma exposes a direct ON action when readiness is READY',()=>{
