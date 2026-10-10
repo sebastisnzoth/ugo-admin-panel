@@ -9,7 +9,8 @@ test('participant dispute client is stable across renders',()=>{
 })
 
 test('participant disputes rehydrate after realtime reconnect, online and visibility recovery',()=>{
- assert.match(source,/status==='SUBSCRIBED'/)
+ assert.match(source,/subscribeRealtimeChannel\(/)
+ assert.match(source,/onReconnect:/)
  assert.match(source,/addEventListener\('online',onOnline\)/)
  assert.match(source,/visibilityState==='visible'/)
 })

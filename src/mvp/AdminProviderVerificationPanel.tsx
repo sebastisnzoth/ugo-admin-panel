@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{useDialog}from'./dialogs'
 import'./admin-provider-verification.css'
@@ -33,7 +34,8 @@ export function AdminProviderVerificationPanel(){
   setDocs((documents||[])as ProviderDoc[])
  },[])
 
- useEffect(()=>{if(!open)return;void load().catch(e=>setMessage(e instanceof Error?e.message:'No se pudo cargar verificación.'));const ch=supabase.channel('admin-provider-verification').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'usuarios'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'documentos'},()=>void load()).subscribe();return()=>{void supabase.removeChannel(ch)}},[open,load])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{if(!open)return;void load().catch(e=>setMessage(e instanceof Error?e.message:'No se pudo cargar verificación.'));const ch=supabase.channel('admin-provider-verification').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'usuarios'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'documentos'},()=>void load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>void load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[open,load,channelEpoch])
 
  const docsByUser=useMemo(()=>{const out:Record<string,ProviderDoc[]>={};for(const d of docs)(out[d.usuario_id]??=[]).push(d);return out},[docs])
  const visible=useMemo(()=>filter==='todos'?rows:rows.filter(r=>r.estado_verificacion===filter),[rows,filter])

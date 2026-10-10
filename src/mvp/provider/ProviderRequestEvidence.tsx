@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../../lib/realtimeChannel'
 import{providerEvidenceDb,loadRequestEvidence,type RequestEvidenceRow as Row}from'../../features/provider/services/providerEvidenceService'
 import{Button,EmptyState,LoadingState}from'../../shared/ui'
 
@@ -19,7 +20,8 @@ export function ProviderRequestEvidence({serviceId}:{serviceId:string}){
   if(signed.some(r=>r.urlError))setLoadError({kind:'storage',message:'SIGNED_URL_FAILED'})
   setLoading(false)
  },[serviceId,supabase])
- useEffect(()=>{load().catch(error=>{setLoadError({kind:'unknown',message:error instanceof Error?error.message:String(error)});setLoading(false)});const ch=supabase.channel(`provider-request-evidence-${serviceId}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_solicitud',filter:`servicio_id=eq.${serviceId}`},()=>load().catch(()=>{})).subscribe();return()=>{supabase.removeChannel(ch)}},[load,serviceId,supabase])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{load().catch(error=>{setLoadError({kind:'unknown',message:error instanceof Error?error.message:String(error)});setLoading(false)});const ch=supabase.channel(`provider-request-evidence-${serviceId}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_solicitud',filter:`servicio_id=eq.${serviceId}`},()=>load().catch(()=>{}));const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load().catch(()=>{}),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,serviceId,supabase,channelEpoch])
  if(loading)return <div className="provider-request-evidence-state"><LoadingState label="Cargando fotos del cliente…"/></div>
  if(loadError&&rows.length===0)return <div className="provider-request-evidence-state is-error" role="alert"><EmptyState title="No se pudieron cargar las fotos." description={friendlyError(loadError)} action={<Button variant="secondary" onClick={()=>void load()}>Reintentar</Button>}/></div>
  if(!rows.length)return <div className="provider-request-evidence-state"><EmptyState title="Sin fotos previas" description="El cliente no adjuntó fotos previas."/></div>

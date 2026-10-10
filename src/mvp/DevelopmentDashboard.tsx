@@ -1,5 +1,6 @@
 // Public Development dashboard: never query private development_* base tables from the browser.
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import'./development-dashboard.css'
 
@@ -36,13 +37,14 @@ export function DevelopmentDashboard(){
   setItems((itemData||[])as ChecklistItem[]);setEvents((eventData||[])as ChecklistEvent[]);setIncidents((incidentData||[])as SentinelIncident[]);setError('');setLoading(false)
  },[])
 
+ const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{
   document.title='UGO · Desarrollo'
   load()
   const interval=window.setInterval(load,15000)
-  const channel=(supabase as any).channel('ugo-development-public-signal').on('postgres_changes',{event:'UPDATE',schema:'public',table:'development_dashboard_signal',filter:'id=eq.1'},()=>load()).subscribe((state:string)=>setLive(state==='SUBSCRIBED'))
-  return()=>{window.clearInterval(interval);(supabase as any).removeChannel(channel)}
- },[load])
+  const channel=(supabase as any).channel('ugo-development-public-signal').on('postgres_changes',{event:'UPDATE',schema:'public',table:'development_dashboard_signal',filter:'id=eq.1'},()=>load());const dispose=subscribeRealtimeChannel(channel,supabase,{onSync:load,onStatus:(s)=>setLive(s==='SUBSCRIBED'),onReconnect:()=>setChannelEpoch(v=>v+1)})
+  return()=>{window.clearInterval(interval);dispose()}
+ },[load,channelEpoch])
 
  const stats=useMemo(()=>{
   const totalWeight=weighted(items)

@@ -12,6 +12,18 @@ const recoveryAssertions=(source,label)=>{
  assert.match(source,/removeChannel/,`${label} debe limpiar el canal realtime`)
 }
 
+// Consumidores migrados al helper estándar S-02 (src/lib/realtimeChannel.ts):
+// el helper garantiza SUBSCRIBED→resync, CHANNEL_ERROR/TIMED_OUT/CLOSED→resync+reconnect
+// con backoff y removeChannel en dispose (ver test del helper abajo).
+const standardizedAssertions=(source,label)=>{
+ assert.match(source,/addEventListener\('online'/,`${label} debe resincronizar al recuperar red`)
+ assert.match(source,/visibilitychange/,`${label} debe resincronizar al volver a primer plano`)
+ assert.match(source,/subscribeRealtimeChannel\(/,`${label} debe suscribirse con el helper estándar S-02`)
+ assert.match(source,/onReconnect:/,`${label} debe re-suscribir el canal ante errores`)
+ assert.match(source,/removeEventListener\('online'/,`${label} debe limpiar listener online`)
+ assert.match(source,/removeEventListener\('visibilitychange'/,`${label} debe limpiar listener de visibilidad`)
+}
+
 test('critical realtime consumers recover from missed events using persisted state',async()=>{
  const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking,completion,postConfirm,history,providerHistory,providerAgenda]=await Promise.all([
   read('src/mvp/NotificationCenter.tsx'),
@@ -29,11 +41,11 @@ test('critical realtime consumers recover from missed events using persisted sta
  ])
  recoveryAssertions(notifications,'NotificationCenter')
  recoveryAssertions(chat,'ServiceChat')
- recoveryAssertions(expansions,'ServiceExpansionPanel')
- recoveryAssertions(disputes,'Disputes')
+ standardizedAssertions(expansions,'ServiceExpansionPanel')
+ standardizedAssertions(disputes,'Disputes')
  recoveryAssertions(provider,'Provider flow')
  recoveryAssertions(clientPayment,'ClientPaymentChoice')
- recoveryAssertions(clientTracking,'ClientLiveTracking')
+ standardizedAssertions(clientTracking,'ClientLiveTracking')
  recoveryAssertions(completion,'ClientCompletionReview')
  recoveryAssertions(postConfirm,'ClientPostConfirmFlow')
  recoveryAssertions(history,'ServiceHistoryPanel')
@@ -58,4 +70,16 @@ test('chat and expansion resync when the parent service changes',async()=>{
  const[chat,expansions]=await Promise.all([read('src/mvp/ServiceChat.tsx'),read('src/mvp/ServiceExpansionPanel.tsx')])
  assert.match(chat,/table:'servicios'/)
  assert.match(expansions,/table:'servicios'/)
+})
+
+test('helper estándar S-02 resincroniza, re-suscribe con backoff y garantiza removeChannel',async()=>{
+ const helper=await read('src/lib/realtimeChannel.ts')
+ assert.match(helper,/options\.onStatus\?\.\(status\)/)
+ assert.match(helper,/status === 'SUBSCRIBED'/)
+ assert.match(helper,/status === 'CHANNEL_ERROR' \|\| status === 'TIMED_OUT' \|\| status === 'CLOSED'/)
+ assert.match(helper,/options\.onSync\(\)/)
+ assert.match(helper,/options\.onReconnect\?\.\(\)/)
+ assert.match(helper,/removeChannel\(channel\)/)
+ assert.match(helper,/2 \*\* \(attempts - 1\)/)
+ assert.match(helper,/window\.clearTimeout\(timer\)/)
 })

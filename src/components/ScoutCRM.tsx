@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import'./scout-crm.css'
 import{useDialog}from'../mvp/dialogs'
@@ -32,7 +33,8 @@ export function ScoutCRM(){
   if(r.ok)setGmailStatus({configured:Boolean(p.configured),connected:Boolean(p.connected),email:p.email||null,updatedAt:p.updatedAt||null})
  },[])
  useEffect(()=>{void Promise.all([load(),loadGmailStatus()])},[load,loadGmailStatus])
- useEffect(()=>{const ch=(supabase as any).channel('admin-scout-crm').on('postgres_changes',{event:'*',schema:'public',table:'prospectos_scouts'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'scout_contact_events'},()=>selected&&void loadHistory(selected.id)).subscribe();return()=>{void(supabase as any).removeChannel(ch)}},[load,selected?.id])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{const ch=(supabase as any).channel('admin-scout-crm').on('postgres_changes',{event:'*',schema:'public',table:'prospectos_scouts'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'scout_contact_events'},()=>selected&&void loadHistory(selected.id));const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>void load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,selected?.id,channelEpoch])
 
  const categories=useMemo(()=>[...new Set(prospects.map(p=>p.categoria).filter(Boolean))].sort(),[prospects])
  const demandMap=useMemo(()=>new Map(demand.map(d=>[demandScoutKey(d.slug),d])),[demand])

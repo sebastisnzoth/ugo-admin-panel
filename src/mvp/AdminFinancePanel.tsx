@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{money}from'./shared'
 import{useDialog}from'./dialogs'
@@ -22,7 +23,8 @@ export function AdminFinancePanel({embedded=false}:Props){
   if(pe)throw pe;if(we)throw we;if(de)throw de
   setPayments((p||[])as Payment[]);setWithdrawals((w||[])as Withdrawal[]);setDebts((d||[])as CashDebt[])
  },[])
- useEffect(()=>{if(!open&&!embedded)return;load().catch(e=>setMessage(e.message));const ch=supabase.channel('admin-finance-live').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'retiros'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor'},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[open,embedded,load])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{if(!open&&!embedded)return;load().catch(e=>setMessage(e.message));const ch=supabase.channel('admin-finance-live').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'retiros'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor'},()=>load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[open,embedded,load,channelEpoch])
  const realPayments=useMemo(()=>payments.filter(p=>p.ambiente==='real'),[payments])
  const demoPayments=useMemo(()=>payments.filter(p=>p.ambiente==='demo'),[payments])
  const realWithdrawals=useMemo(()=>withdrawals.filter(w=>w.ambiente==='real'),[withdrawals])

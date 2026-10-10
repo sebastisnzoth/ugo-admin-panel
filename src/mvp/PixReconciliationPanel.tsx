@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{useDialog}from'./dialogs'
 import'./admin-pix-reconciliation.css'
@@ -34,7 +35,8 @@ export function PixReconciliationPanel({embedded=true}:Props){
    setServices(Object.fromEntries(((s||[]) as ServiceRow[]).map(x=>[x.id,x])));setUsers(Object.fromEntries(((u||[]) as UserRow[]).map(x=>[x.id,x])))
   }catch(e){setLoadError(e instanceof Error?e.message:'No se pudo cargar Pix.')}finally{setLoading(false)}
  },[])
- useEffect(()=>{void load();const ch=supabase.channel('admin-pix-reconciliation').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe();return()=>{void supabase.removeChannel(ch)}},[load])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{void load();const ch=supabase.channel('admin-pix-reconciliation').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>void load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,channelEpoch])
  const count=rows.length,total=useMemo(()=>rows.reduce((n,r)=>n+Number(r.monto_bruto||0),0),[rows])
  const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime()},[])
  const reconciledToday=useMemo(()=>recent.filter(r=>r.pix_conciliado_at&&new Date(r.pix_conciliado_at).getTime()>=todayStart&&r.estado!=='pendiente'),[recent,todayStart])
