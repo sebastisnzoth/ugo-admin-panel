@@ -17,7 +17,7 @@ const openRouterModel=()=>clean(Deno.env.get('UGO_OPENROUTER_MODEL')||'openroute
 
 function sanitize(value:unknown,max=6000){
  return clean(value,max)
-  .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+=*/gi,'Bearer [REDACTED]')
+  .replace(/Bearer\s+[A-Za-z0-9._~+/-]+=*/gi,'Bearer [REDACTED]')
   .replace(/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/g,'[REDACTED_JWT]')
   .replace(/\b(?:sk|sb_secret|service_role|ghp|github_pat|AIza)[-_A-Za-z0-9]{12,}\b/g,'[REDACTED_SECRET]')
 }
@@ -84,7 +84,7 @@ async function askModel(message:string,history:unknown[],system:string,jsonMode:
  catch(error){console.warn('Hugo Gemini fallback',{message:error instanceof Error?error.message:String(error)});return await callOpenRouter(message,history,system,jsonMode)}
 }
 
-function parseJson(text:string){try{return JSON.parse(text)}catch{}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{}}return null}
+function parseJson(text:string){try{return JSON.parse(text)}catch{/* vacío intencional */}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{/* vacío intencional */}}return null}
 const navTargets=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
 const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const providerNavTargets=new Set(['home','demand','opportunities','agenda','earnings','profile','history','dispute','active-job'])

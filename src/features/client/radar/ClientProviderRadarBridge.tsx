@@ -1,11 +1,11 @@
-import React,{useEffect,useId,useState}from'react'
+import{useEffect,useId,useState}from'react'
 import{reportSentinelIncident}from'../../../lib/sentinel'
 import{useRoleSession}from'../../../mvp/shared'
 import{useClientFlow}from'../flow/clientFlow'
 import{refreshProviderRadar}from'./providerRadarStore'
 
 export function ClientProviderRadarBridge(){
- const flow=useClientFlow()
+ const{screen,navigate}=useClientFlow()
  const{session,supabase}=useRoleSession('client')
  const instanceId=useId().replace(/:/g,'')
  const[channelEpoch,setChannelEpoch]=useState(0)
@@ -30,7 +30,7 @@ export function ClientProviderRadarBridge(){
  // Provider availability stays synchronized in the background and is consumed
  // by post-confirm matching only. Any stale legacy search/provider route returns
  // to the canonical home instead of exposing the old radar/category picker.
- useEffect(()=>{if(flow.screen==='search'||flow.screen==='provider')flow.navigate('home')},[flow.screen,flow.navigate])
+ useEffect(()=>{if(screen==='search'||screen==='provider')navigate('home')},[navigate,screen])
  return null
 }
 

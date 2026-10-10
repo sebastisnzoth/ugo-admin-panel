@@ -17,7 +17,7 @@ test('client matching can continue in background without trapping or blocking an
 
 test('scheduled request cannot continue with a past local datetime',async()=>{
  const source=await read('src/features/client/request/ClientWhenScreen.tsx')
- assert.match(source,/new Date\(scheduleAt\)\.getTime\(\)<=Date\.now\(\)/)
+ assert.match(source,/new Date\(scheduleAt\)\.getTime\(\)<=nowMs\(\)\)/)
  assert.match(source,/min=\{localValue\(new Date\(\)\)\}/)
  assert.match(source,/Elegí una fecha y hora futura/)
 })

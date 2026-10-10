@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDialog } from '../mvp/dialogs';
 import {
   useZonas, usePromos, useSurge, useHorarios,
@@ -9,7 +9,6 @@ import { supabase } from '../lib/supabase';
 
 
 
-const timeAgo = (d: string) => { const s=(Date.now()-new Date(d).getTime())/1000; if(s<3600) return `${Math.floor(s/60)}m`; if(s<86400) return `${Math.floor(s/3600)}h`; return `${Math.floor(s/86400)}d`; };
 const DIAS = ['lun','mar','mie','jue','vie','sab','dom'];
 const PERMISOS_OPTS = ['dashboard','servicios','disputas','usuarios','documentos','finanzas','reportes'];
 
@@ -379,7 +378,7 @@ function TabRoles() {
 }
 
 function TabHugo() {
-  const { config, update, getAll } = useAdvancedConfig('hugo_prompt_');
+  const { update, getAll } = useAdvancedConfig('hugo_prompt_');
   const [full, setFull] = useState<any[]>([]);
   const [editing, setEditing] = useState<Record<string,string>>({});
   useEffect(() => { getAll().then(setFull); }, [getAll]);
@@ -407,7 +406,7 @@ function TabHugo() {
 }
 
 function TabIntegraciones() {
-  const { config, update, getAll } = useAdvancedConfig('integration_');
+  const { update, getAll } = useAdvancedConfig('integration_');
   const [full, setFull] = useState<any[]>([]);
   const [vals, setVals] = useState<Record<string,string>>({});
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
@@ -435,7 +434,7 @@ function TabIntegraciones() {
 }
 
 function TabFraude() {
-  const { config, update, getAll } = useAdvancedConfig('fraude_');
+  const { update, getAll } = useAdvancedConfig('fraude_');
   const [full, setFull] = useState<any[]>([]);
   const [vals, setVals] = useState<Record<string,string>>({});
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
@@ -457,7 +456,7 @@ function TabFraude() {
 }
 
 function TabTemplates() {
-  const { config, update, getAll } = useAdvancedConfig('template_');
+  const { update, getAll } = useAdvancedConfig('template_');
   const [full, setFull] = useState<any[]>([]);
   const [vals, setVals] = useState<Record<string,string>>({});
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
@@ -479,7 +478,7 @@ function TabTemplates() {
 }
 
 function TabReferidos() {
-  const { config, update, getAll } = useAdvancedConfig('referido_');
+  const { update, getAll } = useAdvancedConfig('referido_');
   const [full, setFull] = useState<any[]>([]);
   const [vals, setVals] = useState<Record<string,string>>({});
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
@@ -790,7 +789,7 @@ const toggleAll = () => {
   };
   const toggleRow = (i: number) => {
     const s = new Set(selected);
-    s.has(i) ? s.delete(i) : s.add(i);
+    if(s.has(i))s.delete(i); else s.add(i);
     setSelected(s);
   };
 
@@ -874,7 +873,7 @@ const toggleAll = () => {
           try {
             const d = await res.json();
             msg = d.message || d.details || d.error || msg;
-          } catch {}
+          } catch {/* vacío intencional */}
           err += chunk.length;
           errList.push(`Lote ${ci+1}: ${msg}`);
           console.error('[Import] Supabase error:', msg);
@@ -1081,7 +1080,7 @@ export function SecTiendasInsumos() {
       const r = await fetch(`https://api.mercadolibre.com/sites/${site}/search?q=${encodeURIComponent(mlQuery)}&limit=6`);
       const d = await r.json();
       setMlRes(d.results||[]);
-    } catch(e) { await alert({ title: 'Mercado Libre', message: 'No se pudo consultar Mercado Libre. Probá de nuevo en unos segundos.' }); }
+    } catch { await alert({ title: 'Mercado Libre', message: 'No se pudo consultar Mercado Libre. Probá de nuevo en unos segundos.' }); }
     setMlLoad(false);
   };
 

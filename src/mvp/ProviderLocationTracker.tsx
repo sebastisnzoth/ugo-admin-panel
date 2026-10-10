@@ -34,12 +34,12 @@ async function getFreshBrowserPosition(){
   compatibleError=compatibleError||highError
  }
  return await new Promise<GeolocationPosition>((resolve,reject)=>{
-  let settled=false,timer:number|undefined,watchId:number|undefined
+  let settled=false
   const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer)window.clearTimeout(timer)}
   const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
   const fail=(error:GeolocationPositionError)=>{if(settled)return;settled=true;cleanup();reject(error)}
-  timer=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
-  watchId=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
+  const timer:number|undefined=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
+  const watchId:number|undefined=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
  })
 }
 

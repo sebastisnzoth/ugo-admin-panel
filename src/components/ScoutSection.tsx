@@ -101,7 +101,7 @@ export function SecScout(){
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map)
   mapRef.current=map;setMapReady(true)
   const resizeTimers=[80,300,800].map(ms=>window.setTimeout(()=>{if(mapRef.current===map)map.invalidateSize()},ms))
-  return()=>{resizeTimers.forEach(timer=>window.clearTimeout(timer));try{map.remove()}catch{}if(mapRef.current===map)mapRef.current=null}
+  return()=>{resizeTimers.forEach(timer=>window.clearTimeout(timer));try{map.remove()}catch{/* vacío intencional */}if(mapRef.current===map)mapRef.current=null}
  },[leafletReady])
 
  useEffect(()=>{
@@ -132,7 +132,7 @@ export function SecScout(){
    m.on('click',()=>{setSelected(p);setOutreach('')})
    resultMarkers.current.push(m)
   })
-  if(results.length){try{map.fitBounds([[lat,lng],...results.map(p=>[p.lat,p.lng])],{padding:[28,28],maxZoom:15})}catch{}}
+  if(results.length){try{map.fitBounds([[lat,lng],...results.map(p=>[p.lat,p.lng])],{padding:[28,28],maxZoom:15})}catch{/* vacío intencional */}}
  },[results,categoryId,lat,lng,mapReady])
 
  const stats=useMemo(()=>({

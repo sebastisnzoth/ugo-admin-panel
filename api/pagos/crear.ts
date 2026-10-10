@@ -36,7 +36,7 @@ function crc16(payload: string) {
 }
 
 function ascii(value: string, max: number) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9 .\-]/g, '').toUpperCase().slice(0, max)
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9 .-]/g, '').toUpperCase().slice(0, max)
 }
 
 function buildDirectPix(key: string, amount: number, txid: string) {

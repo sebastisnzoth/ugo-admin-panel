@@ -17,8 +17,10 @@ export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(servi
  const{alerts:systemAlerts,refetch}=useSystemAlerts()
  const{services,providers}=useAdminActiveServices()
  const[filter,setFilter]=useState<'all'|'critical'|'warning'|'info'>('all')
+ const[now,setNow]=useState(()=>Date.now())
+ useEffect(()=>{const id=window.setInterval(()=>setNow(Date.now()),60000);return()=>window.clearInterval(id)},[])
  const operationalAlerts=useMemo(()=>{
-  const now=Date.now(),rows:any[]=[]
+  const rows:any[]=[]
   const ageMinutes=(value:any)=>{const at=new Date(value||0).getTime();return Number.isFinite(at)?Math.max(0,(now-at)/60000):0}
   for(const service of services){
    const updated=service.updated_at||service.created_at,age=ageMinutes(updated),future=service.programado_para&&new Date(service.programado_para).getTime()>now
@@ -42,7 +44,7 @@ export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(servi
    rows.push({id:`ops-debt-${provider.id}`,severidad:'warning',tipo:'proveedor_deuda_ugo',titulo:`Proveedor bloqueado por deuda UGO`,descripcion:`${[provider.nombre,provider.apellido].filter(Boolean).join(' ')} acumula ${provider.pendingDebtCount} comisiones pendientes y no puede recibir nuevos pedidos.`,created_at:new Date().toISOString(),proveedor_id:provider.id})
   }
   return rows
- },[providers,services])
+ },[now,providers,services])
  const alerts=useMemo(()=>[...operationalAlerts,...systemAlerts],[operationalAlerts,systemAlerts])
  const criticalCount=alerts.filter((a:any)=>severity(a.severidad)==='critical').length
  const warningCount=alerts.filter((a:any)=>severity(a.severidad)==='warning').length
@@ -88,7 +90,7 @@ export function AdminDisputesDecisionCenter(){
    if(alive){setEvidence(signed);setDetailLoading(false)}
   }).catch((x:any)=>{if(alive){setDetailError(x?.message||'No se pudo cargar el caso.');setDetailLoading(false)}})
   return()=>{alive=false}
- },[selected?.id])
+ },[selected])
 
  const impact=favor==='cliente'
   ?{title:'Impacto: resolución a favor del cliente',tone:'client',items:['El servicio disputado se cancela en UGO.','El pago queda sujeto al ajuste financiero correspondiente.','Si hubo cobro externo, el reembolso real debe procesarse y conciliarse en Mercado Pago.','La decisión queda auditada y visible para Cliente y Proveedor.']}

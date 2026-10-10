@@ -19,7 +19,7 @@ type ClientPlace={barrio?:string|null;ciudad?:string|null}
 type Props={onOpenService?:(serviceId:string)=>void}
 
 export function ClientHomeScreen({onOpenService}:Props){
- const flow=useClientFlow(),{supabase,session,profile}=useRoleSession('client')
+ const flow=useClientFlow(),{supabase,session,profile}=useRoleSession('client'),{navigate:flowNavigate}=flow
  const[categories,setCategories]=useState<Category[]>([]),[orders,setOrders]=useState<ActiveOrder[]>([]),[showAll,setShowAll]=useState(false)
  const[place,setPlace]=useState('Florianópolis'),[providers,setProviders]=useState<ProviderRadarRow[]>([]),[radarError,setRadarError]=useState(''),[userPos,setUserPos]=useState<[number,number]>(FLORIPA),[locating,setLocating]=useState(false),[channelEpoch,setChannelEpoch]=useState(0),[now,setNow]=useState(()=>Date.now()),[retryingId,setRetryingId]=useState<string|null>(null)
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),userMarkerRef=useRef<maplibregl.Marker|null>(null),providerMarkersRef=useRef<maplibregl.Marker[]>([])
@@ -53,8 +53,8 @@ export function ClientHomeScreen({onOpenService}:Props){
 
  const cards=useMemo(()=>CORE.map(([key,label,emoji,sub])=>({key,label,emoji,sub,category:categories.find(c=>norm(`${c.slug} ${c.nombre}`).includes(key))||null})),[categories])
  const choose=(category:Category|null)=>{if(!category)return;flow.publishHugoIntent({text:`Necesito ${category.nombre}`,categoryHint:category.slug||category.id,urgent:false,description:null})}
- const openOrder=(serviceId:string)=>{if(onOpenService){onOpenService(serviceId);return}flow.navigate('history')}
- const retryOrder=useCallback(async(serviceId:string)=>{if(retryingId||!session)return;setRetryingId(serviceId);try{const ok=await retryOwnedClientMatching(supabase,session.user.id,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado.');await loadOrders()}catch(error){console.warn('[ClientHome] matching retry failed',error);openOrder(serviceId)}finally{setRetryingId(null)}},[loadOrders,retryingId,session,supabase])
+ const openOrder=useCallback((serviceId:string)=>{if(onOpenService){onOpenService(serviceId);return}flowNavigate('history')},[flowNavigate,onOpenService])
+ const retryOrder=useCallback(async(serviceId:string)=>{if(retryingId||!session)return;setRetryingId(serviceId);try{const ok=await retryOwnedClientMatching(supabase,session.user.id,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado.');await loadOrders()}catch(error){console.warn('[ClientHome] matching retry failed',error);openOrder(serviceId)}finally{setRetryingId(null)}},[loadOrders,openOrder,retryingId,session,supabase])
  const firstName=String(profile?.nombre||'').trim().split(/\s+/)[0]||'Hola'
  if(!session)return null
 

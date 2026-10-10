@@ -19,7 +19,7 @@ test('provider asks Chrome for geolocation after authenticated profile load',()=
 })
 
 test('location permission does not force an offline provider online',()=>{
-  assert.match(provider,/if\(provider\.online&&provider\.disponible\)/)
+  assert.match(provider,/if\(providerOnline&&providerAvailable\)/)
   assert.match(provider,/Cuando quieras recibir pedidos, tocá “Ponerme Online”/)
   const effect=provider.slice(provider.indexOf("useEffect(()=>{if(!session||!provider||typeof navigator==='undefined'||!navigator.geolocation)return"),provider.indexOf("if(auth.loading||loading)"))
   assert.doesNotMatch(effect,/setProvider\(current=>current\?\{\.\.\.current,disponible:true,online:true/)

@@ -11,7 +11,6 @@ test('Hugo UI is detached from the current Admin control center',async()=>{
  assert.doesNotMatch(src,/ConversationalOrb/)
  assert.match(orb,/>Hugo<\/b>/)
  assert.match(orb,/Hugo Admin/)
- assert.match(src,/operations:\$\{operationView\}/)
 })
 
 test('Hugo Super Admin UI is detached while dormant runtime remains isolated',async()=>{

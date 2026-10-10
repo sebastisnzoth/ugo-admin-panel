@@ -9,7 +9,7 @@ import{createProviderDebtPix,reportProviderDebtPaid,type ProviderPixDebtPayment}
 export function ProviderEarnings(){
  const d=useProviderData(),flow=useProviderFlow()
  const[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[pix,setPix]=useState<ProviderPixDebtPayment|null>(null)
-const{confirm,prompt,node:dialog}=useDialog()
+const{prompt,node:dialog}=useDialog()
  const pendingDebts=d.debts.filter(x=>x.ambiente==='real'&&!['pagado','anulado'].includes(x.estado)&&Number(x.saldo_pendiente||0)>0)
  const actionableDebt=pendingDebts.find(x=>x.estado!=='informado')||null
  async function reportPaid(id:string){

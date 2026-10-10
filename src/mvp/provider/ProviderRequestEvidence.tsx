@@ -19,7 +19,7 @@ export function ProviderRequestEvidence({serviceId}:{serviceId:string}){
   setRows(signed)
   if(signed.some(r=>r.urlError))setLoadError({kind:'storage',message:'SIGNED_URL_FAILED'})
   setLoading(false)
- },[serviceId,supabase])
+ },[serviceId])
  const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{load().catch(error=>{setLoadError({kind:'unknown',message:error instanceof Error?error.message:String(error)});setLoading(false)});const ch=supabase.channel(`provider-request-evidence-${serviceId}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_solicitud',filter:`servicio_id=eq.${serviceId}`},()=>load().catch(()=>{}));const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load().catch(()=>{}),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,serviceId,supabase,channelEpoch])
  if(loading)return <div className="provider-request-evidence-state"><LoadingState label="Cargando fotos del cliente…"/></div>

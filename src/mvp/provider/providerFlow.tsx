@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-locación intencional de Context + Provider + hook */
 import React,{createContext,useCallback,useContext,useMemo,useRef,useState}from'react'
 import type{ProviderActionHandlers,ProviderScreen}from'./providerTypes'
 

@@ -13,7 +13,7 @@ export function ProviderActiveMap({ userPos }: Props) {
   const markerRef = useRef<import('maplibre-gl').Marker | null>(null)
   const [mapReady, setMapReady] = useState(false)
 
-  const mapStyle: StyleSpecification = {
+  const mapStyle = useMemo<StyleSpecification>(() => ({
     version: 8,
     sources: {
       osm: {
@@ -30,7 +30,7 @@ export function ProviderActiveMap({ userPos }: Props) {
         source: 'osm'
       }
     ]
-  }
+  }), [])
 
   // Initialize map when we have a user position and the container is ready.
   // maplibre-gl (~1 MB) se descarga recién cuando este mapa se monta.

@@ -34,7 +34,7 @@ export function ScoutCRM(){
  },[])
  useEffect(()=>{void Promise.all([load(),loadGmailStatus()])},[load,loadGmailStatus])
  const[channelEpoch,setChannelEpoch]=useState(0)
- useEffect(()=>{const ch=(supabase as any).channel('admin-scout-crm').on('postgres_changes',{event:'*',schema:'public',table:'prospectos_scouts'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'scout_contact_events'},()=>selected&&void loadHistory(selected.id));const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>void load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,selected?.id,channelEpoch])
+ useEffect(()=>{const ch=(supabase as any).channel('admin-scout-crm').on('postgres_changes',{event:'*',schema:'public',table:'prospectos_scouts'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'scout_contact_events'},()=>selected&&void loadHistory(selected.id));const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>void load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,selected,channelEpoch])
 
  const categories=useMemo(()=>[...new Set(prospects.map(p=>p.categoria).filter(Boolean))].sort(),[prospects])
  const demandMap=useMemo(()=>new Map(demand.map(d=>[demandScoutKey(d.slug),d])),[demand])

@@ -9,7 +9,7 @@ type Props={profile:UgoUser;provider:FullProviderProfile;offers:Offer[];service:
 
 const money=(v:unknown,currency?:string|null)=>`${currency==='ARS'?'$':'R$'} ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 
-export function ProviderHomeStructural({profile,provider,offers,service,payments,busy,categories,notice,onToggleOnline,onCenterMap,onOffer,onAdvance,onTab,userPos}:Props){
+export function ProviderHomeStructural({profile,provider,offers,service,payments,busy,notice,onToggleOnline,onCenterMap,onOffer,onAdvance,onTab,userPos}:Props){
  const currentPayment=service?payments.find(p=>p.servicio_id===service.id):null
  const funded=currentPayment?.estado==='retenido'&&Boolean((currentPayment as any).mp_payment_id)
  const released=payments.filter(p=>p.estado==='liberado').reduce((sum,p)=>sum+Number(p.ganancia_proveedor||0),0)

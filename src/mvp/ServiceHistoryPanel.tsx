@@ -83,7 +83,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
   })()
   return()=>{alive=false}
  },[initialServiceId,role,rows,sb,userId])
- const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!await confirm({title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido?',danger:true}))return;setCancellingId(serviceId);setActionNotice('');try{const ok=await cancelOwnedClientService(sb,userId,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado y no se puede cancelar desde Actividad.');setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,sb,userId])
+ const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!await confirm({title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido?',danger:true}))return;setCancellingId(serviceId);setActionNotice('');try{const ok=await cancelOwnedClientService(sb,userId,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado y no se puede cancelar desde Actividad.');setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,confirm,load,role,sb,userId])
  if(!userId)return null
  const currentCount=rows.filter(isCurrent).length,upcomingCount=rows.filter(isUpcoming).length,finalCount=rows.filter(isFinal).length
  const visible=rows.filter(row=>{
