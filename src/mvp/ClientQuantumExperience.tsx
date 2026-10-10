@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useRef,useState}from'react'
 import type{SupabaseClient}from'@supabase/supabase-js'
-import * as maplibregl from'maplibre-gl'
-import'maplibre-gl/dist/maplibre-gl.css'
+import type * as maplibregl from'maplibre-gl'
+import{loadMaplibre,type MaplibreNamespace}from'../lib/maplibreLoader'
 import'./client-quantum.css'
 import'./client-reference.css'
 import type{Category}from'./shared'
@@ -48,6 +48,7 @@ function clearRoute(map:maplibregl.Map){
 
 export function ClientQuantumExperience({supabase,categories,selectedCategoryId,requestedScreen,requestedProviderId,hugoIntent,onCategorySelect,onProviderPick,onSearchClose,onIntent}:Props){
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([]),searchInput=useRef<HTMLInputElement|null>(null)
+ const[mapReady,setMapReady]=useState(false)
  const[userPos,setUserPos]=useState<[number,number]>(FLORIPA)
  const[providers,setProviders]=useState<ProviderMapRow[]>([])
  const[selected,setSelected]=useState<string|null>(null)
@@ -75,28 +76,33 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
 
  useEffect(()=>{
   if(!mapEl.current||mapRef.current)return
-  let map:maplibregl.Map|null=null
-  try{
-   map=new maplibregl.Map({container:mapEl.current,style:MAP_STYLE,center:userPos,zoom:14,attributionControl:false})
-   map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left')
-   map.on('error',event=>console.warn('UGO client map resource error',event?.error||event))
-   mapRef.current=map
-   setMapError('')
-  }catch(error){
-   console.warn('UGO client map unavailable',error)
-   setMapError('El mapa no pudo iniciarse en este navegador. Podés seguir buscando y contratando profesionales desde la lista.')
-   try{map?.remove()}catch{}
-   mapRef.current=null
-  }
+  let alive=true,map:maplibregl.Map|null=null
+  const fail=(error:unknown)=>{console.warn('UGO client map unavailable',error);setMapError('El mapa no pudo iniciarse en este navegador. Podés seguir buscando y contratando profesionales desde la lista.')}
+  void loadMaplibre().then(maplibregl=>{
+   if(!alive||!mapEl.current||mapRef.current)return
+   try{
+    map=new maplibregl.Map({container:mapEl.current,style:MAP_STYLE,center:userPos,zoom:14,attributionControl:false})
+    map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left')
+    map.on('error',event=>console.warn('UGO client map resource error',event?.error||event))
+    mapRef.current=map
+    setMapError('')
+    setMapReady(true)
+   }catch(error){
+    fail(error)
+    try{map?.remove()}catch{}
+    mapRef.current=null
+   }
+  }).catch(fail)
   return()=>{
+   alive=false;setMapReady(false)
    markers.current.forEach(marker=>{try{marker.remove()}catch{}});markers.current=[]
    const current=mapRef.current;mapRef.current=null
    if(current){clearRoute(current);try{current.remove()}catch{}}
   }
  },[])
- useEffect(()=>{if(!selected){try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:700})}catch{}}},[selected,userPos])
- useEffect(()=>{const map=mapRef.current;if(!map)return;try{markers.current.forEach(m=>{try{m.remove()}catch{}});markers.current=[];const user=document.createElement('div');user.className='ugo-user-marker';user.appendChild(document.createElement('span'));markers.current.push(new maplibregl.Marker({element:user}).setLngLat(userPos).addTo(map));filtered.forEach(p=>{if(p.lat==null||p.lng==null||!Number.isFinite(Number(p.lat))||!Number.isFinite(Number(p.lng)))return;const el=markerNode(p,p.id===selected);el.onclick=()=>{setSelected(p.id);setDrawer(true)};markers.current.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([Number(p.lng),Number(p.lat)]).addTo(map))})}catch(error){console.warn('UGO client marker render failed',error);setMapError('El mapa quedó temporalmente no disponible. La búsqueda de profesionales sigue funcionando.')}},[filtered,selected,userPos])
- useEffect(()=>{const map=mapRef.current;if(!map)return;let alive=true;const provider=selectedProvider;if(!provider||provider.lat==null||provider.lng==null||!Number.isFinite(Number(provider.lat))||!Number.isFinite(Number(provider.lng))){clearRoute(map);return()=>{alive=false}}const origin={latitude:Number(provider.lat),longitude:Number(provider.lng)},destination={latitude:userPos[1],longitude:userPos[0]};getRoutingProvider().route(origin,destination).then(route=>{if(!alive||!mapRef.current)return;const current=mapRef.current;const geometry=(route.geometry&&typeof route.geometry==='object'&&(route.geometry as any).type==='LineString')?route.geometry:{type:'LineString',coordinates:[[origin.longitude,origin.latitude],[destination.longitude,destination.latitude]]};const render=()=>{if(!alive||!current.isStyleLoaded())return;try{clearRoute(current);current.addSource(ROUTE_SOURCE,{type:'geojson',data:{type:'Feature',properties:{},geometry} as any});current.addLayer({id:ROUTE_LAYER,type:'line',source:ROUTE_SOURCE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':5,'line-opacity':.88,'line-color':'#079455'}});const bounds=new maplibregl.LngLatBounds();(geometry as any).coordinates.forEach((c:[number,number])=>bounds.extend(c));if(!bounds.isEmpty())current.fitBounds(bounds,{padding:90,maxZoom:15,duration:700})}catch(error){console.warn('UGO route render failed',error)}};if(current.isStyleLoaded())render();else current.once('load',render)}).catch(()=>{});return()=>{alive=false}},[selectedProvider,userPos])
+ useEffect(()=>{if(!selected&&mapReady){try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:700})}catch{}}},[selected,userPos,mapReady])
+ useEffect(()=>{const map=mapRef.current;if(!map||!mapReady)return;let alive=true;markers.current.forEach(m=>{try{m.remove()}catch{}});markers.current=[];void loadMaplibre().then(maplibregl=>{if(!alive||mapRef.current!==map)return;try{const user=document.createElement('div');user.className='ugo-user-marker';user.appendChild(document.createElement('span'));markers.current.push(new maplibregl.Marker({element:user}).setLngLat(userPos).addTo(map));filtered.forEach(p=>{if(p.lat==null||p.lng==null||!Number.isFinite(Number(p.lat))||!Number.isFinite(Number(p.lng)))return;const el=markerNode(p,p.id===selected);el.onclick=()=>{setSelected(p.id);setDrawer(true)};markers.current.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([Number(p.lng),Number(p.lat)]).addTo(map))})}catch(error){console.warn('UGO client marker render failed',error);setMapError('El mapa quedó temporalmente no disponible. La búsqueda de profesionales sigue funcionando.')}}).catch(error=>console.warn('UGO client markers load failed',error));return()=>{alive=false}},[filtered,mapReady,selected,userPos])
+ useEffect(()=>{const map=mapRef.current;if(!map||!mapReady)return;let alive=true;const provider=selectedProvider;if(!provider||provider.lat==null||provider.lng==null||!Number.isFinite(Number(provider.lat))||!Number.isFinite(Number(provider.lng))){clearRoute(map);return()=>{alive=false}}const origin={latitude:Number(provider.lat),longitude:Number(provider.lng)},destination={latitude:userPos[1],longitude:userPos[0]};getRoutingProvider().route(origin,destination).then(route=>{if(!alive||!mapRef.current)return;const current=mapRef.current;const geometry=(route.geometry&&typeof route.geometry==='object'&&(route.geometry as any).type==='LineString')?route.geometry:{type:'LineString',coordinates:[[origin.longitude,origin.latitude],[destination.longitude,destination.latitude]]};void loadMaplibre().then((maplibregl:MaplibreNamespace)=>{if(!alive||mapRef.current!==current)return;const render=()=>{if(!alive||!current.isStyleLoaded())return;try{clearRoute(current);current.addSource(ROUTE_SOURCE,{type:'geojson',data:{type:'Feature',properties:{},geometry} as any});current.addLayer({id:ROUTE_LAYER,type:'line',source:ROUTE_SOURCE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':5,'line-opacity':.88,'line-color':'#079455'}});const bounds=new maplibregl.LngLatBounds();(geometry as any).coordinates.forEach((c:[number,number])=>bounds.extend(c));if(!bounds.isEmpty())current.fitBounds(bounds,{padding:90,maxZoom:15,duration:700})}catch(error){console.warn('UGO route render failed',error)}};if(current.isStyleLoaded())render();else current.once('load',render)}).catch(()=>{})}).catch(()=>{});return()=>{alive=false}},[mapReady,selectedProvider,userPos])
 
  function pickProvider(p:ProviderMapRow){setSelected(p.id);setDrawer(true)}
  function goHome(){setMenuOpen(false);setSearch('');onCategorySelect('');setSelected(null);setDrawer(false);try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:500})}catch{}}

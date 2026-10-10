@@ -4,6 +4,7 @@ import{useAdminActiveServices}from'../hooks/useAdminActiveServices'
 import{useAdminDisputes}from'../hooks/useDisputes'
 import{supabase}from'../lib/supabase'
 import{AdminDisputeAssistant}from'./AdminDisputeAssistant'
+import{useDialog}from'./dialogs'
 import'./admin-decision-center.css'
 
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
@@ -64,6 +65,7 @@ export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(servi
 export function AdminDisputesDecisionCenter(){
  const{disputes,loading,error,resolverDisputa}=useAdminDisputes()
  const[selected,setSelected]=useState<any>(null),[text,setText]=useState(''),[favor,setFavor]=useState<'cliente'|'proveedor'>('cliente'),[busy,setBusy]=useState(false),[notice,setNotice]=useState<string|null>(null)
+ const{confirm,node:dialog}=useDialog()
  const[messages,setMessages]=useState<any[]>([]),[evidence,setEvidence]=useState<any[]>([]),[serviceInfo,setServiceInfo]=useState<any>(null),[paymentInfo,setPaymentInfo]=useState<any>(null),[events,setEvents]=useState<any[]>([]),[ruleInfo,setRuleInfo]=useState<any>(null),[detailLoading,setDetailLoading]=useState(false),[detailError,setDetailError]=useState<string|null>(null)
  const total=useMemo(()=>disputes.reduce((n:any,d:any)=>n+Number(d.monto_disputado||0),0),[disputes])
 
@@ -93,7 +95,7 @@ export function AdminDisputesDecisionCenter(){
   :{title:'Impacto: resolución a favor del proveedor',tone:'provider',items:['El servicio vuelve al estado operativo previo a la disputa.','Si el pago estaba disputado, vuelve a estado retenido para continuar el flujo de liberación.','La decisión queda auditada y visible para Cliente y Proveedor.']}
 
  const resolve=async()=>{if(!selected||text.trim().length<8)return
-  const ok=window.confirm(`Vas a resolver el caso #${selected.numero||String(selected.id).slice(0,8)} a favor del ${favor}. Esta acción queda registrada en UGO. ¿Confirmar?`)
+  const ok=await confirm({title:'Resolver disputa',message:`Vas a resolver el caso #${selected.numero||String(selected.id).slice(0,8)} a favor del ${favor}. Esta acción queda registrada en UGO. ¿Confirmar?`,danger:true})
   if(!ok)return
   setBusy(true);setNotice(null)
   try{await resolverDisputa(selected.id,text.trim(),favor);setSelected(null);setText('');setNotice('Disputa resuelta y visible para ambas partes.')}
@@ -127,5 +129,6 @@ export function AdminDisputesDecisionCenter(){
    <label className="ugo-resolution-label">Fundamento de la resolución<textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Explicá qué evidencia revisaste, qué ocurrió y por qué UGO toma esta decisión..."/></label>
    <div className="ugo-resolution-actions"><button onClick={()=>setSelected(null)}>Cancelar</button><button className="primary" disabled={text.trim().length<8||busy} onClick={resolve}>{busy?'Resolviendo…':'Confirmar resolución'}</button></div>
   </div>}
+  {dialog}
  </div>
 }

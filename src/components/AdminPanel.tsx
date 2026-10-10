@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useDialog } from '../mvp/dialogs';
 import {
   useDashboardMetrics, useConversionKPIs, useSystemAlerts, useMapProviders,
   useActiveServices, useOpenDisputes, usePendingDocuments, useActivityFeed,
@@ -277,6 +278,7 @@ function MemoriaOrbe({ usuarioId }: { usuarioId: string }) {
 }
 
 export function AdminPanel() {
+  const { confirm, alert, node: dialog } = useDialog();
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [loginEmail, setLoginEmail] = useState('sebastianzoth@gmail.com');
@@ -825,7 +827,7 @@ export function AdminPanel() {
                         {s.activa?'●':'○'}
                       </button>
                       <button title="Eliminar"
-                        onClick={()=>{ if(confirm(`¿Eliminar "${s.nombre}"?`)) eliminarSub(s.id); }}
+                        onClick={()=>void (async()=>{ if(await confirm({title:"Eliminar subcategoría",message:`¿Eliminar "${s.nombre}"?`,danger:true})) eliminarSub(s.id); })()}
                         style={{background:'none',border:'none',cursor:'pointer',fontSize:11,padding:'0 1px',color:'var(--red)',lineHeight:1}}>
                         ×
                       </button>
@@ -1381,13 +1383,13 @@ export function AdminPanel() {
                   onKeyDown={async e=>{if(e.key!=='Enter')return; if(!geoInput.trim())return; setGeoSearching(true);
                     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
                     const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
-                    else alert('No encontrado'); setGeoSearching(false);}}
+                    else { await alert({ title: 'Dirección no encontrada', message: 'No encontramos esa dirección. Probá con otro texto.' }); setGeoSearching(false); }}}
                   placeholder="Ej: Trindade, Florianópolis — Enter para buscar"/>
                 <button className="btn btn-s btn-sm" style={{whiteSpace:'nowrap'}} disabled={geoSearching||!geoInput.trim()}
                   onClick={async()=>{if(!geoInput.trim())return; setGeoSearching(true);
                     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
                     const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
-                    else alert('No encontrado'); setGeoSearching(false);}}>
+                    else { await alert({ title: 'Dirección no encontrada', message: 'No encontramos esa dirección. Probá con otro texto.' }); setGeoSearching(false); }}}>
                   {geoSearching?'⏳':'🔍'}
                 </button>
               </div>
@@ -1647,6 +1649,7 @@ export function AdminPanel() {
           </div>
         </div>
       )}
+    {dialog}
     </>
   );
 }

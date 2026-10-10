@@ -1,5 +1,6 @@
 import React,{useMemo,useState}from'react'
 import{useCategorias,useTarifas}from'../hooks/useAdminData'
+import{useDialog}from'./dialogs'
 import'./admin-tariffs.css'
 
 type Draft={id?:string;categoriaId:string;zona:string;base:string;hora:string;min:string;max:string}
@@ -12,6 +13,7 @@ export function AdminTariffsPanel(){
  const{categorias}=useCategorias()
  const activeCategories=useMemo(()=>categorias.filter((c:any)=>c.activa),[categorias])
  const[draft,setDraft]=useState<Draft>(()=>emptyDraft()),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
+ const{confirm,node:dialog}=useDialog()
  const editing=Boolean(draft.id)
 
  const startCreate=()=>{setDraft(emptyDraft(activeCategories[0]?.id||''));setMessage('')}
@@ -31,7 +33,7 @@ export function AdminTariffsPanel(){
  }
  const toggle=async(t:any)=>{
   const next=!t.activa
-  if(!window.confirm(`${next?'Activar':'Desactivar'} la tarifa de ${t.categorias?.nombre||'esta categoría'} para ${t.zona}?`))return
+  if(!await confirm({title:next?'Activar tarifa':'Desactivar tarifa',message:`${next?'Activar':'Desactivar'} la tarifa de ${t.categorias?.nombre||'esta categoría'} para ${t.zona}?`,danger:!next}))return
   setBusy(true);setMessage('')
   try{await setActiva(t.id,next);setMessage(next?'Tarifa activada.':'Tarifa desactivada.')}catch(e){setMessage(e instanceof Error?e.message:'No se pudo actualizar la tarifa.')}finally{setBusy(false)}
  }
@@ -56,6 +58,7 @@ export function AdminTariffsPanel(){
   {error&&<div className="ugo-tariff-error" role="alert"><strong>No se pudieron cargar las tarifas</strong><span>{error}</span><button type="button" onClick={()=>void refetch()}>Reintentar</button></div>}
 
   {loading&&!tarifas.length?<div className="ugo-tariff-empty">Cargando tarifas…</div>:tarifas.length?<div className="ugo-tariff-table-wrap"><table><thead><tr><th>Categoría</th><th>Zona</th><th>Base</th><th>Hora</th><th>Mín.</th><th>Máx.</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>{tarifas.map((t:any)=><tr key={t.id} className={t.activa?'':'disabled'}><td><strong>{t.categorias?.emoji} {t.categorias?.nombre||'Categoría'}</strong></td><td>{t.zona||'General'}</td><td>{money(t.precio_base)}</td><td>{money(t.precio_hora)}</td><td>{money(t.precio_min)}</td><td>{t.precio_max==null?'—':money(t.precio_max)}</td><td><span className={t.activa?'active':'inactive'}>{t.activa?'Activa':'Desactivada'}</span></td><td><div className="ugo-tariff-row-actions"><button type="button" onClick={()=>startEdit(t)}>Editar</button><button type="button" onClick={()=>void toggle(t)} disabled={busy}>{t.activa?'Desactivar':'Activar'}</button></div></td></tr>)}</tbody></table></div>:<div className="ugo-tariff-empty"><strong>Todavía no hay tarifas</strong><span>Creá la primera tarifa para que UGO pueda cotizar por categoría y zona.</span><button type="button" onClick={startCreate}>＋ Crear primera tarifa</button></div>}
+ {dialog}
  </section>
 }
 export default AdminTariffsPanel

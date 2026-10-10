@@ -170,11 +170,15 @@ test('client and provider require cancellation confirmation before mutating an o
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/providerService.ts'),
  ])
- assert.match(postConfirm,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
- assert.match(detail,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
- assert.match(history,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
- assert.match(activeJob,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
- assert.match(activeJob,/window\.prompt\('Contanos brevemente por qué cancelás este pedido/)
+ assert.match(postConfirm,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
+ assert.match(detail,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
+ assert.match(history,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
+ assert.match(activeJob,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
+ assert.match(activeJob,/await prompt\(\{title:'Cancelar pedido',message:'Contanos brevemente por qué cancelás este pedido/)
+ for(const source of [postConfirm,detail,history,activeJob]){
+  assert.doesNotMatch(source,/window\.(confirm|prompt|alert)\(/)
+  assert.match(source,/\{dialog\}/)
+ }
  assert.match(providerData,/cancelProviderService\(supabase,serviceId,reason\)/)
  assert.match(providerService,/rpc\('cancelar_servicio_proveedor'/)
 })

@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
+import{useDialog}from'./dialogs'
 import'./admin-provider-verification.css'
 
 type VerificationState='registrado'|'pendiente'|'verificado'|'rechazado'|'suspendido'
@@ -17,6 +18,7 @@ const specialText=(v:any)=>Array.isArray(v)?v.join(', '):v&&typeof v==='object'?
 
 export function AdminProviderVerificationPanel(){
  const[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[docs,setDocs]=useState<ProviderDoc[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('todos'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[expanded,setExpanded]=useState<Record<string,boolean>>({})
+ const{confirm,prompt,node:dialog}=useDialog()
  const load=useCallback(async()=>{
   setMessage('')
   const[{data:profiles,error:pe},{data:users,error:ue},{data:cats,error:ce},{data:documents,error:de}]=await Promise.all([
@@ -68,11 +70,11 @@ export function AdminProviderVerificationPanel(){
  async function documentState(doc:ProviderDoc,state:'aprobado'|'rechazado'){
   let reason:string|null=null
   if(state==='rechazado'){
-   const raw=window.prompt(`Motivo de rechazo para ${docLabel(doc.tipo)} (mínimo 8 caracteres):`,'')
+   const raw=await prompt({title:'Rechazar documento',message:`Motivo de rechazo para ${docLabel(doc.tipo)} (mínimo 8 caracteres):`,label:'Motivo de rechazo',required:true})
    if(raw===null)return
    reason=raw.trim();if(reason.length<8){setMessage('El motivo de rechazo debe tener al menos 8 caracteres.');return}
   }
-  if(!window.confirm(`${state==='aprobado'?'Aprobar':'Rechazar'} ${docLabel(doc.tipo)}? La decisión queda registrada en UGO.`))return
+  if(!await confirm({title:state==='aprobado'?'Aprobar documento':'Rechazar documento',message:`${state==='aprobado'?'Aprobar':'Rechazar'} ${docLabel(doc.tipo)}? La decisión queda registrada en UGO.`,danger:state==='rechazado'}))return
   setBusy(doc.id);setMessage('')
   try{
    const{data:{user}}=await supabase.auth.getUser()
@@ -106,5 +108,6 @@ export function AdminProviderVerificationPanel(){
    </article>})}</div>
    <footer>La verificación general no inventa identidad: Admin ve los archivos privados enviados, revisa cada documento y registra la decisión.</footer>
   </section>}
+ {dialog}
  </>
 }

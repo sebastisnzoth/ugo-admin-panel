@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useDialog } from '../mvp/dialogs';
 import {
   useZonas, usePromos, useSurge, useHorarios,
   useOnboarding, useAdminRoles, useRatings, useAdvancedConfig,
@@ -1041,6 +1042,7 @@ const BLANK_TIENDA = {
 };
 
 export function SecTiendasInsumos() {
+  const { confirm, alert, node: dialog } = useDialog();
   const { tiendas, loading, crear, actualizar, eliminar } = useTiendas();
   const [form,    setForm]    = React.useState<any>(BLANK_TIENDA);
   const [editing, setEditing] = React.useState<string|null>(null);
@@ -1068,7 +1070,7 @@ export function SecTiendasInsumos() {
     const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
     const d = await r.json();
     if (d[0]) { setForm((p:any)=>({...p,lat:parseFloat(d[0].lat).toFixed(6),lng:parseFloat(d[0].lon).toFixed(6)})); setGeoInput(''); }
-    else alert('No encontrado');
+    else await alert({ title: 'Dirección no encontrada', message: 'No encontramos esa dirección. Probá con otro texto.' });
   };
 
   const searchML = async () => {
@@ -1079,7 +1081,7 @@ export function SecTiendasInsumos() {
       const r = await fetch(`https://api.mercadolibre.com/sites/${site}/search?q=${encodeURIComponent(mlQuery)}&limit=6`);
       const d = await r.json();
       setMlRes(d.results||[]);
-    } catch(e) { alert('Error ML'); }
+    } catch(e) { await alert({ title: 'Mercado Libre', message: 'No se pudo consultar Mercado Libre. Probá de nuevo en unos segundos.' }); }
     setMlLoad(false);
   };
 
@@ -1187,7 +1189,7 @@ export function SecTiendasInsumos() {
               </div>
               <div style={{display:'flex',gap:5,flexShrink:0}}>
                 <button className="btn btn-s btn-sm" onClick={()=>openEdit(t)}>✏️</button>
-                <button className="btn btn-d btn-sm" onClick={()=>{ if(confirm(`¿Eliminar "${t.nombre}"?`)) eliminar(t.id); }}>×</button>
+                <button className="btn btn-d btn-sm" onClick={()=>void (async()=>{ if(await confirm({title:"Eliminar tienda",message:`¿Eliminar "${t.nombre}"?`,danger:true})) eliminar(t.id); })()}>×</button>
               </div>
             </div>
           ))}
@@ -1224,6 +1226,7 @@ export function SecTiendasInsumos() {
         )}
         {mlRes.length===0&&!mlLoading&&mlQuery&&<div style={{fontSize:11,color:'var(--muted)',textAlign:'center',padding:10}}>Sin resultados. Probá con otro término.</div>}
       </div>
+    {dialog}
     </div>
   );
 }
