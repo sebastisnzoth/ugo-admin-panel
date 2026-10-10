@@ -7,7 +7,7 @@
 - Severidad: CRÍTICA
 - Descripción: `DemoSebastianPaymentBridge` se monta siempre en `ClientRoot` y reemplaza globalmente `window.fetch`. Todas las solicitudes POST a `/api/pagos/crear` intentan ejecutar primero el RPC demo; ante errores distintos de `NO_ES_DEMO_SEBASTIAN` devuelve HTTP 409 y puede bloquear pagos reales de clientes que no pertenecen al flujo demo.
 - Archivo probable: `src/mvp/DemoSebastianPaymentBridge.tsx`, `src/mvp/MvpApp.tsx`
-- Estado: FIXED
+- Estado: FIXED · verificado 2026-10-10 (S-01 cerrado): el puente demo queda guardado y `MvpApp` monta con `demo={false}` — ya no se monta ni intercepta `window.fetch`.
 
 ## BUG-002
 
