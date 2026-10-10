@@ -23,6 +23,9 @@ test('cash selection enforces global and market flags before mutating payment',(
 })
 
 test('Admin cash controls require confirmation before persisting',()=>{
- assert.match(ui,/window\.confirm/)
+ assert.match(ui,/await confirm\(\{title:'Medio de pago'/)
+ assert.doesNotMatch(ui,/window\.(confirm|prompt|alert)\(/)
+ assert.match(ui,/useDialog.*from'\.\/dialogs'/)
+ assert.match(ui,/\{dialog\}/)
  assert.match(ui,/update\(key,String\(value\)\)/)
 })

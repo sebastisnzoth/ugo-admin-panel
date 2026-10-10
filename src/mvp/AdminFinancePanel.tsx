@@ -1,6 +1,8 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{money}from'./shared'
+import{useDialog}from'./dialogs'
 
 type Payment={id:string;servicio_id:string;monto_bruto:number;comision_ugo:number;ganancia_proveedor:number;moneda:string;estado:string;metodo?:string|null;created_at:string;liberado_at?:string|null;reembolsado_at?:string|null;ambiente:'real'|'demo'}
 type Withdrawal={id:string;proveedor_id:string;monto:number;moneda:string;estado:string;created_at:string;transferencia_externa_id?:string|null;notas?:string|null;ambiente:'real'|'demo';proveedor?:{nombre:string}|null}
@@ -10,6 +12,7 @@ type Props={embedded?:boolean}
 
 export function AdminFinancePanel({embedded=false}:Props){
  const[open,setOpen]=useState(embedded),[payments,setPayments]=useState<Payment[]>([]),[withdrawals,setWithdrawals]=useState<Withdrawal[]>([]),[debts,setDebts]=useState<CashDebt[]>([]),[refs,setRefs]=useState<Record<string,string>>({}),[debtRefs,setDebtRefs]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState('')
+ const{confirm,node:dialog}=useDialog()
  const load=useCallback(async()=>{
   const db=supabase as any
   const[{data:p,error:pe},{data:w,error:we},{data:d,error:de}]=await Promise.all([
@@ -20,7 +23,8 @@ export function AdminFinancePanel({embedded=false}:Props){
   if(pe)throw pe;if(we)throw we;if(de)throw de
   setPayments((p||[])as Payment[]);setWithdrawals((w||[])as Withdrawal[]);setDebts((d||[])as CashDebt[])
  },[])
- useEffect(()=>{if(!open&&!embedded)return;load().catch(e=>setMessage(e.message));const ch=supabase.channel('admin-finance-live').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'retiros'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor'},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[open,embedded,load])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{if(!open&&!embedded)return;load().catch(e=>setMessage(e.message));const ch=supabase.channel('admin-finance-live').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'retiros'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor'},()=>load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[open,embedded,load,channelEpoch])
  const realPayments=useMemo(()=>payments.filter(p=>p.ambiente==='real'),[payments])
  const demoPayments=useMemo(()=>payments.filter(p=>p.ambiente==='demo'),[payments])
  const realWithdrawals=useMemo(()=>withdrawals.filter(w=>w.ambiente==='real'),[withdrawals])
@@ -45,7 +49,9 @@ export function AdminFinancePanel({embedded=false}:Props){
   if(row.ambiente!=='real')return setMessage('Los retiros DEMO no pueden procesarse como dinero real.')
   const ref=(refs[row.id]||'').trim();if(state==='pagado'&&!ref)return setMessage('Ingresá la referencia real de la transferencia antes de marcar Pagado.')
   const label=state==='pagado'?'marcar como PAGADO':state==='fallido'?'marcar como FALLIDO':'pasar a PROCESANDO'
-  const ok=window.confirm(`Retiro REAL de ${money(row.monto,row.moneda)} para ${row.proveedor?.nombre||'Proveedor UGO'}: vas a ${label}.${state==='pagado'?`\nReferencia externa: ${ref}`:''}\nEsta acción queda auditada. ¿Confirmar?`)
+  const ok=await confirm({title:'Retiro REAL',message:`Retiro REAL de ${money(row.monto,row.moneda)} para ${row.proveedor?.nombre||'Proveedor UGO'}: vas a ${label}.${state==='pagado'?`
+Referencia externa: ${ref}`:''}
+Esta acción queda auditada. ¿Confirmar?`,danger:state==='fallido'})
   if(!ok)return
   setBusy(row.id+state);setMessage('')
   const{error}=await (supabase as any).rpc('admin_actualizar_retiro',{p_retiro_id:row.id,p_estado:state,p_transferencia_externa_id:ref||null,p_notas:state==='fallido'?'Marcado fallido desde Admin UGO':null})
@@ -56,7 +62,9 @@ export function AdminFinancePanel({embedded=false}:Props){
   if(row.ambiente!=='real')return setMessage('Las comisiones DEMO no se concilian como dinero real.')
   const ref=(debtRefs[row.id]||row.referencia_pago||'').trim()
   if(ref.length<4)return setMessage('Ingresá una referencia real del pago de comisión antes de marcarlo como saldado.')
-  const ok=window.confirm(`Comisión UGO de ${money(row.saldo_pendiente||row.comision_ugo,row.moneda)} · ${row.proveedor?.nombre||'Proveedor UGO'} · servicio #${row.servicio?.numero||String(row.servicio_id).slice(0,8)}.\nReferencia: ${ref}\n¿Confirmar cobro?`)
+  const ok=await confirm({title:'Confirmar cobro de comisión UGO',message:`Comisión UGO de ${money(row.saldo_pendiente||row.comision_ugo,row.moneda)} · ${row.proveedor?.nombre||'Proveedor UGO'} · servicio #${row.servicio?.numero||String(row.servicio_id).slice(0,8)}.
+Referencia: ${ref}
+¿Confirmar cobro?`})
   if(!ok)return
   setBusy(row.id+'debt');setMessage('')
   const{error}=await(supabase as any).rpc('admin_confirmar_deuda_ugo_pagada',{p_deuda_id:row.id,p_referencia:ref,p_notas:'Conciliado desde Finanzas UGO'})
@@ -78,6 +86,6 @@ export function AdminFinancePanel({embedded=false}:Props){
    {message&&<div style={{fontSize:12,padding:'8px 0'}}>{message}</div>}
    <p style={{fontSize:10,opacity:.6,lineHeight:1.4,marginTop:10}}>El efectivo cobrado por el proveedor no integra su saldo UGO ni puede retirarse otra vez. La comisión de esos servicios queda como deuda separada hasta que Admin concilie una referencia real.</p>
   </div>
- if(embedded)return body
- return <><button type="button" onClick={()=>setOpen(v=>!v)} style={{position:'fixed',left:18,bottom:18,zIndex:14020,border:0,borderRadius:999,padding:'11px 15px',fontWeight:900,background:'#111820',color:'#fff',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>💰 Finanzas</button>{open&&<aside style={{position:'fixed',left:18,bottom:66,zIndex:14019,width:'min(620px,calc(100vw - 36px))',maxHeight:'min(760px,calc(100vh - 90px))',overflow:'auto',background:'#fff',borderRadius:22,boxShadow:'0 18px 60px rgba(0,0,0,.3)'}}>{body}</aside>}</>
+ if(embedded)return <>{body}{dialog}</>
+ return <><button type="button" onClick={()=>setOpen(v=>!v)} style={{position:'fixed',left:18,bottom:18,zIndex:14020,border:0,borderRadius:999,padding:'11px 15px',fontWeight:900,background:'#111820',color:'#fff',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>💰 Finanzas</button>{open&&<aside style={{position:'fixed',left:18,bottom:66,zIndex:14019,width:'min(620px,calc(100vw - 36px))',maxHeight:'min(760px,calc(100vh - 90px))',overflow:'auto',background:'#fff',borderRadius:22,boxShadow:'0 18px 60px rgba(0,0,0,.3)'}}>{body}</aside>}{dialog}</>
 }

@@ -42,7 +42,7 @@ export function ProviderAgenda(){
  },[channelEpoch,db,load,reportAgenda])
  useEffect(()=>{if(!selectedId){setEvents([]);setActionError('');setCancelOpen(false);setCancelReason('');setReadiness({initial:false,final:false});return}void loadEvents(selectedId)},[loadEvents,selectedId])
  useEffect(()=>{if(!selectedId)return;setClock(Date.now());const timer=window.setInterval(()=>setClock(Date.now()),30_000);return()=>window.clearInterval(timer)},[selectedId])
- const now=Date.now(),todayStart=new Date();todayStart.setHours(0,0,0,0);const tomorrowStart=todayStart.getTime()+86400000
+ const now=clock,todayStart=new Date();todayStart.setHours(0,0,0,0);const tomorrowStart=todayStart.getTime()+86400000
  const immediateRows=rows.filter(row=>!row.programado_para||new Date(row.programado_para).getTime()<todayStart.getTime())
  const todayRows=rows.filter(row=>{if(!row.programado_para)return false;const time=new Date(row.programado_para).getTime();return time>=todayStart.getTime()&&time<tomorrowStart})
  const upcomingRows=rows.filter(row=>row.programado_para&&new Date(row.programado_para).getTime()>=tomorrowStart)

@@ -25,11 +25,12 @@ function downloadCsv(name:string,rows:any[]){if(!rows.length)return;const keys:s
 
 export function AdminReportsCenter(){
  const[period,setPeriod]=useState<Period>('30d'),[view,setView]=useState<View>('operations')
- const[from,setFrom]=useState(dateInput(new Date(Date.now()-29*86400000))),[to,setTo]=useState(dateInput(new Date()))
+ const[from,setFrom]=useState(()=>dateInput(new Date(Date.now()-29*86400000))),[to,setTo]=useState(()=>dateInput(new Date()))
  const[data,setData]=useState<ReportData>(empty),[loading,setLoading]=useState(true),[error,setError]=useState<string|null>(null),[updated,setUpdated]=useState<Date|null>(null)
  const{start,end}=useMemo(()=>rangeFor(period,from,to),[period,from,to])
+ const startIso=start.toISOString(),endIso=end.toISOString()
  const load=useCallback(async()=>{
-  setLoading(true);setError(null);const db=supabase as any,s=start.toISOString(),e=end.toISOString()
+  setLoading(true);setError(null);const db=supabase as any,s=startIso,e=endIso
   const results=await Promise.all([
    db.from('servicios').select('id,numero,estado,ambiente,tarifa,comision_ugo,ganancia_proveedor,categoria_id,proveedor_id,cliente_id,created_at,aceptado_at,iniciado_at,completado_at,cancelado_at,categoria:categorias!servicios_categoria_id_fkey(nombre,emoji),proveedor:usuarios!servicios_proveedor_id_fkey(nombre,apellido)').gte('created_at',s).lte('created_at',e).order('created_at',{ascending:false}).limit(2000),
    db.from('pagos').select('id,servicio_id,ambiente,monto_bruto,comision_ugo,ganancia_proveedor,estado,metodo,created_at,liberado_at,reembolsado_at').gte('created_at',s).lte('created_at',e).order('created_at',{ascending:false}).limit(2000),
@@ -40,7 +41,7 @@ export function AdminReportsCenter(){
   ])
   const firstError=results.find((r:any)=>r.error)?.error;if(firstError){console.error('[AdminReports] load failed',firstError);const raw=String(firstError.message||'');setError(/permission denied|42501/i.test(raw)?'No pudimos leer una fuente del reporte. Reintentá en unos segundos.':'No se pudieron cargar los reportes. Reintentá en unos segundos.');setLoading(false);return}
   setData({services:results[0].data||[],payments:results[1].data||[],withdrawals:results[2].data||[],disputes:results[3].data||[],reviews:results[4].data||[],providers:results[5].data||[]});setUpdated(new Date());setLoading(false)
- },[start.getTime(),end.getTime()])
+ },[endIso,startIso])
  useEffect(()=>{void load()},[load])
 
  const real=useMemo(()=>data.services.filter(s=>s.ambiente==='real'),[data.services])

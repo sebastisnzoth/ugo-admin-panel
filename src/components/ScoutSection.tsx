@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{supabase}from'../lib/supabase'
 import'./scout-section.css'
+import{useDialog}from'../mvp/dialogs'
 
 declare const L:any
 
@@ -48,6 +49,7 @@ export function SecScout(){
  const[results,setResults]=useState<Provider[]>([]),[prospects,setProspects]=useState<Prospect[]>([]),[dbProviders,setDbProviders]=useState<DbProvider[]>([])
  const[selected,setSelected]=useState<Provider|null>(null),[loading,setLoading]=useState(false),[geoBusy,setGeoBusy]=useState(false),[busyId,setBusyId]=useState('')
  const[status,setStatus]=useState('Listo para buscar profesionales externos.'),[error,setError]=useState(''),[outreach,setOutreach]=useState('')
+ const{confirm,node:dialog}=useDialog()
  const[checked,setChecked]=useState<string[]>([]),[campaignBusy,setCampaignBusy]=useState(false),[campaignProgress,setCampaignProgress]=useState('')
  const[savedCategory,setSavedCategory]=useState('all'),[pipelineFilter,setPipelineFilter]=useState('all'),[prospectSearch,setProspectSearch]=useState(''),[followupOnly,setFollowupOnly]=useState(false)
  const[selectedProspect,setSelectedProspect]=useState<Prospect|null>(null),[prospectDraft,setProspectDraft]=useState<Prospect|null>(null),[prospectBusy,setProspectBusy]=useState(false)
@@ -99,7 +101,7 @@ export function SecScout(){
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map)
   mapRef.current=map;setMapReady(true)
   const resizeTimers=[80,300,800].map(ms=>window.setTimeout(()=>{if(mapRef.current===map)map.invalidateSize()},ms))
-  return()=>{resizeTimers.forEach(timer=>window.clearTimeout(timer));try{map.remove()}catch{}if(mapRef.current===map)mapRef.current=null}
+  return()=>{resizeTimers.forEach(timer=>window.clearTimeout(timer));try{map.remove()}catch{/* vacío intencional */}if(mapRef.current===map)mapRef.current=null}
  },[leafletReady])
 
  useEffect(()=>{
@@ -130,7 +132,7 @@ export function SecScout(){
    m.on('click',()=>{setSelected(p);setOutreach('')})
    resultMarkers.current.push(m)
   })
-  if(results.length){try{map.fitBounds([[lat,lng],...results.map(p=>[p.lat,p.lng])],{padding:[28,28],maxZoom:15})}catch{}}
+  if(results.length){try{map.fitBounds([[lat,lng],...results.map(p=>[p.lat,p.lng])],{padding:[28,28],maxZoom:15})}catch{/* vacío intencional */}}
  },[results,categoryId,lat,lng,mapReady])
 
  const stats=useMemo(()=>({
@@ -190,7 +192,8 @@ export function SecScout(){
   catch(e){setError(e instanceof Error?e.message:'No se pudo iniciar Gmail.');setGmailBusy(false)}
  }
  async function disconnectGmail(){
-  if(gmailBusy||!gmailStatus.connected||!window.confirm('¿Desconectar la cuenta Gmail de Scout? No se enviarán más invitaciones hasta volver a conectarla.'))return
+  if(gmailBusy||!gmailStatus.connected)return
+  if(!await confirm({title:'Desconectar Gmail',message:'¿Desconectar la cuenta Gmail de Scout? No se enviarán más invitaciones hasta volver a conectarla.',danger:true}))return
   setGmailBusy(true);setError('');try{await gmailAction({action:'disconnect'});setGmailStatus(v=>({...v,connected:false,email:null,updatedAt:null}));setStatus('Gmail desconectado de Scout.')}catch(e){setError(e instanceof Error?e.message:'No se pudo desconectar Gmail.')}finally{setGmailBusy(false)}
  }
 
@@ -285,7 +288,7 @@ export function SecScout(){
  async function sendSelectedEmailCampaign(){
   if(!selectedEmails.length){setError('Los seleccionados no tienen email público disponible.');return}
   if(!gmailStatus.connected){setError('Conectá una cuenta Gmail en Scout antes de enviar.');return}
-  if(!window.confirm(`Enviar invitación desde ${gmailStatus.email||'Gmail'} a ${selectedEmails.length} profesionales seleccionados?`))return
+  if(!await confirm({title:'Enviar invitación',message:`Enviar invitación desde ${gmailStatus.email||'Gmail'} a ${selectedEmails.length} profesionales seleccionados?`,danger:true}))return
   setCampaignBusy(true);setError('');let sent=0,failed=0,done=0
   try{
    await persistProspects(selectedEmails)
@@ -361,7 +364,7 @@ export function SecScout(){
  async function sendSavedEmailCampaign(){
   if(!savedEmails.length){setError('Esta vista todavía no tiene emails disponibles.');return}
   if(!gmailStatus.connected){setError('Conectá una cuenta Gmail en Scout antes de enviar.');return}
-  if(!window.confirm(`Enviar desde ${gmailStatus.email||'Gmail'} el email de reclutamiento a ${savedEmails.length} prospectos visibles?`))return
+  if(!await confirm({title:'Enviar email de reclutamiento',message:`Enviar desde ${gmailStatus.email||'Gmail'} el email de reclutamiento a ${savedEmails.length} prospectos visibles?`,danger:true}))return
   setCampaignBusy(true);setError('');let sent=0,failed=0,done=0
   try{
    for(const batch of chunks(savedEmails,20)){
@@ -514,5 +517,6 @@ export function SecScout(){
     <footer><button type="button" onClick={closeProspectCard}>Cerrar</button><button type="button" className="primary" onClick={()=>void saveProspectCard()} disabled={prospectBusy}>{prospectBusy?'Guardando…':'Guardar cambios'}</button></footer>
    </section>
   </div>}
+ {dialog}
  </div>
 }

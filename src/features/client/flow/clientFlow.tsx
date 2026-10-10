@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- co-locación intencional de Context + Provider + hook */
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import type { ClientActionHandlers, ClientHugoIntent, ClientScreen } from '../types/clientTypes'
 import { useClientCategoryShortcut } from '../hooks/useClientCategoryShortcut'

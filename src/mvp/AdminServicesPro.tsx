@@ -37,7 +37,8 @@ export function AdminServicesPro({initialServiceId,onInitialServiceConsumed}:{in
    setActionMessage(m=>({...m,[String(s.id)]:{kind:'error',text:err instanceof Error?err.message:'No se pudo actualizar el estado.'}}))
   }finally{setSaving(null)}
  }
- useEffect(()=>{if(!editing)return;const fresh=services.find((row:any)=>row.id===editing.id);if(fresh)setEditing(fresh)},[services,editing?.id])
+ const editingId=editing?.id||null
+ useEffect(()=>{if(!editingId)return;const fresh=services.find((row:any)=>row.id===editingId);if(fresh)setEditing(fresh)},[editingId,services])
  const openEdit=(s:any)=>{setEditing(s);setForm(toForm(s));setEditMessage('')}
  useEffect(()=>{if(!initialServiceId||editing)return;const service=services.find((row:any)=>String(row.id)===String(initialServiceId));if(!service)return;setEditing(service);setForm(toForm(service));setEditMessage('');onInitialServiceConsumed?.()},[editing,initialServiceId,onInitialServiceConsumed,services])
  const closeEdit=()=>{if(editBusy)return;setEditing(null);setForm(null);setEditMessage('')}

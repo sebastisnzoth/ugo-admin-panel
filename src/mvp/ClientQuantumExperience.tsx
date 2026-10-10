@@ -1,7 +1,7 @@
 import React,{useEffect,useMemo,useRef,useState}from'react'
 import type{SupabaseClient}from'@supabase/supabase-js'
-import * as maplibregl from'maplibre-gl'
-import'maplibre-gl/dist/maplibre-gl.css'
+import type * as maplibregl from'maplibre-gl'
+import{loadMaplibre,type MaplibreNamespace}from'../lib/maplibreLoader'
 import'./client-quantum.css'
 import'./client-reference.css'
 import type{Category}from'./shared'
@@ -9,6 +9,7 @@ import{parseClientIntent}from'./hugoIntent'
 import type{ClientHugoIntent,ClientScreen}from'./client/clientTypes'
 import{setProviderRadarRows}from'./client/providerRadarStore'
 import{getRoutingProvider}from'../lib/routing/provider'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 
 export type ProviderMapRow={id:string;nombre:string|null;foto_url:string|null;karma:number|string|null;servicios_completados:number|null;tarifa_base:number|string|null;online:boolean|null;disponible:boolean|null;estado_verificacion:string|null;categoria_principal_id:string|null;categoria_nombre:string|null;categoria_emoji:string|null;categoria_ids?:string[]|null;lat:number|null;lng:number|null;pais?:string|null;zona?:string|null;bio?:string|null;experiencia_anos?:number|null;especialidades?:string|null;idiomas?:string|null;disponibilidad_horaria?:string|null;telefono_profesional?:string|null;ciudad_base?:string|null}
 type IntentPayload={categoryId?:string;categoryName?:string;urgency:boolean;description:string}
@@ -42,12 +43,13 @@ function categoryByHint(categories:Category[],hint:string|null|undefined){
 }
 function etaLabel(meta:EtaMeta|undefined){return meta?`${Math.max(1,Math.round(meta.etaSeconds/60))} min`:''}
 function clearRoute(map:maplibregl.Map){
- try{if(map.getLayer(ROUTE_LAYER))map.removeLayer(ROUTE_LAYER)}catch{}
- try{if(map.getSource(ROUTE_SOURCE))map.removeSource(ROUTE_SOURCE)}catch{}
+ try{if(map.getLayer(ROUTE_LAYER))map.removeLayer(ROUTE_LAYER)}catch{/* vacío intencional */}
+ try{if(map.getSource(ROUTE_SOURCE))map.removeSource(ROUTE_SOURCE)}catch{/* vacío intencional */}
 }
 
 export function ClientQuantumExperience({supabase,categories,selectedCategoryId,requestedScreen,requestedProviderId,hugoIntent,onCategorySelect,onProviderPick,onSearchClose,onIntent}:Props){
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([]),searchInput=useRef<HTMLInputElement|null>(null)
+ const[mapReady,setMapReady]=useState(false)
  const[userPos,setUserPos]=useState<[number,number]>(FLORIPA)
  const[providers,setProviders]=useState<ProviderMapRow[]>([])
  const[selected,setSelected]=useState<string|null>(null)
@@ -66,40 +68,45 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
  const selectedProvider=useMemo(()=>filtered.find(p=>p.id===selected)||providers.find(p=>p.id===selected)||null,[filtered,providers,selected])
  const featured=filtered.slice(0,3)
 
- useEffect(()=>{let alive=true;async function load(){setLoading(true);setLoadError('');try{const{data,error}=await supabase.from('proveedores_mapa').select('*').order('online',{ascending:false}).order('disponible',{ascending:false}).limit(50);if(!alive)return;if(error)setLoadError(error.message);else{const rows=(data||[])as ProviderMapRow[];setProviders(rows);setProviderRadarRows(rows)}}catch(e){if(alive)setLoadError(e instanceof Error?e.message:'No pudimos cargar el radar.')}finally{if(alive)setLoading(false)}}void load();const ch=supabase.channel('client-provider-map').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>{void load()}).subscribe();return()=>{alive=false;void supabase.removeChannel(ch)}},[supabase,reloadKey])
+ useEffect(()=>{let alive=true;async function load(){setLoading(true);setLoadError('');try{const{data,error}=await supabase.from('proveedores_mapa').select('*').order('online',{ascending:false}).order('disponible',{ascending:false}).limit(50);if(!alive)return;if(error)setLoadError(error.message);else{const rows=(data||[])as ProviderMapRow[];setProviders(rows);setProviderRadarRows(rows)}}catch(e){if(alive)setLoadError(e instanceof Error?e.message:'No pudimos cargar el radar.')}finally{if(alive)setLoading(false)}}void load();const ch=supabase.channel('client-provider-map').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>{void load()});const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>{void load()},onReconnect:()=>setReloadKey(v=>v+1)});return()=>{alive=false;dispose()}},[supabase,reloadKey])
  useEffect(()=>{function local(event:Event){const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim();if(!text)return;const intent=parseClientIntent(text,categories);if(intent.categoryId){onCategorySelect(intent.categoryId);setDrawer(true);onIntent?.({categoryId:intent.categoryId,categoryName:intent.categoryName||'',urgency:intent.urgency,description:text})}}function ai(event:Event){const d=(event as CustomEvent<{text?:string;categoryHint?:string|null;urgent?:boolean;description?:string|null}>).detail||{};const matched=categoryByHint(categories,d.categoryHint);if(!matched)return;onCategorySelect(matched.id);setDrawer(true);onIntent?.({categoryId:matched.id,categoryName:matched.nombre,urgency:Boolean(d.urgent),description:String(d.description||d.text||'').trim()})}window.addEventListener('ugo:hugo-user-text',local as EventListener);window.addEventListener('ugo:hugo-ai-intent',ai as EventListener);return()=>{window.removeEventListener('ugo:hugo-user-text',local as EventListener);window.removeEventListener('ugo:hugo-ai-intent',ai as EventListener)}},[categories,onCategorySelect,onIntent])
  useEffect(()=>{if(!hugoIntent)return;const matched=categoryByHint(categories,hugoIntent.categoryHint);if(matched)onCategorySelect(matched.id);setDrawer(true);onIntent?.({categoryId:matched?.id,categoryName:matched?.nombre||'',urgency:Boolean(hugoIntent.urgent),description:String(hugoIntent.description||hugoIntent.text||'').trim()})},[categories,hugoIntent,onCategorySelect,onIntent])
  useEffect(()=>{if(requestedScreen==='search'){setSelected(null);setDrawer(true)}if(requestedScreen==='provider'&&requestedProviderId){setSelected(requestedProviderId);setDrawer(true)}},[requestedProviderId,requestedScreen])
- useEffect(()=>{if(!navigator.geolocation){setLocationNotice('La ubicación no está disponible en este dispositivo.');return}navigator.geolocation.getCurrentPosition(pos=>{setUserPos([pos.coords.longitude,pos.coords.latitude]);setLocationNotice('');try{sessionStorage.setItem('ugo:last-client-location',JSON.stringify({latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy,at:Date.now()}))}catch{}},()=>setLocationNotice('No pudimos acceder a tu ubicación. Podés reintentar cuando quieras.'),{enableHighAccuracy:true,timeout:8000,maximumAge:60000})},[reloadKey])
+ useEffect(()=>{if(!navigator.geolocation){setLocationNotice('La ubicación no está disponible en este dispositivo.');return}navigator.geolocation.getCurrentPosition(pos=>{setUserPos([pos.coords.longitude,pos.coords.latitude]);setLocationNotice('');try{sessionStorage.setItem('ugo:last-client-location',JSON.stringify({latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy,at:Date.now()}))}catch{/* vacío intencional */}},()=>setLocationNotice('No pudimos acceder a tu ubicación. Podés reintentar cuando quieras.'),{enableHighAccuracy:true,timeout:8000,maximumAge:60000})},[reloadKey])
  useEffect(()=>{let alive=true;const candidates=categoryFiltered.filter(p=>p.lat!=null&&p.lng!=null&&Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))).map(p=>({providerId:p.id,location:{latitude:Number(p.lat),longitude:Number(p.lng)},available:Boolean(p.online&&p.disponible)}));if(!candidates.length){setEtaByProvider({});return()=>{alive=false}};getRoutingProvider().rankByEta({latitude:userPos[1],longitude:userPos[0]},candidates).then(rows=>{if(!alive)return;const next:Record<string,EtaMeta>={};rows.forEach(row=>{next[row.providerId]={etaSeconds:row.etaSeconds,distanceMeters:row.distanceMeters}});setEtaByProvider(next)}).catch(()=>{if(alive)setEtaByProvider({})});return()=>{alive=false}},[categoryFiltered,userPos])
 
  useEffect(()=>{
   if(!mapEl.current||mapRef.current)return
-  let map:maplibregl.Map|null=null
-  try{
-   map=new maplibregl.Map({container:mapEl.current,style:MAP_STYLE,center:userPos,zoom:14,attributionControl:false})
-   map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left')
-   map.on('error',event=>console.warn('UGO client map resource error',event?.error||event))
-   mapRef.current=map
-   setMapError('')
-  }catch(error){
-   console.warn('UGO client map unavailable',error)
-   setMapError('El mapa no pudo iniciarse en este navegador. Podés seguir buscando y contratando profesionales desde la lista.')
-   try{map?.remove()}catch{}
-   mapRef.current=null
-  }
+  let alive=true,map:maplibregl.Map|null=null
+  const fail=(error:unknown)=>{console.warn('UGO client map unavailable',error);setMapError('El mapa no pudo iniciarse en este navegador. Podés seguir buscando y contratando profesionales desde la lista.')}
+  void loadMaplibre().then(maplibregl=>{
+   if(!alive||!mapEl.current||mapRef.current)return
+   try{
+    map=new maplibregl.Map({container:mapEl.current,style:MAP_STYLE,center:userPos,zoom:14,attributionControl:false})
+    map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left')
+    map.on('error',event=>console.warn('UGO client map resource error',event?.error||event))
+    mapRef.current=map
+    setMapError('')
+    setMapReady(true)
+   }catch(error){
+    fail(error)
+    try{map?.remove()}catch{/* vacío intencional */}
+    mapRef.current=null
+   }
+  }).catch(fail)
   return()=>{
-   markers.current.forEach(marker=>{try{marker.remove()}catch{}});markers.current=[]
+   alive=false;setMapReady(false)
+   markers.current.forEach(marker=>{try{marker.remove()}catch{/* vacío intencional */}});markers.current=[]
    const current=mapRef.current;mapRef.current=null
-   if(current){clearRoute(current);try{current.remove()}catch{}}
+   if(current){clearRoute(current);try{current.remove()}catch{/* vacío intencional */}}
   }
  },[])
- useEffect(()=>{if(!selected){try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:700})}catch{}}},[selected,userPos])
- useEffect(()=>{const map=mapRef.current;if(!map)return;try{markers.current.forEach(m=>{try{m.remove()}catch{}});markers.current=[];const user=document.createElement('div');user.className='ugo-user-marker';user.appendChild(document.createElement('span'));markers.current.push(new maplibregl.Marker({element:user}).setLngLat(userPos).addTo(map));filtered.forEach(p=>{if(p.lat==null||p.lng==null||!Number.isFinite(Number(p.lat))||!Number.isFinite(Number(p.lng)))return;const el=markerNode(p,p.id===selected);el.onclick=()=>{setSelected(p.id);setDrawer(true)};markers.current.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([Number(p.lng),Number(p.lat)]).addTo(map))})}catch(error){console.warn('UGO client marker render failed',error);setMapError('El mapa quedó temporalmente no disponible. La búsqueda de profesionales sigue funcionando.')}},[filtered,selected,userPos])
- useEffect(()=>{const map=mapRef.current;if(!map)return;let alive=true;const provider=selectedProvider;if(!provider||provider.lat==null||provider.lng==null||!Number.isFinite(Number(provider.lat))||!Number.isFinite(Number(provider.lng))){clearRoute(map);return()=>{alive=false}}const origin={latitude:Number(provider.lat),longitude:Number(provider.lng)},destination={latitude:userPos[1],longitude:userPos[0]};getRoutingProvider().route(origin,destination).then(route=>{if(!alive||!mapRef.current)return;const current=mapRef.current;const geometry=(route.geometry&&typeof route.geometry==='object'&&(route.geometry as any).type==='LineString')?route.geometry:{type:'LineString',coordinates:[[origin.longitude,origin.latitude],[destination.longitude,destination.latitude]]};const render=()=>{if(!alive||!current.isStyleLoaded())return;try{clearRoute(current);current.addSource(ROUTE_SOURCE,{type:'geojson',data:{type:'Feature',properties:{},geometry} as any});current.addLayer({id:ROUTE_LAYER,type:'line',source:ROUTE_SOURCE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':5,'line-opacity':.88,'line-color':'#079455'}});const bounds=new maplibregl.LngLatBounds();(geometry as any).coordinates.forEach((c:[number,number])=>bounds.extend(c));if(!bounds.isEmpty())current.fitBounds(bounds,{padding:90,maxZoom:15,duration:700})}catch(error){console.warn('UGO route render failed',error)}};if(current.isStyleLoaded())render();else current.once('load',render)}).catch(()=>{});return()=>{alive=false}},[selectedProvider,userPos])
+ useEffect(()=>{if(!selected&&mapReady){try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:700})}catch{/* vacío intencional */}}},[selected,userPos,mapReady])
+ useEffect(()=>{const map=mapRef.current;if(!map||!mapReady)return;let alive=true;markers.current.forEach(m=>{try{m.remove()}catch{/* vacío intencional */}});markers.current=[];void loadMaplibre().then(maplibregl=>{if(!alive||mapRef.current!==map)return;try{const user=document.createElement('div');user.className='ugo-user-marker';user.appendChild(document.createElement('span'));markers.current.push(new maplibregl.Marker({element:user}).setLngLat(userPos).addTo(map));filtered.forEach(p=>{if(p.lat==null||p.lng==null||!Number.isFinite(Number(p.lat))||!Number.isFinite(Number(p.lng)))return;const el=markerNode(p,p.id===selected);el.onclick=()=>{setSelected(p.id);setDrawer(true)};markers.current.push(new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([Number(p.lng),Number(p.lat)]).addTo(map))})}catch(error){console.warn('UGO client marker render failed',error);setMapError('El mapa quedó temporalmente no disponible. La búsqueda de profesionales sigue funcionando.')}}).catch(error=>console.warn('UGO client markers load failed',error));return()=>{alive=false}},[filtered,mapReady,selected,userPos])
+ useEffect(()=>{const map=mapRef.current;if(!map||!mapReady)return;let alive=true;const provider=selectedProvider;if(!provider||provider.lat==null||provider.lng==null||!Number.isFinite(Number(provider.lat))||!Number.isFinite(Number(provider.lng))){clearRoute(map);return()=>{alive=false}}const origin={latitude:Number(provider.lat),longitude:Number(provider.lng)},destination={latitude:userPos[1],longitude:userPos[0]};getRoutingProvider().route(origin,destination).then(route=>{if(!alive||!mapRef.current)return;const current=mapRef.current;const geometry=(route.geometry&&typeof route.geometry==='object'&&(route.geometry as any).type==='LineString')?route.geometry:{type:'LineString',coordinates:[[origin.longitude,origin.latitude],[destination.longitude,destination.latitude]]};void loadMaplibre().then((maplibregl:MaplibreNamespace)=>{if(!alive||mapRef.current!==current)return;const render=()=>{if(!alive||!current.isStyleLoaded())return;try{clearRoute(current);current.addSource(ROUTE_SOURCE,{type:'geojson',data:{type:'Feature',properties:{},geometry} as any});current.addLayer({id:ROUTE_LAYER,type:'line',source:ROUTE_SOURCE,layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':5,'line-opacity':.88,'line-color':'#079455'}});const bounds=new maplibregl.LngLatBounds();(geometry as any).coordinates.forEach((c:[number,number])=>bounds.extend(c));if(!bounds.isEmpty())current.fitBounds(bounds,{padding:90,maxZoom:15,duration:700})}catch(error){console.warn('UGO route render failed',error)}};if(current.isStyleLoaded())render();else current.once('load',render)}).catch(()=>{})}).catch(()=>{});return()=>{alive=false}},[mapReady,selectedProvider,userPos])
 
  function pickProvider(p:ProviderMapRow){setSelected(p.id);setDrawer(true)}
- function goHome(){setMenuOpen(false);setSearch('');onCategorySelect('');setSelected(null);setDrawer(false);try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:500})}catch{}}
+ function goHome(){setMenuOpen(false);setSearch('');onCategorySelect('');setSelected(null);setDrawer(false);try{mapRef.current?.easeTo({center:userPos,zoom:14,duration:500})}catch{/* vacío intencional */}}
  function focusSearch(){setMenuOpen(false);window.setTimeout(()=>{searchInput.current?.focus();setDrawer(true)},120)}
  function openHugo(){setMenuOpen(false);window.dispatchEvent(new Event('ugo:open-hugo'))}
  function closeDrawer(){const wasSearch=requestedScreen==='search';setDrawer(false);if(wasSearch)onSearchClose?.()}

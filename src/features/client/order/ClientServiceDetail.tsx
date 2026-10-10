@@ -9,6 +9,7 @@ import{SentinelErrorBoundary}from'../../../mvp/SentinelErrorBoundary'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{ServiceExpansionPanel}from'../../../mvp/ServiceExpansionPanel'
 import{STATUS_LABELS}from'../../../mvp/shared'
+import{useDialog}from'../../../mvp/dialogs'
 import{ClientPaymentChoice}from'../payments/ClientPaymentChoice'
 import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
 import{useClientFlow}from'../flow/clientFlow'
@@ -28,7 +29,8 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
  useEffect(()=>{if(!matchingDeadline)return;setNow(Date.now());const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[matchingDeadline])
  useEffect(()=>{let alive=true,reconnectTimer:number|undefined;const resync=()=>{if(alive)void load()},reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)};const onOnline=()=>{resync();reconnect()};const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);const generation=++channelGeneration.current,topic=`client-service-detail-${serviceId}-${instanceId}-${channelEpoch}-${generation}`;const ch=supabase.channel(topic).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${serviceId}`},resync).subscribe(status=>{if(status==='SUBSCRIBED'){resync();return}if((status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')&&document.visibilityState==='visible'&&navigator.onLine){resync();reconnect();void reportSentinelIncident({eventType:'realtime_subscription_error',message:`Detalle de pedido Realtime: ${status}`,role:'client',severity:'P1',serviceId,action:'client.order.realtime'})}});return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[channelEpoch,instanceId,load,serviceId,supabase])
  const retryMatching=async()=>{if(!service||!['buscando','ofrecido'].includes(service.estado)||busy)return;setBusy(true);setNotice('');try{const{data:{user}}=await supabase.auth.getUser();if(!user)throw new Error('Sesión no disponible.');const ok=await retryOwnedClientMatching(supabase,user.id,service.id);if(!ok)throw new Error('Este pedido ya cambió de estado y no necesita reintento.');setNow(Date.now());setNotice('Buscando profesional. UGO volvió a avisar a profesionales disponibles.');await load()}catch(error){setNotice(error instanceof Error?error.message:'No pudimos reintentar la búsqueda. El pedido sigue guardado.')}finally{setBusy(false)}}
- const cancel=async()=>{if(!service||!CANCELLABLE.has(service.estado)||busy)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setBusy(true);setNotice('');const ok=await flow.actions.cancelService(service.id);setBusy(false);if(ok){setNotice('Pedido cancelado. Los otros pedidos no fueron modificados.');await load()}else setNotice('No pudimos cancelar este pedido. Su estado actual fue preservado.')}
+ const{confirm,node:dialog}=useDialog()
+ const cancel=async()=>{if(!service||!CANCELLABLE.has(service.estado)||busy)return;if(!await confirm({title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido?',danger:true}))return;setBusy(true);setNotice('');const ok=await flow.actions.cancelService(service.id);setBusy(false);if(ok){setNotice('Pedido cancelado. Los otros pedidos no fueron modificados.');await load()}else setNotice('No pudimos cancelar este pedido. Su estado actual fue preservado.')}
  const awaitingApproval=service?.estado==='esperando_aprobacion',disputeActive=service?.estado==='disputado'
  const openExactDispute=()=>setDisputeOpenKey(value=>value+1)
  const matchingDeadlineMs=matchingDeadline?new Date(matchingDeadline).getTime():null,remainingMs=matchingDeadlineMs===null?0:matchingDeadlineMs-now,matchingState=!!service&&['buscando','ofrecido'].includes(service.estado),matchingActive=matchingState&&matchingDeadlineMs!==null&&remainingMs>0,matchingExpired=matchingState&&(matchingDeadlineMs===null||remainingMs<=0)
@@ -46,7 +48,7 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
    {service.estado==='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.rating.submit" checklistCode="RATING" severity="P1" title="Calificación temporalmente no disponible" compact><ClientRatingPrompt serviceId={service.id} embedded/></SentinelErrorBoundary>}
    <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.dispute" title="Ayuda temporalmente no disponible" compact><DisputeDock role="client" serviceId={service.id} key={`client-dispute-${service.id}`} openRequestKey={disputeOpenKey} showLauncher={!awaitingApproval&&!disputeActive}/></SentinelErrorBoundary>
   </>}
- </div></div>
+ </div>{dialog}</div>
 }
 
 export default ClientServiceDetail

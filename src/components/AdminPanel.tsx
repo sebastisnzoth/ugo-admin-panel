@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useDialog } from '../mvp/dialogs';
 import {
   useDashboardMetrics, useConversionKPIs, useSystemAlerts, useMapProviders,
   useActiveServices, useOpenDisputes, usePendingDocuments, useActivityFeed,
@@ -235,48 +236,8 @@ function downloadCSV(data: any[], filename: string) {
 }
 
 // ── Memoria del Orbe Component ─────────────────────────────
-function MemoriaOrbe({ usuarioId }: { usuarioId: string }) {
-  const [prefs, setPrefs] = React.useState<any[]>([]);
-  const [newKey, setNewKey] = React.useState('');
-  const [newVal, setNewVal] = React.useState('');
-
-  React.useEffect(() => {
-    (supabase as any).from('user_preferences').select('*').eq('usuario_id', usuarioId)
-      .then(({ data }: any) => { if (data) setPrefs(data); });
-  }, [usuarioId]);
-
-  const save = async () => {
-    if (!newKey.trim()) return;
-    await (supabase as any).rpc('upsert_user_preference', {
-      p_usuario_id: usuarioId,
-      p_categoria: newKey,
-      p_data: { nota: newVal }
-    });
-    setPrefs(p => [...p.filter(x => x.categoria_key !== newKey), { categoria_key: newKey, data: { nota: newVal } }]);
-    setNewKey(''); setNewVal('');
-  };
-
-  return (
-    <div>
-      <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:8}}>
-        {prefs.map(p => (
-          <div key={p.categoria_key} style={{background:'var(--bg)',borderRadius:8,padding:'6px 10px',fontSize:11,display:'flex',gap:8}}>
-            <span style={{color:'var(--cyan)',fontWeight:700}}>{p.categoria_key}:</span>
-            <span style={{color:'var(--muted)'}}>{JSON.stringify(p.data)}</span>
-          </div>
-        ))}
-        {!prefs.length && <div style={{fontSize:10,color:'var(--muted)'}}>Sin preferencias registradas</div>}
-      </div>
-      <div style={{display:'flex',gap:6}}>
-        <input className="finput" style={{flex:1}} value={newKey} onChange={e=>setNewKey(e.target.value)} placeholder="Clave (ej: preferencias_servicio)"/>
-        <input className="finput" style={{flex:2}} value={newVal} onChange={e=>setNewVal(e.target.value)} placeholder="Valor (ej: no tocar timbre)"/>
-        <button className="btn btn-p" onClick={save}>+</button>
-      </div>
-    </div>
-  );
-}
-
 export function AdminPanel() {
+  const { confirm, alert, node: dialog } = useDialog();
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [loginEmail, setLoginEmail] = useState('sebastianzoth@gmail.com');
@@ -394,7 +355,7 @@ export function AdminPanel() {
         email:payload.email||null,
         updatedAt:payload.updatedAt||null,
       });
-    } catch {}
+    } catch {/* vacío intencional */}
   }, [session, adminAuthToken]);
 
   const connectScoutGmail = useCallback(async () => {
@@ -458,7 +419,7 @@ export function AdminPanel() {
       setDocStatus(map);
     });
   }, [users]);
-  const { users: authUsers, loading: authUsersLoading } = useAuthUsers(authEnabled);
+  const { users: authUsers } = useAuthUsers(authEnabled);
   const { categorias, provCounts, crear: crearCat, actualizar: actualizarCat, toggleActiva, crearSub, toggleSub, eliminarSub } = useCategorias();
   const { tarifas, upsert: upsertTarifa } = useTarifas();
   const { config, update: updateConfig } = useConfigSistema();
@@ -755,7 +716,7 @@ export function AdminPanel() {
   );
 
   const toggleCatExpand = (id: string) => setExpandedCats(prev => {
-    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
+    const n = new Set(prev); if(n.has(id))n.delete(id); else n.add(id); return n;
   });
 
   const renderCategorias = () => (
@@ -825,7 +786,7 @@ export function AdminPanel() {
                         {s.activa?'●':'○'}
                       </button>
                       <button title="Eliminar"
-                        onClick={()=>{ if(confirm(`¿Eliminar "${s.nombre}"?`)) eliminarSub(s.id); }}
+                        onClick={()=>void (async()=>{ if(await confirm({title:"Eliminar subcategoría",message:`¿Eliminar "${s.nombre}"?`,danger:true})) eliminarSub(s.id); })()}
                         style={{background:'none',border:'none',cursor:'pointer',fontSize:11,padding:'0 1px',color:'var(--red)',lineHeight:1}}>
                         ×
                       </button>
@@ -1381,13 +1342,13 @@ export function AdminPanel() {
                   onKeyDown={async e=>{if(e.key!=='Enter')return; if(!geoInput.trim())return; setGeoSearching(true);
                     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
                     const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
-                    else alert('No encontrado'); setGeoSearching(false);}}
+                    else { await alert({ title: 'Dirección no encontrada', message: 'No encontramos esa dirección. Probá con otro texto.' }); setGeoSearching(false); }}}
                   placeholder="Ej: Trindade, Florianópolis — Enter para buscar"/>
                 <button className="btn btn-s btn-sm" style={{whiteSpace:'nowrap'}} disabled={geoSearching||!geoInput.trim()}
                   onClick={async()=>{if(!geoInput.trim())return; setGeoSearching(true);
                     const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
                     const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
-                    else alert('No encontrado'); setGeoSearching(false);}}>
+                    else { await alert({ title: 'Dirección no encontrada', message: 'No encontramos esa dirección. Probá con otro texto.' }); setGeoSearching(false); }}}>
                   {geoSearching?'⏳':'🔍'}
                 </button>
               </div>
@@ -1647,6 +1608,7 @@ export function AdminPanel() {
           </div>
         </div>
       )}
+    {dialog}
     </>
   );
 }

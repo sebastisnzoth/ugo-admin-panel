@@ -4,6 +4,7 @@ import{supabase}from'../lib/supabase'
 import{AdminPaymentCredentials}from'./AdminPaymentCredentials'
 import{AdminPaymentMethods}from'./AdminPaymentMethods'
 import{AdminDeliveryIntegrations}from'./AdminDeliveryIntegrations'
+import{useDialog}from'./dialogs'
 import'./admin-system-settings.css'
 
 type Group='general'|'rules'|'payments'|'credentials'|'integrations'|'technical'
@@ -38,6 +39,7 @@ export function AdminSystemSettings(){
  const[integrationsLoading,setIntegrationsLoading]=useState(false)
  const[integrationsError,setIntegrationsError]=useState('')
  const[query,setQuery]=useState('')
+ const{confirm,alert,node:dialog}=useDialog()
  const[draft,setDraft]=useState<Record<string,string>>({})
  const[saving,setSaving]=useState(false)
  const[savedMessage,setSavedMessage]=useState('')
@@ -69,7 +71,7 @@ export function AdminSystemSettings(){
  const refreshAll=async()=>{await refetch();if(tab==='integrations')await loadIntegrations()}
  const saveChanges=async()=>{
   if(!dirtyKeys.length)return
-  const ok=window.confirm(`Guardar ${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} de configuración?\n\n${dirtyKeys.map(key=>`• ${human(key)}`).join('\n')}\n\nEl cambio queda auditado y puede afectar la operación.`)
+  const ok=await confirm({title:'Guardar configuración',message:`Guardar ${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} de configuración?\n\n${dirtyKeys.map(key=>`• ${human(key)}`).join('\n')}\n\nEl cambio queda auditado y puede afectar la operación.`,danger:true})
   if(!ok)return
   setSaving(true);setSavedMessage('')
   try{
@@ -77,7 +79,7 @@ export function AdminSystemSettings(){
    setSavedMessage(`${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} guardado${dirtyKeys.length===1?'':'s'}`)
    setDraft({})
    await refetch()
-  }catch(x){window.alert(x instanceof Error?x.message:'No se pudo guardar la configuración.')}
+  }catch(x){await alert({title:'Guardar configuración',message:x instanceof Error?x.message:'No se pudo guardar la configuración.'})}
   finally{setSaving(false)}
  }
  const restoreDraft=()=>{setDraft({});setSavedMessage('')}
@@ -111,5 +113,6 @@ export function AdminSystemSettings(){
    <AdminDeliveryIntegrations/>
   </section>}
   {tab==='technical'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>ESTADO TÉCNICO</small><h4>Salud del panel y conexión</h4></div></div><div className="ugo-system-health"><article><small>BUILD CLIENTE</small><strong>{import.meta.env.MODE}</strong><span>Modo Vite actual</span></article><article><small>NAVEGADOR</small><strong>{navigator.onLine?'Online':'Offline'}</strong><span>Conectividad del dispositivo; no prueba backend</span></article><article><small>CONFIG SISTEMA</small><strong>{entries.length}</strong><span>Parámetros visibles cargados</span></article><article><small>RUNTIME</small><strong>{integrations?.deployment.environment||'Sin verificar'}</strong><span>{integrations?.deployment.commit?`Commit ${integrations.deployment.commit.slice(0,8)}`:'Abrí Integraciones para verificar servidor'}</span></article></div><div className="ugo-system-note"><strong>Importante</strong><span>“Online” del navegador no significa que Supabase, pagos, WhatsApp, Hugo o el deploy estén operativos. La pestaña Integraciones verifica presencia de configuración en el runtime server-side sin exponer secretos.</span></div></section>}
+ {dialog}
  </div>
 }

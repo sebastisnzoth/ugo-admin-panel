@@ -78,7 +78,7 @@ function Sidebar({active,setActive}:{active:PageId;setActive:(page:PageId)=>void
  </aside>
 }
 
-function Topbar({title,setActive}:{title:string;setActive:(page:PageId)=>void}){
+function Topbar({setActive}:{title:string;setActive:(page:PageId)=>void}){
  return <header className="ucw-topbar"><div className="ucw-location"><b>Ubicación actual</b><span>Canasvieiras, Floripa</span></div><div className="ucw-top-actions"><button type="button" className="ucw-ghost" onClick={()=>setActive('request')}>Solicitar</button><button type="button" className="ucw-primary">Hugo</button></div></header>
 }
 

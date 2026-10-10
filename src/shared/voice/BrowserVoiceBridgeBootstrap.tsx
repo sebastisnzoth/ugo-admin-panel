@@ -35,7 +35,7 @@ export function BrowserVoiceBridgeBootstrap(){
   if(!Ctor)return
   let recognition:RecognitionLike|null=null,active=false,paused=false,restarting=false
 
-  const cleanup=()=>{if(!recognition)return;recognition.onstart=null;recognition.onspeechstart=null;recognition.onend=null;recognition.onresult=null;recognition.onerror=null;try{recognition.abort()}catch{}recognition=null}
+  const cleanup=()=>{if(!recognition)return;recognition.onstart=null;recognition.onspeechstart=null;recognition.onend=null;recognition.onresult=null;recognition.onerror=null;try{recognition.abort()}catch{/* vacío intencional */}recognition=null}
   const restart=()=>{if(!active||paused||restarting)return;restarting=true;window.setTimeout(()=>{restarting=false;if(active&&!paused)startInternal()},180)}
   const startInternal=()=>{
    cleanup()
@@ -67,11 +67,11 @@ export function BrowserVoiceBridgeBootstrap(){
 
   const bridge:NativeBridge={
    startListening:async()=>{active=true;paused=false;startInternal()},
-   pauseListening:()=>{paused=true;try{recognition?.stop()}catch{}},
+   pauseListening:()=>{paused=true;try{recognition?.stop()}catch{/* vacío intencional */}},
    resumeListening:async()=>{if(!active)active=true;paused=false;startInternal()},
    stopListening:()=>{active=false;paused=false;cleanup();emit('ugo:native-voice-state',{state:'idle'})},
    isAvailable:()=>Boolean(Ctor),
-   stopSpeaking:()=>{try{window.speechSynthesis?.cancel()}catch{}},
+   stopSpeaking:()=>{try{window.speechSynthesis?.cancel()}catch{/* vacío intencional */}},
   }
   const bridgeHost=target as unknown as{UGOVoiceBridge?:NativeBridge}
   bridgeHost.UGOVoiceBridge=bridge
