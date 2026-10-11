@@ -11,10 +11,12 @@ function scheduleLabel(item:ProviderOpportunity){if(item.urgency==='urgent'&&!it
 
 export function ProviderOpportunities(){
  const flow=useProviderFlow(),d=useProviderData(),items=[...d.opportunities].sort(compareOpportunityPriority)
+ const hasDeadlines=items.some(item=>item.expiresAt),[now,setNow]=useState(()=>Date.now())
+ useEffect(()=>{if(!hasDeadlines)return;const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[hasDeadlines])
  return <section className="provider-screen provider-opportunities-simple" aria-labelledby="provider-opportunities-title">
   <SectionHeader eyebrow="PEDIDOS PARA VOS" title="Elegí qué resolver" description="Primero el problema. Después dónde, cuándo y cuánto." actions={<Button variant="ghost" type="button" onClick={flow.actions.openDemand}>Radar</Button>}/>
   {d.debtBlocked?<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">Nuevos pedidos pausados</StatusPill><span>Tenés {d.pendingDebtCount} servicios con comisión UGO pendiente. Pagá a UGO para volver a recibir y aceptar trabajos.</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></Card>:<div className="provider-list">{items.length===0?<Card className="provider-card provider-empty"><EmptyState title="No hay pedidos ahora" description={d.online?'UGO te avisa apenas aparezca uno compatible.':'Ponete Online desde Inicio para recibir pedidos.'}/></Card>:items.map(item=><Card className="provider-card provider-opportunity-simple" key={item.id}>
-   <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}</div>
+   <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}{item.expiresAt&&(()=>{const left=new Date(item.expiresAt).getTime()-now;if(!Number.isFinite(left)||left<=0)return <span className="provider-chip is-expired">Venció</span>;return <span className={`provider-chip ${left<=60_000?'is-expiring':''}`}>Expira en {formatCountdown(left)}</span>})()}</div>
    <h2>{item.title}</h2>
    <div className="provider-opportunity-facts">
     <div><small>DÓNDE</small><strong>{item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</strong></div>
@@ -30,12 +32,19 @@ export function ProviderOpportunityDetail({id}:{id:string|null}){
  const flow=useProviderFlow(),d=useProviderData(),item=d.opportunities.find(opportunity=>opportunity.id===id),[now,setNow]=useState(()=>Date.now())
  useEffect(()=>{if(!item?.expiresAt)return;queueMicrotask(()=>setNow(Date.now()));const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[item?.id,item?.expiresAt])
  const expiry=item?.expiresAt?new Date(item.expiresAt).getTime():Number.POSITIVE_INFINITY,remainingMs=expiry-now,expired=remainingMs<=0
+ const requestedMs=item?.requestedAt?new Date(item.requestedAt).getTime():NaN,offerWindowMs=Number.isFinite(requestedMs)&&Number.isFinite(expiry)&&expiry>requestedMs?expiry-requestedMs:Math.max(60_000,remainingMs),offerProgress=expired?0:Math.max(4,Math.min(100,Math.round((remainingMs/offerWindowMs)*100)))
  if(d.debtBlocked)return <section className="provider-screen provider-opportunity-detail"><Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button><span className="provider-kicker">COMISIONES UGO</span><h1>Pagá a UGO para aceptar otro trabajo</h1><p>Tenés {d.pendingDebtCount} servicios con comisión pendiente. El límite es 3.</p><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></section>
  if(!item)return <section className="provider-screen"><Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button><h1>Este pedido ya no está disponible</h1><p>Puede haber sido tomado, cancelado o actualizado.</p></section>
  return <section className="provider-screen provider-opportunity-detail provider-opportunity-decision">
   <Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button>
   <span className="provider-kicker">NUEVO PEDIDO</span><h1>¿Lo podés resolver?</h1>
-  <Card className="provider-card provider-offer-countdown" aria-live="polite">{expired?<><strong>Esta oportunidad venció</strong><span>El cliente puede volver a intentar el pedido.</span></>:<><strong>Nuevo pedido · {formatCountdown(remainingMs)}</strong><span>Tenés este tiempo para aceptar o rechazar.</span></>}</Card>
+  <Card className="provider-card provider-offer-countdown" aria-live="polite">{expired?<><strong>Esta oportunidad venció</strong><span>El cliente puede volver a intentar el pedido.</span></>:<><strong>Nuevo pedido · {formatCountdown(remainingMs)}</strong><span>Tenés este tiempo para aceptar o rechazar.</span></>}{!expired&&<div className="provider-offer-timer" aria-hidden="true"><i className={remainingMs<=30_000?'is-critical':remainingMs<=60_000?'is-warning':undefined} style={{width:`${offerProgress}%`}}/></div>}</Card>
+  <div className="provider-decision-reasons" aria-label="Por qué te mostramos este pedido">
+   {item.urgency==='urgent'&&<span className="is-urgent">⚡ Urgente</span>}
+   {item.distanceKm>0&&<span>⌖ {item.distanceKm.toFixed(1)} km</span>}
+   {item.durationMinutes?<span>◷ ~{item.durationMinutes} min</span>:null}
+   {item.scheduledAt&&<span>🗓 Programado</span>}
+  </div>
   <Card className="provider-card provider-offer-sheet">
    <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}</div>
    <div className="provider-offer-problem"><small>EL PROBLEMA</small><p>{item.description||item.title}</p></div>

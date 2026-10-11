@@ -47,7 +47,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
   <Card className="provider-card provider-mission-brief" aria-label="Qué hacer ahora">
    <div className="provider-mission-brief-head"><div><small>AHORA</small><strong>{nextAction}</strong></div><span className="provider-mission-state">{stateLabel}</span></div>
    <div className="provider-mission-brief-chips"><span>{paymentLabel}</span><span>{locationLabel}</span><span>#{s.numero??String(s.id).slice(0,8)}</span></div>
-   <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">📍 Abrir mapa</a>}<button type="button" onClick={()=>document.getElementById('provider-primary-control')?.scrollIntoView({behavior:'smooth',block:'center'})}>Ver acción principal ↓</button></div>
+   <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">📍 Abrir mapa</a>}<span className="provider-mission-brief-hint">La acción del paso actual queda siempre a la vista abajo.</span></div>
   </Card>
   <Card className="provider-card provider-job-summary">
    <div className="provider-job-problem"><small>QUÉ HAY QUE RESOLVER</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h2><p>{s.descripcion}</p></div>
@@ -59,7 +59,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
   </Card>
 
-  <Card id="provider-primary-control" className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
+  <Card id="provider-primary-control" tabIndex={-1} className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
    <small>CONTROL DEL PEDIDO · #{s.numero??String(s.id).slice(0,8)}</small>
    {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>ESTOY YENDO</Button><div className="provider-simple-status" role="status"><strong>El cliente tiene que elegir cómo pagar</strong><span>PIX o efectivo se elige desde la app Cliente. No tenés que elegirlo vos. Cuando el cliente confirme, UGO habilita “ESTOY YENDO” automáticamente.</span></div></>}
    {s.estado==='asignado'&&paymentReady&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</Button>}
@@ -78,6 +78,10 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
 
   <Card className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></Card>
   {s.estado==='en_progreso'&&<details className="provider-exception"><summary>Cambió el trabajo o el precio</summary><p>Usalo sólo si apareció algo nuevo que el cliente tiene que aprobar.</p><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></details>}
+  <div className="provider-sticky-step" role="status" aria-live="polite">
+   <div className="provider-sticky-step-copy"><small>AHORA · {stateLabel}</small><strong>{nextAction}</strong></div>
+   <button type="button" onClick={()=>{const control=document.getElementById('provider-primary-control');control?.scrollIntoView({behavior:'smooth',block:'center'});control?.focus({preventScroll:true})}}>Ir a la acción</button>
+  </div>
  {dialog}
  </section>
 }

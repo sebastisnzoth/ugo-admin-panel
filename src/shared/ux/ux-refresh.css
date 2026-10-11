@@ -1,0 +1,82 @@
+/* UGO · capa UX transversal Cliente ↔ Proveedor (2026-10-11)
+   Conectividad, skeletons y utilidades de accesibilidad compartidas.
+   No define colores nuevos: reutiliza tokens del design system. */
+
+.ugo-ux-sr-only{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:-1px!important;
+  padding:0!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+
+/* Aviso de conectividad: informa, nunca bloquea la interacción. */
+.ugo-ux-connection{
+  position:fixed;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:var(--ugo-ux-connection-bottom,calc(16px + env(safe-area-inset-bottom)));
+  z-index:1600;
+  width:min(calc(100% - 24px),460px);
+  display:flex;
+  align-items:flex-start;
+  gap:var(--ugo-space-sm,12px);
+  padding:var(--ugo-space-sm,12px) var(--ugo-space-md,16px);
+  border:1px solid var(--ugo-color-outline-variant,#d0d5dd);
+  border-radius:var(--ugo-radius-lg,16px);
+  background:var(--ugo-color-surface-lowest,#fff);
+  color:var(--ugo-color-on-surface,#101828);
+  box-shadow:var(--ugo-shadow-md,0 8px 24px rgba(16,24,40,.10));
+  font-family:var(--ugo-font,inherit);
+  pointer-events:none;
+  animation:ugo-ux-connection-in var(--ugo-duration-standard,220ms) ease-out;
+}
+.ugo-ux-connection.is-offline{
+  border-color:#f0c36d;
+  background:#fff8e7;
+  color:#704d09;
+}
+.ugo-ux-connection.is-restored{
+  border-color:color-mix(in srgb,var(--ugo-color-primary,#07804b) 32%,transparent);
+  background:#e9f8f0;
+  color:var(--ugo-color-primary,#07804b);
+}
+.ugo-ux-connection-icon{
+  flex:0 0 32px;
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:var(--ugo-radius-full,999px);
+  background:color-mix(in srgb,currentColor 12%,transparent);
+  font-size:15px;
+  font-weight:800;
+}
+.ugo-ux-connection-copy{display:grid;gap:2px;min-width:0}
+.ugo-ux-connection-copy strong{font:700 14px/20px var(--ugo-font,inherit)}
+.ugo-ux-connection-copy small{font:500 12px/17px var(--ugo-font,inherit);opacity:.92}
+@keyframes ugo-ux-connection-in{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Skeletons: misma geometría que el contenido real para evitar saltos. */
+.ugo-ux-skeleton{display:block;width:100%;min-height:12px}
+.ugo-ux-skeleton-text{display:grid;gap:8px;width:100%}
+.ugo-ux-skeleton-text .ugo-ux-skeleton.is-short{width:62%}
+.ugo-ux-skeleton-card{
+  display:grid;
+  gap:var(--ugo-space-sm,12px);
+  padding:var(--ugo-space-md,16px);
+  border:1px solid color-mix(in srgb,var(--ugo-color-outline-variant,#d0d5dd) 60%,transparent);
+  border-radius:var(--ugo-radius-lg,16px);
+  background:var(--ugo-color-surface-lowest,#fff);
+}
+.ugo-ux-skeleton-list{display:grid;gap:var(--ugo-space-sm,12px);width:100%}
+
+@media(prefers-reduced-motion:reduce){
+  .ugo-ux-connection{animation:none}
+  .ugo-ds-skeleton,.ugo-ux-skeleton{animation:none}
+}

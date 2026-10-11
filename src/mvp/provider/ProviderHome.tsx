@@ -5,6 +5,14 @@ import{useProviderData,money}from'./providerData'
 
 export function ProviderHome(){
  const flow=useProviderFlow(),d=useProviderData()
+ const demandTop=[...d.demand].sort((a,b)=>(b.demandLevel==='high'?3:b.demandLevel==='medium'?2:1)-(a.demandLevel==='high'?3:a.demandLevel==='medium'?2:1))[0]||null
+ const availability=d.debtBlocked
+  ?{tone:'danger' as const,title:'Pedidos pausados',text:`Tenés ${d.pendingDebtCount} servicios con comisión pendiente. Pagá al menos una para volver al radar.`}
+  :!d.online
+   ?{tone:'neutral' as const,title:'Estás Offline',text:'Activá Online para entrar al radar y recibir pedidos compatibles con tu categoría.'}
+   :!d.matchingReady
+    ?{tone:'warning' as const,title:'Online pero fuera del radar',text:'UGO necesita una ubicación reciente (menos de 90 segundos) para enviarte pedidos.'}
+    :{tone:'success' as const,title:'En el radar de UGO',text:'Estás disponible y con ubicación vigente. UGO te avisa cuando llegue un pedido compatible.'}
  const next=d.service
   ?{eyebrow:'TRABAJO ACTIVO',title:'Tenés un trabajo en marcha',text:d.cashSelected?'El cliente eligió efectivo. Seguí el trabajo y marcá cada paso.':d.funded?'El pago está confirmado. Andá, resolvé y marcá listo.':'Esperá la confirmación de pago antes de salir.',action:flow.actions.openActiveJob,label:'Continuar trabajo'}
   :d.debtBlocked
@@ -17,11 +25,24 @@ export function ProviderHome(){
    ?{eyebrow:'LISTO PARA TRABAJAR',title:'Estás en el radar de UGO',text:'Tu GPS está vigente y podés recibir pedidos compatibles. Podés dejar la app abierta: UGO te avisa cuando llegue uno.',action:()=>void d.reload(),label:'Actualizar ahora'}
    :{eyebrow:'FUERA DEL RADAR',title:'Ponete Online para recibir trabajos',text:'Cuando estés disponible, activá tu estado y UGO empezará a buscar pedidos compatibles.',action:d.toggleOnline,label:'Ponerme Online'}
  return <section className="provider-screen provider-home" aria-labelledby="provider-home-title">
-  <SectionHeader eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`⭐ ${d.karma.toFixed(1)} · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online&&d.matchingReady}>{d.online?(d.matchingReady?'Online':'GPS'):'Offline'}</Button>}/>
-  <Card className="provider-hero provider-focus-card">
+  <SectionHeader screenHeading eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`⭐ ${d.karma.toFixed(1)} · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online&&d.matchingReady}>{d.online?(d.matchingReady?'Online':'GPS'):'Offline'}</Button>}/>
+  <Card className="provider-card provider-hero provider-focus-card">
    <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online&&!d.matchingReady?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
    <h2>{next.title}</h2><p>{next.text}</p>
    <Button variant="primary" size="lg" className="provider-primary provider-main-action" onClick={next.action} disabled={d.busy}>{d.busy?'Procesando…':next.label}</Button>
+  </Card>
+  <Card className={`provider-card provider-status-card is-${availability.tone}`} aria-live="polite">
+   <div className="provider-status-card-head">
+    <div><small>ESTADO OPERATIVO</small><strong>{availability.title}</strong></div>
+    <StatusPill tone={availability.tone}>{d.online?'Online':'Offline'}</StatusPill>
+   </div>
+   <p>{availability.text}</p>
+   <div className="provider-status-facts">
+    <span className={d.online?'is-ok':''}><i aria-hidden="true">●</i>{d.online?'Recibiendo pedidos':'No recibe pedidos'}</span>
+    <span className={d.matchingReady?'is-ok':'is-alert'}><i aria-hidden="true">⌖</i>{d.matchingReady?'Ubicación vigente':'Ubicación desactualizada'}</span>
+    <span className={d.debtBlocked?'is-alert':''}><i aria-hidden="true">$</i>{d.debtBlocked?`${d.pendingDebtCount} comisiones pendientes`:'Comisiones al día'}</span>
+   </div>
+   {!d.debtBlocked&&(!d.online||!d.matchingReady)&&<Button variant="primary" className="provider-primary provider-wide" disabled={d.busy} onClick={()=>void d.setOnline(true)}>{d.online?'Actualizar ubicación':'Ponerme Online'}</Button>}
   </Card>
   {d.debtBlocked&&<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">Nuevos pedidos pausados</StatusPill><span>Debés {money(d.ugoDebt)} en {d.pendingDebtCount} comisiones. Tus trabajos ya asignados siguen disponibles, pero no recibirás ni podrás aceptar otros hasta conciliar al menos una.</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></Card>}
   <div className="provider-quick-grid">
@@ -29,6 +50,13 @@ export function ProviderHome(){
    <Card className="provider-card provider-quick-card" role="button" tabIndex={0} onClick={flow.actions.openAgenda} onKeyDown={event=>{if(event.key==='Enter'||event.key===' ')flow.actions.openAgenda()}}><small>AGENDA</small><strong>Próximos trabajos</strong><span>Ver horarios →</span></Card>
    <Card className="provider-card provider-quick-card" role="button" tabIndex={0} onClick={flow.actions.openEarnings} onKeyDown={event=>{if(event.key==='Enter'||event.key===' ')flow.actions.openEarnings()}}><small>DINERO</small><strong>Saldo UGO {money(d.released)}</strong><span>Efectivo {money(d.cashReceived)} · Debés UGO {money(d.ugoDebt)} →</span></Card>
   </div>
-  {d.online&&<Button variant="ghost" className="provider-quiet-link" type="button" onClick={flow.actions.openDemand}>Ver radar de demanda</Button>}
+  {demandTop?<Card className="provider-card provider-radar-glance">
+   <div className="provider-radar-glance-head">
+    <div><small>DEMANDA · ÚLTIMAS 24 H</small><strong>{d.demand.length===1?'1 zona con pedidos':`${d.demand.length} zonas con pedidos`}</strong></div>
+    <StatusPill tone={demandTop.demandLevel==='high'?'success':demandTop.demandLevel==='medium'?'warning':'neutral'}>{demandTop.demandLevel==='high'?'Movimiento alto':demandTop.demandLevel==='medium'?'Movimiento medio':'Movimiento bajo'}</StatusPill>
+   </div>
+   <p>{demandTop.zone} · promedio {money(demandTop.estimatedValue)}</p>
+   <Button variant="ghost" onClick={flow.actions.openDemand}>Ver radar completo</Button>
+  </Card>:d.online&&<Button variant="ghost" className="provider-quiet-link" type="button" onClick={flow.actions.openDemand}>Ver radar de demanda</Button>}
  </section>
 }
