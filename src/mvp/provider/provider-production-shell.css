@@ -219,7 +219,7 @@
   }
   .provider-studio-avatar{
     width:42px!important;height:42px!important;border-radius:14px!important;
-    background:#20d17d!important;color:#082116!important;
+    background:var(--ugo-color-accent)!important;color:#082116!important;
   }
   .provider-studio-user-copy{min-width:0;display:grid;gap:3px}
   .provider-studio-user strong{color:#fff!important;font-size:13px!important}
@@ -244,7 +244,7 @@
     color:#83efb8!important;
   }
   .provider-studio-nav b{
-    background:#20d17d!important;
+    background:var(--ugo-color-accent)!important;
     color:#082116!important;
   }
   .provider-studio-footer{
@@ -261,7 +261,7 @@
   .provider-studio-availability{
     min-height:48px!important;
     border-radius:13px!important;
-    background:#20d17d!important;
+    background:var(--ugo-color-accent)!important;
     color:#082116!important;
     box-shadow:none!important;
   }
@@ -277,15 +277,15 @@
   .ugo-provider-root .provider-quick-grid{max-width:820px!important}
 }
 /* Provider Kinetic Trust — token mapping last layer (after production shell)
-   Maps legacy #087f5b/#159a63/#128c4a → --ugo-color-primary #006948,
+   Maps legacy var(--ugo-color-primary)/var(--ugo-color-primary)/var(--ugo-color-primary) → --ugo-color-primary var(--ugo-color-primary),
    --ink #172421/#142019 → --ugo-color-on-surface #131b2e,
    muted #66736b/#64706b/#52665c → --ugo-color-on-surface-variant #3d4a42,
-   surface #f3f5f3/#edf1ee/#e3f3e9 → --ugo-color-surface*,
+   surface #f3f5f3/#edf1ee/var(--ugo-color-accent-soft) → --ugo-color-surface*,
    line #dfe7e2/#e1e9e3 → --ugo-color-outline-variant #bccac0,
    Ensures Plus Jakarta Sans, 8px rhythm 16/24 edges, 48px touch, tertiary focus 3px, 140-220ms motion.
 */
 
-/* Structural home — legacy #087f5b is primary */
+/* Structural home — legacy var(--ugo-color-primary) is primary */
 .ugo-provider-structural-home .ugo-provider-structural-brand span,
 .ugo-provider-structural-sheet-head small,
 .ugo-provider-structural-kpi,
@@ -298,7 +298,7 @@
 .ugo-provider-structural-kpi,
 .ugo-provider-structural-service-top span{background:color-mix(in srgb,var(--ugo-color-primary) 10%,var(--ugo-color-surface-lowest))!important}
 
-/* Primary CTAs — #087f5b background → primary */
+/* Primary CTAs — var(--ugo-color-primary) background → primary */
 .ugo-provider-structural-actions button:last-child,
 .ugo-provider-structural-cta,
 .ugo-provider-structural-progress i.done{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
@@ -323,7 +323,7 @@
 .ugo-provider-structural-presence.on{background:var(--ugo-color-on-surface)!important}
 .ugo-provider-structural-presence.on i{background:color-mix(in srgb,var(--ugo-color-primary) 72%,white)!important}
 
-/* Legacy provider-home (#087f5b family) -> primary where present */
+/* Legacy provider-home (var(--ugo-color-primary) family) -> primary where present */
 .ugo-provider-home-summary .ugo-provider-presence.on,
 .ugo-provider-home-copy + .ugo-provider-presence.on,
 .ugo-provider-status-card span,

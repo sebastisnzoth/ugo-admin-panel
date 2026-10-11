@@ -1,9 +1,18 @@
 :root{
   color-scheme:light;
   --ugo-font-sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  --ugo-color-brand-50:#ecfdf3;
-  --ugo-color-brand-500:#07804b;
-  --ugo-color-brand-600:#067647;
+  /* Identidad UGO 2026-10-11: cian operativo (PLAN_REDISENO §3.1).
+     `brand-500` es el cian accesible para texto/acciones sobre blanco (5.0:1);
+     `accent` es el cian de marca #16C7D9, reservado para rellenos y estados
+     seleccionados donde el texto es oscuro (7.4:1). El verde queda solo como
+     semántica de éxito. */
+  --ugo-color-brand-50:#e8fbfd;
+  --ugo-color-brand-500:#0b6e7b;
+  --ugo-color-brand-600:#0a5f6b;
+  --ugo-color-accent:#16c7d9;
+  --ugo-color-accent-strong:#0fa8b8;
+  --ugo-color-accent-soft:#e8fbfd;
+  --ugo-color-on-accent:#062a2e;
   --ugo-color-page:#f4f6f8;
   --ugo-color-surface:#ffffff;
   --ugo-color-surface-subtle:#f9fafb;
@@ -22,8 +31,8 @@
   --ugo-color-inverse-border:#2b465b;
   --ugo-color-inverse-text:#f5fbff;
   --ugo-color-inverse-text-muted:#7890a2;
-  --ugo-color-accent-bright:#20f29a;
-  --ugo-color-on-accent-bright:#04150f;
+  --ugo-color-accent-bright:#16c7d9;
+  --ugo-color-on-accent-bright:#062a2e;
   --ugo-color-inverse-page:#07111c;
   --ugo-color-inverse-divider:#20364a;
   --ugo-color-inverse-rail:#050d15;
@@ -63,4 +72,10 @@
   --ugo-color-surface-low:var(--ugo-color-page);
   --ugo-color-surface-high:var(--ugo-color-surface-muted);
   --border:var(--ugo-color-border);
+  /* Aliases legacy consumidos por capas provider/admin (var(--ugo-primary,#verde)). */
+  --ugo-primary:var(--ugo-color-brand-500);
+  --ugo-text:var(--ugo-color-text);
+  --ugo-text-muted:var(--ugo-color-text-muted);
+  --ugo-border:var(--ugo-color-border);
+  --ugo-brand:var(--ugo-color-accent);
 }

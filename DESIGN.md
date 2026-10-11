@@ -3,11 +3,16 @@ version: alpha
 name: UGO Design System v1
 description: "Sistema visual compartido de UGO basado en el handoff de Google Stitch: confianza operativa, superficies táctiles y contexto en tiempo real."
 colors:
-  primary: "#006948"
-  primary-container: "#00855D"
+  # Identidad cian 2026-10-11 (decisión de producto sobre PLAN_REDISENO §3.1).
+  primary: "#0B6E7B"
+  accent: "#16C7D9"
+  accent-strong: "#0FA8B8"
+  accent-soft: "#E8FBFD"
+  on-accent: "#062A2E"
+  primary-container: "#16C7D9"
   on-primary: "#FFFFFF"
-  secondary: "#00687A"
-  secondary-container: "#57DFFE"
+  secondary: "#0FA8B8"
+  secondary-container: "#0FA8B8"
   tertiary: "#0058BE"
   surface: "#FAF8FF"
   surface-container: "#EAEDFF"
@@ -16,7 +21,7 @@ colors:
   on-surface-variant: "#3D4A42"
   outline: "#6D7A72"
   outline-variant: "#BCCAC0"
-  success: "#006948"
+  success: "#067647"
   warning: "#B45309"
   error: "#BA1A1A"
   error-container: "#FFDAD6"
@@ -99,7 +104,7 @@ UGO es una herramienta de servicios urbanos donde la interfaz debe transmitir co
 
 ## Colors
 
-`primary` (`#006948`) comunica confianza, verificación y acción confirmada. `secondary`/`secondary-container` reservan el cian para Hugo y alertas conversacionales; `tertiary` (`#0058BE`) identifica geografía y utilidades técnicas. Las superficies `surface` → `surface-container` construyen jerarquía tonal sin convertir toda la aplicación en color. `success`, `warning` y `error` son semánticos y nunca deben comunicarse solo por color. El foco visible usa `tertiary` con halo de 3px.
+`primary` (`#0B6E7B`) es el cian accesible: comunica confianza, verificación y acción confirmada, y es el único cian usable como texto o icono sobre superficies claras (5.0:1 sobre blanco). `accent` (`#16C7D9`) es el cian de marca para rellenos, selección, estados en vivo y foco; cuando el fondo es `accent`, el texto se escribe con `on-accent` (7.4:1). Regla dura: nunca usar `accent` como texto sobre blanco (2.1:1). El verde queda reservado exclusivamente para éxito: si un estado es "listo/confirmado", se comunica con `success`, no con el primario. `secondary`/`secondary-container` reservan el cian para Hugo y alertas conversacionales; `tertiary` (`#0058BE`) identifica geografía y utilidades técnicas. Las superficies `surface` → `surface-container` construyen jerarquía tonal sin convertir toda la aplicación en color. `success`, `warning` y `error` son semánticos y nunca deben comunicarse solo por color. El foco visible usa `tertiary` con halo de 3px.
 
 ## Typography
 

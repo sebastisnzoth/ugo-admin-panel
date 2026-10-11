@@ -27,7 +27,7 @@
 
   .provider-studio-brand{
     font:900 28px/1 'Plus Jakarta Sans',sans-serif;
-    color:var(--provider-accent,#006b58);
+    color:var(--provider-accent,var(--ugo-color-primary));
     margin:0 8px 24px;
   }
 
@@ -46,7 +46,7 @@
     border-radius:50%;
     display:grid;
     place-items:center;
-    background:var(--provider-accent,#006b58);
+    background:var(--provider-accent,var(--ugo-color-primary));
     color:var(--provider-on-accent,#fff);
     font-weight:900;
   }
@@ -90,8 +90,8 @@
   }
   .provider-studio-nav button:hover,
   .provider-studio-nav button:focus-visible{
-    background:var(--provider-surface-muted,#eaf9f5);
-    color:var(--provider-accent,#006b58);
+    background:var(--provider-surface-muted,var(--ugo-color-accent-soft));
+    color:var(--provider-accent,var(--ugo-color-primary));
   }
   .provider-studio-nav b{
     float:right;
@@ -128,8 +128,8 @@
   .provider-studio-utility:hover,
   .provider-studio-utility:focus-visible{
     border-color:var(--provider-accent,#b9ddd5);
-    background:var(--provider-surface-muted,#eaf9f5);
-    color:var(--provider-accent,#006b58);
+    background:var(--provider-surface-muted,var(--ugo-color-accent-soft));
+    color:var(--provider-accent,var(--ugo-color-primary));
   }
 
   .provider-studio-availability{
@@ -138,7 +138,7 @@
     margin:0;
     border:0;
     border-radius:14px;
-    background:var(--provider-accent,#006b58);
+    background:var(--provider-accent,var(--ugo-color-primary));
     color:var(--provider-on-accent,#fff);
     font-weight:900;
     cursor:pointer;
@@ -198,5 +198,5 @@
 .ugo-preorder-payment-main{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
 .ugo-preorder-payment-options{display:flex;gap:8px;flex-wrap:wrap}
 .ugo-preorder-payment-options button{min-height:38px;padding:0 14px;border:1px solid var(--provider-border,#cfe0f6);border-radius:10px;background:var(--provider-surface,#fff);color:var(--provider-text,#17324a);font-weight:850;cursor:pointer}
-.ugo-preorder-payment-options button.selected{border-color:var(--provider-accent,#007e68);background:var(--provider-surface-muted,#e8f8f4);color:var(--provider-accent,#006b58)}
+.ugo-preorder-payment-options button.selected{border-color:var(--provider-accent,var(--ugo-color-primary));background:var(--provider-surface-muted,var(--ugo-color-accent-soft));color:var(--provider-accent,var(--ugo-color-primary))}
 .ugo-studio-payment>small{display:block;margin-top:6px;color:var(--provider-text-muted,#667085)}

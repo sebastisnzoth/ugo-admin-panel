@@ -9,9 +9,9 @@
   --ugo-studio-line:#dce9ff;
   --ugo-studio-ink:#0b1c30;
   --ugo-studio-muted:#575e70;
-  --ugo-studio-primary:#006b58;
+  --ugo-studio-primary:var(--ugo-color-primary);
   --ugo-studio-primary-dark:#005747;
-  --ugo-studio-accent:#00d6b2;
+  --ugo-studio-accent:var(--ugo-color-accent-strong);
   min-height:100dvh!important;
   overflow-x:hidden!important;
   background:var(--ugo-studio-bg)!important;
@@ -111,7 +111,7 @@
 .ugo-client-root .ugo-service-chat header small{color:var(--ugo-studio-primary)!important}
 .ugo-client-root .ugo-service-chat-close{background:#f2f5f4!important;color:var(--ugo-studio-ink)!important}
 .ugo-client-root .ugo-service-chat-list article{background:#eff4ff!important;color:var(--ugo-studio-ink)!important}
-.ugo-client-root .ugo-service-chat-list article.is-own{background:#e6f7f4!important;color:#073c32!important}
+.ugo-client-root .ugo-service-chat-list article.is-own{background:var(--ugo-color-accent-soft)!important;color:#073c32!important}
 .ugo-client-root .ugo-service-chat-list small{color:var(--ugo-studio-muted)!important}
 .ugo-client-root .ugo-service-chat-empty{color:var(--ugo-studio-muted)!important}
 .ugo-client-root .ugo-service-chat-form{border-top-color:#ececec!important}

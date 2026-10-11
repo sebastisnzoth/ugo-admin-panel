@@ -154,7 +154,7 @@
 .ugo-client-root .ugo-home-map-card>header>b{
   background:#071720!important;
   border-color:#315064!important;
-  color:#20e18c!important;
+  color:var(--ugo-color-accent)!important;
 }
 
 .ugo-client-root .ugo-home-map-card>footer{
@@ -182,7 +182,7 @@
 
 .ugo-client-root .ugo-home-map-label>span{
   background:#0b1f2d!important;
-  color:#20e18c!important;
+  color:var(--ugo-color-accent)!important;
 }
 
 
@@ -329,7 +329,7 @@
   }
 
   .ugo-client-root .ugo-home-mobile-nav button.active{
-    color:#20e18c!important;
+    color:var(--ugo-color-accent)!important;
     background:rgba(32,225,140,.08)!important;
   }
 

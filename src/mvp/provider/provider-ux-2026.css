@@ -137,3 +137,11 @@
 @media(prefers-reduced-motion:reduce){
   .ugo-provider-root .provider-offer-timer i{transition:none}
 }
+
+/* Alcance de marca del shell Proveedor (superficies claras): primario accesible
+   y acento cian para rellenos/selección. Ver DESIGN.md §Colors. */
+.ugo-provider-root{--ugo-color-primary:var(--ugo-color-brand-500);--studio-primary:var(--ugo-color-brand-500);--studio-primary-dark:color-mix(in srgb,var(--ugo-color-brand-500) 82%,black);--provider-accent:var(--ugo-color-brand-500)}
+
+/* Vacío operativo con próximo paso accionable (Oportunidades). */
+.provider-empty .ugo-ui-empty{display:grid;gap:8px}
+.provider-empty .ugo-ui-empty>button{margin-top:6px;width:100%}

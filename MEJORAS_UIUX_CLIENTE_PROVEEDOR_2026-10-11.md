@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-10-11 (America/Sao_Paulo)
 **Rama:** `arena/16caf25b-ugo-admin-panel` (base `15d04fa` de `main`)
-**Alcance:** auditoría de experiencia Cliente y Proveedor, ideas priorizadas y primera ola implementada sin tocar lógica de negocio, pagos, RLS ni RPC.
+**Alcance:** auditoría de experiencia Cliente y Proveedor, ideas priorizadas y tres olas implementadas sin tocar lógica de negocio, pagos, RLS ni RPC.
+**Estado:** olas 1 + P0 ya en `main` (PR #444). Ola 2 (identidad cian, tema claro del home, ETA real, vacío accionable del proveedor) en esta rama.
 
 ---
 
@@ -110,11 +111,26 @@ Escala: **Impacto** (Alto/Medio/Bajo) · **Esfuerzo** (S/M/L) · **Riesgo** cont
 
 **Ola 1 (hecha, esta sesión):** conectividad, skeletons, progreso, repetir servicio, estado operativo, radar en Inicio, vencimientos, barra fija, foco/scroll/anuncio.
 
-**Ola 2 (P0 restante):** ETA en home, lazy images, skip-link, botones reales, empty states honestos, helper háptico, repetir desde Actividad.
+**Ola 2 (hecha, esta rama):** ETA y "llega en ~N min" en la tarjeta del pedido activo (reusa el RPC de tracking), identidad cian del PLAN con contraste AA verificado, tema claro del home con hero oscuro como único acento, vacío de Oportunidades con próximo paso accionable, y migración de la identidad verde restante en ambas capas de rol.
 
-**Ola 3 (P1):** decisión de shell visual, cola offline, presupuesto guiado, unificación de primitivas.
+**Ola 3 (P1):** cola offline, presupuesto guiado, radio/zona visible del proveedor, unificación de primitivas, helper háptico, repetir desde Actividad.
 
 **Ola 4 (P2):** experimentos con medición (voz, ruta multi-trabajo, link compartible, personalización).
+
+---
+
+## 5.1 Ola 2 — qué cambió exactamente (2026-10-11, misma sesión)
+
+| Tema | Decisión / cambio | Archivos |
+|---|---|---|
+| Identidad de color | El PLAN manda: **cian**. `--ugo-color-brand-500:#0b6e7b` (5.0:1 sobre blanco, uso como texto/acción), `--ugo-color-accent:#16c7d9` (relleno, selección, estados en vivo) con `--ugo-color-on-accent:#062a2e` (7.4:1). El verde queda **solo** para éxito | `src/styles/tokens.css`, `src/mvp/ugo-design-system.css` |
+| Alcance por rol | Cada shell re-declara `--ugo-color-primary` accesible para no depender del orden de importación del tema oscuro global | `clientUxRefresh.css`, `provider-ux-2026.css` |
+| Migración legacy | 41 archivos con identidad verde (Cliente premium/polish/AI studio, Proveedor premium/studio/sidebar/flow) pasan a resolver por tokens; se conservan archivos nuevos de hace días, sin tocar semántica | `src/features/client/**`, `src/mvp/provider/**` |
+| Shell del home Cliente | Lienzo claro + **un** bloque oscuro (hero: greeting, pedidos activos, CTA). Cierra la pelea de cascada que quedaba entre `clientHomeScreen` y `clientPremium2026` | `clientUxRefresh.css` |
+| ETA real | `useClientOrderEta` lee `obtener_tracking_servicio_cliente` + el router existente y expone `etaMinutes/updatedAt/providerLocated`; el home muestra "Llega en ~N min" y "Ubicación actualizada X". Si falla, no se muestra y nunca se reporta como incidente ruidoso | `hooks/useClientOrderEta.ts`, `ClientHomeScreen.tsx` |
+| Proveedor | Vacío de Oportunidades con próximo paso real ("VER MI ZONA" / "IR A INICIO") y card Hugo del Inicio en cian | `ProviderOpportunities.tsx`, `provider-flow.css`, `provider-ux-2026.css` |
+
+**Contraste:** el contrato `tests/contracts/uiux-palette-eta-2026.test.mjs` calcula WCAG sobre los tokens reales y falla si alguien usa el cian brillante como color de texto.
 
 ---
 

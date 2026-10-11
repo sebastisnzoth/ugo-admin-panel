@@ -91,8 +91,8 @@
     transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
   }
   .ugo-client-home-talk{
-    border-color:#0b8f50!important;
-    background:#0b8f50!important;
+    border-color:var(--ugo-color-primary)!important;
+    background:var(--ugo-color-primary)!important;
     color:#fff!important;
     box-shadow:0 13px 26px rgba(11,143,80,.2)!important;
   }
@@ -106,7 +106,7 @@
     background:#fff!important;
     color:#15231b!important;
   }
-  .ugo-client-home-search b,.ugo-client-home-search em{color:#0b8f50!important}
+  .ugo-client-home-search b,.ugo-client-home-search em{color:var(--ugo-color-primary)!important}
   .ugo-client-home-talk:hover,.ugo-client-home-search:hover{
     transform:translateY(-1px);
   }
@@ -231,12 +231,12 @@
   }
   .ugo-client-home-map-label b{color:#17231c!important;font-size:11px!important}
   .ugo-client-home-map-label small{color:#6f7c74!important;font-size:9px!important}
-  .ugo-client-home-map-label>span{color:#0b8f50!important}
+  .ugo-client-home-map-label>span{color:var(--ugo-color-primary)!important}
   .ugo-client-home-marker{
     width:19px!important;
     height:19px!important;
     border:4px solid #fff!important;
-    background:#0b8f50!important;
+    background:var(--ugo-color-primary)!important;
     box-shadow:0 0 0 8px rgba(11,143,80,.16),0 8px 22px rgba(0,0,0,.22)!important;
   }
 
@@ -264,7 +264,7 @@
     display:grid;
     place-items:center;
     border-radius:15px;
-    background:#0b8f50;
+    background:var(--ugo-color-primary);
     color:#fff;
     font:950 21px/1 var(--ugo-font);
     box-shadow:0 12px 26px rgba(11,143,80,.2);
@@ -290,7 +290,7 @@
     bottom:18px;
     width:3px;
     border-radius:0 6px 6px 0;
-    background:#20d77f;
+    background:var(--ugo-color-accent);
   }
 
   /* Hugo rail */
@@ -351,7 +351,7 @@
   .ugo-client-root .ugo-hugo-stage-composer button{
     min-width:78px!important;
     border-radius:12px!important;
-    background:#20d77f!important;
+    background:var(--ugo-color-accent)!important;
   }
   .ugo-client-root .ugo-hugo-stage-actions button{min-height:42px!important;border-radius:13px!important}
   .ugo-client-root .prototype-hugo .ugo-real-orb{
