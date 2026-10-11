@@ -4,6 +4,24 @@
 
 .ugo-provider-root{--ugo-ux-connection-bottom:calc(148px + env(safe-area-inset-bottom))}
 
+/* Tarjetas-acción del Inicio: botones reales, mismo aspecto que las cards. */
+.ugo-provider-root .provider-quick-card{
+  width:100%;
+  border:1px solid var(--provider-border,var(--ugo-color-border));
+  border-radius:var(--provider-radius,var(--ugo-radius-lg));
+  background:var(--provider-surface,var(--ugo-color-surface));
+  color:var(--provider-text,var(--ugo-color-text));
+  font-family:var(--ugo-font,inherit);
+  text-align:left;
+  cursor:pointer;
+}
+.ugo-provider-root .provider-quick-card:hover{border-color:color-mix(in srgb,var(--provider-accent,var(--ugo-color-brand-500)) 34%,transparent);background:color-mix(in srgb,var(--provider-accent,var(--ugo-color-brand-500)) 5%,var(--provider-surface,var(--ugo-color-surface)))}
+.ugo-provider-root .provider-quick-card:active{transform:scale(.99)}
+.ugo-provider-root .provider-quick-card:focus-visible{outline:3px solid color-mix(in srgb,var(--ugo-color-focus,#0058be) 35%,transparent);outline-offset:2px}
+.ugo-provider-root .provider-quick-card small{font:900 11px/1.2 var(--ugo-font,inherit);letter-spacing:.1em;color:var(--provider-text-muted,var(--ugo-color-text-muted))}
+.ugo-provider-root .provider-quick-card strong{font:700 15px/1.3 var(--ugo-font,inherit)}
+.ugo-provider-root .provider-quick-card span{font:500 12px/1.45 var(--ugo-font,inherit);color:var(--provider-text-muted,var(--ugo-color-text-muted))}
+
 /* Estado operativo: por qué estoy o no estoy recibiendo pedidos. */
 .ugo-provider-root .provider-status-card{
   display:grid;

@@ -15,6 +15,28 @@
   border:0!important;
 }
 
+/* Salto al contenido: visible solo con teclado, no ocupa layout. */
+.ugo-ux-skip-link{
+  position:fixed;
+  top:calc(8px + env(safe-area-inset-top));
+  left:8px;
+  z-index:1700;
+  transform:translateY(-200%);
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 14px;
+  border:1px solid var(--ugo-color-outline-variant,#d0d5dd);
+  border-radius:var(--ugo-radius-md,12px);
+  background:var(--ugo-color-surface-lowest,#fff);
+  color:var(--ugo-color-on-surface,#101828);
+  box-shadow:var(--ugo-shadow-md,0 8px 24px rgba(16,24,40,.10));
+  font:700 13px/1 var(--ugo-font,inherit);
+  text-decoration:none;
+}
+.ugo-ux-skip-link:focus-visible,.ugo-ux-skip-link:focus{transform:translateY(0);outline:3px solid color-mix(in srgb,var(--ugo-color-focus,#0058be) 35%,transparent);outline-offset:2px}
+.ugo-ux-screen-host:focus{outline:none}
+
 /* Aviso de conectividad: informa, nunca bloquea la interacción. */
 .ugo-ux-connection{
   position:fixed;
