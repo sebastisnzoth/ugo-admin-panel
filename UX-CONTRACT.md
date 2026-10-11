@@ -38,6 +38,10 @@ Loading, vacío, sin resultados, degradado, error y retry conservan geometría e
 - Un trabajo activo del proveedor mantiene su próxima acción alcanzable de forma permanente (barra fija `provider-sticky-step`), además del brief `provider-mission-brief`.
 - Cliente muestra el avance del pedido activo con 4 pasos y el vencimiento de las ofertas del proveedor es visible tanto en la lista como en el detalle; el color nunca es la única señal (siempre hay texto).
 
+- Identidad de color (2026-10-11): el cian es la marca. `--ugo-color-brand-500` (#0B6E7B) es el cian accesible y el único usable como texto/icono sobre superficies claras; `--ugo-color-accent` (#16C7D9) se usa para rellenos, selección, foco y estados en vivo, siempre con `--ugo-color-on-accent` como texto. El verde queda reservado para éxito. Cada shell de rol re-declara el primario accesible.
+- El home del Cliente cierra su cascada en `clientUxRefresh.css`: lienzo claro y un único bloque oscuro (hero) como acento de marca; la tarjeta del pedido activo muestra el ETA real ("Llega en ~N min") cuando el profesional está en camino y nunca lo inventa si el tracking falla.
+- Los vacíos operativos del Proveedor ofrecen el próximo paso accionable (zona/demanda u online) en lugar de un mensaje pasivo.
+
 ## Rutas y frontera demo
 
 Cliente, Proveedor y Admin de producción usan datos persistidos reales. La ruta legacy `?app=web` debe mostrar una frontera persistente **DEMO · DATOS FICTICIOS** antes de cualquier nombre, precio, ETA o estado ficticio.

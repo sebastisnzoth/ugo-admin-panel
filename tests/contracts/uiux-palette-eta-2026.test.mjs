@@ -89,3 +89,18 @@ test('client home finishes the cascade with a light shell and one dark hero',asy
  assert.match(css,/@media\(max-width:699px\)[\s\S]*ugo-home-mobile-nav/)
  assert.match(css,/prefers-reduced-motion/)
 })
+
+test('provider empty state offers a next step and the brand block uses cyan',async()=>{
+ const[opps,ux,flow]=await Promise.all([
+  read('src/mvp/provider/ProviderOpportunities.tsx'),
+  read('src/mvp/provider/provider-ux-2026.css'),
+  read('src/mvp/provider/provider-flow.css')
+ ])
+ assert.match(opps,/EmptyState title="No hay pedidos ahora"/)
+ assert.match(opps,/action=\{d\.online\?/)
+ assert.match(opps,/flow\.actions\.openDemand\}>VER MI ZONA/)
+ assert.match(opps,/flow\.actions\.openHome\}>IR A INICIO/)
+ assert.match(ux,/\.provider-empty \.ugo-ui-empty>button/)
+ assert.match(flow,/--ugo-color-accent\) 70%,white/)
+ assert.doesNotMatch(flow,/#19ef87/)
+})
