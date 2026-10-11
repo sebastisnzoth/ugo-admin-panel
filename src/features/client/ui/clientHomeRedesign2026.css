@@ -1,14 +1,14 @@
 /* UGO Client Home — clean service-marketplace direction based on the supplied mobile-app references.
    Styles the canonical authenticated ClientHomeScreen; behavior and live data remain unchanged. */
 .ugo-client-root{
-  --client-bg:#f6f8f7;
+  --client-bg:var(--ugo-color-surface, #faf8ff);
   --client-panel:#fff;
-  --client-ink:#18231e;
-  --client-muted:#718078;
-  --client-green:#16794f;
-  --client-green-deep:#105f3d;
-  --client-soft:#edf6f0;
-  --client-line:#e4ebe6;
+  --client-ink:var(--ugo-color-on-surface, #131b2e);
+  --client-muted:var(--ugo-color-on-surface-variant, #3d4a42);
+  --client-green:var(--ugo-color-primary, #006948);
+  --client-green-deep:#004d36;
+  --client-soft:#e5f5ed;
+  --client-line:var(--ugo-color-outline-variant, #bccac0);
   background:var(--client-bg)!important;
   color:var(--client-ink)!important;
 }
@@ -17,7 +17,7 @@
   padding:64px 0 28px;
   background:var(--client-bg)!important;
   color:var(--client-ink)!important;
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-family:var(--ugo-font, "Plus Jakarta Sans", "Inter Tight", Inter, ui-sans-serif, system-ui, sans-serif);
 }
 .ugo-client-root .ugo-home-layout{
   width:min(1280px,calc(100% - 56px));
@@ -47,7 +47,7 @@
 .ugo-client-root .ugo-home-location>b{background:#f4f7f5!important;color:var(--client-green)!important;border:1px solid var(--client-line);font-size:10px!important}
 .ugo-client-root .ugo-home-bell{border-color:var(--client-line)!important;background:#fff!important;color:#43534a!important}
 .ugo-client-root .ugo-home-kicker{color:var(--client-green)!important;font-size:10px!important;letter-spacing:.13em!important}
-.ugo-client-root .ugo-home-kicker i{background:#27a56a!important;box-shadow:0 0 0 4px #27a56a19!important}
+.ugo-client-root .ugo-home-kicker i{background:#00855d!important;box-shadow:0 0 0 4px #00855d19!important}
 .ugo-client-root .ugo-home-hero h1{max-width:600px;margin:12px 0 11px!important;font-size:clamp(32px,3.1vw,43px)!important;line-height:1.08!important;letter-spacing:-.045em!important;color:var(--client-ink)!important;white-space:pre-line}
 .ugo-client-root .ugo-home-hero>p{max-width:490px;margin:0 0 21px!important;color:var(--client-muted)!important;font-size:14px!important;line-height:1.65!important}
 .ugo-client-root .ugo-home-hugo-cta{
@@ -75,7 +75,7 @@
 .ugo-client-root .ugo-home-map-card>header{min-height:72px;padding:17px 20px!important;border-color:var(--client-line)!important;background:#fff!important}
 .ugo-client-root .ugo-home-map-card>header strong{font-size:13px!important;color:var(--client-ink)!important}
 .ugo-client-root .ugo-home-map-card>header small{font-size:11px!important;color:var(--client-muted)!important}
-.ugo-client-root .ugo-home-map-card>header>b{border-color:#d9e9de!important;background:#f0f8f2!important;color:var(--client-green)!important;font-size:10px!important}
+.ugo-client-root .ugo-home-map-card>header>b{border-color:#d9e9de!important;background:#e5f5ed!important;color:var(--client-green)!important;font-size:10px!important}
 .ugo-client-root .ugo-home-map{height:clamp(360px,48vh,540px)!important;background:#edf2ee!important}
 .ugo-client-root .ugo-home-map .maplibregl-canvas{filter:saturate(.78) brightness(1.04) contrast(.97)!important}
 .ugo-client-root .ugo-home-map-shade{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(18,64,40,.035))!important}
@@ -108,7 +108,7 @@
 .ugo-client-root .ugo-home-all-results>button strong{flex:1;min-width:0;font-size:11px}
 .ugo-client-root .ugo-home-all-results>button b{color:var(--client-green)}
 .ugo-client-root .ugo-home-mobile-nav{display:none}
-.ugo-client-root .ugo-home-screen button:focus-visible{outline:3px solid #16794f44;outline-offset:3px}
+.ugo-client-root .ugo-home-screen button:focus-visible{outline:3px solid #00694844;outline-offset:3px}
 @media(min-width:900px){
   .ugo-client-root .ugo-home-screen{padding-top:64px!important}
   .ugo-client-root .ugo-home-layout{grid-template-areas:"hero map" "services map";grid-template-columns:minmax(0,1.02fr) minmax(380px,.98fr)}
@@ -170,10 +170,10 @@
 .ugo-client-root .ugo-home-nearby-head>div{display:grid;gap:3px;min-width:0}
 .ugo-client-root .ugo-home-nearby-head strong{font-size:12px;font-weight:850;color:var(--client-ink)}
 .ugo-client-root .ugo-home-nearby-head small{font-size:10px;color:var(--client-muted)}
-.ugo-client-root .ugo-home-nearby-head>span{padding:5px 8px;border-radius:999px;background:#f0f8f2;color:var(--client-green);font-size:9px;font-weight:800}
+.ugo-client-root .ugo-home-nearby-head>span{padding:5px 8px;border-radius:999px;background:#e5f5ed;color:var(--client-green);font-size:9px;font-weight:800}
 .ugo-client-root .ugo-home-provider-list{display:grid;gap:8px}
 .ugo-client-root .ugo-home-provider-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:10px;min-width:0;padding:10px;border:1px solid #e6ece7;border-radius:14px;background:#fff}
-.ugo-client-root .ugo-home-provider-avatar{width:42px;height:42px;overflow:hidden;display:grid;place-items:center;border-radius:13px;background:#edf6f0;color:var(--client-green);font-size:13px;font-weight:850}
+.ugo-client-root .ugo-home-provider-avatar{width:42px;height:42px;overflow:hidden;display:grid;place-items:center;border-radius:13px;background:#e5f5ed;color:var(--client-green);font-size:13px;font-weight:850}
 .ugo-client-root .ugo-home-provider-avatar img{width:100%;height:100%;object-fit:cover}
 .ugo-client-root .ugo-home-provider-info{display:grid;gap:4px;min-width:0}
 .ugo-client-root .ugo-home-provider-info>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--client-ink);font-size:11px;font-weight:850}
@@ -182,5 +182,5 @@
 .ugo-client-root .ugo-home-verified{color:var(--client-green);font-weight:800}
 .ugo-client-root .ugo-home-provider-rating{color:#a36b13;font-weight:850}
 .ugo-client-root .ugo-home-available{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:var(--client-green);font-size:9px;font-weight:800}
-.ugo-client-root .ugo-home-available i{width:6px;height:6px;border-radius:50%;background:#27a56a;box-shadow:0 0 0 3px #27a56a19}
+.ugo-client-root .ugo-home-available i{width:6px;height:6px;border-radius:50%;background:#00855d;box-shadow:0 0 0 3px #00855d19}
 @media(max-width:520px){.ugo-client-root .ugo-home-nearby{padding:14px 12px}.ugo-client-root .ugo-home-provider-card{grid-template-columns:38px minmax(0,1fr);gap:9px;padding:9px}.ugo-client-root .ugo-home-provider-avatar{width:36px;height:36px;border-radius:11px}.ugo-client-root .ugo-home-available{grid-column:2;justify-self:start;margin-top:-1px}}
