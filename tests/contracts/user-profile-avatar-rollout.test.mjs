@@ -7,6 +7,7 @@ const history=fs.readFileSync('src/mvp/ServiceHistoryPanel.tsx','utf8')
 const chat=fs.readFileSync('src/mvp/ServiceChat.tsx','utf8')
 const admin=fs.readFileSync('src/mvp/AdminUsersPanel.tsx','utf8')
 const trace=fs.readFileSync('src/mvp/AdminUserTracePanel.tsx','utf8')
+const providerHistory=fs.readFileSync('src/mvp/ProviderHistoryDetail.tsx','utf8')
 
 test('shared avatar uses profile photos and initials fallback',()=>{
   assert.match(avatar,/client-public/)
@@ -32,4 +33,6 @@ test('admin directory and user trace show profile photos',()=>{
   assert.match(admin,/UserProfileAvatar/)
   assert.match(admin,/foto_perfil_path/)
   assert.match(trace,/UserProfileAvatar/)
+  assert.match(providerHistory,/UserProfileAvatar/)
+  assert.match(providerHistory,/clientPhotoPath/)
 })
