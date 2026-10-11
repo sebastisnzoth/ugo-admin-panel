@@ -25,7 +25,8 @@ function operation(req: VercelRequest) {
 }
 
 function accessToken(req: VercelRequest) {
-  const authHeader = req.headers.authorization || ''
+  const rawAuthHeader = req.headers.authorization
+  const authHeader = Array.isArray(rawAuthHeader) ? rawAuthHeader[0] || '' : rawAuthHeader || ''
   return authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
 }
 
