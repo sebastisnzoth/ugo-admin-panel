@@ -1,8 +1,9 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
+import{UserProfileAvatar}from'./UserProfileAvatar'
 import'./admin-user-trace.css'
 
-type User={id:string;nombre:string;apellido?:string|null;tipo:string;activo:boolean;email?:string|null;email_confirmed?:boolean;last_sign_in_at?:string|null;telefono?:string|null;ubicacion?:string|null;verification?:string|null;online?:boolean;karma?:number|null;servicios_completados?:number|null;created_at:string;updated_at?:string|null}
+type User={id:string;nombre:string;apellido?:string|null;tipo:string;activo:boolean;foto_url?:string|null;foto_perfil_path?:string|null;profilePhotoRole?:'client'|'provider';email?:string|null;email_confirmed?:boolean;last_sign_in_at?:string|null;telefono?:string|null;ubicacion?:string|null;verification?:string|null;online?:boolean;karma?:number|null;servicios_completados?:number|null;created_at:string;updated_at?:string|null}
 type Service={id:string;numero?:number|string|null;estado:string;descripcion?:string|null;tarifa?:number|null;created_at:string;programado_para?:string|null;aceptado_at?:string|null;iniciado_at?:string|null;completado_at?:string|null;cancelado_at?:string|null;cliente_id?:string|null;proveedor_id?:string|null;categoria?:{nombre?:string|null;emoji?:string|null}|null}
 type Review={id:string;servicio_id:string;cliente_id:string;proveedor_id:string;autor_tipo:string;puntuacion:number;comentario:string|null;created_at:string}
 type Document={id:string;tipo:string;url_storage:string;estado:string;descripcion:string|null;notas:string|null;notas_rechazo:string|null;created_at:string;updated_at:string|null;revisado_at:string|null;url?:string|null}
@@ -33,7 +34,7 @@ export function AdminUserTracePanel({user,onClose}:{user:User;onClose:()=>void})
  const avg=received.length?received.reduce((sum,r)=>sum+Number(r.puntuacion||0),0)/received.length:null
  return <div className="ugo-admin-user-trace-backdrop" role="presentation" onMouseDown={e=>{if(e.currentTarget===e.target)onClose()}}>
   <section className="ugo-admin-user-trace" role="dialog" aria-modal="true" aria-label={`Historial de ${user.nombre}`}>
-   <header><div><small>FICHA COMPLETA · {user.tipo.toUpperCase()}</small><h2>{user.nombre} {user.apellido||''}</h2><p>{user.email||'Sin email'} · {user.activo?'Cuenta activa':'Cuenta inactiva'}</p></div><button onClick={onClose} aria-label="Cerrar">×</button></header>
+   <header><UserProfileAvatar name={user.nombre+' '+(user.apellido||'')} role={user.profilePhotoRole||(user.tipo==='proveedor'?'provider':'client')} photoPath={user.foto_perfil_path} photoUrl={user.foto_url} size={54}/><div><small>FICHA COMPLETA · {user.tipo.toUpperCase()}</small><h2>{user.nombre} {user.apellido||''}</h2><p>{user.email||'Sin email'} · {user.activo?'Cuenta activa':'Cuenta inactiva'}</p></div><button onClick={onClose} aria-label="Cerrar">×</button></header>
    <div className="ugo-admin-user-trace-meta"><div><small>ALTA EN UGO</small><strong>{when(user.created_at)}</strong></div><div><small>ÚLTIMO ACCESO</small><strong>{when(user.last_sign_in_at)}</strong></div><div><small>ÚLTIMA ACTUALIZACIÓN</small><strong>{when(user.updated_at)}</strong></div><div><small>REPUTACIÓN RECIBIDA</small><strong>{avg==null?'Sin calificaciones':`★ ${avg.toFixed(1)} · ${received.length}`}</strong></div></div>
    <div className="ugo-admin-user-trace-facts"><span>Rol: <b>{user.tipo}</b></span><span>Teléfono: <b>{user.telefono||'—'}</b></span><span>Ubicación: <b>{user.ubicacion||'—'}</b></span>{user.tipo==='proveedor'&&<><span>Verificación: <b>{user.verification||'—'}</b></span><span>Disponibilidad: <b>{user.online?'Online':'Offline'}</b></span></>}</div>
    {error&&<div className="ugo-admin-user-trace-error">{error}</div>}
