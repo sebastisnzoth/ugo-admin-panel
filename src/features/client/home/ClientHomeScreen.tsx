@@ -7,6 +7,7 @@ import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import{refreshProviderRadar,subscribeProviderRadar,type ProviderRadarRow}from'../radar/providerRadarStore'
 import{retryOwnedClientMatching}from'../services/clientActionService'
 import{SkeletonCard}from'../../../shared/ux'
+import{UserProfileAvatar}from'../../../mvp/UserProfileAvatar'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const MAP_STYLE:maplibregl.StyleSpecification={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
@@ -95,6 +96,7 @@ export function ClientHomeScreen({onOpenService}:Props){
      {radarError&&<div className="ugo-home-map-warning">Mapa temporalmente limitado · el pedido sigue disponible</div>}
     </div>
     <footer><div><strong>{onlineProviders.length>0?`${onlineProviders.length} profesionales disponibles ahora`:'Buscando profesionales disponibles'}</strong><small>La disponibilidad se confirma al crear el pedido.</small></div><button type="button" onClick={()=>flow.navigate('request')}>Pedir servicio <span>→</span></button></footer>
+    {onlineProviders.length>0&&<section className="ugo-home-nearby" aria-label="Profesionales disponibles"><div className="ugo-home-nearby-head"><div><strong>Profesionales disponibles</strong><small>Perfiles verificados cerca de tu zona</small></div><span>{onlineProviders.length} activos</span></div><div className="ugo-home-provider-list">{onlineProviders.slice(0,3).map(provider=><article className="ugo-home-provider-card" key={provider.id}><UserProfileAvatar name={provider.nombre||'Profesional UGO'} role="provider" photoUrl={provider.foto_url} size={44} className="ugo-home-provider-avatar"/><div className="ugo-home-provider-info"><strong>{provider.nombre||'Profesional UGO'}</strong><small>{provider.categoria_emoji||'🧰'} {provider.categoria_nombre||'Servicios para el hogar'}</small><div className="ugo-home-provider-meta"><span className="ugo-home-verified">✓ Verificado</span>{provider.karma!==null&&provider.karma!==undefined&&Number(provider.karma)>0&&<span className="ugo-home-provider-rating">★ {Number(provider.karma).toFixed(1)}</span>}{provider.servicios_completados!==null&&provider.servicios_completados!==undefined&&<span>{provider.servicios_completados} servicios</span>}</div></div><span className="ugo-home-available"><i/>Disponible</span></article>)}</div></section>
    </aside>
 
    <div className="ugo-home-services">
