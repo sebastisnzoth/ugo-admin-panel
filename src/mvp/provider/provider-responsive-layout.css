@@ -79,7 +79,7 @@
   }
   .provider-bottom-nav button.active,
   .provider-bottom-nav button[aria-current="page"]{
-    background:color-mix(in srgb,var(--ugo-color-primary,#128c4a) 12%,var(--ugo-surface,#fff));
+    background:color-mix(in srgb,var(--ugo-color-primary,var(--ugo-color-primary)) 12%,var(--ugo-surface,#fff));
   }
   .provider-nav-badge{top:8px;right:10px}
 }

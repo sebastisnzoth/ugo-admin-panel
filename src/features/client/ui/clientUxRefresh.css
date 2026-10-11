@@ -40,3 +40,103 @@
 @media(prefers-reduced-motion:reduce){
   .ugo-home-order-steps i{transition:none}
 }
+
+/* ---------------------------------------------------------------------------
+   Tema final del home Cliente (2026-10-11)
+   Decisión de producto: lienzo claro y un único bloque oscuro ("hero") como
+   acento de marca, con la identidad cian del PLAN. Esta capa se importa última
+   para terminar la cascada que antes peleaban clientHomeScreen / clientPremium.
+   --------------------------------------------------------------------------- */
+
+.ugo-client-root.ugo-client-screen-home{background:var(--ugo-color-page)!important}
+
+.ugo-client-root.ugo-client-screen-home .ugo-home-screen{
+  background:
+    radial-gradient(circle at 88% 0,color-mix(in srgb,var(--ugo-color-accent) 12%,transparent),transparent 34rem),
+    var(--ugo-color-page)!important;
+  color:var(--ugo-color-on-surface)!important;
+}
+
+/* Hero oscuro: greeting, pedidos activos y CTA viven acá. */
+.ugo-client-root .ugo-home-hero{
+  border:1px solid color-mix(in srgb,var(--ugo-color-inverse-border) 78%,transparent)!important;
+  background:
+    radial-gradient(circle at 92% -10%,color-mix(in srgb,var(--ugo-color-accent) 26%,transparent),transparent 22rem),
+    linear-gradient(160deg,var(--ugo-color-inverse-surface) 0,var(--ugo-color-inverse-page) 100%)!important;
+  color:var(--ugo-color-inverse-text)!important;
+  box-shadow:var(--ugo-shadow-md)!important;
+}
+.ugo-client-root .ugo-home-hero:before{
+  background:radial-gradient(circle,color-mix(in srgb,var(--ugo-color-accent) 22%,transparent),transparent 68%)!important;
+}
+.ugo-client-root .ugo-home-hero h1{color:var(--ugo-color-inverse-text)!important}
+.ugo-client-root .ugo-home-hero>p{color:var(--ugo-color-inverse-text-muted)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-copy strong{color:var(--ugo-color-inverse-text)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-copy small{color:var(--ugo-color-inverse-text-muted)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-copy em{color:var(--ugo-color-inverse-text-muted)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-copy b{color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-copy b.is-eta{color:var(--ugo-color-inverse-text)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-kicker{color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-kicker i{background:var(--ugo-color-accent)!important;box-shadow:0 0 0 5px color-mix(in srgb,var(--ugo-color-accent) 18%,transparent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-location{color:var(--ugo-color-inverse-text)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-location small{color:var(--ugo-color-inverse-text-muted)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-location>span{background:color-mix(in srgb,var(--ugo-color-accent) 18%,transparent)!important;color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-location>b{background:color-mix(in srgb,var(--ugo-color-accent) 14%,transparent)!important;color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-bell{border-color:color-mix(in srgb,var(--ugo-color-inverse-text-muted) 40%,transparent)!important;background:color-mix(in srgb,var(--ugo-color-inverse-text) 8%,transparent)!important;color:var(--ugo-color-inverse-text)!important}
+
+/* Pedidos activos dentro del hero: tarjetas oscuras con acento cian. */
+.ugo-client-root .ugo-home-hero .ugo-home-active-orders>button{
+  border-color:color-mix(in srgb,var(--ugo-color-inverse-text-muted) 34%,transparent)!important;
+  background:color-mix(in srgb,var(--ugo-color-inverse-text) 7%,transparent)!important;
+  color:var(--ugo-color-inverse-text)!important;
+}
+.ugo-client-root .ugo-home-hero .ugo-home-active-orders>button.is-assigned{
+  border-color:color-mix(in srgb,var(--ugo-color-accent) 44%,transparent)!important;
+  background:color-mix(in srgb,var(--ugo-color-accent) 12%,transparent)!important;
+}
+.ugo-client-root .ugo-home-hero .ugo-home-order-icon{background:var(--ugo-color-accent)!important;color:var(--ugo-color-on-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-active-orders>button.is-searching .ugo-home-order-icon{background:color-mix(in srgb,var(--ugo-color-accent) 18%,transparent)!important;color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-steps i{background:color-mix(in srgb,var(--ugo-color-inverse-text-muted) 34%,transparent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-steps i.is-done{background:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-active-orders>button.is-searching .ugo-home-order-steps i.is-done{background:var(--ugo-color-warning)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-active-orders.is-loading .ugo-home-order-skeleton{background:color-mix(in srgb,var(--ugo-color-inverse-text) 7%,transparent)!important;border-color:color-mix(in srgb,var(--ugo-color-inverse-text-muted) 30%,transparent)!important}
+
+/* CTA principal: cian sólido con texto oscuro (7.4:1). */
+.ugo-client-root .ugo-home-hero .ugo-home-hugo-cta{
+  background:linear-gradient(135deg,var(--ugo-color-accent),var(--ugo-color-accent-strong))!important;
+  color:var(--ugo-color-on-accent)!important;
+  box-shadow:0 14px 30px color-mix(in srgb,var(--ugo-color-accent-strong) 34%,transparent)!important;
+}
+.ugo-client-root .ugo-home-hero .ugo-home-hugo-cta strong{color:var(--ugo-color-on-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-hugo-cta small{color:color-mix(in srgb,var(--ugo-color-on-accent) 82%,transparent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-repeat{
+  border-color:color-mix(in srgb,var(--ugo-color-inverse-text-muted) 32%,transparent)!important;
+  background:color-mix(in srgb,var(--ugo-color-inverse-text) 6%,transparent)!important;
+  color:var(--ugo-color-inverse-text)!important;
+}
+.ugo-client-root .ugo-home-hero .ugo-home-repeat>span{background:color-mix(in srgb,var(--ugo-color-accent) 20%,transparent)!important;color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-repeat small{color:var(--ugo-color-inverse-text-muted)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-repeat>b{color:var(--ugo-color-accent)!important}
+
+/* Navegación inferior móvil: clara, activa en cian. */
+@media(max-width:699px){
+  .ugo-client-root .ugo-home-mobile-nav{
+    border:1px solid var(--ugo-color-border)!important;
+    background:color-mix(in srgb,var(--ugo-color-surface) 94%,transparent)!important;
+    box-shadow:var(--ugo-shadow-md)!important;
+  }
+  .ugo-client-root .ugo-home-mobile-nav button{color:var(--ugo-color-text-muted)!important}
+  .ugo-client-root .ugo-home-mobile-nav button.active{color:var(--ugo-color-brand-500)!important;background:var(--ugo-color-accent-soft)!important}
+}
+
+/* ETA del pedido activo en el home: chip legible dentro de la tarjeta. */
+.ugo-home-order-eta{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:3px 9px;border-radius:999px;background:var(--ugo-color-accent-soft);color:var(--ugo-color-brand-500);font-size:var(--ugo-font-caption);font-weight:800;width:fit-content}
+.ugo-home-order-eta i{font-style:normal;font-size:9px}
+.ugo-client-root .ugo-home-hero .ugo-home-order-eta{background:color-mix(in srgb,var(--ugo-color-accent) 18%,transparent)!important;color:var(--ugo-color-accent)!important}
+.ugo-client-root .ugo-home-hero .ugo-home-order-eta.is-live{background:var(--ugo-color-accent)!important;color:var(--ugo-color-on-accent)!important}
+
+/* Alcance de marca del shell Cliente (superficies claras):
+   `--ugo-color-primary` pasa a ser el cian accesible (5.0:1 sobre blanco) y el
+   cian brillante (#16C7D9) queda como acento para rellenos, foco y estados
+   seleccionados, donde el texto se escribe con `--ugo-color-on-accent`. */
+.ugo-client-root{--ugo-color-primary:var(--ugo-color-brand-500);--ugo-color-focus:var(--ugo-color-accent-strong)}

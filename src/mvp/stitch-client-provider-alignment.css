@@ -84,9 +84,9 @@
 .ugo-provider-structural-home.is-online .ugo-provider-structural-rail span:first-child,
 .ugo-provider-structural-home.has-demand .ugo-provider-structural-rail span:nth-child(2),
 .ugo-provider-structural-home .ugo-provider-structural-rail span.is-active{
-  background:#e3f3e9;
+  background:var(--ugo-color-accent-soft);
   border-color:#b9e3ca;
-  color:#087f5b;
+  color:var(--ugo-color-primary);
 }
 
 .ugo-provider-structural-tags{

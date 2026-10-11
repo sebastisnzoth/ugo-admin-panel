@@ -4,8 +4,8 @@
 :root{
   --ugo-client-ink:#0b1711;
   --ugo-client-muted:#66736c;
-  --ugo-client-green:#0b9655;
-  --ugo-client-green-strong:#087a46;
+  --ugo-client-green:var(--ugo-color-primary);
+  --ugo-client-green-strong:var(--ugo-color-brand-600);
   --ugo-client-dark:#06100c;
   --ugo-client-dark-2:#0b1b15;
   --ugo-client-line:rgba(16,36,25,.12);
@@ -97,7 +97,7 @@
 
   .ugo-client-root .ugo-client-home-talk{
     border-color:#0a8e50!important;
-    background:linear-gradient(180deg,#0ca45d,#0a8d50)!important;
+    background:linear-gradient(180deg,var(--ugo-color-primary),var(--ugo-color-primary))!important;
     box-shadow:0 13px 28px rgba(11,150,85,.22)!important;
   }
 
@@ -232,7 +232,7 @@
     width:50px!important;
     height:50px!important;
     border-radius:16px!important;
-    background:linear-gradient(180deg,#0ca45d,#087c47)!important;
+    background:linear-gradient(180deg,var(--ugo-color-primary),#087c47)!important;
     box-shadow:0 12px 28px rgba(10,143,80,.24)!important;
   }
 
@@ -448,7 +448,7 @@
   height:64px!important;
   border:1px solid #dce7e0!important;
   background:#eef8f2!important;
-  color:#0a8d50!important;
+  color:var(--ugo-color-primary)!important;
   font-size:18px!important;
   font-weight:950!important;
 }
@@ -498,8 +498,8 @@
 
 .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-badges span:first-child{
   border-color:#cceada!important;
-  background:#eaf8f0!important;
-  color:#087747!important;
+  background:var(--ugo-color-accent-soft)!important;
+  color:var(--ugo-color-primary)!important;
 }
 
 .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-bio{

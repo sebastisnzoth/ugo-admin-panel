@@ -62,7 +62,7 @@
 }
 
 .ugo-client-root .ugo-client-profile-panel>header small{
-  color:#0a8658!important;
+  color:var(--ugo-color-primary)!important;
   font-size:9px!important;
   font-weight:950!important;
   letter-spacing:.12em!important;
@@ -104,7 +104,7 @@
   display:grid!important;
   place-items:center!important;
   border-radius:18px!important;
-  background:linear-gradient(145deg,#2af29c,#22d3ee)!important;
+  background:linear-gradient(145deg,var(--ugo-color-accent),#22d3ee)!important;
   color:#052215!important;
   font-size:18px!important;
   font-weight:950!important;
@@ -135,7 +135,7 @@
   border:1px solid #cfe0d6!important;
   border-radius:12px!important;
   background:#fff!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
   font-size:10px!important;
   font-weight:900!important;
 }
@@ -146,7 +146,7 @@
   border:1px solid #bfe5d0!important;
   border-radius:13px!important;
   background:#edf9f3!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
 }
 
 .ugo-client-root .ugo-client-profile-form{
@@ -237,7 +237,7 @@
   place-items:center!important;
   border-radius:14px!important;
   background:#edf8f2!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
   font-size:18px!important;
 }
 
@@ -306,7 +306,7 @@
   place-items:center!important;
   border-radius:13px!important;
   background:#edf8f2!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
   font-size:16px!important;
 }
 
@@ -361,7 +361,7 @@
 .ugo-client-root .ugo-client-profile-payment button.selected{
   border-color:#19d985!important;
   background:#ebfaf3!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
   box-shadow:0 0 0 1px rgba(25,217,133,.10) inset!important;
 }
 
@@ -375,7 +375,7 @@
 }
 
 .ugo-client-root .ugo-client-profile-payment button.selected small{
-  color:#0a8658!important;
+  color:var(--ugo-color-primary)!important;
 }
 
 .ugo-client-root .ugo-client-places{
@@ -413,7 +413,7 @@
   padding:4px 7px!important;
   border-radius:999px!important;
   background:#daf8e9!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
   font-size:8px!important;
   font-style:normal!important;
 }
@@ -438,7 +438,7 @@
   border:1px solid #cfe0d7!important;
   border-radius:10px!important;
   background:#fff!important;
-  color:#087a50!important;
+  color:var(--ugo-color-primary)!important;
   font-size:9px!important;
   font-weight:850!important;
 }
