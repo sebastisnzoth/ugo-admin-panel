@@ -31,6 +31,13 @@ Admin usa densidad operacional legible, estados degradados veraces y colores sem
 
 Loading, vacío, sin resultados, degradado, error y retry conservan geometría estable y explican la próxima acción recuperable. La UI de producto no usa `alert()`, `confirm()` ni `prompt()` del navegador.
 
+### Capa transversal de experiencia (2026-10-11)
+
+- Cliente y Proveedor comparten `src/shared/ux`: aviso de conectividad con resincronización (`ConnectionBanner`), skeletons con la geometría real (`Skeleton*`) y cambio de pantalla con scroll al inicio, foco en el encabezado (`data-ux-screen-heading`) y anuncio accesible (`ScreenAnnouncer`).
+- El aviso de conectividad informa y nunca bloquea: no intercepta taps (`pointer-events:none`) y se ubica por encima de la navegación fija de cada rol.
+- Un trabajo activo del proveedor mantiene su próxima acción alcanzable de forma permanente (barra fija `provider-sticky-step`), además del brief `provider-mission-brief`.
+- Cliente muestra el avance del pedido activo con 4 pasos y el vencimiento de las ofertas del proveedor es visible tanto en la lista como en el detalle; el color nunca es la única señal (siempre hay texto).
+
 ## Rutas y frontera demo
 
 Cliente, Proveedor y Admin de producción usan datos persistidos reales. La ruta legacy `?app=web` debe mostrar una frontera persistente **DEMO · DATOS FICTICIOS** antes de cualquier nombre, precio, ETA o estado ficticio.
