@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{ProviderRatingPrompt}from'./ProviderRatingPrompt'
+import{UserProfileAvatar}from'./UserProfileAvatar'
 
 type Row={
  id:string
@@ -13,6 +14,7 @@ type Row={
  programado_para?:string|null
  completado_at?:string|null
  direccion_cliente?:string|null
+ cliente_id?:string|null
  categoria?:{nombre?:string|null;emoji?:string|null}|null
  cliente?:{nombre?:string|null}|null
 }
@@ -30,7 +32,7 @@ const method=(value?:string|null)=>value==='efectivo'?'Efectivo':value==='pix'||
 
 export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=>void}){
  const db=useMemo(()=>getRoleSupabase('provider'),[])
- const[evidence,setEvidence]=useState<Evidence[]>([]),[requestEvidence,setRequestEvidence]=useState<RequestEvidence[]>([]),[events,setEvents]=useState<Event[]>([]),[payment,setPayment]=useState<Payment|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[channelEpoch,setChannelEpoch]=useState(0)
+ const[evidence,setEvidence]=useState<Evidence[]>([]),[requestEvidence,setRequestEvidence]=useState<RequestEvidence[]>([]),[events,setEvents]=useState<Event[]>([]),[payment,setPayment]=useState<Payment|null>(null),[clientPhotoPath,setClientPhotoPath]=useState<string|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[channelEpoch,setChannelEpoch]=useState(0)
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
@@ -43,6 +45,7 @@ export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=
    if(evidenceResult.error)throw evidenceResult.error
    if(requestResult.error)throw requestResult.error
    if(eventResult.error)throw eventResult.error
+   if(service.cliente_id){const{data:clientProfile}=await db.from('perfiles_cliente').select('foto_perfil_path').eq('usuario_id',service.cliente_id).maybeSingle();setClientPhotoPath((clientProfile as {foto_perfil_path?:string|null}|null)?.foto_perfil_path||null)}else setClientPhotoPath(null)
    const signedEvidence=await Promise.all(((evidenceResult.data||[])as Evidence[]).map(async item=>{const{data}=await db.storage.from('service-evidence').createSignedUrl(item.storage_path,900);return{...item,url:data?.signedUrl||null}}))
    const signedRequest=await Promise.all(((requestResult.data||[])as RequestEvidence[]).map(async item=>{const{data}=await db.storage.from('request-evidence').createSignedUrl(item.storage_path,900);return{...item,url:data?.signedUrl||null}}))
    setEvidence(signedEvidence);setRequestEvidence(signedRequest);setEvents((eventResult.data||[])as Event[]);setPayment(paymentResult.error?null:(paymentResult.data as Payment|null))
@@ -70,7 +73,7 @@ export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=
    <header><div><small>TRABAJO GUARDADO · #{service.numero??service.id.slice(0,8)}</small><h2 id="ugo-provider-history-detail-title">{service.categoria?.emoji||'🧰'} {service.categoria?.nombre||'Servicio UGO'}</h2><p>Registro completo y sólo lectura de lo realizado.</p></div><button type="button" onClick={onClose} aria-label="Cerrar">×</button></header>
    <div className="ugo-provider-history-detail-state"><span>{STATE[service.estado]||service.estado}</span><b>{when(service.completado_at||service.updated_at||service.created_at)}</b></div>
    <section className="ugo-provider-history-summary">
-    <div><small>CLIENTE</small><strong>{service.cliente?.nombre||'Cliente UGO'}</strong></div>
+    <div><small>CLIENTE</small><span style={{display:'inline-flex',alignItems:'center',gap:8}}><UserProfileAvatar name={service.cliente?.nombre||'Cliente UGO'} role="client" photoPath={clientPhotoPath} size={34}/><strong>{service.cliente?.nombre||'Cliente UGO'}</strong></span></div>
     <div><small>VALOR</small><strong>{money(service.tarifa)}</strong></div>
     <div><small>PROGRAMADO</small><strong>{when(service.programado_para||service.created_at)}</strong></div>
     <div><small>DIRECCIÓN</small><strong>{service.direccion_cliente||'No registrada'}</strong></div>
