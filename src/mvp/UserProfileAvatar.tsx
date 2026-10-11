@@ -1,8 +1,8 @@
 import React,{useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 
-type Props={name?:string|null;role:'client'|'provider'|'admin';photoPath?:string|null;photoUrl?:string|null;size?:number;className?:string}
-const bucketFor=(role:Props['role'])=>role==='client'?'client-public':role==='provider'?'provider-public':'client-public'
+type Props={name?:string|null;role:'client'|'provider';photoPath?:string|null;photoUrl?:string|null;size?:number;className?:string}
+const bucketFor=(role:Props['role'])=>role==='client'?'client-public':'provider-public'
 const initials=(name?:string|null)=>String(name||'').trim().split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]?.toLocaleUpperCase()).join('')||'UGO'
 
 /** Shared identity avatar. Prefer a persisted profile photo and always fall back to initials. */
