@@ -27,7 +27,7 @@ test('canonical client request covers need, optional evidence, location, when, p
  assert.match(location,/Usar mi ubicación/)
  assert.match(location,/pickupSource/)
  assert.match(when,/¿Cuándo lo necesitás\?/)
- assert.match(when,/new Date\(scheduleAt\)\.getTime\(\)<=Date\.now\(\)/)
+ assert.match(when,/new Date\(scheduleAt\)\.getTime\(\)<=nowMs\(\)\)/)
  assert.match(payment,/¿Cómo vas a pagar\?/)
  assert.match(payment,/useState<Method>\('cash'\)/)
  assert.match(payment,/No se cobra nada en este paso/)

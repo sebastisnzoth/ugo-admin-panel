@@ -14,7 +14,7 @@ export function ClientGlobalMenu(){
  const close=()=>setOpen(false)
  const go=(screen:'home'|'history'|'profile'|'dispute')=>{close();flow.navigate(screen)}
  const after=(eventName:(typeof UGO_UI_EVENTS)[keyof typeof UGO_UI_EVENTS])=>window.setTimeout(()=>emitUgoUiEvent(eventName),60)
- const request=()=>{close();flow.navigate('home');after(UGO_UI_EVENTS.clientFocusServiceSearch)}
+ const request=()=>{close();flow.navigate('home')}
  const categories=()=>{close();flow.navigate('home');after(UGO_UI_EVENTS.clientShowCategories)}
  const addresses=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfileAddresses)}
  const payment=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfilePayment)}

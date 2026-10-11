@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{getRoleSupabase,type UgoRole}from'../lib/roleSupabase'
 import{money}from'./shared'
 import'./service-expansion.css'
@@ -31,7 +32,8 @@ export function ServiceExpansionPanel({role,serviceId,compact=false}:{role:UgoRo
   setItems((x||[])as Expansion[]);setPayment((p||null)as PaymentLite|null)
  },[role,sb,serviceId])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
- useEffect(()=>{if(!service?.id)return;let alive=true;const resync=()=>{if(alive)void load().catch(()=>{})};const onVisibility=()=>{if(document.visibilityState==='visible')resync()};window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility);const ch=sb.channel(`expansion-${role}-${service.id}`).on('postgres_changes',{event:'*',schema:'public',table:'ampliaciones_servicio',filter:`servicio_id=eq.${service.id}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`servicio_id=eq.${service.id}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},resync).subscribe(status=>{if(status==='SUBSCRIBED')resync()});return()=>{alive=false;window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}},[load,role,sb,service?.id])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{if(!service?.id)return;let alive=true;const resync=()=>{if(alive)void load().catch(()=>{})};const onVisibility=()=>{if(document.visibilityState==='visible')resync()};window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility);const ch=sb.channel(`expansion-${role}-${service.id}`).on('postgres_changes',{event:'*',schema:'public',table:'ampliaciones_servicio',filter:`servicio_id=eq.${service.id}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`servicio_id=eq.${service.id}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},resync);const dispose=subscribeRealtimeChannel(ch,sb,{onSync:resync,onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{alive=false;window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);dispose()}},[load,role,sb,service?.id,channelEpoch])
  if(!service)return null
  const pending=items.filter(x=>x.estado==='pendiente')
  const initialQuote=Number(service.tarifa||0)<=0

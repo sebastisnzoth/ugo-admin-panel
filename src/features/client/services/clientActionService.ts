@@ -45,7 +45,7 @@ export async function retryOwnedClientMatching(supabase:SupabaseClient,userId:st
  try{
   const{data:persisted}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',owned.id).eq('cliente_id',userId).maybeSingle()
   if(persisted&&(['ofrecido','asignado'].includes(String(persisted.estado))||Boolean(persisted.proveedor_id)))return true
- }catch{}
+ }catch{/* vacío intencional */}
  throw result.error
 }
 
@@ -64,7 +64,7 @@ export async function approvePendingClientService(supabase:SupabaseClient,userId
   const persisted=await readOwnedClosureService(supabase,userId,serviceId)
   if(persisted?.estado==='completado')return true
   if(persisted?.estado==='esperando_aprobacion'&&hasWorkApproval(persisted))return true
- }catch{}
+ }catch{/* vacío intencional */}
  throw result.error
 }
 
@@ -81,6 +81,6 @@ export async function confirmApprovedCashClientService(supabase:SupabaseClient,u
  try{
   const persisted=await readOwnedClosureService(supabase,userId,serviceId)
   if(persisted?.estado==='completado')return true
- }catch{}
+ }catch{/* vacío intencional */}
  throw result.error
 }

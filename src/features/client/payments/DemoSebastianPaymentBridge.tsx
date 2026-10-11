@@ -24,7 +24,7 @@ export function DemoSebastianPaymentBridge(){
        return new Response(JSON.stringify({error:error.message||'No se pudo registrar el pago demo.'}),{status:409,headers:{'Content-Type':'application/json'}})
       }
      }
-    }catch{}
+    }catch{/* vacío intencional */}
    }
    return original(input as any,init)
   }

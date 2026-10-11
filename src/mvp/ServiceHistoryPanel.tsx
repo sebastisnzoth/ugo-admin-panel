@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
+import{useDialog}from'./dialogs'
 import'./service-history.css'
 import'./provider-history.css'
 import{ProviderHistoryDetail}from'./ProviderHistoryDetail'
@@ -42,6 +43,11 @@ const isUpcoming=(row:Row)=>ACTIVE_STATES.has(row.estado)&&isFuture(row)
 const isCurrent=(row:Row)=>ACTIVE_STATES.has(row.estado)&&!isUpcoming(row)
 const isFinal=(row:Row)=>FINAL_STATES.has(row.estado)
 const clientState=(estado:string)=>CLIENT_STATE_COPY[estado]||{title:LABELS[estado]||estado,detail:'Abrí el pedido para ver el estado completo.',tone:'waiting' as const}
+const CLIENT_PRIORITY:Record<string,number>={esperando_aprobacion:0,disputado:1,en_camino:2,llegado:3,en_progreso:4,asignado:5,buscando:6,ofrecido:7,borrador:8}
+const sectionOf=(row:Row)=>isFinal(row)?'final':isUpcoming(row)?'upcoming':'current'
+const SECTION_COPY:Record<string,{label:string;tag:string;icon:string;tone:string}>={current:{label:'Activos ahora',tag:'AHORA',icon:'●',tone:'live'},upcoming:{label:'Próximos',tag:'PROGRAMADO',icon:'◷',tone:'waiting'},final:{label:'Finalizados',tag:'FINALIZADO',icon:'✓',tone:'done'}}
+const SECTION_ORDER:Record<string,number>={current:0,upcoming:1,final:2}
+const updatedDesc=(a:Row,b:Row)=>new Date(b.updated_at||b.created_at||0).getTime()-new Date(a.updated_at||a.created_at||0).getTime()
 const onePayment=(value:Row['pago'])=>Array.isArray(value)?value[0]||null:value||null
 const stars=(value:unknown)=>{const score=Number(value||0);return Number.isFinite(score)&&score>0?`${score}/5 ★`:'—'}
 
@@ -49,6 +55,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
  const sb=useMemo(()=>role==='admin'?adminSupabase:getRoleSupabase(role),[role])
  const[userId,setUserId]=useState<string|null>(null),[open,setOpen]=useState(embedded),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[filter,setFilter]=useState<ClientFilter|GenericFilter>('todos'),[cancellingId,setCancellingId]=useState(''),[actionNotice,setActionNotice]=useState(''),[providerDetail,setProviderDetail]=useState<Row|null>(null),[clientEvidenceServiceId,setClientEvidenceServiceId]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
  const openedInitialService=useRef<string|null>(null)
+ const{confirm,node:dialog}=useDialog()
  useEffect(()=>{let alive=true;sb.auth.getSession().then(({data})=>{if(alive)setUserId(data.session?.user?.id||null)});const{data:l}=sb.auth.onAuthStateChange((_e,s)=>setUserId(s?.user?.id||null));return()=>{alive=false;l.subscription.unsubscribe()}},[sb])
  useEffect(()=>{if(embedded)setOpen(true)},[embedded])
  useEffect(()=>{if(openRequest)setOpen(true)},[openRequest])
@@ -81,7 +88,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
   })()
   return()=>{alive=false}
  },[initialServiceId,role,rows,sb,userId])
- const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setCancellingId(serviceId);setActionNotice('');try{const ok=await cancelOwnedClientService(sb,userId,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado y no se puede cancelar desde Actividad.');setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,sb,userId])
+ const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!await confirm({title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido?',danger:true}))return;setCancellingId(serviceId);setActionNotice('');try{const ok=await cancelOwnedClientService(sb,userId,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado y no se puede cancelar desde Actividad.');setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,confirm,load,role,sb,userId])
  if(!userId)return null
  const currentCount=rows.filter(isCurrent).length,upcomingCount=rows.filter(isUpcoming).length,finalCount=rows.filter(isFinal).length
  const visible=rows.filter(row=>{
@@ -96,6 +103,11 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
   if(filter==='activo')return ACTIVE_STATES.has(row.estado)
   return true
  })
+ if(role==='client')visible.sort((a,b)=>{const sectionA=sectionOf(a),sectionB=sectionOf(b);if(SECTION_ORDER[sectionA]!==SECTION_ORDER[sectionB])return SECTION_ORDER[sectionA]-SECTION_ORDER[sectionB];if(sectionA==='current')return(CLIENT_PRIORITY[a.estado]??9)-(CLIENT_PRIORITY[b.estado]??9)||updatedDesc(a,b);if(sectionA==='upcoming')return new Date(a.programado_para||0).getTime()-new Date(b.programado_para||0).getTime();return updatedDesc(a,b)})
+ const showSections=role==='client'&&filter==='todos'
+ const sectionStart=new Set<string>()
+ if(showSections){let prev='';for(const row of visible){const section=sectionOf(row);if(section!==prev){sectionStart.add(row.id);prev=section}}}
+ const sectionCount:Record<string,number>={current:currentCount,upcoming:upcomingCount,final:finalCount}
  const title=role==='client'?'Actividad':role==='provider'?'Mis trabajos':'Historial global'
  const panel=<section className={`ugo-history-panel${embedded?' embedded':''}${role==='client'?' ugo-client-history':''}${role==='provider'?' ugo-provider-history':''}`} onClick={e=>e.stopPropagation()}>
    <header><div><small>{role==='admin'?'CONTROL UGO':role==='provider'?'PROVEEDOR':'CLIENTE'}</small><h2>{title}</h2><p>{role==='admin'?'Todos los pedidos y trabajos de UGO.':role==='provider'?'Trabajos aceptados y realizados por vos.':'Tus pedidos, separados por lo que está pasando ahora, lo que viene y lo que terminó.'}</p></div>{role==='client'&&<span className="ugo-client-history-total" aria-label={`${rows.length} pedidos`}>{rows.length}</span>}{!embedded&&<button type="button" onClick={()=>setOpen(false)} aria-label="Cerrar">×</button>}</header>
@@ -115,15 +127,15 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
     <button type="button" onClick={()=>void load()} disabled={loading} aria-label="Actualizar actividad">↻</button>
    </div>}
    {actionNotice&&<div className="ugo-history-action-notice" role="status" aria-live="polite">{actionNotice}</div>}
-   <div className="ugo-history-list">{loading&&<div className="ugo-history-empty">Cargando actividad…</div>}{error&&<div className="ugo-history-error">{error}</div>}{!loading&&!error&&visible.length===0&&<div className="ugo-history-empty">Todavía no hay movimientos en esta sección.</div>}{!loading&&!error&&visible.map(r=>{const state=clientState(r.estado);return <article key={r.id} className={role==='client'?`ugo-history-item state-${r.estado}`:undefined}>
-    <div className="ugo-history-top"><div><small>PEDIDO</small><strong>#{r.numero??String(r.id).slice(0,8)}</strong></div><span className={`state-${r.estado}`}>{LABELS[r.estado]||r.estado}</span></div>
+   <div className="ugo-history-list">{loading&&<div className="ugo-history-empty">Cargando actividad…</div>}{error&&<div className="ugo-history-error">{error}</div>}{!loading&&!error&&visible.length===0&&<div className="ugo-history-empty">Todavía no hay movimientos en esta sección.</div>}{!loading&&!error&&visible.map(r=>{const state=clientState(r.estado);const section=role==='client'?sectionOf(r):'';const sectionMeta=section?SECTION_COPY[section]:null;const sectionHead=showSections&&sectionMeta&&sectionStart.has(r.id)?<div className={`ugo-history-section-head tone-${sectionMeta.tone}`} role="heading" aria-level={3}><span className="ugo-history-section-icon">{sectionMeta.icon}</span><strong>{sectionMeta.label}</strong><em>{sectionCount[section]} {sectionCount[section]===1?'pedido':'pedidos'}</em></div>:null;return <React.Fragment key={r.id}>{sectionHead}<article className={role==='client'?`ugo-history-item state-${r.estado}`:undefined}>
+    <div className="ugo-history-top"><div><small>PEDIDO</small><strong>#{r.numero??String(r.id).slice(0,8)}</strong></div>{role==='client'&&sectionMeta&&<span className={`ugo-history-section-tag tone-${sectionMeta.tone}`}>{sectionMeta.tag}</span>}<span className={`state-${r.estado}`}>{LABELS[r.estado]||r.estado}</span></div>
     <h3>{r.categoria?.emoji||'🧰'} {r.categoria?.nombre||'Servicio UGO'}</h3>
-    {role==='client'&&<div className={`ugo-history-state-focus tone-${state.tone}`}><span className="ugo-history-state-dot">●</span><div><small>ESTADO DEL PEDIDO</small><strong>{state.title}</strong><p>{state.detail}</p></div></div>}
+    {role==='client'&&<div className={`ugo-history-state-focus tone-${state.tone}`}><span className="ugo-history-state-dot">●</span><div><small>ESTADO DEL PEDIDO</small><strong>{state.title}</strong><p>{state.detail}</p>{r.estado==='esperando_aprobacion'&&<em className="ugo-history-state-action">Requiere tu acción</em>}</div></div>}
     {r.descripcion&&<p className="ugo-history-description">{r.descripcion}</p>}
     <div className="ugo-history-meta"><div><small>{r.programado_para?'PROGRAMADO':'CREADO'}</small><b>{date(r.programado_para||r.created_at)}</b></div><div><small>IMPORTE</small><b>{money(r.tarifa)}</b></div>{role==='client'&&<><div><small>PAGO</small><b>{onePayment(r.pago)?`${String(onePayment(r.pago)?.metodo||'pago')} · ${String(onePayment(r.pago)?.estado||'sin estado')}`:'Sin pago registrado'}</b></div><div><small>TU CALIFICACIÓN</small><b>{stars(r.resenas?.find(review=>review.autor_tipo==='cliente')?.puntuacion)}</b></div><div><small>CALIFICACIÓN RECIBIDA</small><b>{stars(r.resenas?.find(review=>review.autor_tipo==='proveedor')?.puntuacion)}</b></div></>}{role!=='client'&&<div><small>CLIENTE</small><b>{person(r.cliente)}</b></div>}{role!=='provider'&&<div><small>PROVEEDOR</small><b>{person(r.proveedor)}</b></div>}</div>
     {role==='client'&&<><div className="ugo-history-row-actions">{onOpenService&&<button type="button" className="ugo-history-open-button" onClick={()=>onOpenService(r.id)}>Abrir pedido y chat</button>}{r.estado==='completado'&&<button type="button" className="ugo-history-open-button secondary" aria-expanded={clientEvidenceServiceId===r.id} onClick={()=>setClientEvidenceServiceId(current=>current===r.id?null:r.id)}>{clientEvidenceServiceId===r.id?'Ocultar fotos':'Ver fotos'}</button>}{CLIENT_CANCELLABLE_STATES.has(r.estado)&&<button type="button" className="ugo-history-cancel-button" disabled={Boolean(cancellingId)} onClick={()=>void cancelClientService(r.id)}>{cancellingId===r.id?'Cancelando…':'Cancelar pedido'}</button>}</div>{r.estado==='completado'&&clientEvidenceServiceId===r.id&&<div className="ugo-client-history-evidence"><ClientEvidenceGallery serviceId={r.id} compact hideWhenEmpty/></div>}</>}{role==='provider'&&<div className="ugo-history-row-actions"><button type="button" className="ugo-history-open-button" onClick={()=>setProviderDetail(r)}>Abrir trabajo</button></div>}
-   </article>})}</div>
+   </article></React.Fragment>})}</div>
   </section>
- if(embedded)return <>{panel}{role==='provider'&&providerDetail&&<ProviderHistoryDetail service={providerDetail} onClose={()=>setProviderDetail(null)}/>}</>
- return <><button type="button" className={`ugo-history-launch ugo-history-${role}`} onClick={()=>setOpen(true)}>📚 <span>{role==='provider'?'Trabajos':role==='client'?'Actividad':'Historial'}</span></button>{open&&<div className={`ugo-history-backdrop ugo-history-backdrop-${role}`} onClick={()=>setOpen(false)}>{panel}</div>}{role==='provider'&&providerDetail&&<ProviderHistoryDetail service={providerDetail} onClose={()=>setProviderDetail(null)}/>}</>
+ if(embedded)return <>{panel}{dialog}{role==='provider'&&providerDetail&&<ProviderHistoryDetail service={providerDetail} onClose={()=>setProviderDetail(null)}/>}</>
+ return <><button type="button" className={`ugo-history-launch ugo-history-${role}`} onClick={()=>setOpen(true)}>📚 <span>{role==='provider'?'Trabajos':role==='client'?'Actividad':'Historial'}</span></button>{open&&<div className={`ugo-history-backdrop ugo-history-backdrop-${role}`} onClick={()=>setOpen(false)}>{panel}</div>}{role==='provider'&&providerDetail&&<ProviderHistoryDetail service={providerDetail} onClose={()=>setProviderDetail(null)}/>}{dialog}</>
 }

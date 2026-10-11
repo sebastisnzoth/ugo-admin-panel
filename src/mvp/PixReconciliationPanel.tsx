@@ -1,5 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
+import{useDialog}from'./dialogs'
 import'./admin-pix-reconciliation.css'
 
 type PixRow={id:string;servicio_id:string;cliente_id:string;proveedor_id:string;monto_bruto:number;moneda:string;pix_txid:string|null;pix_informado_at:string|null;pix_conciliado_at?:string|null;estado:string;pix_conciliacion_nota:string|null}
@@ -12,6 +14,7 @@ const when=(value?:string|null)=>value?new Date(value).toLocaleString('pt-BR',{d
 
 export function PixReconciliationPanel({embedded=true}:Props){
  const[rows,setRows]=useState<PixRow[]>([]),[recent,setRecent]=useState<PixRow[]>([]),[services,setServices]=useState<Record<string,ServiceRow>>({}),[users,setUsers]=useState<Record<string,UserRow>>({}),[refs,setRefs]=useState<Record<string,string>>({}),[notes,setNotes]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[loading,setLoading]=useState(true)
+ const{confirm,node:dialog}=useDialog()
  const load=useCallback(async()=>{
   setLoadError('');setLoading(true)
   try{
@@ -32,7 +35,8 @@ export function PixReconciliationPanel({embedded=true}:Props){
    setServices(Object.fromEntries(((s||[]) as ServiceRow[]).map(x=>[x.id,x])));setUsers(Object.fromEntries(((u||[]) as UserRow[]).map(x=>[x.id,x])))
   }catch(e){setLoadError(e instanceof Error?e.message:'No se pudo cargar Pix.')}finally{setLoading(false)}
  },[])
- useEffect(()=>{void load();const ch=supabase.channel('admin-pix-reconciliation').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe();return()=>{void supabase.removeChannel(ch)}},[load])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{void load();const ch=supabase.channel('admin-pix-reconciliation').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>void load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,channelEpoch])
  const count=rows.length,total=useMemo(()=>rows.reduce((n,r)=>n+Number(r.monto_bruto||0),0),[rows])
  const todayStart=useMemo(()=>{const d=new Date();d.setHours(0,0,0,0);return d.getTime()},[])
  const reconciledToday=useMemo(()=>recent.filter(r=>r.pix_conciliado_at&&new Date(r.pix_conciliado_at).getTime()>=todayStart&&r.estado!=='pendiente'),[recent,todayStart])
@@ -42,7 +46,11 @@ export function PixReconciliationPanel({embedded=true}:Props){
   if(approve&&ref.length<6){setMessage('Ingresá una referencia/E2E bancaria real de al menos 6 caracteres.');return}
   if(!approve&&note.length<8){setMessage('Para rechazar el Pix explicá el motivo con al menos 8 caracteres.');return}
   const svc=services[row.servicio_id],action=approve?'CONCILIAR':'RECHAZAR',detail=approve?`Referencia: ${ref}`:`Motivo: ${note}`
-  if(!window.confirm(`${action} Pix real de ${row.moneda||'BRL'} ${Number(row.monto_bruto||0).toFixed(2)} del servicio #${svc?.numero??row.servicio_id.slice(0,8)}?\n\n${detail}\n\nLa acción queda auditada.`))return
+  if(!await confirm({title:`${action} Pix real`,message:`${action} Pix real de ${row.moneda||'BRL'} ${Number(row.monto_bruto||0).toFixed(2)} del servicio #${svc?.numero??row.servicio_id.slice(0,8)}?
+
+${detail}
+
+La acción queda auditada.`,danger:!approve}))return
  setBusy(row.id);setMessage('')
  try{
   const{error}=await(supabase as any).rpc('conciliar_pix_direto',{p_pago_id:row.id,p_aprobar:approve,p_referencia:approve?ref:null,p_nota:note||null})
@@ -63,5 +71,6 @@ export function PixReconciliationPanel({embedded=true}:Props){
    <div className="ugo-pix-admin-actions"><button type="button" className="approve" disabled={Boolean(busy)} onClick={()=>void reconcile(row,true)}>{busy===row.id?'Procesando…':'Conciliar PIX'}</button><button type="button" className="reject" disabled={Boolean(busy)} onClick={()=>void reconcile(row,false)}>{busy===row.id?'Procesando…':'Rechazar'}</button></div>
   </article>})}</div>}
   <footer>La conciliación no mueve dinero por sí sola: valida el ingreso real y actualiza el estado financiero protegido del servicio.</footer>
+  {dialog}
  </section>
 }

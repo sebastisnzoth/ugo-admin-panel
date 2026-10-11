@@ -1,4 +1,5 @@
 import React,{useState}from'react'
+import{useDialog}from'./dialogs'
 
 type Props={
  config:Record<string,string>
@@ -11,12 +12,13 @@ const labels:Record<string,string>={pago_efectivo_activo:'efectivo global',pago_
 export function AdminPaymentMethods({config,update}:Props){
  const[saving,setSaving]=useState<string|null>(null)
  const[message,setMessage]=useState('')
+ const{confirm,node:dialog}=useDialog()
  const cash=enabled(config.pago_efectivo_activo)
  const br=enabled(config.pago_efectivo_br_activo)
  const ar=enabled(config.pago_efectivo_ar_activo)
 
  async function toggle(key:string,value:boolean){
-  const ok=window.confirm(`Vas a ${value?'activar':'desactivar'} ${labels[key]||key}. Este cambio afecta nuevos servicios y queda auditado. ¿Confirmar?`)
+  const ok=await confirm({title:'Medio de pago',message:`Vas a ${value?'activar':'desactivar'} ${labels[key]||key}. Este cambio afecta nuevos servicios y queda auditado. ¿Confirmar?`,danger:!value})
   if(!ok)return
   setSaving(key);setMessage('')
   try{await update(key,String(value));setMessage('Configuración de efectivo actualizada y registrada.')}
@@ -34,5 +36,6 @@ export function AdminPaymentMethods({config,update}:Props){
   </div>
   <div className="ugo-payment-contract"><strong>Regla operativa</strong><span>El efectivo no usa credenciales ni pasarela. Debe ser elegido explícitamente por el cliente. El proveedor confirma la recepción al cierre y UGO conserva la trazabilidad.</span></div>
   {message&&<div className="ugo-payment-message" role="status">{message}</div>}
+  {dialog}
  </section>
 }

@@ -4,6 +4,7 @@ import{useAdminActiveServices}from'../hooks/useAdminActiveServices'
 import{useAdminDisputes}from'../hooks/useDisputes'
 import{supabase}from'../lib/supabase'
 import{AdminDisputeAssistant}from'./AdminDisputeAssistant'
+import{useDialog}from'./dialogs'
 import'./admin-decision-center.css'
 
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
@@ -16,8 +17,10 @@ export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(servi
  const{alerts:systemAlerts,refetch}=useSystemAlerts()
  const{services,providers}=useAdminActiveServices()
  const[filter,setFilter]=useState<'all'|'critical'|'warning'|'info'>('all')
+ const[now,setNow]=useState(()=>Date.now())
+ useEffect(()=>{const id=window.setInterval(()=>setNow(Date.now()),60000);return()=>window.clearInterval(id)},[])
  const operationalAlerts=useMemo(()=>{
-  const now=Date.now(),rows:any[]=[]
+  const rows:any[]=[]
   const ageMinutes=(value:any)=>{const at=new Date(value||0).getTime();return Number.isFinite(at)?Math.max(0,(now-at)/60000):0}
   for(const service of services){
    const updated=service.updated_at||service.created_at,age=ageMinutes(updated),future=service.programado_para&&new Date(service.programado_para).getTime()>now
@@ -41,7 +44,7 @@ export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(servi
    rows.push({id:`ops-debt-${provider.id}`,severidad:'warning',tipo:'proveedor_deuda_ugo',titulo:`Proveedor bloqueado por deuda UGO`,descripcion:`${[provider.nombre,provider.apellido].filter(Boolean).join(' ')} acumula ${provider.pendingDebtCount} comisiones pendientes y no puede recibir nuevos pedidos.`,created_at:new Date().toISOString(),proveedor_id:provider.id})
   }
   return rows
- },[providers,services])
+ },[now,providers,services])
  const alerts=useMemo(()=>[...operationalAlerts,...systemAlerts],[operationalAlerts,systemAlerts])
  const criticalCount=alerts.filter((a:any)=>severity(a.severidad)==='critical').length
  const warningCount=alerts.filter((a:any)=>severity(a.severidad)==='warning').length
@@ -64,6 +67,7 @@ export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(servi
 export function AdminDisputesDecisionCenter(){
  const{disputes,loading,error,resolverDisputa}=useAdminDisputes()
  const[selected,setSelected]=useState<any>(null),[text,setText]=useState(''),[favor,setFavor]=useState<'cliente'|'proveedor'>('cliente'),[busy,setBusy]=useState(false),[notice,setNotice]=useState<string|null>(null)
+ const{confirm,node:dialog}=useDialog()
  const[messages,setMessages]=useState<any[]>([]),[evidence,setEvidence]=useState<any[]>([]),[serviceInfo,setServiceInfo]=useState<any>(null),[paymentInfo,setPaymentInfo]=useState<any>(null),[events,setEvents]=useState<any[]>([]),[ruleInfo,setRuleInfo]=useState<any>(null),[detailLoading,setDetailLoading]=useState(false),[detailError,setDetailError]=useState<string|null>(null)
  const total=useMemo(()=>disputes.reduce((n:any,d:any)=>n+Number(d.monto_disputado||0),0),[disputes])
 
@@ -86,14 +90,14 @@ export function AdminDisputesDecisionCenter(){
    if(alive){setEvidence(signed);setDetailLoading(false)}
   }).catch((x:any)=>{if(alive){setDetailError(x?.message||'No se pudo cargar el caso.');setDetailLoading(false)}})
   return()=>{alive=false}
- },[selected?.id])
+ },[selected])
 
  const impact=favor==='cliente'
   ?{title:'Impacto: resolución a favor del cliente',tone:'client',items:['El servicio disputado se cancela en UGO.','El pago queda sujeto al ajuste financiero correspondiente.','Si hubo cobro externo, el reembolso real debe procesarse y conciliarse en Mercado Pago.','La decisión queda auditada y visible para Cliente y Proveedor.']}
   :{title:'Impacto: resolución a favor del proveedor',tone:'provider',items:['El servicio vuelve al estado operativo previo a la disputa.','Si el pago estaba disputado, vuelve a estado retenido para continuar el flujo de liberación.','La decisión queda auditada y visible para Cliente y Proveedor.']}
 
  const resolve=async()=>{if(!selected||text.trim().length<8)return
-  const ok=window.confirm(`Vas a resolver el caso #${selected.numero||String(selected.id).slice(0,8)} a favor del ${favor}. Esta acción queda registrada en UGO. ¿Confirmar?`)
+  const ok=await confirm({title:'Resolver disputa',message:`Vas a resolver el caso #${selected.numero||String(selected.id).slice(0,8)} a favor del ${favor}. Esta acción queda registrada en UGO. ¿Confirmar?`,danger:true})
   if(!ok)return
   setBusy(true);setNotice(null)
   try{await resolverDisputa(selected.id,text.trim(),favor);setSelected(null);setText('');setNotice('Disputa resuelta y visible para ambas partes.')}
@@ -127,5 +131,6 @@ export function AdminDisputesDecisionCenter(){
    <label className="ugo-resolution-label">Fundamento de la resolución<textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Explicá qué evidencia revisaste, qué ocurrió y por qué UGO toma esta decisión..."/></label>
    <div className="ugo-resolution-actions"><button onClick={()=>setSelected(null)}>Cancelar</button><button className="primary" disabled={text.trim().length<8||busy} onClick={resolve}>{busy?'Resolviendo…':'Confirmar resolución'}</button></div>
   </div>}
+  {dialog}
  </div>
 }

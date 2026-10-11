@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- design system barrel: exporta primitivas, constantes y hooks junto a los componentes (patrón intencional UGO) */
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import type { FormEvent, ButtonHTMLAttributes, InputHTMLAttributes, HTMLAttributes } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'

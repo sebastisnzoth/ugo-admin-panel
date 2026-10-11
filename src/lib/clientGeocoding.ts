@@ -24,14 +24,14 @@ export async function reverseClientCoordinates(latitude:number,longitude:number)
   const raw=await json('https://photon.komoot.io/reverse?lat='+encodeURIComponent(latitude)+'&lon='+encodeURIComponent(longitude)) as{features?:Array<{properties?:Record<string,unknown>}>}
   const parsed=photonAddress(raw.features?.[0]?.properties||{})
   if(parsed.address)return{latitude,longitude,...parsed}
- }catch{}
+ }catch{/* vacío intencional */}
  try{
   const raw=await json('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&lat='+encodeURIComponent(latitude)+'&lon='+encodeURIComponent(longitude)) as{display_name?:unknown;address?:Record<string,unknown>}
   const p=raw.address||{},text=(key:string)=>typeof p[key]==='string'?String(p[key]).trim():''
   const street=text('road')||text('pedestrian')||text('footway')||text('neighbourhood'),number=text('house_number'),district=text('suburb')||text('neighbourhood')||text('city_district'),city=text('city')||text('town')||text('village')||text('municipality')
   const address=[(street+(number?' '+number:'')).trim(),district,city].filter(Boolean).join(', ')||(typeof raw.display_name==='string'?raw.display_name.trim():'')
   if(address)return{latitude,longitude,address,zone:district||city}
- }catch{}
+ }catch{/* vacío intencional */}
  return null
 }
 
@@ -45,7 +45,7 @@ export async function geocodeClientAddress(address:string,zone=''):Promise<Clien
    const longitude=Number(coords[0]),latitude=Number(coords[1])
    if(valid(latitude,longitude)){const parsed=photonAddress(feature?.properties||{});return{latitude,longitude,address:parsed.address||address.trim(),zone:parsed.zone||zone.trim()}}
   }
- }catch{}
+ }catch{/* vacío intencional */}
  try{
   const raw=await json('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&q='+encodeURIComponent(query)) as Array<{lat?:unknown;lon?:unknown;display_name?:unknown;address?:Record<string,unknown>}>
   const first=raw?.[0],latitude=Number(first?.lat),longitude=Number(first?.lon)
@@ -53,6 +53,6 @@ export async function geocodeClientAddress(address:string,zone=''):Promise<Clien
    const p=first?.address||{},pick=(key:string)=>typeof p[key]==='string'?String(p[key]).trim():'',district=pick('suburb')||pick('neighbourhood')||pick('city_district'),city=pick('city')||pick('town')||pick('village')||pick('municipality')
    return{latitude,longitude,address:typeof first?.display_name==='string'&&first.display_name.trim()?first.display_name.trim():address.trim(),zone:district||city||zone.trim()}
   }
- }catch{}
+ }catch{/* vacío intencional */}
  return null
 }

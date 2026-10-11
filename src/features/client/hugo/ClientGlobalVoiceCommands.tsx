@@ -6,7 +6,7 @@ import{useClientFlow}from'../flow/clientFlow'
 
 export function ClientGlobalVoiceCommands(){
  const flow=useClientFlow()
- const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
+ const handle=useCallback(async(source:string)=>{
   const value=normalizeVoiceText(source)
   if(!value)return false
   if(/\b(parar voz|detener voz|cerrar hugo|cancelar escucha|parar escuta|fechar hugo)\b/.test(value)){emitUgoUiEvent(UGO_UI_EVENTS.globalVoiceStop);return true}

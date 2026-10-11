@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import type { AdminDashboard, Servicio, Disputa, Documento, Usuario, MetricasDia } from '../lib/database.types';
+import type { AdminDashboard, Disputa, MetricasDia } from '../lib/database.types';
 
 let globalChannel: any = null;
 let realtimeRecoveryBound = false;
@@ -346,7 +346,7 @@ export function useVault() {
     setEscrows(data || []); setLoading(false);
   }, []);
   const liberarEscrow = useCallback(async (_id: string) => {
-    throw new Error('La liberación de fondos se gestiona desde Finanzas · Bóveda y retiros.');
+    throw new Error(`La liberación del escrow ${_id} se gestiona desde Finanzas · Bóveda y retiros.`);
   }, []);
   useEffect(() => { fetch(); const u = subscribe('pagos', fetch); return u; }, [fetch]);
   return { escrows, loading, liberarEscrow };

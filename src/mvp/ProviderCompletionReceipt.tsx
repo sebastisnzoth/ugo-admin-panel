@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{money}from'./shared'
 
@@ -20,7 +21,8 @@ export function ProviderCompletionReceipt({onFindAnother}:Props){
   const dismissed=localStorage.getItem(`ugo:provider-completion-dismissed:${userId}`)
   if(dismissed!==row.id)setOpen(true)
  },[db])
- useEffect(()=>{let alive=true;let channel:any=null;supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;const id=data.user.id;setUid(id);load(id);channel=supabase.channel(`provider-completion-${id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${id}`},()=>load(id)).subscribe()});return()=>{alive=false;if(channel)supabase.removeChannel(channel)}},[load])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{let alive=true;let channel:any=null,disposeChannel:(()=>void)|null=null;supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;const id=data.user.id;setUid(id);load(id);channel=supabase.channel(`provider-completion-${id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${id}`},()=>load(id));disposeChannel=subscribeRealtimeChannel(channel,supabase,{onSync:()=>load(id),onReconnect:()=>{if(alive)setChannelEpoch(v=>v+1)}})});return()=>{alive=false;if(disposeChannel)disposeChannel();else if(channel)supabase.removeChannel(channel)}},[load,channelEpoch])
  if(!open||!payment)return null
  const service=payment.servicio,isCash=payment.metodo==='efectivo',ref=payment.pix_e2e_id||payment.mp_payment_id||payment.id,method=payment.metodo==='pix_direto'?'Pix direto UGO':payment.metodo==='pix'?'Pix':payment.metodo==='mercadopago'?'Mercado Pago':isCash?'Efectivo':payment.metodo||'Pago UGO'
  async function another(){if(!uid)return;setBusy(true);await db.from('perfiles_proveedor').update({online:true,disponible:true}).eq('usuario_id',uid);localStorage.setItem(`ugo:provider-completion-dismissed:${uid}`,payment.id);setBusy(false);setOpen(false);onFindAnother?.()}

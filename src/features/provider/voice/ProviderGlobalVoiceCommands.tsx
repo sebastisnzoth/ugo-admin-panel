@@ -29,7 +29,7 @@ export function ProviderGlobalVoiceCommands(){
   if(['set_online','set_offline','accept_job','reject_job','update_service_status'].includes(type))return{ok:false,message:'Por seguridad, Hugo no ejecuta cambios de trabajo desde una respuesta de IA. Repetí el comando directo para confirmarlo en UGO.'}
   return{ok:false,message:'La acción propuesta por Hugo no está permitida.'}
  },[flow.actions])
- const speak=useCallback(async(text:string)=>{try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang=detectProviderVoiceLocale(text);window.speechSynthesis?.speak(utterance)}catch{}},[])
+ const speak=useCallback(async(text:string)=>{try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang=detectProviderVoiceLocale(text);window.speechSynthesis?.speak(utterance)}catch{/* vacío intencional */}},[])
  const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
   const value=normalizeProviderVoice(source)
   if(!value)return false
@@ -42,7 +42,7 @@ export function ProviderGlobalVoiceCommands(){
   if(/\b(perfil|cuenta|conta)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|leva|lleva)\b/.test(value)){flow.actions.openProfile();return true}
   if(/\b(historial|historico|atividade|actividad)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|leva|lleva)\b/.test(value)){flow.actions.openHistory();return true}
   if(/\b(disputa|problema|soporte|suporte|ayuda|ajuda)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|preciso|necesito)\b/.test(value)){flow.actions.openDispute();return true}
-  if(/\b(trabalho atual|trabajo actual|servicio actual|servico atual|mision|missao)\b/.test(value)){data.service?flow.actions.openActiveJob():flow.actions.openAgenda();return true}
+  if(/\b(trabalho atual|trabajo actual|servicio actual|servico atual|mision|missao)\b/.test(value)){if(data.service)flow.actions.openActiveJob();else flow.actions.openAgenda();return true}
   if(engine==='browser-speech'){
    const handled=await runProviderVoiceCommand({source,locale:detectProviderVoiceLocale(source),summary:providerVoiceSummary(data),flow:flow.actions,data,findOpportunity:(text)=>findProviderVoiceOpportunity(text,data.opportunities),speak})
    if(handled)return true

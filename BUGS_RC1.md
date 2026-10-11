@@ -7,7 +7,7 @@
 - Severidad: CRÍTICA
 - Descripción: `DemoSebastianPaymentBridge` se monta siempre en `ClientRoot` y reemplaza globalmente `window.fetch`. Todas las solicitudes POST a `/api/pagos/crear` intentan ejecutar primero el RPC demo; ante errores distintos de `NO_ES_DEMO_SEBASTIAN` devuelve HTTP 409 y puede bloquear pagos reales de clientes que no pertenecen al flujo demo.
 - Archivo probable: `src/mvp/DemoSebastianPaymentBridge.tsx`, `src/mvp/MvpApp.tsx`
-- Estado: FIXED
+- Estado: FIXED · verificado 2026-10-10 (S-01 cerrado): el puente demo queda guardado y `MvpApp` monta con `demo={false}` — ya no se monta ni intercepta `window.fetch`.
 
 ## BUG-002
 
@@ -91,7 +91,8 @@
 - Severidad: ALTA · P1
 - Descripción: La pantalla Actividad no comunica con suficiente claridad qué pedido está activo, próximo o finalizado ni prioriza el estado operativo del servicio. El problema fue confirmado durante la misma prueba del Servicio #31.
 - Checklist: `CLIENT-ACTIVITY-UX`.
-- Estado: OPEN · UX REDESIGN PENDING
+- Estado: FIXED · UX REDESIGN IMPLEMENTADO (2026-10-10)
+- Rediseño: en "Todos" la lista se agrupa en secciones con encabezado y conteo (Activos ahora / Próximos / Finalizados); dentro de "Activos ahora" se prioriza el estado operativo (esperando aprobación → disputa → en camino/llegado/en curso → asignado → buscando/oferta → borrador); cada pedido muestra una etiqueta AHORA/PROGRAMADO/FINALIZADO y el estado "esperando aprobación" marca "Requiere tu acción". Contrato `client-activity-ux` ampliado con estos anclajes.
 
 ## QA-OBS-001 · Sentinela
 
@@ -99,3 +100,13 @@
 - Errores globales, `unhandledrejection`, fallos de render, apertura de pedido y chat pueden registrar rol, ruta, acción, `serviceId`, severidad y código de checklist.
 - Incidentes P0/P1 mapeados pueden mover automáticamente el ítem correspondiente del checklist a `failed` y dejar evidencia auditable.
 - El panel `Desarrollo` muestra el contador y los últimos incidentes del Sentinela en tiempo real.
+
+## Cierre de auditoría 2026-10-10 — S-01/S-02/S-03/S-05
+
+- **S-01 (CRÍTICA) — CERRADO.** Verificado sobre el fix de BUG-001: `DemoSebastianPaymentBridge` queda guardado y `MvpApp` monta con `demo={false}`; el puente demo no intercepta `window.fetch` ni bloquea pagos reales.
+- **S-03 (ALTA) — CERRADO.** Los 43 usos de diálogos nativos (`window.confirm/prompt/alert` + llamadas bare) en 24 ficheros fueron reemplazados por el sistema propio `src/mvp/dialogs.tsx` (`role="dialog"`, foco y `aria-modal`), con el contrato `tests/contracts/no-native-dialogs.test.mjs` que impide regresiones.
+- **S-02 (ALTA) — CERRADO.** Helper estándar `src/lib/realtimeChannel.ts` (`subscribeRealtimeChannel`: resync en `SUBSCRIBED`, backoff ante `CHANNEL_ERROR`/`TIMED_OUT`/`CLOSED`, dispose con `removeChannel`); 18 sitios en 17 ficheros migrados. Filtro por actor verificado en toda la app.
+- **S-05 (MEDIA) — CERRADO.** `api/operations.ts` lee `process.env.SUPABASE_URL` con fallback a `src/lib/supabaseProject.ts` (single source of truth); `vercel.json` fija el proyecto UGO TEST y `scripts/assert-test-environment.mjs` lo verifica en build y test.
+- **BUG-010 — CERRADO (2026-10-10).** Rediseño UX de la pantalla Actividad del cliente: secciones Activos ahora / Próximos / Finalizados con prioridad operativa, etiqueta AHORA/PROGRAMADO/FINALIZADO por pedido y "Requiere tu acción" en la aprobación pendiente.
+- Pendientes fuera de alcance de esta ola: BUG-008/BUG-009 (requieren validación en dispositivo real / dos sesiones).
+- Detalle completo del plan de 7 fases y deuda de lint documentada: `MEJORAS_2026-10-10.md`. Validación final: `npm run build` OK · `npm test` 1.328 pass / 0 fail / 8 skip (1.336) · `eslint` 0 errores / 931 warnings · `npm audit` 0 vulnerabilidades.

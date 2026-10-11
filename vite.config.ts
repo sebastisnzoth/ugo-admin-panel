@@ -33,7 +33,7 @@ export default defineConfig({
     },
   },
   server: {
-    // @ts-ignore — allow Arena preview host without listing each sandbox id
+    // Arena preview host: se permite cualquier host del sandbox (sin listar cada id)
     allowedHosts: true as unknown as string[],
     host: '0.0.0.0',
     port: devPort,

@@ -7,7 +7,7 @@ const service=fs.readFileSync(new URL('../../src/mvp/provider/providerService.ts
 const lifecycle=fs.readFileSync(new URL('../../src/lib/marketplace/lifecycle.ts',import.meta.url),'utf8')
 
 test('generic provider actions still reload after ambiguous failure',()=>{
- assert.match(source,/const run=[\s\S]*catch\(e\)\{try\{await reload\(\)\}catch\{\}/)
+ assert.match(source,/const run=[\s\S]*catch\(e\)\{try\{await reload\(\)\}catch\{\/\* vacío intencional \*\/\}/)
 })
 
 test('lifecycle transitions treat persisted target or later state as success',()=>{

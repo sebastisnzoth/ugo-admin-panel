@@ -53,7 +53,7 @@ export function SecMapaOperativo(){
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
       mapRef.current=map;
       [100,400,800].forEach(t=>timers.push(window.setTimeout(()=>{
-        if(!disposed&&mapRef.current===map)try{map.invalidateSize()}catch{}
+        if(!disposed&&mapRef.current===map)try{map.invalidateSize()}catch{/* vacío intencional */}
       },t)));
     };
     if((window as any).L)init();
@@ -69,12 +69,12 @@ export function SecMapaOperativo(){
       timers.forEach(timer=>window.clearTimeout(timer));
       const map=mapRef.current;
       mapRef.current=null;
-      if(map)try{map.stop()}catch{}
-      markers.current.forEach(marker=>{try{if(map?.hasLayer?.(marker))map.removeLayer(marker)}catch{}});
+      if(map)try{map.stop()}catch{/* vacío intencional */}
+      markers.current.forEach(marker=>{try{if(map?.hasLayer?.(marker))map.removeLayer(marker)}catch{/* vacío intencional */}});
       markers.current=[];
-      lines.current.forEach(line=>{try{if(map?.hasLayer?.(line))map.removeLayer(line)}catch{}});
+      lines.current.forEach(line=>{try{if(map?.hasLayer?.(line))map.removeLayer(line)}catch{/* vacío intencional */}});
       lines.current=[];
-      if(map)try{map.remove()}catch{}
+      if(map)try{map.remove()}catch{/* vacío intencional */}
       if(injectedScript?.parentNode&&!((window as any).L))injectedScript.remove();
     };
   },[]);
@@ -95,10 +95,10 @@ export function SecMapaOperativo(){
 
   React.useEffect(()=>{
     const map=mapRef.current;if(!map||!(window as any).L)return;
-    markers.current.forEach(m=>{try{if(map.hasLayer?.(m))map.removeLayer(m)}catch{}});markers.current=[];lines.current.forEach(l=>{try{if(map.hasLayer?.(l))map.removeLayer(l)}catch{}});lines.current=[];
+    markers.current.forEach(m=>{try{if(map.hasLayer?.(m))map.removeLayer(m)}catch{/* vacío intencional */}});markers.current=[];lines.current.forEach(l=>{try{if(map.hasLayer?.(l))map.removeLayer(l)}catch{/* vacío intencional */}});lines.current=[];
     visible.forEach(u=>{const icon=u.tipo==='proveedor'?pin(providerColor(u),catEmoji[u.categoria||'']||'🔧'):clientPin();const m=L.marker([u.lat,u.lng],{icon}).addTo(map);m.bindPopup(`<div style="font-family:Inter,sans-serif;min-width:170px"><b>${u.nombre} ${u.apellido||''}</b><br><small>${u.tipo==='proveedor'?(u.categoria||'Proveedor'):'Cliente'}</small>${u.telefono?`<br>📱 ${u.telefono}`:''}${u.zona?`<br>📍 ${u.zona}`:''}</div>`);m.on('click',()=>setSelected(u));markers.current.push(m)});
     services.forEach(s=>{if(s.lat_cliente==null||s.lng_cliente==null||s.proveedor_lat==null||s.proveedor_lng==null)return;const color=s.estado==='en_camino'?'#F59E0B':'#8B5CF6';lines.current.push(L.polyline([[s.lat_cliente,s.lng_cliente],[s.proveedor_lat,s.proveedor_lng]],{color,weight:2.5,opacity:.85,dashArray:'6 4'}).addTo(map))});
-    if(visible.length&&!geoCenter){try{map.fitBounds(visible.map(u=>[u.lat,u.lng]),{padding:[40,40],maxZoom:14,animate:false})}catch{}}
+    if(visible.length&&!geoCenter){try{map.fitBounds(visible.map(u=>[u.lat,u.lng]),{padding:[40,40],maxZoom:14,animate:false})}catch{/* vacío intencional */}}
   },[visible,services,catEmoji,geoCenter]);
 
   const goLocationValue=React.useCallback(async(query:string)=>{const clean=query.trim();if(!clean)return;setGeoSearch(clean);setGeoBusy(true);try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(clean)}&format=json&limit=1`);const d=await r.json();if(!d?.[0])throw new Error('Localidad no encontrada');const la=Number(d[0].lat),lo=Number(d[0].lon);setGeoCenter([la,lo]);mapRef.current?.setView([la,lo],13)}catch(e:any){setError(e.message)}finally{setGeoBusy(false)}},[])

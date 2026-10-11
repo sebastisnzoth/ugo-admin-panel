@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
+import{useDialog}from'./dialogs'
 import'./admin-payment-credentials.css'
 
 type ProviderId='openpix'|'mercadopago_br'|'mercadopago_ar'
@@ -22,6 +23,7 @@ export function AdminPaymentCredentials(){
  const[statuses,setStatuses]=useState<CredentialStatus[]>([])
  const[drafts,setDrafts]=useState<Record<ProviderId,Draft>>({openpix:{...emptyDraft},mercadopago_br:{...emptyDraft,environment:'production'},mercadopago_ar:{...emptyDraft,environment:'sandbox'}})
  const[loading,setLoading]=useState(true),[saving,setSaving]=useState<ProviderId|null>(null),[message,setMessage]=useState<string|null>(null)
+ const{confirm,node:dialog}=useDialog()
  const load=useCallback(async()=>{setLoading(true);const{data,error}=await rpcClient.rpc('admin_payment_credentials_status');if(!error&&Array.isArray(data))setStatuses(data as CredentialStatus[]);setLoading(false)},[])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
  const statusMap=useMemo(()=>Object.fromEntries(statuses.map(s=>[s.provider,s])) as Partial<Record<ProviderId,CredentialStatus>>,[statuses])
@@ -39,7 +41,7 @@ export function AdminPaymentCredentials(){
   else{setDraft(provider,{appId:'',accessToken:'',clientId:'',clientSecret:''});setMessage(`${m.title}: credenciales guardadas de forma privada.`);await load()}
   setSaving(null)
  }
- const clear=async(provider:ProviderId)=>{if(!confirm(`¿Eliminar las credenciales guardadas de ${meta[provider].title}?`))return;setSaving(provider);const{error}=await rpcClient.rpc('admin_clear_payment_credentials',{p_provider:provider});setMessage(error?error.message||'No se pudo eliminar la credencial.':'Credenciales eliminadas.');await load();setSaving(null)}
+ const clear=async(provider:ProviderId)=>{if(!await confirm({title:'Eliminar credenciales',message:`¿Eliminar las credenciales guardadas de ${meta[provider].title}?`,danger:true}))return;setSaving(provider);const{error}=await rpcClient.rpc('admin_clear_payment_credentials',{p_provider:provider});setMessage(error?error.message||'No se pudo eliminar la credencial.':'Credenciales eliminadas.');await load();setSaving(null)}
  if(loading)return <div className="ugo-paycred-state">Cargando credenciales de pago…</div>
  return <div className="ugo-paycred-panel">
   <section className="ugo-paycred-hero"><div><small>CREDENCIALES DE PAGO</small><h3>Procesadores por país</h3><p>Los secretos se guardan en almacenamiento privado y nunca se vuelven a mostrar en el navegador. Esta pantalla solo indica si están configurados.</p></div><button onClick={()=>void load()}>↻ Actualizar</button></section>
@@ -53,5 +55,6 @@ export function AdminPaymentCredentials(){
    <footer><button className="primary" disabled={saving===provider} onClick={()=>void save(provider)}>{saving===provider?'Guardando…':'Guardar credencial'}</button><button className="danger" disabled={!s?.configured||saving===provider} onClick={()=>void clear(provider)}>Eliminar</button></footer>
   </article>})}</div>
   <section className="ugo-paycred-note"><strong>Activación segura</strong><span>Guardar una credencial no cambia automáticamente el procesador productivo. OpenPix y Argentina siguen sujetos a sus feature flags y a la etapa de validación correspondiente.</span></section>
+ {dialog}
  </div>
 }

@@ -63,7 +63,7 @@ test('provider online requests browser geolocation without signing out or silent
  const service=await read('src/mvp/provider/providerService.ts')
  assert.match(data,/navigator\.geolocation\.getCurrentPosition/)
  assert.match(data,/tu sesión de UGO seguirá abierta/)
- assert.match(data,/if\(provider\.online&&provider\.disponible\)/)
+ assert.match(data,/if\(providerOnline&&providerAvailable\)/)
  assert.doesNotMatch(data,/auth\.signOut\(\).*geolocation/s)
  assert.match(service,/if\(online\)\{/)
  assert.match(service,/const position=await currentPosition\(\)/)

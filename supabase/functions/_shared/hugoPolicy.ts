@@ -25,7 +25,7 @@ const THIRD_PARTY_PII_KEY=/^(?:nombre|apellido|name|full_name|contenido|comentar
 const clean=(value:unknown,max=60_000)=>String(value??'').trim().slice(0,max)
 function sanitize(value:unknown,max=60_000){
  return clean(value,max)
-  .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+=*/gi,'Bearer [REDACTED]')
+  .replace(/Bearer\s+[A-Za-z0-9._~+/-]+=*/gi,'Bearer [REDACTED]')
   .replace(/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/g,'[REDACTED_JWT]')
   .replace(/\b(?:sk|sb_secret|service_role|ghp|github_pat|AIza)[-_A-Za-z0-9]{12,}\b/g,'[REDACTED_SECRET]')
   .replace(/\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|passwd|authorization)\b\s*[:=]\s*["']?[^\s,"'}]{6,}["']?/gi,'$1=[REDACTED]')

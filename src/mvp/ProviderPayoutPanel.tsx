@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{money}from'./shared'
 import{ProviderMercadoPagoConnect}from'./ProviderMercadoPagoConnect'
@@ -30,7 +31,8 @@ export function ProviderPayoutPanel({accessToken}:Props){
  },[supabase])
 
  useEffect(()=>{load().catch(e=>setMessage(e.message||'No se pudo cargar ganancias.'))},[load])
- useEffect(()=>{if(!userId)return;const ch=supabase.channel(`provider-payouts-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'retiros',filter:`proveedor_id=eq.${userId}`},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,supabase,userId])
+ const[channelEpoch,setChannelEpoch]=useState(0)
+ useEffect(()=>{if(!userId)return;const ch=supabase.channel(`provider-payouts-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'retiros',filter:`proveedor_id=eq.${userId}`},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},()=>load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,supabase,userId,channelEpoch])
 
  async function saveAccount(){if(!userId)return;setBusy(true);const{error}=await (supabase as any).from('perfiles_proveedor').update({cuenta_pago_externa:account.trim()||null}).eq('usuario_id',userId);setBusy(false);setMessage(error?error.message:'Cuenta de cobro guardada.')}
  async function requestWithdrawal(){const value=Number(amount);if(!Number.isFinite(value)||value<50)return setMessage('El retiro mínimo es R$ 50.');if(value>balance.saldo_disponible)return setMessage('El monto supera tu saldo disponible.');if(!account.trim())return setMessage('Guardá primero tu cuenta de cobro.');setBusy(true);setMessage('');try{const r=await fetch('/api/retiros/solicitar',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({monto:value})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'No se pudo solicitar el retiro.');setAmount('');setMessage('Retiro solicitado. Queda pendiente hasta que exista confirmación real del pago externo.');await load()}catch(e){setMessage(e instanceof Error?e.message:'No se pudo solicitar el retiro.')}finally{setBusy(false)}}

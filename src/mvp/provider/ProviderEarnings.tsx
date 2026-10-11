@@ -3,15 +3,17 @@ import{ProviderPayoutPanel}from'../ProviderPayoutPanel'
 import{useProviderData,money}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{Button,Card,SectionHeader,StatusPill,Textarea}from'../../shared/ui'
+import{useDialog}from'../dialogs'
 import{createProviderDebtPix,reportProviderDebtPaid,type ProviderPixDebtPayment}from'../../features/provider/services/providerEarningsService'
 
 export function ProviderEarnings(){
  const d=useProviderData(),flow=useProviderFlow()
  const[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[pix,setPix]=useState<ProviderPixDebtPayment|null>(null)
+const{prompt,node:dialog}=useDialog()
  const pendingDebts=d.debts.filter(x=>x.ambiente==='real'&&!['pagado','anulado'].includes(x.estado)&&Number(x.saldo_pendiente||0)>0)
  const actionableDebt=pendingDebts.find(x=>x.estado!=='informado')||null
  async function reportPaid(id:string){
-  const ref=window.prompt('Ingresá la referencia del pago realizado a UGO. La deuda seguirá pendiente hasta que UGO la concilie.','')
+  const ref=await prompt({title:'Informar pago a UGO',message:'Ingresá la referencia del pago realizado a UGO. La deuda seguirá pendiente hasta que UGO la concilie.',label:'Referencia del pago',required:true})
   if(ref===null)return
   if(ref.trim().length<4){setMessage('Ingresá una referencia válida.');return}
   setBusy(id);setMessage('')
@@ -31,7 +33,7 @@ export function ProviderEarnings(){
  async function copyPix(){
   if(!pix?.pixCopiaCola)return
   try{await navigator.clipboard.writeText(pix.pixCopiaCola);setMessage('Pix copiado. Pagalo desde tu banco y después informá la referencia a UGO.')}
-  catch{window.prompt('Copiá este Pix para pagar a UGO:',pix.pixCopiaCola)}
+  catch{void prompt({title:'Pix para pagar a UGO',message:'Copiá este Pix para pagar a UGO desde tu banco y después informá la referencia.',label:'Código Pix copia y pega',defaultValue:pix.pixCopiaCola})}
  }
  return <section className="provider-screen provider-earnings-complete" aria-labelledby="provider-earnings-title">
   <Button variant="ghost" className="provider-back" onClick={flow.actions.openProfile}>← Perfil</Button>
@@ -61,5 +63,6 @@ export function ProviderEarnings(){
   <article className="provider-withdraw-guide"><span>1</span><div><strong>Saldo UGO</strong><p>Sólo los pagos digitales liberados entran en el saldo retirable.</p></div><span>2</span><div><strong>Efectivo</strong><p>Lo cobrás directamente del cliente; no vuelve a sumarse al saldo UGO.</p></div><span>3</span><div><strong>Comisión</strong><p>UGO registra lo que debés por cada cobro en efectivo hasta que quede conciliado.</p></div></article>
   <ProviderPayoutPanel accessToken={d.accessToken}/>
   <Button variant="secondary" className="provider-secondary provider-wide" onClick={flow.actions.openHistory}>Ver trabajos realizados</Button>
+ {dialog}
  </section>
 }

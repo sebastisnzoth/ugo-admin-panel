@@ -34,7 +34,7 @@ export function ProviderHugoBridge(){
  },[actions,data])
 
 
- const stop=useCallback(()=>{setPanelOpen(false);setRunning(false);stopSpeech();try{ugoWindow().UGOVoiceBridge?.stopListening?.()}catch{}setState('idle');setError('')},[setRunning,stopSpeech])
+ const stop=useCallback(()=>{setPanelOpen(false);setRunning(false);stopSpeech();try{ugoWindow().UGOVoiceBridge?.stopListening?.()}catch{/* vacío intencional */}setState('idle');setError('')},[setRunning,stopSpeech])
  const start=useCallback(async()=>{setPanelOpen(true);setError('');setState('connecting');const bridge=ugoWindow().UGOVoiceBridge;if(!bridge||bridge.isAvailable?.()===false){setState('error');setError('La voz no está disponible en este navegador.');return}setRunning(true);const timeout=window.setTimeout(()=>{if(!running.current)return;try{bridge.stopListening()}catch(stopError){ignoreError(stopError)}setRunning(false);setState('error');setError('Hugo no pudo conectar con el servicio de voz. Reintentá en unos segundos.')},PROVIDER_VOICE_CONNECT_TIMEOUT_MS);try{await bridge.startListening();window.clearTimeout(timeout);if(running.current)setState('ready')}catch(caught){window.clearTimeout(timeout);console.warn('Gemini Live no disponible.',caught);try{bridge.stopListening()}catch(stopError){ignoreError(stopError)}setRunning(false);setState('error');setError('Hugo no pudo conectar con el servicio de voz. Reintentá en unos segundos.')}},[setRunning])
 
 

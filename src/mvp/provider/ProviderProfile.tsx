@@ -3,7 +3,7 @@ import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{ProviderCategoriesEditor}from'./ProviderCategoriesEditor'
 import{ProviderCalendarIntegration}from'./ProviderCalendarIntegration'
-import{Button,Card,Input,SectionHeader,StatusPill,Textarea}from'../../shared/ui'
+import{Button,Input,SectionHeader,StatusPill,Textarea}from'../../shared/ui'
 
 const initials=(name:string)=>name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]?.toUpperCase()).join('')||'PRO'
 const verificationLabel=(state?:string)=>state==='verificado'?'Perfil verificado':state==='rechazado'?'Verificación rechazada':state==='suspendido'?'Perfil suspendido':'Verificación pendiente'

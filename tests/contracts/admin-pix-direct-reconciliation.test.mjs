@@ -36,7 +36,10 @@ test('rejection requires a reason and records a failed reconciled payment',()=>{
 
 test('admin UI filters real PIX, confirms destructive decisions and surfaces errors',()=>{
  assert.match(panel,/\.eq\('ambiente','real'\)\.eq\('metodo','pix_direto'\)/)
- assert.match(panel,/window\.confirm/)
+ assert.match(panel,/await confirm\(\{title:`\$\{action\} Pix real`/)
+ assert.doesNotMatch(panel,/window\.(confirm|prompt|alert)\(/)
+ assert.match(panel,/useDialog.*from'\.\/dialogs'/)
+ assert.match(panel,/\{dialog\}/)
  assert.match(panel,/referencia\/E2E bancaria real/i)
  assert.match(panel,/al menos 8 caracteres/i)
  assert.match(panel,/role="alert"/)

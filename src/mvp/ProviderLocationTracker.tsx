@@ -1,4 +1,5 @@
 import React,{useEffect,useMemo,useRef,useState}from'react'
+import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
@@ -33,12 +34,12 @@ async function getFreshBrowserPosition(){
   compatibleError=compatibleError||highError
  }
  return await new Promise<GeolocationPosition>((resolve,reject)=>{
-  let settled=false,timer:number|undefined,watchId:number|undefined
+  let settled=false
   const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer)window.clearTimeout(timer)}
   const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
   const fail=(error:GeolocationPositionError)=>{if(settled)return;settled=true;cleanup();reject(error)}
-  timer=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
-  watchId=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
+  const timer:number|undefined=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
+  const watchId:number|undefined=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
  })
 }
 
@@ -63,12 +64,11 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  useEffect(()=>{if(service?.estado!=='en_camino'){attemptedServiceRef.current=null;setLastFix(null)}},[service?.estado,service?.id])
  useEffect(()=>{if(!available&&!enRoute)return;setNowMs(Date.now());const timer=window.setInterval(()=>setNowMs(Date.now()),1_000);return()=>window.clearInterval(timer)},[available,enRoute])
 
+ const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{
   let alive=true
-  let channel:RealtimeChannel|null=null
-  supabase.auth.getUser().then(async({data})=>{
-   if(!alive||!data.user)return
-   const userId=data.user.id
+  let channel:RealtimeChannel|null=null,disposeChannel:(()=>void)|null=null
+  const loadProfile=async(userId:string)=>{
    const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',userId).maybeSingle()
    const trackingProfile=profile as TrackingProfile|null
    if(alive){
@@ -80,6 +80,11 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
     }
    }
+  }
+  supabase.auth.getUser().then(async({data})=>{
+   if(!alive||!data.user)return
+   const userId=data.user.id
+   await loadProfile(userId)
    channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},payload=>{
     const row=(payload.new||{}) as TrackingProfile
     if(alive){
@@ -91,10 +96,11 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
       lastValidFixAtRef.current=Date.now()
      }
     }
-   }).subscribe()
+   })
+   disposeChannel=subscribeRealtimeChannel(channel,supabase,{onSync:()=>{if(alive)void loadProfile(userId)},onReconnect:()=>{if(alive)setChannelEpoch(v=>v+1)}})
   }).catch(()=>{})
-  return()=>{alive=false;if(channel)supabase.removeChannel(channel)}
- },[supabase])
+  return()=>{alive=false;if(disposeChannel)disposeChannel();else if(channel)supabase.removeChannel(channel)}
+ },[supabase,channelEpoch])
 
  useEffect(()=>{
   if(!navigator.geolocation||(!available&&!enRoute))return

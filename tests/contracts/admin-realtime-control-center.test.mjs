@@ -43,7 +43,7 @@ test('service 360 sheet refreshes trace chat payments disputes and evidence live
  ])
  assert.match(services,/Ficha 360°/)
  assert.match(services,/Control integral del servicio/)
- assert.match(services,/services\.find\(\(row:any\)=>row\.id===editing\.id\)/)
+ assert.match(services,/services\.find\(\(row:any\)=>row\.id===editingId\)/)
  for(const table of ['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']){
   assert.match(trace,new RegExp("'"+table+"'"))
  }

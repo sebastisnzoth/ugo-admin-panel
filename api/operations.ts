@@ -1,8 +1,11 @@
 type VercelRequest={method?:string;headers:Record<string,string|string[]|undefined>;query:Record<string,string|string[]|undefined>;body?:any}
 type VercelResponse={status:(code:number)=>VercelResponse;json:(body:unknown)=>VercelResponse;setHeader:(name:string,value:string)=>void;end:()=>void}
 import { createClient } from '@supabase/supabase-js'
+import { UGO_SUPABASE_URL } from '../src/lib/supabaseProject.js'
 
-const SUPABASE_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
+// UGO TEST (tmossnqfwfwjrtzwcbmm): SUPABASE_URL se lee del entorno (vercel.json fija el proyecto TEST);
+// el fallback es el single source of truth compartido con el cliente (src/lib/supabaseProject.ts).
+const SUPABASE_URL = process.env.SUPABASE_URL || UGO_SUPABASE_URL
 const SUPABASE_ANON_KEY = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
 const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
 const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
