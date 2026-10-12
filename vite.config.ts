@@ -15,6 +15,10 @@ export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_REVISION': JSON.stringify(runtimeRevision),
   },
+  optimizeDeps: {
+    // maplibre-gl carga un worker propio; excluirlo evita la advertencia del optimizador en dev.
+    exclude: ['maplibre-gl'],
+  },
   build: {
     chunkSizeWarningLimit: 1050,
     rollupOptions: {
