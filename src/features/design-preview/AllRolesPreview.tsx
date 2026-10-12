@@ -14,19 +14,21 @@ import {
   ProviderEvidenceScreen,
   ProviderHomeScreen,
 } from './ProviderDesignPreview'
+import { ClientDemo, ProviderDemo, AdminDemo } from './FunctionalDemo'
 import {
   AdminDashboardScreen,
   AdminDisputesScreen,
   SuperAdminCommandCenterScreen,
 } from './AdminDesignPreview'
 
-type Role = 'cliente' | 'proveedor' | 'admin' | 'superadmin'
+type Role = 'cliente' | 'proveedor' | 'admin' | 'superadmin' | 'demo'
 
 const roles: { id: Role; label: string }[] = [
   { id: 'cliente', label: 'Cliente' },
   { id: 'proveedor', label: 'Proveedor' },
   { id: 'admin', label: 'Admin' },
   { id: 'superadmin', label: 'Super Admin' },
+  { id: 'demo', label: 'Demo funcional' },
 ]
 
 const roleDescription: Record<Role, string> = {
@@ -34,6 +36,7 @@ const roleDescription: Record<Role, string> = {
   proveedor: 'Recibir ofertas, ejecutar el trabajo, subir evidencia y ver ganancias.',
   admin: 'Operar servicios en curso, pagos y disputas en tiempo real.',
   superadmin: 'Gobierno, readiness, evidencia y controles globales de la plataforma.',
+  demo: 'Demo interactiva: tocá los botones para recorrer el flujo. Solo estado local, sin datos reales.',
 }
 
 const screens: Record<Role, ReactNode[]> = {
@@ -52,6 +55,7 @@ const screens: Record<Role, ReactNode[]> = {
   ],
   admin: [<AdminDashboardScreen key="a1" />, <AdminDisputesScreen key="a2" />],
   superadmin: [<SuperAdminCommandCenterScreen key="s1" />],
+  demo: [<ClientDemo key="d1" />, <ProviderDemo key="d2" />, <AdminDemo key="d3" />],
 }
 
 /** Galería de todos los roles con selector de rol. Preview aislado, no conectado a rutas de producción. */

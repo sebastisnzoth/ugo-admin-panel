@@ -128,3 +128,12 @@
 .ugo-rp-card { overflow-x: auto; }
 .ugo-rp-role-desc { margin: 10px 32px 0; text-align: center; background: #E9ECEF; color: #3D4A42; font-family: 'Plus Jakarta Sans', 'Inter Tight', Inter, ui-sans-serif, system-ui, sans-serif; font-size: 15px; }
 .ugo-dp-photo-tile { object-fit: cover; width: 100%; }
+
+/* Demo funcional */
+.ugo-dp-btn:disabled, .ugo-rp-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.ugo-dp-check { display: flex; align-items: center; gap: 10px; font-size: 15px; padding: 12px 0; border-bottom: 1px solid #EEF1F4; cursor: pointer; }
+.ugo-dp-check input { width: 20px; height: 20px; accent-color: #006948; }
+.ugo-dp-stars-pick { display: flex; justify-content: center; gap: 6px; margin: 16px 0; }
+.ugo-dp-stars-pick button { background: none; border: 0; font-size: 36px; color: #C8D0D8; cursor: pointer; padding: 4px; }
+.ugo-dp-stars-pick button.is-on { color: #F5B700; }
+.ugo-dp-gallery .ugo-rp-figure { width: 760px; }
