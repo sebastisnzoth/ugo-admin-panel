@@ -17,6 +17,8 @@ import'./ugo-dark-premium.css'
 import'./ugo-visual-refresh.css'
 import'./ugo-auth-redesign.css'
 import'./browser-role-shell.css'
+import{LocaleProvider}from'../i18n/locale'
+import'../i18n/locale.css'
 
 const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
 const DevelopmentDashboard=lazy(()=>import('./DevelopmentDashboard').then(module=>({default:module.DevelopmentDashboard})))
@@ -35,7 +37,7 @@ function BrowserShell({children}:{children:React.ReactNode}){return <div classNa
 function ClientApp({web=false}:{web?:boolean}){const app=<><RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
 function ProviderApp({web=false}:{web?:boolean}){const app=<><RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
 
-export function MvpApp(){
+function MvpAppRoutes(){
  const route=resolveAppRoute(window.location.search)
  if(route==='demo')return <Deferred><UgoTestDemo/></Deferred>
  if(route==='recruit')return <Deferred><ProviderRecruitmentLanding/></Deferred>
@@ -63,3 +65,6 @@ function RecoveryGate({role,children}:{role:'client'|'provider';children:React.R
  const backToLogin=()=>window.location.replace(`${window.location.pathname}?app=${role}`)
  return <main className={`mvp-auth-page role-${role}`}><section className="mvp-auth-card" aria-live="polite"><div className="mvp-kicker">U.G.O. · {role==='client'?'CLIENTE':'PROVEEDOR'}</div><h1>{phase==='checking'?'Validando enlace…':phase==='error'?'Enlace no válido':phase==='success'?'Contraseña actualizada':'Creá una contraseña nueva'}</h1>{phase==='checking'?<p>Estamos verificando tu enlace seguro de recuperación.</p>:phase==='error'?<><p role="alert">{message}</p><Button className="mvp-primary" onClick={backToLogin}>Solicitar otro enlace</Button></>:phase==='success'?<><p role="status">{message}</p><Button className="mvp-primary" onClick={backToLogin}>Ingresar a UGO</Button></>:<form onSubmit={save}><p>Usá al menos 8 caracteres. Al guardarla, cerraremos la sesión temporal del enlace.</p><label>Nueva contraseña<Input type="password" minLength={8} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><label>Repetí la contraseña<Input type="password" minLength={8} autoComplete="new-password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required/></label>{message&&<div className="mvp-form-notice" role="alert">{message}</div>}<Button className="mvp-primary" loading={busy}>Guardar contraseña</Button></form>}</section></main>
 }
+
+
+export function MvpApp(){return <LocaleProvider><MvpAppRoutes/></LocaleProvider>}
