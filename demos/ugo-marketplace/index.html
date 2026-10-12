@@ -53,4 +53,5 @@ function acceptJob(i){toast("Solicitud aceptada en la demo. No se notificó a ni
 function approve(name){if(!state.approved.includes(name))state.approved.push(name);render();toast(name+" figura aprobado en la demo.")}
 function reject(name){state.approved=state.approved.filter(x=>x!==name);toast("Rechazo simulado para "+name+". Sin cambios reales.");}
 document.getElementById("roles").addEventListener("click",e=>{const b=e.target.closest("[data-role]");if(b)setRole(b.dataset.role)});render();
-</script></body></html>
+</script><!-- Preview estático aislado para ugo-marketplace-demo. -->
+</body></html>
