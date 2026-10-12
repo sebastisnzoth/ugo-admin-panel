@@ -37,7 +37,7 @@ const neighborhoods: { label: string; x: number; y: number }[] = [
   { label: 'COQUEIROS', x: 14, y: 58 },
 ]
 
-function MapBackground({ dark, pins = true }: { dark?: boolean; pins?: boolean }) {
+export function MapBackground({ dark, pins = true }: { dark?: boolean; pins?: boolean }) {
   return (
     <div className={`ugo-dp-map${dark ? ' ugo-dp-map--dark' : ''}`} aria-hidden="true">
       <img src={mapImg} alt="" className="ugo-dp-map-img" />
@@ -52,7 +52,7 @@ function MapBackground({ dark, pins = true }: { dark?: boolean; pins?: boolean }
   )
 }
 
-function StatusBar({ dark }: { dark?: boolean }) {
+export function StatusBar({ dark }: { dark?: boolean }) {
   return (
     <div className={`ugo-dp-status${dark ? ' ugo-dp-status--light' : ''}`} aria-hidden="true">
       <span>9:41</span>
@@ -85,7 +85,7 @@ function TopBar({ onBack }: { onBack?: boolean }) {
   )
 }
 
-function Phone({ children, dark, label, caption }: { children: ReactNode; dark?: boolean; label: string; caption: string }) {
+export function Phone({ children, dark, label, caption }: { children: ReactNode; dark?: boolean; label: string; caption: string }) {
   return (
     <figure className="ugo-dp-figure">
       <div className="ugo-dp-phone">
@@ -100,11 +100,11 @@ function Phone({ children, dark, label, caption }: { children: ReactNode; dark?:
   )
 }
 
-function Avatar({ large }: { large?: boolean }) {
+export function Avatar({ large }: { large?: boolean }) {
   return <img src={avatar} alt="Foto de Carlos Méndez" className={`ugo-dp-photo${large ? ' ugo-dp-photo--lg' : ''}`} />
 }
 
-function Stars({ value }: { value: number }) {
+export function Stars({ value }: { value: number }) {
   return (
     <span className="ugo-dp-stars" aria-label={`${value} de 5 estrellas`}>
       {[0, 1, 2, 3, 4].map((i) => (

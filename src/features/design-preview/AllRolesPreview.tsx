@@ -1,0 +1,71 @@
+import { useState, type ReactNode } from 'react'
+import '../client/design-preview/design-preview.css'
+import './roles.css'
+import {
+  ClientHomeScreen,
+  ProviderDetailScreen,
+  AssistantListeningScreen,
+  ProviderEnRouteScreen,
+  ClientWebScreen,
+} from '../client/design-preview/ClientDesignPreview'
+import {
+  ProviderActiveJobScreen,
+  ProviderEarningsScreen,
+  ProviderEvidenceScreen,
+  ProviderHomeScreen,
+} from './ProviderDesignPreview'
+import {
+  AdminDashboardScreen,
+  AdminDisputesScreen,
+  SuperAdminCommandCenterScreen,
+} from './AdminDesignPreview'
+
+type Role = 'cliente' | 'proveedor' | 'admin' | 'superadmin'
+
+const roles: { id: Role; label: string }[] = [
+  { id: 'cliente', label: 'Cliente' },
+  { id: 'proveedor', label: 'Proveedor' },
+  { id: 'admin', label: 'Admin' },
+  { id: 'superadmin', label: 'Super Admin' },
+]
+
+const screens: Record<Role, ReactNode[]> = {
+  cliente: [
+    <ClientHomeScreen key="c1" />,
+    <ProviderDetailScreen key="c2" />,
+    <AssistantListeningScreen key="c3" />,
+    <ProviderEnRouteScreen key="c4" />,
+    <ClientWebScreen key="c5" />,
+  ],
+  proveedor: [
+    <ProviderHomeScreen key="p1" />,
+    <ProviderActiveJobScreen key="p2" />,
+    <ProviderEvidenceScreen key="p3" />,
+    <ProviderEarningsScreen key="p4" />,
+  ],
+  admin: [<AdminDashboardScreen key="a1" />, <AdminDisputesScreen key="a2" />],
+  superadmin: [<SuperAdminCommandCenterScreen key="s1" />],
+}
+
+/** Galería de todos los roles con selector de rol. Preview aislado, no conectado a rutas de producción. */
+export default function AllRolesPreview() {
+  const [role, setRole] = useState<Role>('cliente')
+  return (
+    <div>
+      <nav className="ugo-rp-role-tabs" aria-label="Rol">
+        {roles.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            className={`ugo-rp-role-tab${role === r.id ? ' is-active' : ''}`}
+            aria-pressed={role === r.id}
+            onClick={() => setRole(r.id)}
+          >
+            {r.label}
+          </button>
+        ))}
+      </nav>
+      <main className="ugo-dp-gallery">{screens[role]}</main>
+    </div>
+  )
+}
