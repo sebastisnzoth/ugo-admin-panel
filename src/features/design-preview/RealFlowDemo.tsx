@@ -23,6 +23,7 @@ type Phase =
   | 'completion'  // proveedor marcó LISTO
   | 'review'      // cliente revisa y aprueba/disputa
   | 'disputed'
+  | 'cancelled'
   | 'completed'
 
 type Payment = 'card' | 'mp' | 'pix' | 'cash'
@@ -81,6 +82,7 @@ type Action =
   | { type: 'CONFIRM' }
   | { type: 'EDIT' }
   | { type: 'CANCEL' }
+  | { type: 'CANCEL_SERVICE' }
   | { type: 'RESET' }
   | { type: 'OFFER' }
   | { type: 'ACCEPT' }
@@ -99,6 +101,13 @@ type Action =
   | { type: 'RATE'; stars: number }
   | { type: 'TOGGLE_ONLINE' }
 
+// Estado real en la base (vocabulario de migraciones). Ver docs/design/MAPEO_ESTADOS_CLIENTE_DEMO.md
+const DB_STATE: Partial<Record<Phase, string>> = {
+  assigned: 'confirmado', enroute: 'en_camino', arrived: 'llegado', working: 'en_progreso',
+  completion: 'en_progreso', review: 'esperando_aprobacion', completed: 'completado',
+  disputed: 'disputa', cancelled: 'cancelado',
+}
+
 function reducer(s: State, a: Action): State {
   switch (a.type) {
     case 'PICK': {
@@ -108,6 +117,7 @@ function reducer(s: State, a: Action): State {
     }
     case 'CONFIRM': return s.phase === 'confirm' ? { ...s, phase: 'searching' } : s
     case 'EDIT': return s.phase === 'confirm' ? { ...s, phase: 'need' } : s
+    case 'CANCEL_SERVICE': return s.phase === 'assigned' || s.phase === 'enroute' || s.phase === 'arrived' ? { ...s, phase: 'cancelled' } : s
     case 'CANCEL': return s.phase === 'searching' || s.phase === 'offer' ? { ...initial, providerOnline: s.providerOnline } : s
     case 'RESET': return { ...initial, providerOnline: s.providerOnline }
     case 'OFFER': return s.phase === 'searching' && s.providerOnline ? { ...s, phase: 'offer' } : s
@@ -282,6 +292,14 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     )
   }
 
+  if (s.phase === 'cancelled') {
+    return (
+      <Phone label="Cliente · cancelado" caption="Cliente · Servicio cancelado">
+        <div className="ugo-dp-plain"><div className="ugo-dp-banner"><Icon name="check" size={22} /><div><b>Cancelaste el servicio</b><br />No se cobra nada en esta demo.</div></div></div>
+        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}>Pedir otro servicio</button></div>
+      </Phone>
+    )
+  }
   if (s.phase === 'completion') {
     return (
       <Phone label="Cliente · esperando revisión" caption="Cliente · Trabajo terminado">
@@ -482,6 +500,14 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     )
   }
 
+  if (s.phase === 'cancelled') {
+    return (
+      <Phone label="Proveedor · cancelado" caption="Proveedor · Servicio cancelado">
+        <div className="ugo-dp-plain"><div className="ugo-dp-banner"><Icon name="check" size={22} /><div><b>El cliente canceló</b><br />Volvés a estar disponible.</div></div></div>
+        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}>Reiniciar demo</button></div>
+      </Phone>
+    )
+  }
   if (s.phase === 'completed') {
     return (
       <Phone label="Proveedor · completado" caption="Proveedor · Completado">
@@ -519,6 +545,8 @@ export function RealFlowDemo() {
       </div>
       <div className="ugo-rf-controls">
         <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => d({ type: 'RESET' })}>Reiniciar demo</button>
+        {DB_STATE[s.phase] && <span className="ugo-dp-small"><b>Estado en base:</b> <code>{DB_STATE[s.phase]}</code></span>}
+        {(s.phase === 'assigned' || s.phase === 'enroute' || s.phase === 'arrived') && <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => d({ type: 'CANCEL_SERVICE' })}>Cancelar servicio</button>}
         {s.phase === 'need' && <span className="ugo-dp-small">Empezá tocando una categoría en el celular del cliente.</span>}
         {s.phase === 'searching' && <span className="ugo-dp-small">Esperando un profesional… (llega en unos segundos)</span>}
       </div>
