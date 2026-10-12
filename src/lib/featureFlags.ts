@@ -3,8 +3,9 @@
  *
  * Reglas:
  * - Apagado por defecto: sin variable de entorno, ningún flag está activo.
- * - Nunca activo en producción (MODE === 'production'), aunque la variable esté en true.
- *   Así las pantallas de diseño/demo no pueden llegar a usuarios reales.
+ * - El modo production siempre bloquea estos flags.
+ * - El build aislado --mode demo puede habilitarlos explícitamente aunque Vite
+ *   use PROD=true para optimizar los assets; ese modo no es el build de producción.
  */
 
 export type RideshareFlag = 'clientRideshareFlow' | 'providerRideshareFlow'
@@ -19,6 +20,6 @@ export function parseFlagValue(raw: unknown): boolean {
 }
 
 export function isRideshareFlagEnabled(flag: RideshareFlag, env: Record<string, unknown> = import.meta.env): boolean {
-  if (env.MODE === 'production' || env.PROD === true) return false
+  if (env.MODE === 'production' || (env.PROD === true && env.MODE !== 'demo')) return false
   return parseFlagValue(env[ENV_KEYS[flag]])
 }
