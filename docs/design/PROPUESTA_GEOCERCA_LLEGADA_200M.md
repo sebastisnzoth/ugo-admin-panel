@@ -21,8 +21,14 @@ proveedor en_camino
 → si no → UI ofrece YA LLEGUÉ (manual, con registro)
 ```
 
+## Hallazgos del repo (antes de implementar)
+- **Ya existe validación de 200 m en servidor:** `private.avanzar_servicio_impl` (migración `20260901_stage7_provider_arrival_lifecycle.sql`) usa `st_distance` entre la ubicación del proveedor y la del cliente, y rechaza el paso a `llegado` si la distancia es mayor a 200 m. **No hace falta una RPC nueva para el radio.**
+- **Lo que sí falta:** la llegada es un paso manual; no hay detección automática. La RPC existente no valida frescura ni precisión del GPS.
+- **Conflicto de frescura:** la migración de matching (`20261003004651_repair_provider_matching_runtime_grants_and_gps_window.sql`) fija `v_gps_freshness = 90 seconds`. La decisión de 30 segundos de este documento contradice ese contrato existente. Hay que decidir cuál aplica antes de implementar.
+- **Precisión del GPS:** no encontré validación de precisión en el repo.
+
 ## Decisiones
-1. **Antigüedad máxima de posición:** 30 segundos.
+1. **Antigüedad máxima de posición:** 30 segundos. **Pendiente de revisión:** el matching usa 90 segundos (ver hallazgos).
 2. **Precisión mínima del GPS:** 50 metros. Si la precisión es peor, no se valida automáticamente.
 3. **`YA LLEGUÉ` con distancia mayor a 200 m:** requiere motivo. Queda registrado como `manual` con el motivo.
 4. **Dónde vive la regla:** RPC de Supabase.
