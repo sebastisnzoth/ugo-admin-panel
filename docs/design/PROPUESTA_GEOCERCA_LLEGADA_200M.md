@@ -43,3 +43,9 @@ proveedor en_camino
 - Fuera de 200 m, la llegada automática no se registra.
 - `YA LLEGUÉ` funciona sin GPS y deja método `manual`.
 - Pruebas de contrato y de integración en UGO TEST.
+
+## Decisiones registradas (segunda ronda)
+- **Frescura del GPS:** 90 segundos, igual que el matching actual. Esto reemplaza la decisión de 30 segundos.
+- **Validación de 200 m:** se reutiliza la regla existente en `private.avanzar_servicio_impl`. No se crea una RPC nueva que la reemplace. Lo que se agrega es la detección automática de llegada.
+- **Regeneración de tipos desde TEST:** no por ahora.
+- **Proveedor:** se cierra el cliente primero; el mapeo del proveedor queda para después.
