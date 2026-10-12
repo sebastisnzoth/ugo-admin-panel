@@ -34,12 +34,23 @@ const paymentOptions: { id: Payment; label: string; note?: string }[] = [
   { id: 'cash', label: 'Efectivo al profesional', note: 'El efectivo no lo retiene UGO; se paga directamente al profesional.' },
 ]
 
+type Category = 'electricista' | 'plomeria' | 'limpieza' | 'montaje'
+
+// Reglas de evidencia por categoría (demo). En producción las define la política del servicio.
+const categories: Record<Category, { label: string; icon: 'plug' | 'droplet' | 'sparkle' | 'wrench'; problem: string; initialRequired: boolean; finalRequired: boolean }> = {
+  electricista: { label: 'Electricista', icon: 'plug', problem: 'Tablero sin luz en la cocina', initialRequired: true, finalRequired: true },
+  plomeria: { label: 'Plomería', icon: 'droplet', problem: 'Pérdida de agua bajo el lavatorio', initialRequired: false, finalRequired: true },
+  limpieza: { label: 'Limpieza', icon: 'sparkle', problem: 'Limpieza profunda de departamento', initialRequired: false, finalRequired: false },
+  montaje: { label: 'Montaje', icon: 'wrench', problem: 'Armado de un placard', initialRequired: true, finalRequired: false },
+}
+
 const offer = { client: 'Lucía F.', service: 'Electricista', problem: 'Tablero sin luz en la cocina', distanceKm: 1.2, earnings: 12400 }
 
 const DEMO_PRICE = 8500
 
 interface State {
   phase: Phase
+  category: Category
   providerOnline: boolean
   payment: Payment | null
   eta: number
@@ -53,6 +64,7 @@ interface State {
 
 const initial: State = {
   phase: 'need',
+  category: 'electricista',
   providerOnline: true,
   payment: null,
   eta: 8,
@@ -65,7 +77,7 @@ const initial: State = {
 }
 
 type Action =
-  | { type: 'PICK' }
+  | { type: 'PICK'; category: Category }
   | { type: 'CONFIRM' }
   | { type: 'EDIT' }
   | { type: 'CANCEL' }
@@ -89,7 +101,11 @@ type Action =
 
 function reducer(s: State, a: Action): State {
   switch (a.type) {
-    case 'PICK': return s.phase === 'need' ? { ...s, phase: 'confirm' } : s
+    case 'PICK': {
+      if (s.phase !== 'need') return s
+      const c = categories[a.category]
+      return { ...s, phase: 'confirm', category: a.category, initialRequired: c.initialRequired, finalRequired: c.finalRequired, initialDone: false, finalDone: false }
+    }
     case 'CONFIRM': return s.phase === 'confirm' ? { ...s, phase: 'searching' } : s
     case 'EDIT': return s.phase === 'confirm' ? { ...s, phase: 'need' } : s
     case 'CANCEL': return s.phase === 'searching' || s.phase === 'offer' ? { ...initial, providerOnline: s.providerOnline } : s
@@ -156,10 +172,10 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
           <div className="ugo-dp-handle" />
           <div className="ugo-dp-search"><Icon name="search" size={20} /><span>¿Qué necesitás? Escribí o tocá una categoría</span></div>
           <div className="ugo-dp-cats">
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="plug" size={26} /></i>Electricista</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="droplet" size={26} /></i>Plomería</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="sparkle" size={26} /></i>Limpieza</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="wrench" size={26} /></i>Montaje</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'electricista' })}><i><Icon name="plug" size={26} /></i>Electricista</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'plomeria' })}><i><Icon name="droplet" size={26} /></i>Plomería</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'limpieza' })}><i><Icon name="sparkle" size={26} /></i>Limpieza</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'montaje' })}><i><Icon name="wrench" size={26} /></i>Montaje</button>
           </div>
         </div>
         <nav className="ugo-dp-tabbar"><span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} />Inicio</span><span className="ugo-dp-tab"><Icon name="list" size={22} />Mis servicios</span><span className="ugo-dp-tab"><Icon name="message" size={22} />Mensajes</span><span className="ugo-dp-tab"><Icon name="user" size={22} />Perfil</span></nav>
@@ -173,11 +189,11 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
         <div className="ugo-dp-plain">
           <div className="ugo-dp-page-head"><button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Volver" onClick={() => d({ type: 'EDIT' })}><Icon name="back" size={20} /></button><div className="ugo-dp-name ugo-dp-name--sm">Revisá tu solicitud</div></div>
           <div className="ugo-dp-review-list">
-            <div><span>Servicio</span><b>Electricista</b></div>
-            <div><span>Problema</span><b>{offer.problem}</b></div>
+            <div><span>Servicio</span><b>{categories[s.category].label}</b></div>
+            <div><span>Problema</span><b>{categories[s.category].problem}</b></div>
             <div><span>Lugar</span><b>Centro, Florianópolis</b></div>
             <div><span>Cuándo</span><b>Ahora</b></div>
-            <div><span>Fotos</span><b>Opcional · sin fotos</b></div>
+            <div><span>Evidencia</span><b>{categories[s.category].initialRequired ? 'Foto inicial requerida' : 'Sin foto inicial'}</b></div>
           </div>
         </div>
         <div className="ugo-dp-plain-footer">
@@ -239,7 +255,17 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
         <MapBackground pins={false} />
         <div className="ugo-dp-marker" style={{ left: '50%', top: '42%' }}><UgoMark size={20} /></div>
         <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>{s.phase === 'enroute' ? 'Tu proveedor viene' : s.phase === 'arrived' ? 'Tu proveedor llegó' : 'Trabajo en curso'}</strong></span></div></div>
-        {s.phase === 'enroute' && <div className="ugo-dp-bubble" style={{ left: '50%', top: '22%' }}><span>Llegando en</span><b>{s.eta} min</b></div>}
+        {s.phase === 'enroute' && (
+          <>
+            <svg className="ugo-dp-route" viewBox="0 0 360 760" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M265 150 Q200 210 170 240 T95 300" />
+            </svg>
+            <div className="ugo-dp-car" style={{ left: `${265 - ((8 - s.eta) / 8) * 170}px`, top: `${150 + ((8 - s.eta) / 8) * 150}px` }}>
+              <Icon name="car" size={24} />
+            </div>
+            <div className="ugo-dp-bubble" style={{ left: '50%', top: '22%' }}><span>Llegando en</span><b>{s.eta} min</b></div>
+          </>
+        )}
         <div className="ugo-dp-sheet ugo-dp-sheet--route">
           <div className="ugo-dp-handle" />
           <div className="ugo-dp-provider">
@@ -281,7 +307,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
             <img src={work2} alt="Evidencia final 2" className="ugo-dp-photo-tile" />
           </div>
           <div className="ugo-dp-review-list">
-            <div><span>Servicio</span><b>Electricista</b></div>
+            <div><span>Servicio</span><b>{categories[s.category].label}</b></div>
             <div><span>Total</span><b>$ {formatArs(DEMO_PRICE)}</b></div>
             <div><span>Pago</span><b>{payLabel}</b></div>
           </div>

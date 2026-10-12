@@ -186,7 +186,7 @@ export function ProviderDetailScreen() {
             <img key={i} src={src} alt="" />
           ))}
         </div>
-        <button type="button" className="ugo-dp-btn">Contratar</button>
+        <button type="button" className="ugo-dp-btn">Elegir forma de pago</button>
       </div>
     </Phone>
   )
@@ -306,7 +306,7 @@ export function ClientWebScreen() {
                 <div className="ugo-dp-price ugo-dp-center">
                   <b>$ {formatArs(p.pricePerHour)}</b> <small>/ hora</small>
                 </div>
-                <button type="button" className="ugo-dp-btn">Contratar</button>
+                <button type="button" className="ugo-dp-btn">Elegir forma de pago</button>
               </div>
             </div>
           </aside>
