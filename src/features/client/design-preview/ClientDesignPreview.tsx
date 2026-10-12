@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react'
 import './design-preview.css'
+import { Icon, UgoMark, type IconName } from './icons'
+import avatar from './assets/provider-avatar.jpg'
+import work1 from './assets/work-1.jpg'
+import work2 from './assets/work-2.jpg'
+import work3 from './assets/work-3.jpg'
+import mapImg from './assets/map-floripa.jpg'
 import {
   formatArs,
   previewAddress,
@@ -9,16 +15,51 @@ import {
 } from './data'
 
 /*
- * Preview de diseño del Cliente (mockups aprobados).
+ * Preview de diseño del Cliente (réplica de los mockups aprobados).
  * Componentes aislados: NO están conectados a rutas ni a flujos reales.
- * Todo el CSS usa el prefijo `ugo-dp-` para no interferir con la app.
+ * Todo el CSS usa el prefijo `ugo-dp-`.
  */
 
-function StatusBar() {
+const categoryIcon: Record<string, IconName> = {
+  electricista: 'plug',
+  plomeria: 'droplet',
+  limpieza: 'sparkle',
+  montaje: 'wrench',
+}
+
+const works = [work1, work2, work3]
+
+// Etiquetas de barrios de Florianópolis (posición aproximada, solo decorativa)
+const neighborhoods: { label: string; x: number; y: number }[] = [
+  { label: 'CENTRO', x: 42, y: 40 },
+  { label: 'TRINDADE', x: 16, y: 26 },
+  { label: 'AGRONÔMICA', x: 62, y: 60 },
+  { label: 'COQUEIROS', x: 14, y: 58 },
+]
+
+function MapBackground({ dark, pins = true }: { dark?: boolean; pins?: boolean }) {
   return (
-    <div className="ugo-dp-status" aria-hidden="true">
+    <div className={`ugo-dp-map${dark ? ' ugo-dp-map--dark' : ''}`} aria-hidden="true">
+      <img src={mapImg} alt="" className="ugo-dp-map-img" />
+      {!dark &&
+        neighborhoods.map((n) => (
+          <span key={n.label} className="ugo-dp-area" style={{ left: `${n.x}%`, top: `${n.y}%` }}>
+            {n.label}
+          </span>
+        ))}
+      {pins && !dark && <span className="ugo-dp-you" />}
+    </div>
+  )
+}
+
+function StatusBar({ dark }: { dark?: boolean }) {
+  return (
+    <div className={`ugo-dp-status${dark ? ' ugo-dp-status--light' : ''}`} aria-hidden="true">
       <span>9:41</span>
-      <span>●●● ◔ ▮</span>
+      <span className="ugo-dp-signal">
+        <i /><i /><i /><i />
+        <span className="ugo-dp-battery" />
+      </span>
     </div>
   )
 }
@@ -27,21 +68,21 @@ function TopBar({ onBack }: { onBack?: boolean }) {
   return (
     <div className="ugo-dp-topbar">
       <button type="button" className="ugo-dp-round" aria-label={onBack ? 'Volver' : 'Menú'}>
-        {onBack ? '‹' : '☰'}
+        <Icon name={onBack ? 'back' : 'menu'} size={22} />
       </button>
       <div className="ugo-dp-pill ugo-dp-loc">
-        <strong>Mi ubicación</strong>
-        {previewAddress} ⌄
+        <span className="ugo-dp-loc-main">
+          <Icon name="pin" size={18} />
+          <strong>Mi ubicación</strong>
+        </span>
+        <span className="ugo-dp-loc-sub">{previewAddress}</span>
       </div>
       <button type="button" className="ugo-dp-round" aria-label="Notificaciones">
-        🔔<span className="ugo-dp-dot" />
+        <Icon name="bell" size={22} />
+        <span className="ugo-dp-dot" />
       </button>
     </div>
   )
-}
-
-function ProviderPhoto({ large }: { large?: boolean }) {
-  return <div className={`ugo-dp-photo${large ? ' ugo-dp-photo--lg' : ''}`} aria-hidden="true" />
 }
 
 function Phone({ children, dark, label, caption }: { children: ReactNode; dark?: boolean; label: string; caption: string }) {
@@ -50,14 +91,26 @@ function Phone({ children, dark, label, caption }: { children: ReactNode; dark?:
       <div className="ugo-dp-phone">
         <div className={`ugo-dp-screen${dark ? ' ugo-dp-screen--dark' : ''}`} role="img" aria-label={label}>
           <div className="ugo-dp-island" />
-          <StatusBar />
+          <StatusBar dark={dark} />
           {children}
         </div>
       </div>
-      <figcaption className="ugo-dp-caption">
-        {caption}
-      </figcaption>
+      <figcaption className="ugo-dp-caption">{caption}</figcaption>
     </figure>
+  )
+}
+
+function Avatar({ large }: { large?: boolean }) {
+  return <img src={avatar} alt="Foto de Carlos Méndez" className={`ugo-dp-photo${large ? ' ugo-dp-photo--lg' : ''}`} />
+}
+
+function Stars({ value }: { value: number }) {
+  return (
+    <span className="ugo-dp-stars" aria-label={`${value} de 5 estrellas`}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Icon key={i} name="star" size={13} className="ugo-dp-star-icon" style={{ fill: 'currentColor' }} />
+      ))}
+    </span>
   )
 }
 
@@ -65,27 +118,30 @@ function Phone({ children, dark, label, caption }: { children: ReactNode; dark?:
 export function ClientHomeScreen() {
   return (
     <Phone label="Pantalla de inicio del cliente" caption="1 · Inicio">
-      <div className="ugo-dp-map" aria-hidden="true" />
+      <MapBackground />
       <TopBar />
-      <div className="ugo-dp-you" aria-hidden="true" />
       <div className="ugo-dp-sheet ugo-dp-sheet--home">
         <div className="ugo-dp-handle" />
-        <div className="ugo-dp-search">🔍 ¿Qué servicio necesitás?</div>
+        <div className="ugo-dp-search">
+          <Icon name="search" size={20} />
+          <span>¿Qué servicio necesitás?</span>
+        </div>
         <div className="ugo-dp-cats">
           {previewCategories.map((c) => (
             <button type="button" key={c.id} className="ugo-dp-cat">
-              <i>{c.icon}</i>
+              <i>
+                <Icon name={categoryIcon[c.id]} size={26} />
+              </i>
               {c.label}
             </button>
           ))}
         </div>
-        <div className="ugo-dp-hint">⚡ Hay 12 electricistas cerca de vos</div>
       </div>
       <nav className="ugo-dp-tabbar" aria-label="Navegación principal">
-        <span className="ugo-dp-tab ugo-dp-tab--on">⌂ Inicio</span>
-        <span className="ugo-dp-tab">▦ Mis servicios</span>
-        <span className="ugo-dp-tab">✉ Mensajes</span>
-        <span className="ugo-dp-tab">◯ Perfil</span>
+        <span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} />Inicio</span>
+        <span className="ugo-dp-tab"><Icon name="list" size={22} />Mis servicios</span>
+        <span className="ugo-dp-tab"><Icon name="message" size={22} />Mensajes</span>
+        <span className="ugo-dp-tab"><Icon name="user" size={22} />Perfil</span>
       </nav>
     </Phone>
   )
@@ -96,36 +152,38 @@ export function ProviderDetailScreen() {
   const p = previewProvider
   return (
     <Phone label="Detalle del proveedor seleccionado" caption="2 · Proveedor seleccionado">
-      <div className="ugo-dp-map" aria-hidden="true" />
+      <MapBackground pins={false} />
       <TopBar onBack />
-      <div className="ugo-dp-pin" aria-hidden="true">🔧</div>
+      <div className="ugo-dp-marker" style={{ left: '50%', top: '40%' }}>
+        <UgoMark size={20} />
+      </div>
       <div className="ugo-dp-sheet ugo-dp-sheet--provider">
         <div className="ugo-dp-handle" />
         <div className="ugo-dp-provider">
-          <ProviderPhoto large />
+          <Avatar large />
           <div className="ugo-dp-grow">
             <div className="ugo-dp-name">{p.name}</div>
+            <div className="ugo-dp-service">{p.service} <Icon name="bolt" size={14} className="ugo-dp-bolt" /></div>
             <div className="ugo-dp-rating">
-              <span className="ugo-dp-star">★</span> {p.rating} ({p.reviews} reseñas)
+              <Stars value={p.rating} /> <strong>{p.rating}</strong> ({p.reviews} reseñas)
             </div>
           </div>
-          <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Guardar proveedor">♡</button>
+          <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Guardar proveedor">
+            <Icon name="heart" size={20} />
+          </button>
         </div>
         <div className="ugo-dp-price">
-          <span>⚡ {p.service}</span>
-          <span>
-            <b>$ {formatArs(p.pricePerHour)}</b> <small>/ hora</small>
-          </span>
+          <b>$ {formatArs(p.pricePerHour)}</b> <small>/ hora</small>
         </div>
         <div className="ugo-dp-chips">
-          {p.verified && <span className="ugo-dp-chip ugo-dp-chip--ok">✔ Verificado</span>}
-          <span className="ugo-dp-chip">🛡 Seguro</span>
-          <span className="ugo-dp-chip">◷ {p.yearsExperience}+ años</span>
+          {p.verified && <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="check" size={14} />Verificado</span>}
+          <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="shield" size={14} />Seguro</span>
+          <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="clock" size={14} />{p.yearsExperience}+ años exp.</span>
         </div>
-        <p className="ugo-dp-desc">{p.description}</p>
+        <p className="ugo-dp-desc">Técnico matriculado. {p.description}</p>
         <div className="ugo-dp-works" aria-label="Trabajos realizados">
-          {p.works.map((c, i) => (
-            <div key={i} style={{ background: `linear-gradient(135deg, ${c}, #9DAAB8)` }} />
+          {works.map((src, i) => (
+            <img key={i} src={src} alt="" />
           ))}
         </div>
         <button type="button" className="ugo-dp-btn">Contratar</button>
@@ -138,17 +196,19 @@ export function ProviderDetailScreen() {
 export function AssistantListeningScreen() {
   return (
     <Phone dark label="Asistente escuchando (mockup)" caption="3 · Asistente Hugo (mockup)">
-      <div className="ugo-dp-map ugo-dp-map--dark" aria-hidden="true" />
+      <MapBackground dark />
       <div className="ugo-dp-scrim" aria-hidden="true" />
       <div className="ugo-dp-orb" aria-hidden="true" />
       <div className="ugo-dp-listening">Te estoy escuchando…</div>
       <div className="ugo-dp-quote">“Necesito un electricista hoy en mi casa”</div>
       <div className="ugo-dp-actions">
-        <button type="button">🔍<span>Buscar electricistas</span></button>
-        <button type="button">⚡<span>Pedir ahora</span></button>
-        <button type="button">📅<span>Agendar para después</span></button>
+        <button type="button"><Icon name="search" size={22} /><span>Buscar electricistas</span></button>
+        <button type="button"><Icon name="bolt" size={22} /><span>Pedir ahora</span></button>
+        <button type="button"><Icon name="calendar" size={22} /><span>Agendar para después</span></button>
       </div>
-      <button type="button" className="ugo-dp-close" aria-label="Cerrar asistente">✕</button>
+      <button type="button" className="ugo-dp-close" aria-label="Cerrar asistente">
+        <Icon name="x" size={22} />
+      </button>
     </Phone>
   )
 }
@@ -158,46 +218,44 @@ export function ProviderEnRouteScreen() {
   const p = previewProvider
   return (
     <Phone label="Proveedor en camino" caption="4 · Proveedor en camino">
-      <div className="ugo-dp-map" aria-hidden="true">
-        <svg viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice" className="ugo-dp-route">
-          <path d="M120 430 Q150 380 170 360 T270 230 T290 170" />
-          <circle cx="290" cy="170" r="10" />
-        </svg>
+      <MapBackground pins={false} />
+      <svg className="ugo-dp-route" viewBox="0 0 360 760" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M95 300 Q140 260 170 240 T265 150" />
+      </svg>
+      <div className="ugo-dp-marker" style={{ left: 95, top: 280 }}>
+        <UgoMark size={20} />
+      </div>
+      <div className="ugo-dp-car" style={{ left: 255, top: 130 }}>
+        <Icon name="car" size={26} />
       </div>
       <TopBar onBack />
-      <div className="ugo-dp-bubble" style={{ left: 250, top: 120 }}>
+      <div className="ugo-dp-bubble" style={{ left: 240, top: 215 }}>
         <span>Llegando en</span>
         <b>{previewEnRoute.etaMinutes} min</b>
       </div>
       <div className="ugo-dp-sheet ugo-dp-sheet--route">
         <div className="ugo-dp-handle" />
         <div className="ugo-dp-provider">
-          <ProviderPhoto />
+          <Avatar />
           <div className="ugo-dp-grow">
             <div className="ugo-dp-name ugo-dp-name--sm">{p.name}</div>
             <div className="ugo-dp-onroute">En camino a tu ubicación</div>
           </div>
-          <div className="ugo-dp-rating">
-            <span className="ugo-dp-star">★</span> {p.rating}
-          </div>
         </div>
-        <div className="ugo-dp-vehicle">
-          <div className="ugo-dp-box">
-            🚗 Vehículo
-            <b>{previewEnRoute.vehicle}</b>
-            {previewEnRoute.plate}
-          </div>
-          <div className="ugo-dp-box">
-            Llegada estimada
-            <b className="ugo-dp-green">{previewEnRoute.etaMinutes} min</b>
-          </div>
+        <div className="ugo-dp-meta">
+          <span className="ugo-dp-rating"><Stars value={p.rating} /> <strong>{p.rating}</strong></span>
+          <span className="ugo-dp-vehicle-tag"><Icon name="car" size={16} />{previewEnRoute.vehicle}</span>
+          <span className="ugo-dp-plate">{previewEnRoute.plate}</span>
+        </div>
+        <div className="ugo-dp-eta-box">
+          Llegada estimada <b>{previewEnRoute.etaMinutes} min</b>
         </div>
         <div className="ugo-dp-btnrow">
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost">💬 Mensaje</button>
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost">📞 Llamar</button>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost"><Icon name="message" size={18} />Mensaje</button>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost"><Icon name="phone" size={18} />Llamar</button>
         </div>
         <div className="ugo-dp-banner">
-          <span aria-hidden="true">🚶</span>
+          <Icon name="walk" size={22} />
           <div>
             <b>Tu proveedor está en camino</b>
             <small>Te avisaremos cuando llegue.</small>
@@ -215,63 +273,66 @@ export function ClientWebScreen() {
     <figure className="ugo-dp-figure ugo-dp-figure--web">
       <div className="ugo-dp-web">
         <div className="ugo-dp-web-top">
-          <span className="ugo-dp-logo">UGO</span>
+          <span className="ugo-dp-logo"><UgoMark size={30} /> UGO</span>
+          <span className="ugo-dp-chip ugo-dp-chip--loc"><Icon name="pin" size={16} />{previewAddress}, Florianópolis</span>
           <div className="ugo-dp-web-actions">
-            <span className="ugo-dp-chip">📍 {previewAddress}</span>
-            <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Notificaciones">🔔</button>
+            <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Notificaciones">
+              <Icon name="bell" size={20} />
+            </button>
           </div>
         </div>
         <div className="ugo-dp-web-body">
           <aside className="ugo-dp-side">
-            <div className="ugo-dp-search">🔍 ¿Qué servicio necesitás?</div>
-            <div className="ugo-dp-chips">
+            <div className="ugo-dp-search">
+              <span>¿Qué servicio necesitás?</span>
+              <Icon name="search" size={20} />
+            </div>
+            <div className="ugo-dp-cat-grid">
               {previewCategories.map((c) => (
-                <span key={c.id} className="ugo-dp-chip">
-                  {c.icon} {c.label}
+                <span key={c.id} className="ugo-dp-cat-chip">
+                  <Icon name={categoryIcon[c.id]} size={18} />
+                  {c.label}
                 </span>
               ))}
             </div>
             <div className="ugo-dp-card">
-              <div className="ugo-dp-provider">
-                <ProviderPhoto large />
-                <div>
-                  <div className="ugo-dp-name">{p.name}</div>
-                  <div className="ugo-dp-rating">
-                    <span className="ugo-dp-star">★</span> {p.rating} ({p.reviews} reseñas)
-                  </div>
+              <img src={work1} alt="" className="ugo-dp-card-hero" />
+              <div className="ugo-dp-card-body">
+                <div className="ugo-dp-name ugo-dp-center">{p.name}</div>
+                <div className="ugo-dp-service ugo-dp-center">{p.service} matriculado</div>
+                <div className="ugo-dp-rating ugo-dp-center">
+                  <Stars value={p.rating} /> <strong>{p.rating}</strong> ({p.reviews} reseñas)
                 </div>
-              </div>
-              <div className="ugo-dp-price">
-                <span>⚡ {p.service}</span>
-                <span>
+                <div className="ugo-dp-price ugo-dp-center">
                   <b>$ {formatArs(p.pricePerHour)}</b> <small>/ hora</small>
-                </span>
+                </div>
+                <button type="button" className="ugo-dp-btn">Contratar</button>
               </div>
-              <div className="ugo-dp-chips">
-                <span className="ugo-dp-chip ugo-dp-chip--ok">✔ Verificado</span>
-                <span className="ugo-dp-chip">🛡 Seguro</span>
-              </div>
-              <button type="button" className="ugo-dp-btn">Contratar</button>
             </div>
           </aside>
           <main className="ugo-dp-web-map" aria-label="Mapa">
-            <svg viewBox="0 0 900 700" preserveAspectRatio="xMidYMid slice" className="ugo-dp-route ugo-dp-route--web">
-              <path d="M380 520 Q420 460 470 420 T640 250" />
-              <circle cx="640" cy="250" r="12" />
-            </svg>
+            <MapBackground pins={false} />
+            <div className="ugo-dp-marker ugo-dp-marker--web" style={{ left: '52%', top: '48%' }}>
+              <UgoMark size={22} />
+            </div>
             <div className="ugo-dp-float">
+              <div className="ugo-dp-float-head">
+                <strong>Llegando en {previewEnRoute.etaMinutes} min</strong>
+              </div>
               <div className="ugo-dp-provider">
-                <ProviderPhoto />
+                <Avatar />
                 <div className="ugo-dp-grow">
-                  <div className="ugo-dp-name ugo-dp-name--sm">{p.name}</div>
-                  <div className="ugo-dp-onroute">En camino a tu ubicación</div>
+                  <div className="ugo-dp-onroute">En camino…</div>
+                  <div className="ugo-dp-small">{previewEnRoute.etaMinutes} min restantes</div>
                 </div>
+                <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Mensaje"><Icon name="message" size={18} /></button>
+                <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Llamar"><Icon name="phone" size={18} /></button>
               </div>
-              <div className="ugo-dp-eta">
-                <span>Llegada estimada</span>
-                <b>{previewEnRoute.etaMinutes} min</b>
-              </div>
-              <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost">💬 Mensaje</button>
+            </div>
+            <div className="ugo-dp-map-tools">
+              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Acercar"><Icon name="plus" size={18} /></button>
+              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Alejar"><Icon name="minus" size={18} /></button>
+              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Mi ubicación"><Icon name="locate" size={18} /></button>
             </div>
           </main>
         </div>
