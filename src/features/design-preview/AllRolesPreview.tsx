@@ -14,7 +14,8 @@ import {
   ProviderEvidenceScreen,
   ProviderHomeScreen,
 } from './ProviderDesignPreview'
-import { ClientDemo, ProviderDemo, AdminDemo } from './FunctionalDemo'
+import { AdminDemo } from './FunctionalDemo'
+import { RealFlowDemo } from './RealFlowDemo'
 import {
   AdminDashboardScreen,
   AdminDisputesScreen,
@@ -36,7 +37,7 @@ const roleDescription: Record<Role, string> = {
   proveedor: 'Recibir ofertas, ejecutar el trabajo, subir evidencia y ver ganancias.',
   admin: 'Operar servicios en curso, pagos y disputas en tiempo real.',
   superadmin: 'Gobierno, readiness, evidencia y controles globales de la plataforma.',
-  demo: 'Demo interactiva: tocá los botones para recorrer el flujo. Solo estado local, sin datos reales.',
+  demo: 'Flujo real de UGO: el cliente pide, el proveedor acepta y ejecuta, y el cierre pasa por revisión. Estado local, sin datos reales.',
 }
 
 const screens: Record<Role, ReactNode[]> = {
@@ -55,7 +56,7 @@ const screens: Record<Role, ReactNode[]> = {
   ],
   admin: [<AdminDashboardScreen key="a1" />, <AdminDisputesScreen key="a2" />],
   superadmin: [<SuperAdminCommandCenterScreen key="s1" />],
-  demo: [<ClientDemo key="d1" />, <ProviderDemo key="d2" />, <AdminDemo key="d3" />],
+  demo: [<RealFlowDemo key="d1" />, <AdminDemo key="d3" />],
 }
 
 /** Galería de todos los roles con selector de rol. Preview aislado, no conectado a rutas de producción. */

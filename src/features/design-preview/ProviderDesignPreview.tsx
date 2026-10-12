@@ -75,8 +75,8 @@ export function ProviderHomeScreen() {
               </div>
             </div>
             <div className="ugo-dp-btnrow ugo-dp-btnrow--tight">
-              <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost">Rechazar</button>
-              <button type="button" className="ugo-dp-btn">Aceptar</button>
+              <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost">NO PUEDO TOMARLO</button>
+              <button type="button" className="ugo-dp-btn">ACEPTAR</button>
             </div>
           </div>
         ))}
@@ -100,7 +100,7 @@ export function ProviderActiveJobScreen() {
       <div className="ugo-dp-topbar">
         <button type="button" className="ugo-dp-round" aria-label="Volver"><Icon name="back" size={22} /></button>
         <div className="ugo-dp-pill ugo-dp-loc ugo-dp-loc--row">
-          <span className="ugo-dp-chip ugo-dp-chip--ok">En camino</span>
+          <span className="ugo-dp-chip ugo-dp-chip--ok">Llegaste</span>
         </div>
       </div>
       <div className="ugo-dp-sheet ugo-dp-sheet--job">
@@ -122,7 +122,7 @@ export function ProviderActiveJobScreen() {
             </li>
           ))}
         </ol>
-        <button type="button" className="ugo-dp-btn">Marcar llegada</button>
+        <button type="button" className="ugo-dp-btn">EMPEZAR TRABAJO</button>
         <p className="ugo-dp-small ugo-dp-center-text">Ubicación compartida con el cliente</p>
       </div>
     </Phone>
@@ -138,7 +138,7 @@ export function ProviderEvidenceScreen() {
           <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Volver"><Icon name="back" size={20} /></button>
           <div>
             <div className="ugo-dp-name ugo-dp-name--sm">Evidencia final</div>
-            <div className="ugo-dp-small">Subí fotos del trabajo terminado</div>
+            <div className="ugo-dp-small">Foto final, si la categoría la requiere</div>
           </div>
         </div>
         <div className="ugo-dp-photo-grid">
@@ -157,7 +157,7 @@ export function ProviderEvidenceScreen() {
           <li><Icon name="check" size={18} /> Área limpia</li>
         </ul>
         <div className="ugo-dp-plain-footer">
-          <button type="button" className="ugo-dp-btn">Enviar para aprobación</button>
+          <button type="button" className="ugo-dp-btn">SOLICITAR REVISIÓN</button>
         </div>
       </div>
       <ProviderBottomNav active="trabajos" />
