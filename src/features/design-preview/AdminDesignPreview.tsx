@@ -152,6 +152,11 @@ export function SuperAdminCommandCenterScreen() {
               <div key={g.label} className="ugo-rp-kpi">
                 <span>{g.label}</span>
                 <b>{g.value}</b>
+                {g.value.endsWith('%') && (
+                  <div className="ugo-rp-progress" aria-hidden="true">
+                    <i style={{ width: g.value }} />
+                  </div>
+                )}
               </div>
             ))}
           </div>

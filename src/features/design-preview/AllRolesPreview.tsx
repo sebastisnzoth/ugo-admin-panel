@@ -29,6 +29,13 @@ const roles: { id: Role; label: string }[] = [
   { id: 'superadmin', label: 'Super Admin' },
 ]
 
+const roleDescription: Record<Role, string> = {
+  cliente: 'Pedir, seguir y calificar un servicio desde el celular o la web.',
+  proveedor: 'Recibir ofertas, ejecutar el trabajo, subir evidencia y ver ganancias.',
+  admin: 'Operar servicios en curso, pagos y disputas en tiempo real.',
+  superadmin: 'Gobierno, readiness, evidencia y controles globales de la plataforma.',
+}
+
 const screens: Record<Role, ReactNode[]> = {
   cliente: [
     <ClientHomeScreen key="c1" />,
@@ -65,6 +72,7 @@ export default function AllRolesPreview() {
           </button>
         ))}
       </nav>
+      <p className="ugo-rp-role-desc">{roleDescription[role]}</p>
       <main className="ugo-dp-gallery">{screens[role]}</main>
     </div>
   )

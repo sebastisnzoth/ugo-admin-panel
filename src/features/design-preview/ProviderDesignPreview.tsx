@@ -1,5 +1,8 @@
 import { Avatar, MapBackground, Phone } from '../client/design-preview/ClientDesignPreview'
 import { Icon, UgoMark } from '../client/design-preview/icons'
+import work1 from '../client/design-preview/assets/work-1.jpg'
+import work2 from '../client/design-preview/assets/work-2.jpg'
+import work3 from '../client/design-preview/assets/work-3.jpg'
 import { formatArs } from '../client/design-preview/data'
 import { providerActiveJob, providerEarnings, providerOffers } from './roles-data'
 
@@ -56,6 +59,8 @@ export function ProviderHomeScreen() {
   return (
     <Phone label="Inicio del proveedor" caption="P1 · Inicio · ofertas cerca">
       <MapBackground pins={false} />
+      <div className="ugo-dp-marker" style={{ left: '34%', top: '34%' }}><UgoMark size={20} /></div>
+      <div className="ugo-dp-marker ugo-dp-marker--muted" style={{ left: '68%', top: '46%' }}><UgoMark size={18} /></div>
       <ProviderTopBar right="toggle" />
       <div className="ugo-dp-sheet ugo-dp-sheet--offers">
         <div className="ugo-dp-handle" />
@@ -137,8 +142,8 @@ export function ProviderEvidenceScreen() {
           </div>
         </div>
         <div className="ugo-dp-photo-grid">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="ugo-dp-photo-tile" />
+          {[work1, work2, work3].map((src, i) => (
+            <img key={i} src={src} alt={`Foto de evidencia ${i + 1}`} className="ugo-dp-photo-tile" />
           ))}
           <button type="button" className="ugo-dp-photo-tile ugo-dp-photo-add" aria-label="Agregar foto">
             <Icon name="plus" size={26} />
