@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UGO — Encontrá profesionales</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,system-ui,sans-serif;background:#e5e7eb}.map-bg{background-color:#e2e8f0;background-image:linear-gradient(rgba(255,255,255,.45) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.45) 1px,transparent 1px);background-size:40px 40px}.clip-pin{width:8px;height:8px;background:#064e3b;transform:rotate(45deg);margin-top:-3px;border-radius:1px}.hide-scroll::-webkit-scrollbar{display:none}
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6">
+<div class="w-full max-w-sm bg-gray-900 rounded-[42px] p-2.5 shadow-2xl border-4 border-gray-700">
+<div class="relative h-[790px] bg-white rounded-[33px] overflow-hidden flex flex-col">
+<div class="relative z-20 bg-white">
+<div class="px-6 pt-3 pb-2 flex justify-between items-center text-xs font-bold"><span>10:09</span><span class="absolute left-1/2 top-2 -translate-x-1/2 w-24 h-5 bg-black rounded-full"></span><span class="flex gap-2"><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-three-quarters"></i></span></div>
+<header class="px-3 py-3 flex items-center justify-between border-b border-gray-100 shadow-sm gap-2">
+<button id="menuBtn" class="w-9 h-9 rounded-full hover:bg-gray-100 text-gray-700"><i class="fa-solid fa-bars"></i></button>
+<button id="locationBtn" class="bg-gray-50 px-3 py-2 rounded-full border border-gray-200 text-left"><span class="block text-[10px] text-gray-400">Mi ubicación</span><span class="text-xs font-bold text-gray-800"><i class="fa-solid fa-location-dot text-emerald-700"></i> Av. Santa Fe 3200 <i class="fa-solid fa-chevron-down text-[9px]"></i></span></button>
+<div class="flex items-center gap-1"><button id="notificationBtn" class="relative w-8 h-9 rounded-full hover:bg-gray-100"><i class="fa-regular fa-bell"></i><span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span></button><div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs grid place-items-center">M</div></div>
+</header>
+</div>
+<div class="absolute inset-0 top-[105px] map-bg overflow-hidden">
+<div class="absolute top-24 left-8 text-[10px] font-bold tracking-widest text-gray-400">RECOLETA</div><div class="absolute top-28 right-7 text-[10px] font-bold tracking-widest text-gray-400">PALERMO</div>
+<div class="absolute top-16 left-1/2 -translate-x-1/2 bg-white/80 border border-white rounded-xl px-3 py-2 shadow-sm text-[11px] text-gray-600"><i class="fa-solid fa-location-crosshairs text-emerald-700 mr-1"></i> Profesionales cerca tuyo</div>
+<div class="absolute top-[38%] left-[25%] flex flex-col items-center"><div class="bg-white text-emerald-800 rounded-full px-2 py-1 text-[10px] font-extrabold shadow border border-emerald-100">$ 7.000</div><div class="w-8 h-8 bg-emerald-700 text-white rounded-full grid place-items-center shadow-lg border-2 border-white mt-1"><i class="fa-solid fa-broom text-xs"></i></div><div class="clip-pin"></div></div>
+<div class="absolute top-[28%] right-[23%] flex flex-col items-center"><div class="w-8 h-8 bg-emerald-700 text-white rounded-full grid place-items-center shadow-lg border-2 border-white"><i class="fa-solid fa-bolt text-xs"></i></div><div class="clip-pin"></div></div>
+<div class="absolute top-[22%] left-[55%] flex flex-col items-center"><div class="w-8 h-8 bg-white text-emerald-700 rounded-full grid place-items-center shadow border-2 border-emerald-700"><i class="fa-solid fa-wrench text-xs"></i></div></div>
+<div class="absolute bottom-[42%] right-[16%] flex flex-col items-center"><div class="w-8 h-8 bg-white text-emerald-700 rounded-full grid place-items-center shadow border-2 border-emerald-700"><i class="fa-solid fa-leaf text-xs"></i></div></div>
+<button id="recenterBtn" class="absolute right-4 bottom-[43%] w-10 h-10 bg-white rounded-full shadow-lg text-emerald-800"><i class="fa-solid fa-location-crosshairs"></i></button>
+</div>
+<section class="relative z-10 mt-auto bg-white rounded-t-[30px] p-4 pt-3 shadow-[0_-8px_30px_rgba(0,0,0,.13)] space-y-3">
+<div class="w-10 h-1 rounded-full bg-gray-200 mx-auto"></div>
+<div class="flex items-center justify-between"><div><p class="text-[10px] uppercase tracking-widest font-extrabold text-emerald-700">Profesional destacado</p><h1 class="text-lg font-extrabold text-gray-900">Carlos Méndez</h1></div><button id="favoriteBtn" aria-label="Guardar favorito" class="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 text-gray-400"><i class="fa-regular fa-heart"></i></button></div>
+<div class="flex gap-3 items-center"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" alt="Carlos Méndez" class="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-600" onerror="this.style.display='none'"><div class="min-w-0"><p class="text-xs font-semibold text-amber-600"><i class="fa-solid fa-bolt"></i> Electricista matriculado</p><div class="flex items-center gap-1 mt-1 text-xs"><span class="text-amber-400">★★★★★</span><b>4.9</b><span class="text-gray-500">(127 reseñas)</span></div><p class="text-[11px] text-gray-500 mt-1"><i class="fa-solid fa-location-dot text-emerald-700"></i> A 1,2 km · Disponible hoy</p></div></div>
+<div class="flex items-baseline gap-1"><span class="text-2xl font-black text-emerald-800">$ 8.500</span><span class="text-xs text-gray-500">/ hora</span></div>
+<div class="flex flex-wrap gap-1.5"><span class="bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full px-2 py-1 text-[10px] font-bold"><i class="fa-solid fa-circle-check"></i> Verificado</span><span class="bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full px-2 py-1 text-[10px] font-bold"><i class="fa-solid fa-shield-halved"></i> Seguro</span><span class="bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-full px-2 py-1 text-[10px] font-bold"><i class="fa-regular fa-clock"></i> 5+ años</span></div>
+<p class="text-xs leading-relaxed text-gray-600">Instalaciones, reparaciones y mantenimiento eléctrico residencial y comercial.</p>
+<div class="grid grid-cols-3 gap-2"><img class="h-14 w-full rounded-xl object-cover" alt="Trabajo eléctrico 1" src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&auto=format&fit=crop&q=80"><img class="h-14 w-full rounded-xl object-cover" alt="Trabajo eléctrico 2" src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=200&auto=format&fit=crop&q=80"><img class="h-14 w-full rounded-xl object-cover" alt="Trabajo eléctrico 3" src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=200&auto=format&fit=crop&q=80"></div>
+<button id="bookBtn" class="w-full bg-[#006B4D] hover:bg-[#00523b] active:scale-[.99] text-white font-extrabold py-3.5 rounded-2xl shadow-lg shadow-emerald-900/20 text-sm tracking-widest">CONTRATAR</button>
+<p class="text-center text-[9px] text-gray-400">Demo visual UGO · Datos y acciones simulados</p>
+</section>
+</div></div>
+<div id="modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4"><div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4"><div class="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full grid place-items-center mx-auto text-2xl"><i class="fa-solid fa-check"></i></div><h2 class="text-xl font-extrabold">Solicitud preparada</h2><p class="text-sm text-gray-600">Esta es una confirmación de demostración. Todavía no se envió ninguna solicitud real a Carlos Méndez.</p><button id="closeModal" class="w-full bg-[#006B4D] text-white py-3 rounded-xl font-bold">Entendido</button></div></div>
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-gray-900 text-white rounded-xl px-4 py-3 text-xs shadow-xl hidden z-40"></div>
+<script>
+const toast=(msg)=>{const el=document.getElementById('toast');el.textContent=msg;el.classList.remove('hidden');setTimeout(()=>el.classList.add('hidden'),2200)};
+document.getElementById('favoriteBtn').addEventListener('click',()=>{const b=document.getElementById('favoriteBtn'),i=b.querySelector('i');const active=i.classList.contains('fa-regular');i.className=active?'fa-solid fa-heart':'fa-regular fa-heart';b.classList.toggle('text-red-500',active);b.classList.toggle('bg-red-50',active);toast(active?'Profesional guardado en favoritos':'Quitado de favoritos')});
+document.getElementById('bookBtn').addEventListener('click',()=>{const m=document.getElementById('modal');m.classList.remove('hidden');m.classList.add('flex')});
+document.getElementById('closeModal').addEventListener('click',()=>{const m=document.getElementById('modal');m.classList.add('hidden');m.classList.remove('flex')});
+document.getElementById('menuBtn').addEventListener('click',()=>toast('Menú de navegación: disponible en la demo completa de UGO'));
+document.getElementById('locationBtn').addEventListener('click',()=>toast('Ubicación de ejemplo: Av. Santa Fe 3200'));
+document.getElementById('notificationBtn').addEventListener('click',()=>toast('No tenés notificaciones nuevas en esta demo'));
+document.getElementById('recenterBtn').addEventListener('click',()=>toast('Mapa centrado en tu ubicación de ejemplo'));
+</script>
+</body></html>
