@@ -1,4 +1,4 @@
-export type AppRoute='demo'|'recruit'|'client-web'|'provider-web'|'stitch-client'|'client'|'provider'|'development'|'admin'|'web'|'landing'
+export type AppRoute='demo'|'recruit'|'client-web'|'provider-web'|'stitch-client'|'client'|'provider'|'development'|'admin'|'web'|'client-flow-v2'|'landing'
 
 export function resolveAppRoute(search:string):AppRoute{
  const params=new URLSearchParams(search)
@@ -9,6 +9,7 @@ export function resolveAppRoute(search:string):AppRoute{
  if(app==='provider-web'||app==='web-provider')return'provider-web'
  if(app==='stitch-client')return'stitch-client'
  if(app==='client')return'client'
+ if(app==='client-flow-v2')return'client-flow-v2'
  if(app==='provider')return'provider'
  if(app==='development')return'development'
  if(app==='admin'||app==='superadmin')return'admin'

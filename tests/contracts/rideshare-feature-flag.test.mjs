@@ -24,3 +24,13 @@ test('design preview is not mounted in the production app shell', async () => {
   assert.doesNotMatch(main, /design-preview/)
   assert.doesNotMatch(main, /RealFlowDemo|AllRolesPreview/)
 })
+
+test('client flow v2 route is mounted only behind the rideshare flag', async () => {
+  const router = await read('src/app/router.ts')
+  const mvp = await read('src/mvp/MvpApp.tsx')
+  assert.match(router, /client-flow-v2/)
+  assert.match(mvp, /isRideshareFlagEnabled\('clientRideshareFlow'\)/)
+  assert.match(mvp, /route==='client-flow-v2'/)
+  // la ruta existente del cliente sigue intacta
+  assert.match(mvp, /route==='client'\)return <ClientApp\/>/)
+})

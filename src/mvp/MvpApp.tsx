@@ -3,6 +3,7 @@ import{ClientFlowProvider}from'../features/client/flow/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{resolveAppRoute}from'../app/router'
+import{isRideshareFlagEnabled}from'../lib/featureFlags'
 import{Button,Input,LoadingScreen}from'./shared'
 import'./mvp.css'
 import'./ugo-design-system.css'
@@ -18,6 +19,7 @@ import'./ugo-visual-refresh.css'
 import'./ugo-auth-redesign.css'
 import'./browser-role-shell.css'
 
+const ClientFlowV2=lazy(()=>import('../features/client/flow-v2/ClientFlowV2').then(module=>({default:module.ClientFlowV2})))
 const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
 const DevelopmentDashboard=lazy(()=>import('./DevelopmentDashboard').then(module=>({default:module.DevelopmentDashboard})))
 const ClientRoot=lazy(()=>import('../features/client/ClientRoot').then(module=>({default:module.ClientRoot})))
@@ -42,6 +44,7 @@ export function MvpApp(){
  if(route==='client-web')return <ClientApp web/>
  if(route==='provider-web')return <ProviderApp web/>
  if(route==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
+ if(route==='client-flow-v2'&&isRideshareFlagEnabled('clientRideshareFlow'))return <Deferred><ClientFlowV2/></Deferred>
  if(route==='client')return <ClientApp/>
  if(route==='provider')return <ProviderApp/>
  if(route==='development')return <Deferred><DevelopmentDashboard/></Deferred>
