@@ -49,12 +49,18 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
   setLocaleState(next)
   try{window.localStorage.setItem(STORAGE_KEY,next)}catch{}
   const client=authClient()
-  if(client)void client.auth.getSession().then(({data,error})=>{
-   if(error||!data.session)return
-   return client.auth.updateUser({data:{preferred_language:next}})
-  }).then(({error}={error:null} as {error:{message:string}|null})=>{
-   if(error)console.warn('[UGO i18n] Preference remains local; account sync failed.')
-  }).catch(()=>console.warn('[UGO i18n] Preference remains local; account sync failed.'))
+  if(!client)return
+  const warnLocal=()=>console.warn('[UGO i18n] Preference remains local; account sync failed.')
+  void (async()=>{
+   try{
+    const{data,error:sessionError}=await client.auth.getSession()
+    if(sessionError||!data.session)return
+    const{error:updateError}=await client.auth.updateUser({data:{preferred_language:next}})
+    if(updateError)warnLocal()
+   }catch{
+    warnLocal()
+   }
+  })()
  },[])
  const value=useMemo<LocaleContextValue>(()=>({locale,setLocale,t:(key)=>messages[locale][key]??messages['pt-BR'][key]??key}),[locale,setLocale])
  return <LocaleContext.Provider value={value}>{children}<LanguageSelector/></LocaleContext.Provider>
