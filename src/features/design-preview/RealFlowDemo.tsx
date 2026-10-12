@@ -65,6 +65,7 @@ const initial: State = {
 }
 
 type Action =
+  | { type: 'PICK' }
   | { type: 'CONFIRM' }
   | { type: 'EDIT' }
   | { type: 'CANCEL' }
@@ -88,6 +89,7 @@ type Action =
 
 function reducer(s: State, a: Action): State {
   switch (a.type) {
+    case 'PICK': return s.phase === 'need' ? { ...s, phase: 'confirm' } : s
     case 'CONFIRM': return s.phase === 'confirm' ? { ...s, phase: 'searching' } : s
     case 'EDIT': return s.phase === 'confirm' ? { ...s, phase: 'need' } : s
     case 'CANCEL': return s.phase === 'searching' || s.phase === 'offer' ? { ...initial, providerOnline: s.providerOnline } : s
@@ -154,10 +156,10 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
           <div className="ugo-dp-handle" />
           <div className="ugo-dp-search"><Icon name="search" size={20} /><span>¿Qué necesitás? Escribí o tocá una categoría</span></div>
           <div className="ugo-dp-cats">
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'CONFIRM' })}><i><Icon name="plug" size={26} /></i>Electricista</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'CONFIRM' })}><i><Icon name="droplet" size={26} /></i>Plomería</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'CONFIRM' })}><i><Icon name="sparkle" size={26} /></i>Limpieza</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'CONFIRM' })}><i><Icon name="wrench" size={26} /></i>Montaje</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="plug" size={26} /></i>Electricista</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="droplet" size={26} /></i>Plomería</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="sparkle" size={26} /></i>Limpieza</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK' })}><i><Icon name="wrench" size={26} /></i>Montaje</button>
           </div>
         </div>
         <nav className="ugo-dp-tabbar"><span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} />Inicio</span><span className="ugo-dp-tab"><Icon name="list" size={22} />Mis servicios</span><span className="ugo-dp-tab"><Icon name="message" size={22} />Mensajes</span><span className="ugo-dp-tab"><Icon name="user" size={22} />Perfil</span></nav>
