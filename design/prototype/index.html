@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UGO · Prototipo Cliente</title>
+<style>
+  :root{
+    --primary:#006948; --primary-c:#00855D; --on-primary:#fff;
+    --cyan:#57DFFE; --blue:#0058BE;
+    --surface:#FAF8FF; --surface-c:#EAEDFF; --surface-low:#fff;
+    --on-surface:#131B2E; --on-variant:#3D4A42; --outline:#6D7A72; --outline-v:#BCCAC0;
+    --mint:#E5F5ED; --warn:#B45309;
+    --r-md:12px; --r-lg:16px; --r-xl:24px;
+    --shadow-float:0 6px 20px rgba(19,27,46,.12);
+    --shadow-sheet:0 -10px 30px rgba(19,27,46,.10);
+    --font:"Plus Jakarta Sans","Inter Tight",Inter,ui-sans-serif,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:#EEF1F6;color:var(--on-surface);min-height:100vh}
+  header.top{padding:24px 32px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--outline-v);background:#fff}
+  header.top b{font-size:28px;font-weight:800;letter-spacing:-.03em}
+  header.top span{color:var(--on-variant)}
+  .grid{display:flex;flex-wrap:wrap;gap:40px;padding:40px 32px;justify-content:center;align-items:flex-start}
+  .cap{text-align:center;margin-top:16px;font-weight:600}
+  .cap small{display:block;font-weight:400;color:var(--on-variant);font-size:13px}
+  .phone{width:360px;height:760px;border-radius:44px;background:#111;padding:10px;box-shadow:0 30px 60px rgba(0,0,0,.2)}
+  .screen{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--surface)}
+  .status{position:absolute;top:0;left:0;right:0;height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-size:14px;font-weight:600;z-index:5}
+  .island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:30px;background:#000;border-radius:20px;z-index:6}
+  .map{position:absolute;inset:0;background:#E7EFE6}
+  .map svg{width:100%;height:100%;display:block}
+  .pill{background:#fff;border-radius:999px;box-shadow:var(--shadow-float);display:flex;align-items:center;justify-content:center}
+  .round{width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:var(--shadow-float);display:flex;align-items:center;justify-content:center;border:0;position:relative;cursor:pointer}
+  .topbar{position:absolute;top:56px;left:16px;right:16px;display:flex;gap:10px;align-items:center;z-index:4}
+  .loc{flex:1;height:48px;padding:0 16px;flex-direction:column;align-items:flex-start;justify-content:center;font-size:12px;color:var(--on-variant)}
+  .loc strong{font-size:13px;color:var(--on-surface)}
+  .dot{position:absolute;top:10px;right:12px;width:8px;height:8px;background:#E11D48;border-radius:50%;border:2px solid #fff}
+  .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#8AA39A,#3D4A42);border:2px solid #fff}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--shadow-sheet);padding:12px 20px 0;z-index:4}
+  .handle{width:40px;height:5px;border-radius:5px;background:var(--outline-v);margin:0 auto 16px}
+  .search{height:52px;border-radius:var(--r-md);background:var(--surface-c);display:flex;align-items:center;gap:10px;padding:0 16px;color:var(--outline);font-size:15px}
+  .cats{display:flex;justify-content:space-between;margin:20px 0 8px}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--on-surface);width:72px}
+  .cat i{width:60px;height:60px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:22px;border:1px solid #E3E8F2}
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:78px;background:#fff;border-top:1px solid #E6EAF2;display:flex;justify-content:space-around;align-items:flex-start;padding-top:10px;font-size:11px;color:var(--outline)}
+  .tabbar div{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px;min-height:48px}
+  .tabbar .on{color:var(--primary);font-weight:700}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:var(--r-md);background:var(--primary);color:var(--on-primary);font:700 16px var(--font);border:0;width:100%;cursor:pointer;box-shadow:0 8px 18px rgba(0,105,72,.25)}
+  .btn.ghost{background:#fff;color:var(--on-surface);border:1px solid var(--outline-v);box-shadow:none;height:52px;font-size:15px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--surface-c);font-size:12px;font-weight:600;color:var(--on-variant)}
+  .chip.ok{background:var(--mint);color:var(--primary)}
+  .pin{position:absolute;transform:translate(-50%,-100%);width:52px;height:52px;border-radius:50% 50% 50% 0;rotate:-45deg;background:var(--primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-float);border:3px solid #fff}
+  .pin span{rotate:45deg;font-size:20px}
+  .bubble{position:absolute;background:#fff;border-radius:var(--r-lg);box-shadow:var(--shadow-float);padding:10px 14px;text-align:center;font-size:12px;color:var(--on-variant)}
+  .bubble b{display:block;font-size:20px;color:var(--on-surface)}
+  .provider{display:flex;gap:14px;align-items:center}
+  .photo{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#E8C7A7 0 22%,transparent 23%),radial-gradient(circle at 50% 100%,#2B3A4A 0 45%,transparent 46%),#B9C7C0;border:2px solid #fff;box-shadow:0 0 0 1px var(--outline-v);flex:none}
+  .photo.lg{width:72px;height:72px}
+  .name{font-size:18px;font-weight:700}
+  .rating{font-size:13px;color:var(--on-variant)}
+  .stars{color:#F5A524}
+  .price{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px;font-size:14px;font-weight:600}
+  .price b{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .price small{font-size:13px;color:var(--on-variant);font-weight:500}
+  .works{display:flex;gap:8px;margin:14px 0 16px;overflow:hidden}
+  .works div{width:112px;height:76px;border-radius:12px;background:linear-gradient(135deg,#D7DEE8,#9DAAB8);flex:none}
+  .works div:nth-child(2){background:linear-gradient(135deg,#F1D9B5,#C69A6B)}
+  .works div:nth-child(3){background:linear-gradient(135deg,#CFE3D8,#7BAF95)}
+  .dark{background:#0E1424}
+  .dark .map{background:#1B2336}
+  .scrim{position:absolute;inset:0;background:rgba(10,14,28,.55)}
+  .orb{position:absolute;left:50%;top:250px;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#0B1020 0 52%,#57DFFE 58%,rgba(87,223,254,.1) 72%,transparent 74%);box-shadow:0 0 60px rgba(87,223,254,.55)}
+  .orb::after{content:"";position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:90px;height:50px;background:radial-gradient(ellipse at center,transparent 0 35%,#57DFFE 36% 50%,transparent 52%);-webkit-mask:linear-gradient(#000,#000);opacity:.9}
+  .quote{position:absolute;left:20px;right:20px;top:440px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:var(--r-lg);padding:18px;color:#fff;font-size:18px;font-weight:600;line-height:1.4;backdrop-filter:blur(8px)}
+  .actions{position:absolute;left:20px;right:20px;top:600px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .actions div{height:96px;border-radius:var(--r-lg);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:8px}
+  .close{position:absolute;left:50%;bottom:36px;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .eta{font-size:12px;color:var(--on-variant)}
+  .vehicle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+  .box{border-radius:var(--r-md);background:var(--surface);padding:12px;font-size:12px;color:var(--on-variant)}
+  .box b{display:block;color:var(--on-surface);font-size:14px;margin-top:2px}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .banner{background:var(--mint);border-radius:999px;padding:12px 16px;display:flex;gap:10px;align-items:center;margin-bottom:24px}
+  .banner b{display:block;font-size:14px;color:var(--primary)}
+  .banner small{font-size:12px;color:var(--on-variant)}
+  /* web */
+  .web{width:1200px;height:760px;border-radius:16px;background:#fff;box-shadow:0 30px 60px rgba(0,0,0,.18);overflow:hidden;display:flex;flex-direction:column}
+  .web-top{height:64px;border-bottom:1px solid #E6EAF2;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+  .logo{font-size:26px;font-weight:800;letter-spacing:-.03em}
+  .web-body{display:flex;flex:1;min-height:0}
+  .side{width:400px;border-right:1px solid #E6EAF2;padding:24px;display:flex;flex-direction:column;gap:16px}
+  .web-map{flex:1;position:relative;background:#E7EFE6}
+  .web-map .float{position:absolute;right:24px;bottom:24px;width:320px}
+  @media (max-width:420px){.phone{width:100%;height:100vh;border-radius:0;padding:0}.screen{border-radius:0}}
+</style>
+</head>
+<body>
+<header class="top"><b>UGO</b><span>Cliente · Prototipo de pantallas</span></header>
+
+<!-- SVG map reused -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="streets" viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice">
+      <rect width="360" height="700" fill="#E7EFE6"/>
+      <rect x="0" y="0" width="360" height="700" fill="#DDE9F2" opacity=".0"/>
+      <path d="M-20 120 L380 180" stroke="#FFFFFF" stroke-width="14"/>
+      <path d="M-20 300 L380 260" stroke="#FFFFFF" stroke-width="18"/>
+      <path d="M-20 470 L380 520" stroke="#FFFFFF" stroke-width="14"/>
+      <path d="M90 -20 L140 720" stroke="#FFFFFF" stroke-width="16"/>
+      <path d="M250 -20 L220 720" stroke="#FFFFFF" stroke-width="12"/>
+      <path d="M-20 620 L380 600" stroke="#FFFFFF" stroke-width="10"/>
+      <rect x="150" y="320" width="60" height="50" rx="6" fill="#CFE5D2"/>
+      <rect x="20" y="520" width="50" height="60" rx="6" fill="#CFE5D2"/>
+      <path d="M-20 60 Q180 20 380 80" stroke="#A9CFE6" stroke-width="30" fill="none"/>
+    </symbol>
+    <symbol id="streetsDark" viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice">
+      <rect width="360" height="700" fill="#1B2336"/>
+      <path d="M-20 120 L380 180" stroke="#2A3550" stroke-width="14"/>
+      <path d="M-20 300 L380 260" stroke="#2A3550" stroke-width="18"/>
+      <path d="M-20 470 L380 520" stroke="#2A3550" stroke-width="14"/>
+      <path d="M90 -20 L140 720" stroke="#2A3550" stroke-width="16"/>
+      <path d="M250 -20 L220 720" stroke="#2A3550" stroke-width="12"/>
+      <path d="M-20 60 Q180 20 380 80" stroke="#1F4E6B" stroke-width="30" fill="none"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="grid">
+
+  <!-- 1 Home -->
+  <div>
+    <div class="phone"><div class="screen">
+      <div class="map"><svg viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice"><use href="#streets"/></svg></div>
+      <div class="island"></div>
+      <div class="status"><span>9:41</span><span>●●● ◔ ▮</span></div>
+      <div class="topbar">
+        <button class="round" aria-label="Menú">☰</button>
+        <div class="pill loc"><strong>Mi ubicación</strong>Av. Santa Fe 3200 ⌄</div>
+        <button class="round" aria-label="Notificaciones">🔔<span class="dot"></span></button>
+        <div class="avatar"></div>
+      </div>
+      <div style="position:absolute;left:50%;top:300px;transform:translate(-50%,-50%)"><div style="width:18px;height:18px;border-radius:50%;background:#1E7BFF;border:3px solid #fff;box-shadow:0 0 0 10px rgba(30,123,255,.18)"></div></div>
+      <div class="sheet" style="height:440px">
+        <div class="handle"></div>
+        <div class="search">🔍 ¿Qué servicio necesitás?</div>
+        <div class="cats">
+          <div class="cat"><i>⚡</i>Electricista</div>
+          <div class="cat"><i>💧</i>Plomería</div>
+          <div class="cat"><i>🧹</i>Limpieza</div>
+          <div class="cat"><i>🔧</i>Montaje</div>
+        </div>
+        <div style="margin-top:16px;padding:14px 16px;border-radius:var(--r-lg);background:var(--mint);color:var(--primary);font-weight:600;font-size:14px">⚡ Hay 12 electricistas cerca de vos</div>
+      </div>
+      <div class="tabbar"><div class="on">⌂<span>Inicio</span></div><div>▦<span>Mis servicios</span></div><div>✉<span>Mensajes</span></div><div>◯<span>Perfil</span></div></div>
+    </div></div>
+    <div class="cap">1 · Inicio<small>Mapa en vivo, buscá o pedí ayuda</small></div>
+  </div>
+
+  <!-- 2 Proveedor seleccionado -->
+  <div>
+    <div class="phone"><div class="screen">
+      <div class="map"><svg viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice"><use href="#streets"/></svg></div>
+      <div class="island"></div>
+      <div class="status"><span>9:41</span><span>●●● ◔ ▮</span></div>
+      <div class="topbar">
+        <button class="round" aria-label="Volver">‹</button>
+        <div class="pill loc"><strong>Mi ubicación</strong>Av. Santa Fe 3200 ⌄</div>
+        <button class="round" aria-label="Notificaciones">🔔<span class="dot"></span></button>
+      </div>
+      <div class="pin" style="left:180px;top:300px"><span>🔧</span></div>
+      <div class="sheet" style="height:470px">
+        <div class="handle"></div>
+        <div class="provider">
+          <div class="photo lg"></div>
+          <div style="flex:1"><div class="name">Carlos Méndez</div><div class="rating"><span class="stars">★</span> 4.9 (127 reseñas)</div></div>
+          <button class="round" style="width:40px;height:40px;box-shadow:none;border:1px solid var(--outline-v)" aria-label="Guardar">♡</button>
+        </div>
+        <div class="price"><span>⚡ Electricista</span><span><b>$ 8.500</b> <small>/ hora</small></span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip ok">✔ Verificado</span><span class="chip">🛡 Seguro</span><span class="chip">◷ 5+ años</span></div>
+        <p style="font-size:13px;color:var(--on-variant);line-height:1.5;margin:12px 0 0">Instalaciones, reparaciones y mantenimiento eléctrico para hogares y oficinas.</p>
+        <div class="works"><div></div><div></div><div></div></div>
+        <button class="btn">Contratar</button>
+      </div>
+    </div></div>
+    <div class="cap">2 · Proveedor seleccionado<small>Revisá detalles y contratá con confianza</small></div>
+  </div>
+
+  <!-- 3 Asistente -->
+  <div>
+    <div class="phone"><div class="screen dark">
+      <div class="map"><svg viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice"><use href="#streetsDark"/></svg></div>
+      <div class="scrim"></div>
+      <div class="island"></div>
+      <div class="status" style="color:#fff"><span>9:41</span><span>●●● ◔ ▮</span></div>
+      <div class="orb"></div>
+      <div style="position:absolute;left:0;right:0;top:370px;text-align:center;color:#fff;font-size:16px;font-weight:600">Te estoy escuchando…</div>
+      <div class="quote">“Necesito un electricista hoy en mi casa”</div>
+      <div class="actions">
+        <div>🔍<span>Buscar electricistas</span></div>
+        <div>⚡<span>Pedir ahora</span></div>
+        <div>📅<span>Agendar para después</span></div>
+      </div>
+      <button class="close" aria-label="Cerrar">✕</button>
+    </div></div>
+    <div class="cap">3 · Asistente Hugo (mockup)<small>Pantalla de diseño; la voz está deshabilitada en producción</small></div>
+  </div>
+
+  <!-- 4 En camino -->
+  <div>
+    <div class="phone"><div class="screen">
+      <div class="map"><svg viewBox="0 0 360 700" preserveAspectRatio="xMidYMid slice"><use href="#streets"/>
+        <path d="M120 430 Q150 380 170 360 T270 230 T290 170" stroke="#006948" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="1 0"/>
+        <circle cx="290" cy="170" r="10" fill="#fff" stroke="#006948" stroke-width="5"/>
+        <rect x="112" y="420" width="26" height="14" rx="4" fill="#131B2E" transform="rotate(-40 125 427)"/>
+      </svg></div>
+      <div class="island"></div>
+      <div class="status"><span>9:41</span><span>●●● ◔ ▮</span></div>
+      <div class="topbar">
+        <button class="round" aria-label="Volver">‹</button>
+        <div class="pill loc"><strong>Mi ubicación</strong>Av. Santa Fe 3200 ⌄</div>
+        <button class="round" aria-label="Notificaciones">🔔<span class="dot"></span></button>
+      </div>
+      <div class="bubble" style="left:250px;top:120px;width:110px"><span>Llegando en</span><b>8 min</b></div>
+      <div class="sheet" style="height:440px">
+        <div class="handle"></div>
+        <div class="provider">
+          <div class="photo"></div>
+          <div style="flex:1"><div class="name" style="font-size:17px">Carlos Méndez</div><div style="font-size:13px;color:var(--primary);font-weight:600">En camino a tu ubicación</div></div>
+          <div class="rating"><span class="stars">★</span> 4.9</div>
+        </div>
+        <div class="vehicle">
+          <div class="box">🚗 Vehículo<b>Toyota Hilux</b>AE 342 QP</div>
+          <div class="box">Llegada estimada<b style="color:var(--primary)">8 min</b></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn ghost">💬 Mensaje</button>
+          <button class="btn ghost">📞 Llamar</button>
+        </div>
+        <div class="banner"><span style="font-size:22px">🚶</span><div><b>Tu proveedor está en camino</b><small>Te avisaremos cuando llegue.</small></div></div>
+      </div>
+      <div class="tabbar" style="display:none"></div>
+    </div></div>
+    <div class="cap">4 · Proveedor en camino<small>Seguí el recorrido en tiempo real</small></div>
+  </div>
+
+  <!-- 5 Web -->
+  <div>
+    <div class="web">
+      <div class="web-top"><span class="logo">UGO</span><div style="display:flex;gap:14px;align-items:center"><span class="chip">📍 Av. Santa Fe 3200</span><button class="round" style="width:40px;height:40px;box-shadow:none;border:1px solid var(--outline-v)">🔔</button><div class="avatar" style="width:36px;height:36px"></div></div></div>
+      <div class="web-body">
+        <aside class="side">
+          <div class="search">🔍 ¿Qué servicio necesitás?</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip">⚡ Electricista</span><span class="chip">💧 Plomería</span><span class="chip">🧹 Limpieza</span><span class="chip">🔧 Montaje</span></div>
+          <div style="border:1px solid #E6EAF2;border-radius:var(--r-lg);padding:20px">
+            <div class="provider"><div class="photo lg"></div><div><div class="name">Carlos Méndez</div><div class="rating"><span class="stars">★</span> 4.9 (127 reseñas)</div></div></div>
+            <div class="price"><span>⚡ Electricista</span><span><b>$ 8.500</b> <small>/ hora</small></span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="chip ok">✔ Verificado</span><span class="chip">🛡 Seguro</span></div>
+            <div style="margin-top:18px"><button class="btn">Contratar</button></div>
+          </div>
+        </aside>
+        <main class="web-map">
+          <svg width="100%" height="100%" viewBox="0 0 900 700" preserveAspectRatio="xMidYMid slice">
+            <rect width="900" height="700" fill="#E7EFE6"/>
+            <path d="M-20 160 L940 230" stroke="#fff" stroke-width="18"/>
+            <path d="M-20 420 L940 380" stroke="#fff" stroke-width="22"/>
+            <path d="M-20 600 L940 560" stroke="#fff" stroke-width="14"/>
+            <path d="M220 -20 L300 720" stroke="#fff" stroke-width="18"/>
+            <path d="M560 -20 L520 720" stroke="#fff" stroke-width="14"/>
+            <path d="M-20 40 Q400 0 940 60" stroke="#A9CFE6" stroke-width="34" fill="none"/>
+            <path d="M380 520 Q420 460 470 420 T640 250" stroke="#006948" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <circle cx="640" cy="250" r="12" fill="#fff" stroke="#006948" stroke-width="6"/>
+          </svg>
+          <div class="pill float" style="position:absolute;right:24px;bottom:24px;width:320px;border-radius:var(--r-xl);flex-direction:column;align-items:stretch;padding:18px;gap:10px;box-shadow:var(--shadow-sheet)">
+            <div class="provider"><div class="photo"></div><div style="flex:1"><div class="name" style="font-size:16px">Carlos Méndez</div><div style="font-size:13px;color:var(--primary);font-weight:600">En camino a tu ubicación</div></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--on-variant)"><span>Llegada estimada</span><b style="color:var(--on-surface)">8 min</b></div>
+            <button class="btn ghost" style="height:46px">💬 Mensaje</button>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="cap">5 · Versión web<small>Panel lateral y mapa a la derecha (≥ 768px)</small></div>
+  </div>
+
+</div>
+</body>
+</html>

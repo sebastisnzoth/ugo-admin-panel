@@ -255,6 +255,14 @@ jobs:
             committed_at: .commit.committer.date
           }' /tmp/ugo-main-head.json > _site/main-head.json
 
+      - name: Build client flow demo into /demo (flag on, not production mode)
+        env:
+          VITE_FLAG_CLIENT_RIDESHARE_FLOW: "true"
+          VITE_APP_REVISION: ${{ github.sha }}
+        shell: bash
+        run: |
+          npx vite build --mode demo --base=/ugo-admin-panel/demo/ --outDir _site/demo --emptyOutDir
+
       - name: Verify public artifact is sanitized
         shell: bash
         run: |
