@@ -25,7 +25,6 @@ function initialLocale():UgoLocale{try{const stored=window.localStorage.getItem(
 
 export function LocaleProvider({children}:{children:React.ReactNode}){
  const[locale,setLocaleState]=useState<UgoLocale>(initialLocale)
- const[revision,setRevision]=useState(0)
  useEffect(()=>{
   const client=authClient()
   if(!client)return
@@ -44,7 +43,7 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
    if(isLocale(saved)){setLocaleState(saved);try{window.localStorage.setItem(STORAGE_KEY,saved)}catch{}}
   })
   return()=>{alive=false;subscription.unsubscribe()}
- },[revision])
+ },[])
  const setLocale=useCallback((next:UgoLocale)=>{
   if(!isLocale(next))return
   setLocaleState(next)
