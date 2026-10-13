@@ -15,7 +15,7 @@ test('cross-performance workflow validates the exact PR head SHA',()=>{
 test('client performance navigation uses a genuinely pointer-reachable action',()=>{
   assert.match(runtime,/clickFirstPointerReachable/)
   assert.match(runtime,/document\.elementFromPoint/)
-  assert.match(runtime,/filter\(\{hasText:\/Buscar profesional\/i\}\)/)
+  assert.match(runtime,/filter\(\{hasText:\/Pedir servicio\/i\}\)/)
   assert.match(runtime,/stableFrames<3/)
   assert.doesNotMatch(runtime,/force:\s*true/)
 })
