@@ -184,3 +184,52 @@
 .ugo-client-root .ugo-home-available{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:var(--client-green);font-size:9px;font-weight:800}
 .ugo-client-root .ugo-home-available i{width:6px;height:6px;border-radius:50%;background:#27a56a;box-shadow:0 0 0 3px #27a56a19}
 @media(max-width:520px){.ugo-client-root .ugo-home-nearby{padding:14px 12px}.ugo-client-root .ugo-home-provider-card{grid-template-columns:38px minmax(0,1fr);gap:9px;padding:9px}.ugo-client-root .ugo-home-provider-avatar{width:36px;height:36px;border-radius:11px}.ugo-client-root .ugo-home-available{grid-column:2;justify-self:start;margin-top:-1px}}
+
+
+/* Home marketplace refinement: clearer primary action, responsive map and keyboard/touch feedback. */
+.ugo-client-root .ugo-home-hugo-cta{
+  grid-template-columns:44px minmax(0,1fr) 38px!important;
+  align-items:center!important;
+}
+.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-icon{
+  width:42px;height:42px;flex:0 0 42px;
+  display:grid;place-items:center;border-radius:13px;
+  background:var(--client-soft)!important;color:var(--client-green)!important;
+  font-size:30px!important;line-height:1;
+}
+.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy{
+  min-width:0;display:grid;gap:4px;text-align:left;
+}
+.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy strong{
+  font-size:14px!important;font-weight:800;color:var(--client-ink)!important;
+}
+.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy small{
+  font-size:11px!important;line-height:1.45;color:var(--client-muted)!important;
+}
+.ugo-client-root .ugo-home-hugo-cta:focus-visible,
+.ugo-client-root .ugo-home-categories>button:focus-visible,
+.ugo-client-root .ugo-home-map-recenter:focus-visible{
+  outline:3px solid #16794f55!important;outline-offset:3px;
+}
+.ugo-client-root .ugo-home-categories>button:not(:disabled):active{
+  transform:scale(.985);background:#f1f8f3!important;
+}
+.ugo-client-root .ugo-home-services-head>button,
+.ugo-client-root .ugo-home-map-card>footer button{
+  min-height:44px;
+}
+@media(min-width:900px){
+  .ugo-client-root .ugo-home-map-card{position:sticky;top:84px}
+  .ugo-client-root .ugo-home-map{min-height:420px}
+}
+@media(max-width:520px){
+  .ugo-client-root .ugo-home-hugo-cta{
+    grid-template-columns:38px minmax(0,1fr) 32px!important;
+    gap:9px!important;min-height:72px;padding:10px!important;
+  }
+  .ugo-client-root .ugo-home-hugo-cta .ugo-home-search-icon{
+    width:36px;height:36px;font-size:26px!important;
+  }
+  .ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy strong{font-size:12px!important}
+  .ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy small{font-size:10px!important}
+}
