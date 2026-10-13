@@ -47,6 +47,23 @@ jobs:
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/provider-profile-photo-runtime.mjs
+      - name: Install Chromium for Home visual proof
+        run: npx playwright install --with-deps chromium
+      - name: Client Home photo and fallback visual runtime
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: |
+          set -euo pipefail
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-provider-photo-home-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          node scripts/provider-profile-photo-home-runtime.mjs
       - name: Judge
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
