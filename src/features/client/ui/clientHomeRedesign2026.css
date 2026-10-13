@@ -233,3 +233,6 @@
   .ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy strong{font-size:12px!important}
   .ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy small{font-size:10px!important}
 }
+
+/* La tarjeta de pedido muestra la foto del profesional realmente asignado. */
+.ugo-client-root .ugo-home-order-icon:has(.ugo-home-assigned-avatar){width:42px;height:42px;padding:0;border-radius:50%;background:transparent!important;overflow:visible}
