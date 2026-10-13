@@ -16,6 +16,11 @@ on:
 permissions:
   contents: read
 
+# This runtime mutates one dedicated test provider row; serialize runs to avoid cleanup races.
+concurrency:
+  group: ugo-provider-profile-photo-runtime-test
+  cancel-in-progress: false
+
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
