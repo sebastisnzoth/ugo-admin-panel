@@ -18,7 +18,7 @@ permissions:
 
 # This runtime mutates one dedicated test provider row; serialize runs to avoid cleanup races.
 concurrency:
-  group: ugo-provider-profile-photo-runtime-test
+  group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
 
 env:
