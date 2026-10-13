@@ -73,7 +73,7 @@ try {
   assert.ifError(clientProfile.error)
 
   photoPath = pathFor()
-  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zt9sAAAAASUVORK5CYII=', 'base64')
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mPgWrHjPwAElAJqOjK4SgAAAABJRU5ErkJggg==', 'base64')
   const uploaded = await admin.storage.from('provider-public').upload(photoPath, new Blob([png], { type: 'image/png' }), { contentType: 'image/png', cacheControl: '60', upsert: false })
   assert.ifError(uploaded.error)
   const publicUrl = admin.storage.from('provider-public').getPublicUrl(photoPath).data.publicUrl
