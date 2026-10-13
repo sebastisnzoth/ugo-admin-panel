@@ -72,7 +72,7 @@ try {
   assert.ifError(clientProfile.error)
 
   photoPath = pathFor()
-  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0l0QVR42mP8/x8AAusB9Y9Zt9sAAAAASUVORK5CYII=', 'base64')
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zt9sAAAAASUVORK5CYII=', 'base64')
   const uploaded = await admin.storage.from('provider-public').upload(photoPath, new Blob([png], { type: 'image/png' }), { contentType: 'image/png', cacheControl: '60', upsert: false })
   assert.ifError(uploaded.error)
   const publicUrl = admin.storage.from('provider-public').getPublicUrl(photoPath).data.publicUrl
@@ -104,6 +104,8 @@ try {
     const img = document.querySelector('.ugo-home-assigned-avatar img')
     return img instanceof HTMLImageElement && img.complete && img.naturalWidth > 0
   }, null, { timeout: 15000 })
+  const photoNaturalWidth = await image.evaluate(img => img.naturalWidth)
+  assert.ok(photoNaturalWidth > 0, 'PROVIDER_PHOTO_NATURAL_WIDTH_REQUIRED')
   await page.screenshot({ path: 'artifacts/provider-profile-photo-home.png', fullPage: true })
   screenshotVerified = true
 
@@ -127,7 +129,7 @@ try {
     public_fetch_status: http.status,
     content_type: http.headers.get('content-type'),
     assigned_card_rendered: true,
-    photo_natural_width: await image.evaluate(img => img.naturalWidth),
+    photo_natural_width: photoNaturalWidth,
     photo_visual_screenshot: 'artifacts/provider-profile-photo-home.png',
     initials_fallback_rendered: true,
     fallback_screenshot: 'artifacts/provider-profile-photo-home-fallback.png',
