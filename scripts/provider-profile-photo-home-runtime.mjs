@@ -135,7 +135,7 @@ try {
     fallback_screenshot: 'artifacts/provider-profile-photo-home-fallback.png',
     result: 'PASS',
     completed_at: new Date().toISOString()
-  }, null, 2) + '\\n')
+  }, null, 2) + '\n')
   console.log(JSON.stringify({ status: 'PASS', photo_rendered: screenshotVerified, initials_fallback: fallbackVerified, public_fetch_status: http.status }))
 } finally {
   const cleanupErrors = await cleanup()
