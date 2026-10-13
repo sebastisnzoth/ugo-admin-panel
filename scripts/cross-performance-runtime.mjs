@@ -144,12 +144,12 @@ try{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
       const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
       await visible(drawer,5000)
-      const requestButtons=drawer.locator('button:visible').filter({hasText:/Buscar profesional/i})
+      const requestButtons=drawer.locator('button:visible').filter({hasText:/Pedir servicio/i})
       const requestButton=requestButtons.first()
       await visible(requestButton,5000)
       await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
       await drawer.waitFor({state:'hidden',timeout:5000})
-      await visible(client.page.getByPlaceholder('¿Qué servicio necesitás?'),5000)
+      await visible(client.page.getByRole('main',{name:'Qué hay que hacer'}),5000);await visible(client.page.getByRole('textbox',{name:'Descripción del trabajo'}),5000)
     })
   } finally { await client.context.close() }
 
