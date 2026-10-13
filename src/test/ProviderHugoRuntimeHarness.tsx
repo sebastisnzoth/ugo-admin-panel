@@ -1,17 +1,7 @@
-import React from 'react'
-import { createRoot } from 'react-dom/client'
 import { ProviderHugoBridge } from '../mvp/provider/ProviderHugoBridge'
-import { ProviderRoot } from '../mvp/provider/ProviderRoot'
-import { ProviderFlowProvider } from '../mvp/provider/providerFlow'
 
 export function mountProviderHugoRuntimeHarness() {
-  const host = document.createElement('div')
-  host.id = 'ugo-provider-hugo-runtime-harness'
-  host.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:block;visibility:visible;opacity:1;pointer-events:auto;overflow:auto;background:transparent;'
-  document.body.append(host)
-  createRoot(host).render(
-    <ProviderFlowProvider>
-      <ProviderRoot runtimeTestSurface={<ProviderHugoBridge />} />
-    </ProviderFlowProvider>
-  )
+  const w = window as Window & { __UGO_PROVIDER_HUGO_RUNTIME_COMPONENT__?: typeof ProviderHugoBridge }
+  w.__UGO_PROVIDER_HUGO_RUNTIME_COMPONENT__ = ProviderHugoBridge
+  window.dispatchEvent(new Event('ugo:mount-provider-hugo-runtime'))
 }
