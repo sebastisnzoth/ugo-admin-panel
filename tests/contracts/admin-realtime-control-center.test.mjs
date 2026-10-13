@@ -33,6 +33,11 @@ test('admin dashboard metrics stay live and truthfully show degraded realtime',a
  assert.match(src,/scheduleReconcile\(2500\)/)
  assert.match(src,/scheduleReconcile\(5000\)/)
  assert.match(src,/reconcileTimers\.forEach\(timer=>window\.clearTimeout\(timer\)\)/)
+ assert.match(src,/new Map<number,number>\(\)/)
+ assert.match(src,/if\(reconcileTimers\.has\(delay\)\)return/)
+ assert.match(src,/scheduleReconcile\(0\)/)
+ assert.match(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)void load\(\{silent:true\}\)\},10000\)/)
+ assert.doesNotMatch(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)sync\(\)\},10000\)/)
 })
 
 test('service 360 sheet refreshes trace chat payments disputes and evidence live',async()=>{
