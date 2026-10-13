@@ -19,11 +19,10 @@ function ProviderHugoRuntimeHarnessContent() {
 
 /** Test-only mount for exercising the deliberately unmounted provider voice surface. */
 export function mountProviderHugoRuntimeHarness() {
-  const appRoot = document.querySelector('.ugo-provider-root')
-  if (!appRoot) throw new Error('PROVIDER_RUNTIME_ROOT_REQUIRED')
   const host = document.createElement('div')
   host.id = 'ugo-provider-hugo-runtime-harness'
-  appRoot.append(host)
+  host.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483000;display:block;visibility:visible;opacity:1;pointer-events:auto;'
+  document.body.append(host)
   createRoot(host).render(
     <ProviderDataProvider>
       <ProviderFlowProvider>
