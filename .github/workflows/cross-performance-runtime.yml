@@ -27,7 +27,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-performance-${{ github.ref }}
+  group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
 
 env:
