@@ -100,6 +100,19 @@ try{
       if(!(await item.isVisible())) continue
       try{
         await item.scrollIntoViewIfNeeded()
+        // Wait for the drawer's entrance transition to settle before trial-clicking.
+        await item.evaluate(async el=>{
+          let stableFrames=0,previous=null
+          for(let frame=0;frame<30&&stableFrames<3;frame++){
+            await new Promise(resolve=>requestAnimationFrame(resolve))
+            if(!el.isConnected)throw new Error('TARGET_DETACHED_DURING_TRANSITION')
+            const r=el.getBoundingClientRect(),current=[r.x,r.y,r.width,r.height]
+            if(previous&&current.every((value,index)=>Math.abs(value-previous[index])<0.5))stableFrames++
+            else stableFrames=0
+            previous=current
+          }
+          if(stableFrames<3)throw new Error('TARGET_NOT_STABLE_AFTER_TRANSITION')
+        })
         const reachable=await item.evaluate(el=>{
           const r=el.getBoundingClientRect()
           if(!r.width||!r.height)return false
