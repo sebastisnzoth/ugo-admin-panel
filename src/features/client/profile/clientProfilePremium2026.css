@@ -23,7 +23,7 @@
   overflow:hidden!important;
   border:1px solid #dce5e0!important;
   border-radius:28px!important;
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
   color:#0b1710!important;
   box-shadow:0 24px 70px rgba(17,39,26,.11)!important;
 }
@@ -181,7 +181,7 @@
   padding:0 12px!important;
   border:1px solid #d7e2dc!important;
   border-radius:12px!important;
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
   color:#142219!important;
   box-shadow:none!important;
 }
@@ -190,7 +190,7 @@
   min-height:48px!important;
   border:0!important;
   border-radius:13px!important;
-  background:#0d2117!important;
+  background:#15241a!important;
   color:#fff!important;
   font-size:11px!important;
   font-weight:900!important;
@@ -353,7 +353,7 @@
   gap:4px!important;
   border:1px solid #d8e3dd!important;
   border-radius:15px!important;
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
   color:#17251c!important;
   box-shadow:none!important;
 }
@@ -392,7 +392,7 @@
   padding:14px!important;
   border:1px solid #dce5e0!important;
   border-radius:15px!important;
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
 }
 
 .ugo-client-root .ugo-client-places article>div:first-child{

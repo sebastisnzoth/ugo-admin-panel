@@ -28,7 +28,7 @@
   border-radius:20px!important;
   background:rgba(255,255,255,.97)!important;
   color:var(--ugo-studio-ink)!important;
-  box-shadow:0 6px 20px rgba(11,28,48,.06)!important;
+  box-shadow:0 6px 20px rgba(20,28,23,.06)!important;
   backdrop-filter:blur(12px)!important;
 }
 .ugo-client-root .ugo-client-profile-panel>header button,
@@ -45,7 +45,7 @@
   display:block!important;color:#006b58!important;font-size:9px!important;font-weight:900!important;letter-spacing:.1em!important
 }
 .ugo-client-root .ugo-client-profile-panel>header h2{
-  margin:3px 0 0!important;color:#0b1c30!important;font-size:24px!important;letter-spacing:-.035em!important
+  margin:3px 0 0!important;color:#141c17!important;font-size:24px!important;letter-spacing:-.035em!important
 }
 .ugo-client-root .ugo-client-profile-body{
   display:grid!important;
@@ -73,8 +73,8 @@
   border:1px solid #e5eeff!important;
   border-radius:24px!important;
   background:#fff!important;
-  color:#0b1c30!important;
-  box-shadow:0 4px 14px rgba(11,28,48,.045)!important;
+  color:#141c17!important;
+  box-shadow:0 4px 14px rgba(20,28,23,.045)!important;
 }
 .ugo-client-root .ugo-client-profile-identity>span{
   width:58px!important;height:58px!important;border-radius:17px!important;
@@ -82,7 +82,7 @@
   background:#e6f7f4!important;color:#006b58!important;font-size:20px!important;font-weight:900!important
 }
 .ugo-client-root .ugo-client-profile-identity>div{display:grid!important;gap:3px!important}
-.ugo-client-root .ugo-client-profile-identity strong{font-size:19px!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-profile-identity strong{font-size:19px!important;color:#141c17!important}
 .ugo-client-root .ugo-client-profile-identity small{font-size:11px!important;color:#575e70!important}
 .ugo-client-root .ugo-client-profile-identity button{
   min-height:40px!important;padding:0 14px!important;border:1px solid #dce9ff!important;border-radius:11px!important;
@@ -98,7 +98,7 @@
 .ugo-client-root .ugo-client-profile-form label{display:grid!important;gap:6px!important;color:#39464e!important;font-size:10px!important;font-weight:850!important}
 .ugo-client-root .ugo-client-profile-form input,
 .ugo-client-root .ugo-client-profile-form select{
-  width:100%!important;min-height:46px!important;padding:0 11px!important;border:1px solid #d9dfdd!important;border-radius:11px!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+  width:100%!important;min-height:46px!important;padding:0 11px!important;border:1px solid #d9dfdd!important;border-radius:11px!important;background:#fff!important;color:#141c17!important;box-shadow:none!important
 }
 .ugo-client-root .ugo-client-profile-primary{
   grid-column:1/-1!important;min-height:46px!important;border:0!important;border-radius:11px!important;background:#006b58!important;color:#fff!important;font-size:12px!important;font-weight:900!important
@@ -108,7 +108,7 @@
 }
 .ugo-client-root .ugo-client-profile-shortcuts button{
   min-height:138px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:7px!important;
-  padding:18px!important;border:1px solid #e5eeff!important;border-radius:20px!important;background:#fff!important;color:#0b1c30!important;text-align:left!important;box-shadow:none!important
+  padding:18px!important;border:1px solid #e5eeff!important;border-radius:20px!important;background:#fff!important;color:#141c17!important;text-align:left!important;box-shadow:none!important
 }
 .ugo-client-root .ugo-client-profile-shortcuts span{
   width:38px!important;height:38px!important;display:grid!important;place-items:center!important;border-radius:11px!important;background:#eff4ff!important;color:#006b58!important;font-size:18px!important
@@ -119,7 +119,7 @@
   grid-column:2!important;grid-row:3 / span 2!important;display:grid!important;gap:9px!important
 }
 .ugo-client-root .ugo-client-profile-sections details{
-  border:1px solid #e5eeff!important;border-radius:16px!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+  border:1px solid #e5eeff!important;border-radius:16px!important;background:#fff!important;color:#141c17!important;box-shadow:none!important
 }
 .ugo-client-root .ugo-client-profile-sections summary{
   min-height:68px!important;display:grid!important;grid-template-columns:38px 1fr auto!important;align-items:center!important;gap:10px!important;padding:10px 12px!important
@@ -127,7 +127,7 @@
 .ugo-client-root .ugo-client-profile-sections summary>span{
   width:38px!important;height:38px!important;display:grid!important;place-items:center!important;border-radius:10px!important;background:#eff4ff!important;color:#006b58!important
 }
-.ugo-client-root .ugo-client-profile-sections summary strong{font-size:12px!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-profile-sections summary strong{font-size:12px!important;color:#141c17!important}
 .ugo-client-root .ugo-client-profile-sections summary small,
 .ugo-client-root .ugo-client-profile-sections details>p{color:#575e70!important;font-size:10px!important}
 .ugo-client-root .ugo-client-profile-sections details>p{padding:0 14px 14px 60px!important;margin:0!important;line-height:1.45!important}
@@ -137,60 +137,60 @@
 
 /* ---------------- Real tracking / live service ---------------- */
 .ugo-client-root .ugo-live-tracking{
-  border:1px solid #e5eeff!important;border-radius:24px!important;background:#fff!important;color:#0b1c30!important;
-  box-shadow:0 16px 42px rgba(11,28,48,.12)!important
+  border:1px solid #e5eeff!important;border-radius:24px!important;background:#fff!important;color:#141c17!important;
+  box-shadow:0 16px 42px rgba(20,28,23,.12)!important
 }
 .ugo-client-root .ugo-live-tracking.is-embedded{margin-top:0!important;box-shadow:none!important}
 .ugo-client-root .ugo-live-tracking>header{padding:18px 20px 14px!important;border-bottom:1px solid #eef2f8!important}
 .ugo-client-root .ugo-live-tracking>header small{color:#006b58!important;font-size:9px!important;font-weight:900!important;letter-spacing:.09em!important}
-.ugo-client-root .ugo-live-tracking>header strong{color:#0b1c30!important;font-size:20px!important;letter-spacing:-.025em!important}
+.ugo-client-root .ugo-live-tracking>header strong{color:#141c17!important;font-size:20px!important;letter-spacing:-.025em!important}
 .ugo-client-root .ugo-live-tracking>header p,
 .ugo-client-root .ugo-live-tracking-status p{color:#575e70!important;font-size:11px!important}
 .ugo-client-root .ugo-live-dot{color:#00b693!important}
 .ugo-client-root .ugo-active-map-wrap{height:320px!important;background:#edf2f5!important}
-.ugo-client-root .ugo-active-map-fallback{background:#f5faf8!important;color:#0b1c30!important}
+.ugo-client-root .ugo-active-map-fallback{background:#f5faf8!important;color:#141c17!important}
 .ugo-client-root .ugo-active-map-fallback strong{color:#006b58!important}
 .ugo-client-root .ugo-active-map-fallback p,
 .ugo-client-root .ugo-active-map-fallback small{color:#575e70!important}
 .ugo-client-root .ugo-active-eta{
-  left:16px!important;bottom:16px!important;min-width:132px!important;padding:11px 13px!important;border:1px solid #e5eeff!important;border-radius:14px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 8px 24px rgba(11,28,48,.12)!important
+  left:16px!important;bottom:16px!important;min-width:132px!important;padding:11px 13px!important;border:1px solid #e5eeff!important;border-radius:14px!important;background:rgba(255,255,255,.96)!important;box-shadow:0 8px 24px rgba(20,28,23,.12)!important
 }
 .ugo-client-root .ugo-active-eta small,
 .ugo-client-root .ugo-active-eta span{color:#575e70!important}
 .ugo-client-root .ugo-active-eta strong{color:#006b58!important;font-size:24px!important}
-.ugo-client-root .ugo-active-user-dot{background:#006b58!important;box-shadow:0 0 0 8px rgba(0,214,178,.2),0 4px 14px rgba(11,28,48,.22)!important}
-.ugo-client-root .ugo-active-provider-dot{background:#00d6b2!important;color:#005747!important;box-shadow:0 4px 14px rgba(11,28,48,.22)!important}
+.ugo-client-root .ugo-active-user-dot{background:#006b58!important;box-shadow:0 0 0 8px rgba(0,214,178,.2),0 4px 14px rgba(20,28,23,.22)!important}
+.ugo-client-root .ugo-active-provider-dot{background:#00d6b2!important;color:#005747!important;box-shadow:0 4px 14px rgba(20,28,23,.22)!important}
 .ugo-client-root .ugo-live-tracking.is-compact{padding:14px 16px!important}
 .ugo-client-root .ugo-live-tracking-status>span{background:#e6f7f4!important;color:#006b58!important}
-.ugo-client-root .ugo-live-tracking-status strong{color:#0b1c30!important}
+.ugo-client-root .ugo-live-tracking-status strong{color:#141c17!important}
 
 /* ---------------- Real payment choice ---------------- */
 .ugo-client-root .ugo-client-payment-choice{
-  border:1px solid #e5eeff!important;border-radius:22px!important;background:#fff!important;color:#0b1c30!important;
-  box-shadow:0 18px 54px rgba(11,28,48,.14)!important
+  border:1px solid #e5eeff!important;border-radius:22px!important;background:#fff!important;color:#141c17!important;
+  box-shadow:0 18px 54px rgba(20,28,23,.14)!important
 }
 .ugo-client-root .ugo-client-payment-choice header small{color:#006b58!important;font-size:9px!important;font-weight:900!important;letter-spacing:.08em!important}
-.ugo-client-root .ugo-client-payment-choice header h2{color:#0b1c30!important;letter-spacing:-.035em!important}
+.ugo-client-root .ugo-client-payment-choice header h2{color:#141c17!important;letter-spacing:-.035em!important}
 .ugo-client-root .ugo-client-payment-choice header p{color:#575e70!important}
 .ugo-client-root .ugo-client-payment-options>button{
-  border-color:#e5eeff!important;border-radius:15px!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+  border-color:#e5eeff!important;border-radius:15px!important;background:#fff!important;color:#141c17!important;box-shadow:none!important
 }
 .ugo-client-root .ugo-client-payment-options>button:hover{background:#f8fbff!important;border-color:#dce9ff!important}
 .ugo-client-root .ugo-client-payment-options>button.selected{border-color:#006b58!important;background:#eff4ff!important;box-shadow:0 0 0 1px #006b58!important}
 .ugo-client-root .ugo-client-payment-options>button>span{background:#eff4ff!important;color:#006b58!important}
 .ugo-client-root .ugo-client-payment-options small{color:#575e70!important}
-.ugo-client-root .ugo-client-payment-feedback{border-color:#dce9ff!important;background:#f8f9ff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-payment-feedback{border-color:#dce9ff!important;background:#f8f9ff!important;color:#141c17!important}
 .ugo-client-root .ugo-client-payment-feedback button{border:1px solid #dce9ff!important;background:#fff!important;color:#006b58!important}
-.ugo-client-root .ugo-client-pix-box{border-color:#dce9ff!important;background:#f8f9ff!important;color:#0b1c30!important}
-.ugo-client-root .ugo-client-pix-box textarea{border-color:#d9dfdd!important;background:#fff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-pix-box{border-color:#dce9ff!important;background:#f8f9ff!important;color:#141c17!important}
+.ugo-client-root .ugo-client-pix-box textarea{border-color:#d9dfdd!important;background:#fff!important;color:#141c17!important}
 .ugo-client-root .ugo-client-pix-box button{background:#006b58!important;color:#fff!important}
 
 /* ---------------- Real completion/review ---------------- */
 .ugo-client-root .ugo-completion-review{
-  border:1px solid #e5eeff!important;border-radius:22px!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+  border:1px solid #e5eeff!important;border-radius:22px!important;background:#fff!important;color:#141c17!important;box-shadow:none!important
 }
 .ugo-client-root .ugo-completion-review header{border-bottom-color:#eef2f8!important}
-.ugo-client-root .ugo-completion-review header h2{color:#0b1c30!important;letter-spacing:-.03em!important}
+.ugo-client-root .ugo-completion-review header h2{color:#141c17!important;letter-spacing:-.03em!important}
 .ugo-client-root .ugo-completion-review header p,
 .ugo-client-root .ugo-completion-decision{color:#575e70!important}
 .ugo-client-root .ugo-completion-review header>span{background:#e6f7f4!important;color:#006b58!important}

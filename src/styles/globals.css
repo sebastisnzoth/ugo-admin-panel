@@ -10,6 +10,6 @@ input[type="checkbox"],input[type="radio"]{min-width:24px;min-height:24px}
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
-.mvp-auth-divider{color:#667085!important}
-.mvp-auth-page:not(.role-client):not(.role-provider) .mvp-kicker{color:#a6f4f7!important}
+.mvp-auth-divider{color:#647269!important}
+.mvp-auth-page:not(.role-client):not(.role-provider) .mvp-kicker{color:#bbf0c9!important}
 .mvp-auth-card input:focus-visible{outline:3px solid var(--ugo-color-brand-600)!important;outline-offset:3px!important}

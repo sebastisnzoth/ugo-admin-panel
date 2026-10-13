@@ -23,7 +23,7 @@ const S = {
   input: {background:'#F6F6F6',border:'1px solid rgba(0,0,0,.12)',borderRadius:'6px',padding:'6px 9px',color:'#000000',fontFamily:'Inter,sans-serif',fontSize:'11px',outline:'none',width:'100%'},
   select: {background:'#F6F6F6',border:'1px solid rgba(0,0,0,.12)',borderRadius:'6px',padding:'6px 9px',color:'#000000',fontFamily:'Inter,sans-serif',fontSize:'11px',outline:'none',width:'100%',cursor:'pointer'},
   btn: (variant='p') => ({padding:'5px 14px',borderRadius:'50px',cursor:'pointer',fontFamily:'Inter,sans-serif',fontSize:'10px',fontWeight:700,background:variant==='p'?'#06C167':variant==='d'?'rgba(225,25,0,.15)':'rgba(255,255,255,.08)',color:variant==='p'?'#FFFFFF':variant==='d'?'#E11900':'#000000',border:variant==='d'?'1px solid rgba(225,25,0,.3)':variant==='s'?'1px solid rgba(255,255,255,.12)':'none'} as React.CSSProperties),
-  pill: (c='g') => ({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'50px',fontSize:'8px',fontWeight:700,textTransform:'uppercase' as const,background:c==='g'?'rgba(5,148,79,.1)':c==='r'?'rgba(225,25,0,.12)':'rgba(255,193,67,.12)',color:c==='g'?'#05944F':c==='r'?'#E11900':'#FFC043',border:`1px solid ${c==='g'?'rgba(5,148,79,.3)':c==='r'?'rgba(225,25,0,.3)':'rgba(255,193,67,.3)'}`}),
+  pill: (c='g') => ({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'50px',fontSize:'8px',fontWeight:700,textTransform:'uppercase' as const,background:c==='g'?'rgba(21,147,102,.1)':c==='r'?'rgba(225,25,0,.12)':'rgba(255,193,67,.12)',color:c==='g'?'#159366':c==='r'?'#E11900':'#FFC043',border:`1px solid ${c==='g'?'rgba(21,147,102,.3)':c==='r'?'rgba(225,25,0,.3)':'rgba(255,193,67,.3)'}`}),
   tabRow: {display:'flex',borderBottom:'1px solid rgba(0,0,0,.1)',marginBottom:'12px'},
   tab: (active: boolean) => ({padding:'7px 14px',cursor:'pointer',border:'none',background:'transparent',color:active?'#06C167':'rgba(244,244,244,.45)',fontFamily:'Inter,sans-serif',fontSize:'10px',borderBottom:`2px solid ${active?'#06C167':'transparent'}`,transition:'all .15s'}),
   grid2: {display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px',marginBottom:'10px'},
@@ -36,7 +36,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
     <div style={S.modalBd} onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={S.modalBox}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
-          <span style={{fontFamily:'Inter',fontSize:'14px',fontWeight:700,color:'#05944F'}}>{title}</span>
+          <span style={{fontFamily:'Inter',fontSize:'14px',fontWeight:700,color:'#159366'}}>{title}</span>
           <button onClick={onClose} style={{background:'none',border:'none',color:'rgba(0,0,0,.5)',fontSize:'18px',cursor:'pointer'}}>✕</button>
         </div>
         {children}
@@ -115,7 +115,7 @@ export function SecPromos() {
         </div>
         {promos.map(p => (
           <div key={p.id} style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'9px 12px',borderBottom:'1px solid rgba(0,0,0,.08)',alignItems:'center',fontSize:'11px'}}>
-            <span style={{fontWeight:700,color:'#05944F',fontFamily:'monospace'}}>{p.codigo}</span>
+            <span style={{fontWeight:700,color:'#159366',fontFamily:'monospace'}}>{p.codigo}</span>
             <span style={{color:'rgba(244,244,244,.65)'}}>{p.tipo}</span>
             <span>{p.tipo==='porcentaje'?`${p.valor}%`:`R$${p.valor}`}</span>
             <span>{p.usos_actuales}/{p.usos_max||'∞'}</span>
@@ -388,7 +388,7 @@ function TabHugo() {
       {full.map(item => (
         <div key={item.clave} style={{...S.card,marginBottom:'10px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-            <span style={{fontWeight:700,color:'#05944F',textTransform:'uppercase',fontSize:'10px'}}>{item.clave.replace('hugo_prompt_','')}</span>
+            <span style={{fontWeight:700,color:'#159366',textTransform:'uppercase',fontSize:'10px'}}>{item.clave.replace('hugo_prompt_','')}</span>
             <span style={{fontSize:'9px',color:'rgba(0,0,0,.35)'}}>{item.descripcion}</span>
           </div>
           <textarea
@@ -543,7 +543,7 @@ export function SecValidacionPaises() {
         <div className="tw" style={{height:'fit-content'}}>
           {paises.map(p => (
             <div key={p.id} onClick={()=>setSel(p)}
-              style={{padding:'10px 13px',borderBottom:'1px solid var(--border)',cursor:'pointer',background:sel?.id===p.id?'rgba(5,148,79,.05)':'#FFF',display:'flex',alignItems:'center',gap:'9px',transition:'background .1s'}}>
+              style={{padding:'10px 13px',borderBottom:'1px solid var(--border)',cursor:'pointer',background:sel?.id===p.id?'rgba(21,147,102,.05)':'#FFF',display:'flex',alignItems:'center',gap:'9px',transition:'background .1s'}}>
               <span style={{fontSize:'18px'}}>{{'BR':'🇧🇷','AR':'🇦🇷','CL':'🇨🇱','CO':'🇨🇴','MX':'🇲🇽','UY':'🇺🇾'}[p.codigo_iso]||'🌐'}</span>
               <div style={{flex:1}}>
                 <div style={{fontSize:'12px',fontWeight:700}}>{p.pais}</div>
@@ -551,7 +551,7 @@ export function SecValidacionPaises() {
               </div>
               <button onClick={e=>{e.stopPropagation();toggle(p.id,!p.activo);}}
                 style={{padding:'2px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'9px',fontWeight:700,
-                  background:p.activo?'rgba(5,148,79,.1)':'rgba(0,0,0,.06)',color:p.activo?'#05944F':'#888'}}>
+                  background:p.activo?'rgba(21,147,102,.1)':'rgba(0,0,0,.06)',color:p.activo?'#159366':'#888'}}>
                 {p.activo?'● ON':'○ OFF'}
               </button>
             </div>
@@ -922,7 +922,7 @@ const toggleAll = () => {
           <span style={{fontSize:'11px',color:'#666'}}>Destino:</span>
           {(['prospectos','usuarios'] as const).map(d => (
             <button key={d} onClick={()=>setDestino(d)}
-              style={{padding:'5px 12px',border:'1.5px solid',borderColor:destino===d?'#05944F':'#ddd',borderRadius:'20px',fontSize:'10px',fontWeight:700,cursor:'pointer',background:destino===d?'rgba(5,148,79,.08)':'#fff',color:destino===d?'#05944F':'#666',fontFamily:'inherit'}}>
+              style={{padding:'5px 12px',border:'1.5px solid',borderColor:destino===d?'#159366':'#ddd',borderRadius:'20px',fontSize:'10px',fontWeight:700,cursor:'pointer',background:destino===d?'rgba(21,147,102,.08)':'#fff',color:destino===d?'#159366':'#666',fontFamily:'inherit'}}>
               {d==='prospectos'?'📋 Solo prospectos':'👤 Proveedores (recomendado)'}
             </button>
           ))}
@@ -935,7 +935,7 @@ const toggleAll = () => {
         onDragLeave={()=>setDragging(false)}
         onDrop={e=>{e.preventDefault();setDragging(false);const f=e.dataTransfer.files[0];if(f)processFile(f);}}
         onClick={()=>document.getElementById('imp-file')?.click()}
-        style={{border:`2.5px dashed ${dragging?'#05944F':'#ddd'}`,borderRadius:'16px',padding:'28px',textAlign:'center',cursor:'pointer',marginBottom:'14px',background:dragging?'rgba(5,148,79,.04)':'#fafafa',transition:'all .2s'}}>
+        style={{border:`2.5px dashed ${dragging?'#159366':'#ddd'}`,borderRadius:'16px',padding:'28px',textAlign:'center',cursor:'pointer',marginBottom:'14px',background:dragging?'rgba(21,147,102,.04)':'#fafafa',transition:'all .2s'}}>
         <div style={{fontSize:'36px',marginBottom:'8px'}}>{dragging?'🎯':'📊'}</div>
         <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}>Arrastrá tu archivo CSV aquí</div>
         <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.csv UTF-8 — o clic para seleccionar</div>
@@ -951,7 +951,7 @@ const toggleAll = () => {
       {result && (
         <>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',marginBottom:'10px'}}>
-            {([['Importados',result.ok,'#05944F'],['Duplicados',result.dup,'#996000'],['Errores',result.err,'#dc2626']] as [string,number,string][]).map(([l,v,col])=>(
+            {([['Importados',result.ok,'#159366'],['Duplicados',result.dup,'#996000'],['Errores',result.err,'#dc2626']] as [string,number,string][]).map(([l,v,col])=>(
               <div key={l} style={{background:'#f9f9f9',border:'1px solid #e5e5e5',borderRadius:'10px',padding:'10px',textAlign:'center'}}>
                 <div style={{fontSize:'22px',fontWeight:800,color:col}}>{v}</div>
                 <div style={{fontSize:'10px',color:'#666'}}>{l}</div>
@@ -989,7 +989,7 @@ const toggleAll = () => {
               </thead>
               <tbody>
                 {preview.map((row,i) => (
-                  <tr key={i} onClick={()=>toggleRow(i)} style={{borderBottom:'1px solid #f5f5f5',background:selected.has(i)?'rgba(5,148,79,.04)':i%2===0?'#fff':'#fafafa',cursor:'pointer'}}>
+                  <tr key={i} onClick={()=>toggleRow(i)} style={{borderBottom:'1px solid #f5f5f5',background:selected.has(i)?'rgba(21,147,102,.04)':i%2===0?'#fff':'#fafafa',cursor:'pointer'}}>
                     <td style={{padding:'7px 10px',textAlign:'center'}}>
                       <input type="checkbox" checked={selected.has(i)} onChange={()=>toggleRow(i)} onClick={e=>e.stopPropagation()} style={{width:'14px',height:'14px'}}/>
                     </td>
@@ -1000,7 +1000,7 @@ const toggleAll = () => {
                     <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace',fontSize:'10px'}}>{parseFloat(row.latitud||'0').toFixed(4)}</td>
                     <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace',fontSize:'10px'}}>{parseFloat(row.longitud||'0').toFixed(4)}</td>
                     <td style={{padding:'7px 10px',textAlign:'center'}}>
-                      <span style={{background:`rgba(${parseInt(row.score_confianza||'50')>60?'5,148,79':'153,96,0'},.1)`,color:parseInt(row.score_confianza||'50')>60?'#05944F':'#996000',borderRadius:'20px',padding:'2px 8px',fontSize:'10px',fontWeight:700}}>
+                      <span style={{background:`rgba(${parseInt(row.score_confianza||'50')>60?'5,148,79':'153,96,0'},.1)`,color:parseInt(row.score_confianza||'50')>60?'#159366':'#996000',borderRadius:'20px',padding:'2px 8px',fontSize:'10px',fontWeight:700}}>
                         {row.score_confianza||'50'}
                       </span>
                     </td>
@@ -1108,9 +1108,9 @@ export function SecTiendasInsumos() {
       <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
         {[{slug:'todos',label:'Todas',emoji:'🛒'},...INSUMO_CATS].map(c=>(
           <button key={c.slug} onClick={()=>setCatFil(c.slug)}
-            style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${catFil===c.slug?'#05944F':'var(--border)'}`,
-              background:catFil===c.slug?'rgba(5,148,79,.1)':'transparent',
-              color:catFil===c.slug?'#05944F':'var(--muted)',fontSize:11,fontWeight:600,cursor:'pointer'}}>
+            style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${catFil===c.slug?'#159366':'var(--border)'}`,
+              background:catFil===c.slug?'rgba(21,147,102,.1)':'transparent',
+              color:catFil===c.slug?'#159366':'var(--muted)',fontSize:11,fontWeight:600,cursor:'pointer'}}>
             {c.emoji} {c.label}
           </button>
         ))}
@@ -1147,7 +1147,7 @@ export function SecTiendasInsumos() {
             <div className="fg full"><label className="flabel">Notas internas</label><input style={inp} value={form.notas} onChange={e=>setForm((p:any)=>({...p,notas:e.target.value}))} placeholder="Contacto: João · Descuento 5% para proveedores U.GO"/></div>
             <div className="fg" style={{display:'flex',gap:12,alignItems:'center'}}>
               <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
-                <input type="checkbox" checked={form.activa} onChange={e=>setForm((p:any)=>({...p,activa:e.target.checked}))} style={{accentColor:'#05944F'}}/> Activa
+                <input type="checkbox" checked={form.activa} onChange={e=>setForm((p:any)=>({...p,activa:e.target.checked}))} style={{accentColor:'#159366'}}/> Activa
               </label>
               <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
                 <input type="checkbox" checked={form.verificada} onChange={e=>setForm((p:any)=>({...p,verificada:e.target.checked}))} style={{accentColor:'#276EF1'}}/> Verificada
@@ -1169,7 +1169,7 @@ export function SecTiendasInsumos() {
           </div>}
           {filtered.map(t=>(
             <div key={t.id} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:'12px 14px',marginBottom:8,display:'flex',alignItems:'center',gap:12,opacity:t.activa?1:.6}}>
-              <div style={{width:42,height:42,borderRadius:10,background:'rgba(5,148,79,.1)',border:'1px solid rgba(5,148,79,.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>
+              <div style={{width:42,height:42,borderRadius:10,background:'rgba(21,147,102,.1)',border:'1px solid rgba(21,147,102,.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>
                 {catEmoji(t.categoria_slug)}
               </div>
               <div style={{flex:1,minWidth:0}}>
@@ -1182,7 +1182,7 @@ export function SecTiendasInsumos() {
                   <span>{catEmoji(t.categoria_slug)} {catLabel(t.categoria_slug)}</span>
                   {t.zona&&<span>📍 {t.zona}</span>}
                   {t.telefono&&<span>📱 {t.telefono}</span>}
-                  <span style={{color:'#05944F',fontWeight:600}}>Comisión: {t.comision_pct}%</span>
+                  <span style={{color:'#159366',fontWeight:600}}>Comisión: {t.comision_pct}%</span>
                   {t.ml_store_url&&<a href={t.ml_store_url} target="_blank" rel="noreferrer" style={{color:'#FFE600',fontWeight:600,textDecoration:'none'}}>🛒 ML</a>}
                 </div>
               </div>
@@ -1216,7 +1216,7 @@ export function SecTiendasInsumos() {
                 {item.thumbnail&&<img src={item.thumbnail} alt="" style={{width:40,height:40,objectFit:'cover',borderRadius:6,flexShrink:0}}/>}
                 <div style={{minWidth:0}}>
                   <div style={{fontSize:10,fontWeight:600,color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',marginBottom:2}}>{item.title}</div>
-                  <div style={{fontSize:11,fontWeight:800,color:'#05944F'}}>R$ {Number(item.price).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:'#159366'}}>R$ {Number(item.price).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
                   <div style={{fontSize:9,color:'var(--muted)'}}>ML →</div>
                 </div>
               </a>

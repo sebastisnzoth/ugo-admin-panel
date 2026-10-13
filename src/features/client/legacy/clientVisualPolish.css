@@ -491,15 +491,15 @@
 .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-badges span{
   padding:7px 10px!important;
   border:1px solid #e1e9e4!important;
-  background:#f4f7f5!important;
+  background:#f7f9f7!important;
   color:#435148!important;
   font-size:9px!important;
 }
 
 .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-badges span:first-child{
   border-color:#cceada!important;
-  background:#eaf8f0!important;
-  color:#087747!important;
+  background:#e5f5e9!important;
+  color:#197249!important;
 }
 
 .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-bio{
@@ -517,7 +517,7 @@
   padding:11px!important;
   border:1px solid #e1e8e4!important;
   border-radius:16px!important;
-  background:#f7faf8!important;
+  background:#f7f9f7!important;
 }
 
 .ugo-client-root .ugo-ref-provider-sheet .ugo-provider-facts span{

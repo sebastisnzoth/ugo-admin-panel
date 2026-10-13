@@ -1,7 +1,7 @@
 /* UGO Provider UX v2
    Provider principle: problema -> decisión -> acción. No dashboard noise. */
 
-.ugo-provider-root{background:linear-gradient(180deg,#f7faf8 0%,#f2f6f3 100%)}
+.ugo-provider-root{background:linear-gradient(180deg,#f7f9f7 0%,#f2f6f3 100%)}
 .provider-screen{padding-top:max(22px,env(safe-area-inset-top));padding-bottom:28px}
 .provider-top{align-items:center}
 .provider-top h1{letter-spacing:-.035em}

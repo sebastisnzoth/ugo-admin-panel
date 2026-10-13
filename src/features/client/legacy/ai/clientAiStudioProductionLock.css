@@ -7,7 +7,7 @@
   --ugo-studio-surface:#ffffff;
   --ugo-studio-low:#eff4ff;
   --ugo-studio-line:#dce9ff;
-  --ugo-studio-ink:#0b1c30;
+  --ugo-studio-ink:#141c17;
   --ugo-studio-muted:#575e70;
   --ugo-studio-primary:#006b58;
   --ugo-studio-primary-dark:#005747;
@@ -44,7 +44,7 @@
   background:rgba(255,255,255,.97)!important;
   color:var(--ugo-studio-ink)!important;
   border-bottom:1px solid var(--ugo-studio-line)!important;
-  box-shadow:0 1px 8px rgba(11,28,48,.05)!important;
+  box-shadow:0 1px 8px rgba(20,28,23,.05)!important;
   backdrop-filter:blur(14px)!important;
 }
 
@@ -66,7 +66,7 @@
   background:#fff!important;
   color:var(--ugo-studio-ink)!important;
   border-color:#e5e5e5!important;
-  box-shadow:0 24px 70px rgba(11,28,48,.14)!important;
+  box-shadow:0 24px 70px rgba(20,28,23,.14)!important;
 }
 .ugo-client-root .ugo-guided-request>header{
   background:rgba(255,255,255,.97)!important;
@@ -105,7 +105,7 @@
   background:#fff!important;
   color:var(--ugo-studio-ink)!important;
   border-color:#e5e5e5!important;
-  box-shadow:0 18px 54px rgba(11,28,48,.14)!important;
+  box-shadow:0 18px 54px rgba(20,28,23,.14)!important;
 }
 .ugo-client-root .ugo-service-chat>header{border-bottom-color:#ececec!important}
 .ugo-client-root .ugo-service-chat header small{color:var(--ugo-studio-primary)!important}

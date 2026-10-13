@@ -21,7 +21,7 @@
     border-right:0!important;
     border-bottom:1px solid #dce9ff!important;
     background:rgba(255,255,255,.98)!important;
-    box-shadow:0 1px 10px rgba(11,28,48,.05)!important;
+    box-shadow:0 1px 10px rgba(20,28,23,.05)!important;
   }
 
   .ugo-client-root .ugo-client-header-menu{
@@ -49,7 +49,7 @@
   .ugo-client-root .ugo-notification-center.role-client .ugo-notification-trigger{
     width:46px!important;
     height:46px!important;
-    box-shadow:0 6px 22px rgba(11,28,48,.12)!important;
+    box-shadow:0 6px 22px rgba(20,28,23,.12)!important;
   }
 
   .ugo-client-root .ugo-notification-center.role-client .ugo-notification-panel{
@@ -80,7 +80,7 @@
     margin:0 0 18px!important;
     overflow:auto!important;
     border-radius:24px!important;
-    box-shadow:0 22px 64px rgba(11,28,48,.18)!important;
+    box-shadow:0 22px 64px rgba(20,28,23,.18)!important;
   }
 
   .ugo-client-root.ugo-client-screen-search .prototype-hugo .ugo-real-orb{
@@ -177,6 +177,6 @@
  .ugo-client-root.ugo-client-screen-request{
    background:
     radial-gradient(circle at 50% 28%,rgba(7,150,111,.07),transparent 30rem),
-    linear-gradient(180deg,#f6f8fd 0,#f8faf9 100%)!important;
+    linear-gradient(180deg,#f6f8fd 0,#f7f9f7 100%)!important;
  }
 }

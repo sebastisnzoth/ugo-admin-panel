@@ -231,7 +231,7 @@
   padding:12px;
   border:1px solid #e7eee9;
   border-radius:15px;
-  background:#f7faf8;
+  background:#f7f9f7;
 }
 .ugo-provider-root .provider-opportunity-facts small,
 .ugo-provider-root .provider-decision-facts small,
@@ -472,10 +472,10 @@
 @media(max-width:380px){.ugo-provider-root .provider-profile-identity{grid-template-columns:auto 1fr}.ugo-provider-root .provider-profile-identity>button{grid-column:1/-1;width:100%}.ugo-provider-root .provider-profile-dashboard,.ugo-provider-root .provider-balance-grid{grid-template-columns:1fr}.ugo-provider-root .provider-profile-tile{min-height:132px}.ugo-provider-root .provider-profile-fields{grid-template-columns:1fr}.ugo-provider-root .provider-profile-fields label:first-child{grid-column:auto}.ugo-provider-root .provider-setting-content{padding-left:16px}}
 @media(min-width:760px){.ugo-provider-root .provider-profile-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}.ugo-provider-root .provider-settings-list{grid-template-columns:1fr 1fr}.ugo-provider-root .provider-setting:first-child{grid-column:1/-1}.ugo-provider-root .provider-balance-grid article{min-height:170px}.ugo-provider-root .provider-profile-fields{grid-template-columns:2fr 1fr 1fr}.ugo-provider-root .provider-profile-fields label:first-child{grid-column:auto}}
 
-.ugo-provider-root .provider-balance-grid article.provider-debt-card{background:#fff8e8;border:1px solid #fedf89;box-shadow:none}.ugo-provider-root .provider-balance-grid article.provider-debt-card small,.ugo-provider-root .provider-balance-grid article.provider-debt-card strong{color:#9a3412}.ugo-provider-root .provider-balance-grid article.provider-debt-card span{color:#7c4a16}
+.ugo-provider-root .provider-balance-grid article.provider-debt-card{background:#fff0da;border:1px solid #fedf89;box-shadow:none}.ugo-provider-root .provider-balance-grid article.provider-debt-card small,.ugo-provider-root .provider-balance-grid article.provider-debt-card strong{color:#9a3412}.ugo-provider-root .provider-balance-grid article.provider-debt-card span{color:#7c4a16}
 
 /* Provider UGO debt limit · 3 unresolved cash-service commissions */
-.ugo-provider-root .provider-debt-lock{display:grid;gap:10px;margin:14px 0;padding:18px;border:1px solid #fedf89;border-radius:var(--ugo-radius-lg);background:#fff8e8;color:#7c4a16}
+.ugo-provider-root .provider-debt-lock{display:grid;gap:10px;margin:14px 0;padding:18px;border:1px solid #fedf89;border-radius:var(--ugo-radius-lg);background:#fff0da;color:#7c4a16}
 .ugo-provider-root .provider-debt-lock strong{color:#9a3412;font-size:15px}
 .ugo-provider-root .provider-debt-lock span{font-size:12px;line-height:1.5}
 .ugo-provider-root .provider-debt-lock .provider-primary{margin-top:2px}
