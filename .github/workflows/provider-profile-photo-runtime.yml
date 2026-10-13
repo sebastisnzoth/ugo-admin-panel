@@ -47,6 +47,8 @@ jobs:
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/provider-profile-photo-runtime.mjs
+      - name: Install Playwright package for Home visual proof
+        run: npm install --no-save playwright
       - name: Install Chromium for Home visual proof
         run: npx playwright install --with-deps chromium
       - name: Client Home photo and fallback visual runtime
