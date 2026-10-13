@@ -69,7 +69,7 @@ try {
   assert.equal(prepared.data.state, 'asignado')
 
   const acceptedAt = new Date().toISOString()
-  const clientProfile = await admin.from('perfiles_cliente').upsert({ usuario_id: clientId, onboarding_completo_at: acceptedAt, termos_aceitos_at: acceptedAt, termos_versao: '2026-09-04' }, { onConflict: 'usuario_id' })
+  const clientProfile = await admin.from('perfiles_cliente').upsert({ usuario_id: clientId, onboarding_completo_at: acceptedAt, termos_aceitos_at: acceptedAt, termos_versao: '2026-09-04', ciudad: 'Florianópolis', direccion: 'UGO TEST ADDRESS', telefono: 'TEST' }, { onConflict: 'usuario_id' })
   assert.ifError(clientProfile.error)
 
   photoPath = pathFor()
