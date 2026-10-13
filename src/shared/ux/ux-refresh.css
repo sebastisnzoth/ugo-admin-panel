@@ -26,15 +26,15 @@
   display:inline-flex;
   align-items:center;
   padding:0 14px;
-  border:1px solid var(--ugo-color-outline-variant,#d0d5dd);
+  border:1px solid var(--ugo-color-outline-variant,#dce4dd);
   border-radius:var(--ugo-radius-md,12px);
   background:var(--ugo-color-surface-lowest,#fff);
-  color:var(--ugo-color-on-surface,#101828);
-  box-shadow:var(--ugo-shadow-md,0 8px 24px rgba(16,24,40,.10));
+  color:var(--ugo-color-on-surface,#18211d);
+  box-shadow:var(--ugo-shadow-md,0 8px 24px rgba(24,33,29,.10));
   font:700 13px/1 var(--ugo-font,inherit);
   text-decoration:none;
 }
-.ugo-ux-skip-link:focus-visible,.ugo-ux-skip-link:focus{transform:translateY(0);outline:3px solid color-mix(in srgb,var(--ugo-color-focus,#0058be) 35%,transparent);outline-offset:2px}
+.ugo-ux-skip-link:focus-visible,.ugo-ux-skip-link:focus{transform:translateY(0);outline:3px solid color-mix(in srgb,var(--ugo-color-focus,#168f66) 35%,transparent);outline-offset:2px}
 .ugo-ux-screen-host:focus{outline:none}
 
 /* Aviso de conectividad: informa, nunca bloquea la interacción. */
@@ -49,11 +49,11 @@
   align-items:flex-start;
   gap:var(--ugo-space-sm,12px);
   padding:var(--ugo-space-sm,12px) var(--ugo-space-md,16px);
-  border:1px solid var(--ugo-color-outline-variant,#d0d5dd);
+  border:1px solid var(--ugo-color-outline-variant,#dce4dd);
   border-radius:var(--ugo-radius-lg,16px);
   background:var(--ugo-color-surface-lowest,#fff);
-  color:var(--ugo-color-on-surface,#101828);
-  box-shadow:var(--ugo-shadow-md,0 8px 24px rgba(16,24,40,.10));
+  color:var(--ugo-color-on-surface,#18211d);
+  box-shadow:var(--ugo-shadow-md,0 8px 24px rgba(24,33,29,.10));
   font-family:var(--ugo-font,inherit);
   pointer-events:none;
   animation:ugo-ux-connection-in var(--ugo-duration-standard,220ms) ease-out;
@@ -64,9 +64,9 @@
   color:#704d09;
 }
 .ugo-ux-connection.is-restored{
-  border-color:color-mix(in srgb,var(--ugo-color-primary,#07804b) 32%,transparent);
+  border-color:color-mix(in srgb,var(--ugo-color-primary,#159366) 32%,transparent);
   background:#e9f8f0;
-  color:var(--ugo-color-primary,#07804b);
+  color:var(--ugo-color-primary,#159366);
 }
 .ugo-ux-connection-icon{
   flex:0 0 32px;
@@ -92,7 +92,7 @@
   display:grid;
   gap:var(--ugo-space-sm,12px);
   padding:var(--ugo-space-md,16px);
-  border:1px solid color-mix(in srgb,var(--ugo-color-outline-variant,#d0d5dd) 60%,transparent);
+  border:1px solid color-mix(in srgb,var(--ugo-color-outline-variant,#dce4dd) 60%,transparent);
   border-radius:var(--ugo-radius-lg,16px);
   background:var(--ugo-color-surface-lowest,#fff);
 }

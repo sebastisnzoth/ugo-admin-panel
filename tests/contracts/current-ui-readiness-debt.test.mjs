@@ -17,8 +17,8 @@ test('Admin map controls expose accessible names',async()=>{
 
 test('Admin live status metadata keeps readable contrast',async()=>{
  const css=await read('src/mvp/admin-home-stitch.css')
- assert.match(css,/\.ahs-live-dot\{[^}]*color:#344054/)
- assert.match(css,/\.ahs-live-dot small\{[^}]*color:#475467/)
+ assert.match(css,/\.ahs-live-dot\{[^}]*color:#2f3d34/)
+ assert.match(css,/\.ahs-live-dot small\{[^}]*color:#56645b/)
 })
 
 test('Provider role runtime follows canonical current sidebar labels',async()=>{

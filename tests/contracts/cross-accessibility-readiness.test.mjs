@@ -27,9 +27,9 @@ test('global keyboard focus remains visible and touch targets meet basic minimum
 })
 
 test('primary text contrast meets WCAG AA for normal text',()=>{
- const match=tokens.match(/--ugo-color-brand-500:(#[0-9a-fA-F]{6})/)
- assert.ok(match,'brand-500 token must exist')
- assert.ok(contrast(match[1],'#ffffff')>=4.5,`brand primary contrast is ${contrast(match[1],'#ffffff').toFixed(2)}:1`)
+ const match=tokens.match(/--ugo-color-primary:(#[0-9a-fA-F]{6})/)
+ assert.ok(match,'primary token must exist')
+ assert.ok(contrast(match[1],'#ffffff')>=4.5,`primary contrast is ${contrast(match[1],'#ffffff').toFixed(2)}:1`)
 })
 
 test('shared primitives carry semantic labels and dialog keyboard runtime is installed',()=>{

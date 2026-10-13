@@ -128,7 +128,7 @@
 .ugo-client-root .ugo-home-categories>button,
 .ugo-client-root .ugo-home-all-results button,
 .ugo-client-root .ugo-home-active-orders>button{
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
   border-color:#dde6e3!important;
   box-shadow:none!important;
 }
@@ -165,7 +165,7 @@
 
 
 .ugo-client-root .ugo-home-map-card>footer button{
-  background:#18e08b!important;
+  background:#29b984!important;
   color:#052218!important;
   min-height:48px!important;
 }

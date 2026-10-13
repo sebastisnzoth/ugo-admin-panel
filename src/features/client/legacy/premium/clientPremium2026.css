@@ -146,7 +146,7 @@
   background:linear-gradient(145deg,#eefaf4,#fff)!important;
 }
 .ugo-client-root .ugo-home-order-icon{
-  background:#0d2117!important;
+  background:#15241a!important;
   color:#fff!important;
 }
 .ugo-client-root .ugo-home-active-orders>button.is-assigned .ugo-home-order-icon{
@@ -218,7 +218,7 @@
   width:48px!important;
   height:48px!important;
   border-radius:50%!important;
-  background:radial-gradient(circle at 32% 26%,#b8fcff 0,#34d7e1 28%,#0aa8b8 55%,#08747c 100%)!important;
+  background:radial-gradient(circle at 32% 26%,#b8fcff 0,#34d7e1 28%,#159366 55%,#08747c 100%)!important;
   color:#fff!important;
   box-shadow:0 0 0 7px rgba(34,211,238,.08),0 9px 22px rgba(34,211,238,.16)!important;
 }
@@ -374,7 +374,7 @@
   color:#75837b!important;
 }
 .ugo-client-root .ugo-home-mobile-nav button.active{
-  background:#0d2117!important;
+  background:#15241a!important;
   color:#fff!important;
   box-shadow:0 8px 20px rgba(8,29,17,.13)!important;
 }
@@ -448,7 +448,7 @@
 }
 .ugo-client-root .ugo-guided-orb,
 .ugo-client-root .ugo-guided-matching .ugo-guided-pulse{
-  background:radial-gradient(circle at 34% 27%,#b9fcff,#35d6e0 28%,#0aa8b8 56%,#08747c)!important;
+  background:radial-gradient(circle at 34% 27%,#b9fcff,#35d6e0 28%,#159366 56%,#08747c)!important;
   color:#fff!important;
   box-shadow:0 0 0 7px rgba(34,211,238,.08),0 12px 28px rgba(34,211,238,.20)!important;
 }
@@ -472,7 +472,7 @@
 }
 .ugo-client-root .ugo-client-payment-options>button{
   border:1px solid #dce5e0!important;
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
   color:#17251c!important;
 }
 .ugo-client-root .ugo-client-payment-options>button.selected{
@@ -482,12 +482,12 @@
 }
 .ugo-client-root .ugo-client-pix-box textarea{
   border-color:#dce5e0!important;
-  background:#f7faf8!important;
+  background:#f7f9f7!important;
   color:#17251c!important;
 }
 .ugo-client-root .ugo-client-pix-box button,
 .ugo-client-root .ugo-completion-actions button:last-child{
-  background:#0d2117!important;
+  background:#15241a!important;
   color:#fff!important;
 }
 
@@ -527,8 +527,8 @@
   background:#f5f8f6!important;
 }
 .ugo-client-root .ugo-history-open-button{
-  background:#0d2117!important;
-  border-color:#0d2117!important;
+  background:#15241a!important;
+  border-color:#15241a!important;
   color:#fff!important;
 }
 
@@ -539,7 +539,7 @@
   color:#17251c!important;
 }
 .ugo-client-root .ugo-service-chat-list article{
-  background:#f4f7f5!important;
+  background:#f7f9f7!important;
   color:#17251c!important;
 }
 .ugo-client-root .ugo-service-chat-list article.is-own{
@@ -548,11 +548,11 @@
 }
 .ugo-client-root .ugo-service-chat-form textarea{
   border:1px solid #dce5e0!important;
-  background:#f8faf9!important;
+  background:#f7f9f7!important;
   color:#17251c!important;
 }
 .ugo-client-root .ugo-service-chat-form button{
-  background:#0d2117!important;
+  background:#15241a!important;
   color:#fff!important;
 }
 .ugo-client-root .ugo-dispute-sheet{

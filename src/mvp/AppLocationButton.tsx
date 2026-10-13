@@ -51,5 +51,5 @@ export function AppLocationButton({role}:{role:AppRole}){
  },[role,sb,userId])
  useEffect(()=>{if(role!=='client')return;const handler=()=>capture();window.addEventListener(UGO_UI_EVENTS.clientLocation,handler);return()=>window.removeEventListener(UGO_UI_EVENTS.clientLocation,handler)},[capture,role])
  if(!userId)return null
- return <div className={`ugo-location-control role-${role}`}>{msg&&<div className="ugo-location-message">{msg}</div>}<button type="button" onClick={capture} disabled={busy} title="Guardar mi ubicación actual en UGO" style={{border:0,borderRadius:999,padding:'11px 14px',fontWeight:900,background:ok?'#067647':'#fff',color:ok?'#fff':'#111',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>{busy?'📍 Buscando…':ok?'✓ Ubicación guardada':'📍 Mi ubicación'}</button></div>
+ return <div className={`ugo-location-control role-${role}`}>{msg&&<div className="ugo-location-message">{msg}</div>}<button type="button" onClick={capture} disabled={busy} title="Guardar mi ubicación actual en UGO" style={{border:0,borderRadius:999,padding:'11px 14px',fontWeight:900,background:ok?'#197249':'#fff',color:ok?'#fff':'#111',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>{busy?'📍 Buscando…':ok?'✓ Ubicación guardada':'📍 Mi ubicación'}</button></div>
 }

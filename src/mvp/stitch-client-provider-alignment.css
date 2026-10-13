@@ -2,7 +2,7 @@
    No Stitch code.html copied. No backend, payments, permissions or Supabase changes. */
 
 .ugo-ref-client .ugo-home-panel{
-  border:1px solid rgba(16,24,40,.06);
+  border:1px solid rgba(24,33,29,.06);
 }
 
 .ugo-stitch-radar-stats{
@@ -19,9 +19,9 @@
   align-content:center;
   padding:9px 10px;
   border-radius:16px;
-  background:#f8faf9;
+  background:#f7f9f7;
   border:1px solid #e7ece9;
-  color:#667085;
+  color:#647269;
   font-size:9px;
   font-weight:800;
   letter-spacing:.03em;
@@ -29,7 +29,7 @@
 }
 
 .ugo-stitch-radar-stats b{
-  color:#101828;
+  color:#18211d;
   font-size:14px;
   letter-spacing:-.02em;
   text-transform:none;
@@ -47,14 +47,14 @@
   gap:3px;
   padding:10px;
   border-radius:15px;
-  background:#f8faf9;
-  color:#667085;
+  background:#f7f9f7;
+  color:#647269;
   font-size:9px;
   font-weight:800;
 }
 
 .ugo-stitch-match-strip b{
-  color:#101828;
+  color:#18211d;
   font-size:13px;
 }
 
@@ -118,7 +118,7 @@
   gap:4px;
   padding:10px;
   border-radius:13px;
-  background:#f8faf9;
+  background:#f7f9f7;
   color:#64706b;
   font-size:9px;
   font-weight:800;

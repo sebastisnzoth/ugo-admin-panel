@@ -53,7 +53,7 @@
     color:#101915!important;
     border:0!important;
     border-bottom:1px solid #e2e9e5!important;
-    background:#f7faf8!important;
+    background:#f7f9f7!important;
   }
   .ugo-client-home-kicker{
     margin-bottom:9px!important;
@@ -125,7 +125,7 @@
     overflow:auto!important;
     border:0!important;
     border-bottom:1px solid #e2e9e5!important;
-    background:#f7faf8!important;
+    background:#f7f9f7!important;
   }
   .ugo-client-home-categories::before{
     content:"Atajos rápidos";
@@ -174,7 +174,7 @@
     padding:22px 28px 28px!important;
     border:0!important;
     border-radius:0!important;
-    background:#f7faf8!important;
+    background:#f7f9f7!important;
     box-shadow:none!important;
     color:#111b16!important;
   }
@@ -290,7 +290,7 @@
     bottom:18px;
     width:3px;
     border-radius:0 6px 6px 0;
-    background:#20d77f;
+    background:#29b984;
   }
 
   /* Hugo rail */
@@ -351,15 +351,15 @@
   .ugo-client-root .ugo-hugo-stage-composer button{
     min-width:78px!important;
     border-radius:12px!important;
-    background:#20d77f!important;
+    background:#29b984!important;
   }
   .ugo-client-root .ugo-hugo-stage-actions button{min-height:42px!important;border-radius:13px!important}
   .ugo-client-root .prototype-hugo .ugo-real-orb{
     align-self:center;
     width:92px!important;
     height:92px!important;
-    border-color:rgba(32,215,127,.5)!important;
-    box-shadow:0 0 0 12px rgba(32,215,127,.04),0 20px 48px rgba(0,0,0,.32)!important;
+    border-color:rgba(41,185,132,.5)!important;
+    box-shadow:0 0 0 12px rgba(41,185,132,.04),0 20px 48px rgba(0,0,0,.32)!important;
   }
   .ugo-client-root .prototype-hugo .ugo-orb-icon{font-size:31px!important}
   .ugo-client-root .prototype-hugo .ugo-real-state{

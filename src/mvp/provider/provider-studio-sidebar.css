@@ -22,7 +22,7 @@
     box-sizing:border-box;
     background:var(--provider-surface,#fff);
     border-right:1px solid var(--provider-border,#dce9ff);
-    color:var(--provider-text,#0b1c30);
+    color:var(--provider-text,#141c17);
   }
 
   .provider-studio-brand{
@@ -119,7 +119,7 @@
     border:1px solid var(--provider-border,#d7dee8);
     border-radius:12px;
     background:var(--provider-surface,#fff);
-    color:var(--provider-text,#344054);
+    color:var(--provider-text,#2f3d34);
     box-shadow:none;
     text-align:left;
     font-weight:850;
@@ -199,4 +199,4 @@
 .ugo-preorder-payment-options{display:flex;gap:8px;flex-wrap:wrap}
 .ugo-preorder-payment-options button{min-height:38px;padding:0 14px;border:1px solid var(--provider-border,#cfe0f6);border-radius:10px;background:var(--provider-surface,#fff);color:var(--provider-text,#17324a);font-weight:850;cursor:pointer}
 .ugo-preorder-payment-options button.selected{border-color:var(--provider-accent,#007e68);background:var(--provider-surface-muted,#e8f8f4);color:var(--provider-accent,#006b58)}
-.ugo-studio-payment>small{display:block;margin-top:6px;color:var(--provider-text-muted,#667085)}
+.ugo-studio-payment>small{display:block;margin-top:6px;color:var(--provider-text-muted,#647269)}

@@ -44,7 +44,7 @@
 .ugo-client-root .ugo-home-location>span{background:var(--client-soft)!important;color:var(--client-green)!important}
 .ugo-client-root .ugo-home-location small{color:var(--client-muted)!important;font-size:10px!important}
 .ugo-client-root .ugo-home-location strong{font-size:13px!important;color:var(--client-ink)!important}
-.ugo-client-root .ugo-home-location>b{background:#f4f7f5!important;color:var(--client-green)!important;border:1px solid var(--client-line);font-size:10px!important}
+.ugo-client-root .ugo-home-location>b{background:#f7f9f7!important;color:var(--client-green)!important;border:1px solid var(--client-line);font-size:10px!important}
 .ugo-client-root .ugo-home-bell{border-color:var(--client-line)!important;background:#fff!important;color:#43534a!important}
 .ugo-client-root .ugo-home-kicker{color:var(--client-green)!important;font-size:10px!important;letter-spacing:.13em!important}
 .ugo-client-root .ugo-home-kicker i{background:#27a56a!important;box-shadow:0 0 0 4px #27a56a19!important}
@@ -65,7 +65,7 @@
 .ugo-client-root .ugo-home-hugo-cta>b{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:var(--client-green)!important;color:#fff!important;font-size:19px!important}
 .ugo-client-root .ugo-home-active-orders{margin-top:17px}
 .ugo-client-root .ugo-home-active-orders>button{border-color:var(--client-line)!important;background:#fff!important;color:var(--client-ink)!important;border-radius:15px!important}
-.ugo-client-root .ugo-home-active-orders>button.is-assigned{background:#f4faf6!important}
+.ugo-client-root .ugo-home-active-orders>button.is-assigned{background:#f7f9f7!important}
 .ugo-client-root .ugo-home-order-icon{background:var(--client-green)!important}
 .ugo-client-root .ugo-home-order-copy small{color:var(--client-muted)!important}
 .ugo-client-root .ugo-home-order-copy b{color:var(--client-green)!important}

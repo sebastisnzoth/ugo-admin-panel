@@ -16,9 +16,9 @@
 
 /* Carga: mismas medidas que las tarjetas reales para no saltar de layout. */
 .ugo-home-active-orders.is-loading{display:grid;gap:9px}
-.ugo-home-active-orders .ugo-home-order-skeleton{min-height:76px;padding:14px!important;background:#f8faf9!important;border-color:#dde6e3!important;border-radius:var(--ugo-radius-lg)}
+.ugo-home-active-orders .ugo-home-order-skeleton{min-height:76px;padding:14px!important;background:#f7f9f7!important;border-color:#dde6e3!important;border-radius:var(--ugo-radius-lg)}
 .ugo-home-categories.is-loading{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ugo-home-categories.is-loading .ugo-home-category-skeleton{min-height:92px;padding:14px!important;background:#f8faf9!important;border-color:#dde6e3!important;border-radius:var(--ugo-radius-lg)}
+.ugo-home-categories.is-loading .ugo-home-category-skeleton{min-height:92px;padding:14px!important;background:#f7f9f7!important;border-color:#dde6e3!important;border-radius:var(--ugo-radius-lg)}
 @media(max-width:390px){.ugo-home-categories.is-loading{grid-template-columns:1fr}}
 
 /* Pedido repetido: un toque para volver a pedir lo mismo. */

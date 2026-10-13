@@ -25,14 +25,14 @@ export function makePin(color: string, label: string, size = 32) {
 }
 
 export function scoutPin(hasPhone: boolean, dist: number) {
-  const color = hasPhone && dist < 3000 ? '#05944F'
-    : hasPhone ? '#F59E0B'
+  const color = hasPhone && dist < 3000 ? '#159366'
+    : hasPhone ? '#d9aa40'
     : dist < 3000 ? '#E11900' : '#6B7280';
   return { color, pin: makePin(color, hasPhone ? '📱' : '📍', 30) };
 }
 
 export function providerPin(online: boolean, activo: boolean, catSlug: string) {
-  const color = online && activo ? '#05944F' : activo ? '#F59E0B' : '#E11900';
+  const color = online && activo ? '#159366' : activo ? '#d9aa40' : '#E11900';
   return makePin(color, CAT_EMOJI[catSlug] || '🔧', 32);
 }
 
