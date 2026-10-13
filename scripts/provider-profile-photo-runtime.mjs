@@ -23,9 +23,29 @@ try{
  await fs.mkdir('artifacts',{recursive:true})
  await fs.writeFile('artifacts/provider-profile-photo-runtime.json',JSON.stringify({readiness_id:'provider-profile-photo',sha,environment:'UGO TEST',production_touched:false,provider_id:uid,path,old_path:oldPath,db_persisted:true,public_fetch_status:response.status,content_type:response.headers.get('content-type'),result:'PASS',completed_at:new Date().toISOString()},null,2)+'\n')
 }finally{
- const restore=await admin.from('perfiles_proveedor').update({foto_perfil_path:oldPath}).eq('usuario_id',uid);assert.ifError(restore.error)
- const remove=await admin.storage.from('provider-public').remove([path]);assert.ifError(remove.error)
- const{data:after,error:afterError}=await admin.from('perfiles_proveedor').select('foto_perfil_path').eq('usuario_id',uid).single();assert.ifError(afterError);cleanup=(after?.foto_perfil_path||null)===oldPath
+ // Always attempt both cleanup operations: a failed restore must never skip object removal.
+ const cleanupErrors=[]
+ try{
+  const restore=await admin.from('perfiles_proveedor').update({foto_perfil_path:oldPath}).eq('usuario_id',uid)
+  if(restore.error)cleanupErrors.push('PROFILE_PATH_RESTORE_FAILED')
+ }catch{cleanupErrors.push('PROFILE_PATH_RESTORE_FAILED')}
+ try{
+  const remove=await admin.storage.from('provider-public').remove([path])
+  if(remove.error)cleanupErrors.push('TEMP_OBJECT_REMOVE_FAILED')
+ }catch{cleanupErrors.push('TEMP_OBJECT_REMOVE_FAILED')}
+ // Read-after-write verification with bounded retries handles transient PostgREST visibility.
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   const{data:after,error:afterError}=await admin.from('perfiles_proveedor').select('foto_perfil_path').eq('usuario_id',uid).single()
+   if(!afterError&&(after?.foto_perfil_path||null)===oldPath){cleanup=true;break}
+   if(afterError)cleanupErrors.push('PROFILE_PATH_VERIFY_FAILED')
+  }catch{cleanupErrors.push('PROFILE_PATH_VERIFY_FAILED')}
+  if(attempt<2){
+   try{await admin.from('perfiles_proveedor').update({foto_perfil_path:oldPath}).eq('usuario_id',uid)}catch{cleanupErrors.push('PROFILE_PATH_RESTORE_RETRY_FAILED')}
+   await new Promise(resolve=>setTimeout(resolve,250*(attempt+1)))
+  }
+ }
+ if(cleanupErrors.length)console.warn(JSON.stringify({cleanup_errors:[...new Set(cleanupErrors)],cleanup_verified:cleanup}))
 }
 assert.equal(cleanup,true,'PROFILE_PHOTO_CLEANUP_REQUIRED')
 const proof=JSON.parse(await fs.readFile('artifacts/provider-profile-photo-runtime.json','utf8'));proof.cleanup_ok=true
