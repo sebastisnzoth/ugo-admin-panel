@@ -82,7 +82,7 @@ try {
   assert.ifError(providerUser.error)
   const http = await fetch(publicUrl)
   assert.equal(http.status, 200, 'PROVIDER_PHOTO_PUBLIC_URL_MUST_RETURN_200')
-  assert.match(http.headers.get('content-type') || '', /image\\/png/)
+  assert.match(http.headers.get('content-type') || '', /image\/png/)
 
   const login = await clientAuth.auth.signInWithPassword({ email: clientEmail, password })
   assert.ifError(login.error)
