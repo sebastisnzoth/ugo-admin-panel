@@ -144,7 +144,7 @@ try{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
       const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
       await visible(drawer,5000)
-      const requestButtons=drawer.locator('button:visible').filter({hasText:/Pedir servicio/i})
+      const requestButtons=drawer.locator('button:visible').filter({hasText:/Buscar profesional/i})
       const requestButton=requestButtons.first()
       await visible(requestButton,5000)
       await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
