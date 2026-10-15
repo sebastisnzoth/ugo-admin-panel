@@ -19,4 +19,7 @@ test('provider approval is authenticated and its audit can never be silently ign
  assert.match(api,/async function changeProviderVerification/)
  assert.match(api,/await requireAdmin\(req\)/)
  assert.match(api,/if \(auditError\) throw auditError/)
+ const kyc=api.slice(api.indexOf('async function verifyKyc'),api.indexOf('async function changeProviderVerification'))
+ assert.doesNotMatch(kyc,/\.update\(\{ activo: true \}\)/)
+ assert.doesNotMatch(kyc,/Tu perfil ha sido verificado y aprobado/)
 })
