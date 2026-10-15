@@ -35,6 +35,7 @@ async function persist(candidate){
 function safeError(p){return String(p?.error?.message||p?.message||'unknown').replace(/[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,200)}
 
 if(gemini){
+ let geminiConnected=false
  let geminiLast='',models=[]
  try{
   const lr=await fetch('https://generativelanguage.googleapis.com/v1beta/models',{headers:{'x-goog-api-key':gemini},signal:AbortSignal.timeout(6000)})
@@ -52,13 +53,14 @@ if(gemini){
     const score=1,threshold=.8,at=new Date().toISOString()
     await persist({provider:'gemini',model_id:model,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:at,last_error:null,updated_at:at})
     console.log(JSON.stringify({connected:true,provider:'gemini',model,source:'runtime-validated-catalog',benchmarkScore:score,threshold,failover:'openrouter'}))
-    process.exit(0)
+    geminiConnected=true
+    break
    }
    geminiLast='model='+model+' status='+r.status+' error='+safeError(p)
    console.error(JSON.stringify({connected:false,provider:'gemini',model,status:r.status,state:'CANDIDATE_FAILED',error:safeError(p)}))
   }catch(error){geminiLast='model='+model+' transport='+String(error?.name||'error');console.error(JSON.stringify({connected:false,provider:'gemini',model,state:'CANDIDATE_FAILED',error:String(error?.name||'error')}))}
  }
- console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',catalogCandidates:models.length,lastFailure:geminiLast,failover:'openrouter'}))
+ if(!geminiConnected)console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',catalogCandidates:models.length,lastFailure:geminiLast,failover:'openrouter'}))
 }
 if(!key)throw new Error('OPENROUTER_FALLBACK_KEY_REQUIRED')
 const catalog=await fetch(base+'/models',{headers,signal:AbortSignal.timeout(6000)})
