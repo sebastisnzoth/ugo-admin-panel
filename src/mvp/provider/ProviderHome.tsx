@@ -24,8 +24,8 @@ export function ProviderHome(){
   :d.online
    ?{eyebrow:'LISTO PARA TRABAJAR',title:'Estás en el radar de UGO',text:'Tu GPS está vigente y podés recibir pedidos compatibles. Podés dejar la app abierta: UGO te avisa cuando llegue uno.',action:()=>void d.reload(),label:'Actualizar ahora'}
    :{eyebrow:'FUERA DEL RADAR',title:'Ponete Online para recibir trabajos',text:'Cuando estés disponible, activá tu estado y UGO empezará a buscar pedidos compatibles.',action:d.toggleOnline,label:'Ponerme Online'}
- return <section className="provider-screen provider-home" aria-labelledby="provider-home-title">
-  <SectionHeader screenHeading eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`⭐ ${d.karma.toFixed(1)} · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online}>{d.online?(d.matchingReady?'Online':'GPS'):'Offline'}</Button>}/>
+ return <section className="provider-screen provider-home" aria-label="Inicio del proveedor">
+  <SectionHeader screenHeading eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`Calificación ${d.karma.toFixed(1)} de 5 · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online} aria-label={d.online?(d.matchingReady?'Desactivar disponibilidad: Online y GPS vigente':'Desactivar disponibilidad: Online, GPS pendiente'):'Activar disponibilidad: Offline'}>{d.online?'Online':'Offline'}</Button>}/>
   <Card className="provider-card provider-hero provider-focus-card">
    <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online&&!d.matchingReady?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
    <h2>{next.title}</h2><p>{next.text}</p>
@@ -34,12 +34,12 @@ export function ProviderHome(){
   <Card className={`provider-card provider-status-card is-${availability.tone}`} aria-live="polite">
    <div className="provider-status-card-head">
     <div><small>ESTADO OPERATIVO</small><strong>{availability.title}</strong></div>
-    <StatusPill tone={availability.tone}>{d.online?'Online':'Offline'}</StatusPill>
+    <StatusPill tone={availability.tone}>{d.debtBlocked?'Pausado':!d.online?'Offline':!d.matchingReady?'GPS pendiente':'Disponible'}</StatusPill>
    </div>
    <p>{availability.text}</p>
    <div className="provider-status-facts">
     <span className={d.online&&d.matchingReady&&!d.debtBlocked?'is-ok':'is-alert'}><i aria-hidden="true">●</i>{d.online&&d.matchingReady&&!d.debtBlocked?'Disponible para pedidos':d.debtBlocked?'Pedidos pausados':d.online?'Esperando GPS':'No recibe pedidos'}</span>
-    <span className={d.matchingReady?'is-ok':'is-alert'}><i aria-hidden="true">⌖</i>{d.matchingReady?'Ubicación vigente':'Ubicación desactualizada'}</span>
+    <span className={d.matchingReady?'is-ok':'is-alert'}><i aria-hidden="true">⌖</i>{d.matchingReady?'Ubicación vigente':'GPS pendiente de actualización'}</span>
     <span className={d.debtBlocked?'is-alert':''}><i aria-hidden="true">$</i>{d.debtBlocked?`${d.pendingDebtCount} comisiones pendientes`:'Comisiones al día'}</span>
    </div>
    {!d.debtBlocked&&(!d.online||!d.matchingReady)&&<Button variant="primary" className="provider-primary provider-wide" disabled={d.busy} onClick={()=>void d.setOnline(true)}>{d.online?'Actualizar ubicación':'Ponerme Online'}</Button>}
