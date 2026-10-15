@@ -1,6 +1,7 @@
 import React from 'react'
-type Name='home'|'explore'|'request'|'history'|'payments'|'profile'|'notifications'|'menu'|'location'|'help'|'arrow'
+type Name='active'|'home'|'explore'|'request'|'history'|'payments'|'profile'|'notifications'|'menu'|'location'|'help'|'arrow'
 const paths:Record<Name,React.ReactNode>={
+ active:<><path d="M12 21s7-6.2 7-13a7 7 0 0 0-14 0c0 6.8 7 13 7 13Z"/><circle cx="12" cy="8" r="2.5"/></>,
  home:<><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9"/><path d="M9 21v-7h6v7"/></>,
  explore:<><circle cx="11" cy="11" r="7"/><path d="m16.5 16.5 4 4"/></>,
  request:<><path d="M12 5v14M5 12h14"/></>,
