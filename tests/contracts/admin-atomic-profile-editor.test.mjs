@@ -20,9 +20,8 @@ test('role-based fields and immutable security fields are checked by the databas
  assert.match(sql,/BASE_FIELD_NOT_EDITABLE/)
  assert.match(sql,/CLIENT_FIELD_NOT_EDITABLE/)
  assert.match(sql,/PROVIDER_FIELD_NOT_EDITABLE/)
- for(const forbidden of ['estado_verificacion','online','disponible','cpf','pix_chave','tipo','activo']){
-  assert.doesNotMatch(sql,new RegExp('case when p_base \\? \' '+forbidden)) // no dangerous base assignment
- }
+ assert.match(sql,/where k not in \('nombre','apellido','telefono','pais','zona','endereco'\)/)
+ assert.doesNotMatch(sql,/estado_verificacion\s*=/)
  assert.match(sql,/revoke all on function[\s\S]*from public, anon, authenticated/)
  assert.match(sql,/grant execute on function[\s\S]*to service_role/)
 })
