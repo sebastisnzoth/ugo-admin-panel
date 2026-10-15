@@ -21,7 +21,7 @@ test('ZIP navigation uses real request, history, profile, map and payment action
  assert.match(root,/ClientZipPayments/)
  assert.match(root,/ClientZipExplore/)
  assert.match(root,/ClientZipActive/)
- assert.match(shell,/\.ugo-home-services/)
+ assert.match(shell,/navigate\('explore'\)/)
  assert.match(shell,/\.ugo-home-location/)
  assert.match(shell,/\.ugo-notification-center\.role-client/)
  assert.doesNotMatch(shell,/Roberto Silva|Ana Martínez|UGO-2048|148 profesionales|setRequestStep/)
