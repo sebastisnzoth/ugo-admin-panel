@@ -168,3 +168,62 @@
 .ugo-client-root .ugo-zip-nav button>svg{width:21px;height:21px;flex:0 0 21px}
 .ugo-client-root .ugo-zip-mobile-nav button>svg{width:22px;height:22px}
 .ugo-client-root .ugo-zip-mobile-nav button{font-size:14px}
+
+
+/* ZIP reference: independent Explore, live Service and Payments screens. */
+.ugo-client-root .ugo-zip-explore,.ugo-client-root .ugo-zip-active-page,.ugo-client-root .ugo-zip-payments-page{display:grid;gap:24px;color:#172321}
+.ugo-client-root .ugo-zip-section-title{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ugo-client-root .ugo-zip-section-title>div{display:grid;gap:5px}
+.ugo-client-root .ugo-zip-section-title>div>span{font-size:10px;letter-spacing:.1em;font-weight:800;color:#0c7c61}
+.ugo-client-root .ugo-zip-section-title h2{margin:0;font-size:23px;line-height:1.2;letter-spacing:-.035em;color:#172321}
+.ugo-client-root .ugo-zip-section-title p{margin:0;color:#70807b;font-size:12px;line-height:1.5}
+.ugo-client-root .ugo-zip-section-title>span{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-section-title>button,.ugo-client-root .ugo-zip-payments-card>button{border:1px solid #dce7e2;background:white;color:#0c7c61;border-radius:11px;padding:12px;font-size:12px;font-weight:700}
+.ugo-client-root .ugo-zip-searchpanel{display:flex;align-items:center;gap:12px;padding:14px;border-radius:17px;border:1px solid #e4ebe8;background:white}
+.ugo-client-root .ugo-zip-searchbox{display:flex;align-items:center;gap:12px;flex:1;padding:0 13px;border:1px solid #e4ebe8;border-radius:12px;height:50px;color:#0c7c61;min-width:0}
+.ugo-client-root .ugo-zip-searchbox input{width:100%;outline:0;border:0!important;background:transparent!important;color:#172321;font:inherit;font-size:13px}
+.ugo-client-root .ugo-zip-searchpanel>button{height:50px;background:#f1f7f4;color:#0c7c61;padding:0 17px;border:0;border-radius:12px;font-size:12px;font-weight:700;white-space:nowrap}
+.ugo-client-root .ugo-zip-searchpanel>button.selected{background:#0c7c61;color:#fff}
+.ugo-client-root .ugo-zip-explore-group{display:grid;gap:16px}
+.ugo-client-root .ugo-zip-explore-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.ugo-client-root .ugo-zip-explore-categories>button{display:grid;justify-items:start;gap:9px;padding:19px;border:1px solid #e4ebe8;border-radius:16px;background:#fff;text-align:left}
+.ugo-client-root .ugo-zip-explore-categories>button.selected{border-color:#0c7c61;background:#f3faf6}
+.ugo-client-root .ugo-zip-explore-categories>button>span{display:grid;place-items:center;width:47px;height:47px;background:#e5f2ec;border-radius:13px;font-size:25px}
+.ugo-client-root .ugo-zip-explore-categories strong{font-size:14px}
+.ugo-client-root .ugo-zip-explore-categories small{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ugo-client-root .ugo-zip-provider{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-radius:17px;border:1px solid #e4ebe8;background:#fff;padding:19px}
+.ugo-client-root .ugo-zip-provider-info{display:grid;gap:5px;flex:1;min-width:135px}
+.ugo-client-root .ugo-zip-provider-info strong{font-size:14px}
+.ugo-client-root .ugo-zip-provider-info>small{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-provider-badges{display:flex;flex-wrap:wrap;gap:8px}
+.ugo-client-root .ugo-zip-provider-badges span{font-size:10px;color:#0c7c61;background:#ecf5f0;padding:5px 7px;border-radius:8px}
+.ugo-client-root .ugo-zip-provider>button,.ugo-client-root .ugo-zip-no-providers button,.ugo-client-root .ugo-zip-active-card>button,.ugo-client-root .ugo-zip-empty>button{background:#0c7c61;color:#fff;border:0;border-radius:10px;padding:11px 14px;font-size:12px;font-weight:750}
+.ugo-client-root .ugo-zip-no-providers,.ugo-client-root .ugo-zip-empty{border:1px solid #e4ebe8;border-radius:17px;padding:30px;text-align:center;background:white;display:grid;justify-items:center;gap:12px}
+.ugo-client-root .ugo-zip-no-providers p,.ugo-client-root .ugo-zip-empty p{margin:0;color:#70807b;font-size:12px}
+.ugo-client-root .ugo-zip-empty>span{font-size:42px;color:#0c7c61}
+.ugo-client-root .ugo-zip-active-list{display:grid;gap:14px}
+.ugo-client-root .ugo-zip-active-card{display:grid;gap:16px;padding:24px;background:white;border:1px solid #e4ebe8;border-radius:19px}
+.ugo-client-root .ugo-zip-active-card>p{margin:0;font-size:13px;color:#70807b;line-height:1.5}
+.ugo-client-root .ugo-zip-active-head{display:flex;align-items:center;gap:13px}
+.ugo-client-root .ugo-zip-service-icon{width:50px;height:50px;background:#e9f6ef;border-radius:14px;display:grid;place-items:center;font-size:26px}
+.ugo-client-root .ugo-zip-active-head>div{display:grid;gap:4px;flex:1}
+.ugo-client-root .ugo-zip-active-head small{font-size:10px;color:#70807b;letter-spacing:.07em}
+.ugo-client-root .ugo-zip-active-head h3{margin:0;font-size:18px;color:#172321}
+.ugo-client-root .ugo-zip-status{padding:9px 11px;background:#e9f6ef;color:#0c7c61;border-radius:22px;font-size:11px;font-weight:800}
+.ugo-client-root .ugo-zip-timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ugo-client-root .ugo-zip-timeline span{padding:10px 5px;border-top:3px solid #dbe5e0;text-align:center;color:#81908a;font-size:10px}
+.ugo-client-root .ugo-zip-timeline span.done{border-color:#0c7c61;color:#0c7c61;font-weight:800}
+.ugo-client-root .ugo-zip-payments-card{padding:24px;background:white;border:1px solid #e4ebe8;border-radius:18px;display:grid;gap:13px}
+.ugo-client-root .ugo-zip-payments-card h3{font-size:17px;margin:0}
+.ugo-client-root .ugo-zip-payments-card>p{margin:0;font-size:12px;line-height:1.5;color:#70807b}
+.ugo-client-root .ugo-zip-payment-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ugo-client-root .ugo-zip-payment-methods button{display:grid;justify-items:start;gap:9px;border:1px solid #e4ebe8;background:#fff;border-radius:15px;text-align:left;padding:21px;color:#172321}
+.ugo-client-root .ugo-zip-payment-methods button.selected{border:2px solid #0c7c61;background:#f5fbf7}
+.ugo-client-root .ugo-zip-payment-methods button>span{font-size:29px}
+.ugo-client-root .ugo-zip-payment-methods button strong{font-size:14px}
+.ugo-client-root .ugo-zip-payment-methods button small{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-payment-methods button>b{font-size:11px;color:#0c7c61}
+.ugo-client-root .ugo-zip-notice{padding:13px;background:#fdf8ed;border-radius:12px;color:#745c23;font-size:12px}
+@media(max-width:850px){.ugo-client-root .ugo-zip-explore-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.ugo-client-root .ugo-zip-provider-grid{grid-template-columns:1fr}}
+@media(max-width:550px){.ugo-client-root .ugo-zip-searchpanel{flex-wrap:wrap}.ugo-client-root .ugo-zip-searchpanel>button{width:100%}.ugo-client-root .ugo-zip-section-title h2{font-size:20px}.ugo-client-root .ugo-zip-payment-methods{grid-template-columns:1fr}.ugo-client-root .ugo-zip-active-head{flex-wrap:wrap}.ugo-client-root .ugo-zip-active-head>.ugo-zip-status{margin-left:0}.ugo-client-root .ugo-zip-timeline span{font-size:9px}}
