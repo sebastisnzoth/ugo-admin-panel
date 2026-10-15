@@ -41,7 +41,7 @@ for(let attempt=1;attempt<=2&&!success;attempt++){
   const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
    method:'POST',
    headers:{authorization:'Bearer '+openrouter,'content-type':'application/json','x-title':'UGO Autonomous Company'},
-   body:JSON.stringify({model:fallback.model_id,messages:[{role:'system',content:'Reply only UGO_FALLBACK_OK'},{role:'user',content:'controlled fallback drill'}],temperature:0,max_tokens:256}),
+   body:JSON.stringify({model:fallback.model_id,messages:[{role:'system',content:'Reply only UGO_FALLBACK_OK'},{role:'user',content:'controlled fallback drill'}],temperature:0,max_tokens:1024}),
    signal:AbortSignal.timeout(24000)
   })
   const payload=await response.json().catch(()=>({}))
