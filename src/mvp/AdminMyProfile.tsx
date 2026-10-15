@@ -15,7 +15,7 @@ export function AdminMyProfile({onClose}:{onClose:()=>void}){
   try{
    const{data:{user},error:authError}=await supabase.auth.getUser()
    if(authError||!user)throw new Error('Sesión administrativa requerida.')
-   const{data,error}=await supabase.from('usuarios').select('nombre,apellido,telefono,pais,zona,endereco,tipo,activo').eq('id',user.id).single()
+   const{data,error}=await (supabase as any).from('usuarios').select('nombre,apellido,telefono,pais,zona,endereco,tipo,activo').eq('id',user.id).single()
    if(error||!data)throw error||new Error('Perfil Admin no encontrado.')
    if(!data.activo||!['admin','superadmin'].includes(data.tipo))throw new Error('No tenés acceso administrativo.')
    const next=Object.fromEntries(Object.keys(empty).map(key=>[key,String((data as any)[key]??'')])) as AdminPersonal
