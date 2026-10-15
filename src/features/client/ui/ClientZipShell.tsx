@@ -72,7 +72,9 @@ export function ClientZipShell({children,screen,detailOpen}:Props){
    </div>
   </div>
   {!detailOpen&&<nav className="ugo-zip-mobile-nav" aria-label="Navegación móvil">
-   {items.filter(item=>['home','explore','active','history','profile'].includes(item.id)).map(item=><button key={item.id} type="button" onClick={()=>trigger(item)} className={item.id===active?'active':''}><ClientZipIcon name={item.id}/><small>{item.label}</small></button>)}
+   {items.filter(item=>['home','explore'].includes(item.id)).map(item=><button key={item.id} type="button" onClick={()=>trigger(item)} className={item.id===active?'active':''}><ClientZipIcon name={item.id}/><small>{item.label}</small></button>)}
+   <button type="button" className="ugo-zip-mobile-add" onClick={()=>navigate('request')} aria-label="Solicitar servicio"><ClientZipIcon name="request" size={27}/></button>
+   {items.filter(item=>['history','profile'].includes(item.id)).map(item=><button key={item.id} type="button" onClick={()=>trigger(item)} className={item.id===active?'active':''}><ClientZipIcon name={item.id}/><small>{item.label}</small></button>)}
   </nav>}
  </div>
 }
