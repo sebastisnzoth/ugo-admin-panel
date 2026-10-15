@@ -373,3 +373,82 @@
 .ugo-provider-root .provider-screen,
 .ugo-provider-root .provider-focus-card,
 .ugo-provider-root .provider-card{font-family:var(--ugo-font)!important}
+
+
+/* Frontend Design Premium — provider operational clarity (2026-10-15).
+   Presentation only: existing actions, matching, payments and GPS remain unchanged. */
+.ugo-provider-root .provider-home .provider-focus-card{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  gap:12px!important;
+  background:var(--ugo-color-on-surface)!important;
+  border-radius:var(--ugo-radius-xl,24px)!important;
+}
+.ugo-provider-root .provider-home .provider-focus-card h2{
+  max-width:22ch!important;
+  margin:0!important;
+  color:var(--ugo-color-surface-lowest)!important;
+  text-wrap:balance;
+}
+.ugo-provider-root .provider-home .provider-focus-card p{
+  max-width:54ch!important;
+  margin:0!important;
+  color:#e1eae5!important;
+}
+.ugo-provider-root .provider-home .provider-focus-card .provider-main-action{
+  margin-top:auto!important;
+  background:var(--ugo-color-primary)!important;
+  color:var(--ugo-color-on-primary)!important;
+  min-height:48px!important;
+  font-weight:750!important;
+  border-radius:var(--ugo-radius-md,12px)!important;
+}
+.ugo-provider-root .provider-home .provider-quick-card{
+  text-align:left!important;
+  cursor:pointer;
+  transition:border-color 160ms ease,background 160ms ease,transform 160ms ease;
+}
+.ugo-provider-root .provider-home .provider-quick-card:hover{
+  border-color:var(--ugo-color-primary)!important;
+  background:color-mix(in srgb,var(--ugo-color-primary) 4%,var(--ugo-color-surface-lowest))!important;
+}
+.ugo-provider-root .provider-home .provider-quick-card:focus-visible,
+.ugo-provider-root .provider-bottom-nav button:focus-visible,
+.ugo-provider-root .provider-operational-chip:focus-visible{
+  outline:3px solid var(--ugo-color-tertiary,#0058be)!important;
+  outline-offset:2px!important;
+}
+.ugo-provider-root .provider-home .provider-status-facts{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 12px;
+}
+.ugo-provider-root .provider-home .provider-status-card{
+  overflow-wrap:anywhere;
+}
+@media(max-width:560px){
+  .ugo-provider-root .provider-home .provider-focus-card{
+    min-height:0!important;
+    padding:22px 20px!important;
+  }
+  .ugo-provider-root .provider-home .provider-focus-card .provider-main-action{
+    width:100%!important;
+  }
+  .ugo-provider-root .provider-home .provider-quick-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .ugo-provider-root .provider-home .provider-quick-card{
+    min-width:0!important;
+    min-height:112px!important;
+  }
+  .ugo-provider-root .provider-home .provider-quick-card strong{
+    overflow-wrap:anywhere;
+  }
+}
+@media(max-width:360px){
+  .ugo-provider-root .provider-home .provider-quick-grid{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ugo-provider-root .provider-home .provider-quick-card{transition:none!important}
+}
