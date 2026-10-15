@@ -47,7 +47,7 @@ export function ClientZipShell({children,screen,detailOpen}:Props){
     {items.map(item=><button key={item.id} type="button" onClick={()=>trigger(item)} className={item.id===active?'active':''} aria-current={item.id===active?'page':undefined}><ClientZipIcon name={item.id}/>{item.label}</button>)}
    </nav>
    <div className="ugo-zip-sidebar-bottom">
-    <button className="ugo-zip-help" type="button" onClick={()=>flow.actions.openDispute()}><span>ⓘ</span><div><strong>¿Necesitás ayuda?</strong><small>Consultá tu servicio y soporte</small></div></button>
+    <button className="ugo-zip-help" type="button" onClick={()=>window.dispatchEvent(new Event('ugo:client-menu-open'))}><span>ⓘ</span><div><strong>¿Necesitás ayuda?</strong><small>Consultá tu servicio y soporte</small></div></button>
     <button type="button" className="ugo-zip-user" onClick={()=>navigate('profile')}>{avatar}<span><strong>{name}</strong><small>{session?.user.email||'Cliente UGO'}</small></span><b>•••</b></button>
    </div>
   </aside>
