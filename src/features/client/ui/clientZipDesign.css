@@ -142,3 +142,18 @@
 .ugo-client-root .ugo-zip-content .ugo-home-services{padding:9px 0}
 .ugo-client-root .ugo-zip-content .ugo-home-services-head h2{font-size:18px}
 }
+
+/* ZIP-consistent operational surfaces: retain original real form/state behavior. */
+.ugo-client-root .ugo-zip-content .ugo-need-screen{width:min(900px,100%);max-width:900px;margin:0 auto;min-height:0;border:1px solid var(--zip-line);background:#fff;border-radius:20px;box-shadow:0 12px 35px #18352c12;overflow:hidden;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-need-top{border-bottom:1px solid var(--zip-line);background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-need-category{background:#f2f7f5;border:1px solid var(--zip-line);border-radius:14px}
+.ugo-client-root .ugo-zip-content .ugo-need-screen textarea,.ugo-client-root .ugo-zip-content .ugo-need-screen input,.ugo-client-root .ugo-zip-content .ugo-need-screen select{border:1px solid #dce7e2;background:#fff;border-radius:12px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-need-screen button:focus-visible,.ugo-client-root .ugo-zip-content .ugo-need-screen input:focus-visible{outline:3px solid #0c7c6140;outline-offset:2px}
+.ugo-client-root .ugo-zip-content .ugo-need-screen button[type=submit],.ugo-client-root .ugo-zip-content .ugo-need-footer button:last-child{background:var(--zip-green);border-radius:11px;color:white}
+.ugo-client-root .ugo-zip-content .ugo-client-screen-overlay{background:transparent;position:relative;inset:auto;display:block;z-index:auto;padding:0;overflow:visible;max-height:none;min-height:0}
+.ugo-client-root .ugo-zip-content .ugo-client-history-wrap,.ugo-client-root .ugo-zip-content .ugo-client-profile-panel{width:min(1050px,100%);margin:0 auto;max-height:none;min-height:0;box-shadow:none;border:1px solid var(--zip-line);border-radius:20px;background:#fff;overflow:visible}
+.ugo-client-root .ugo-zip-content .ugo-client-profile-panel>header{border-bottom:1px solid var(--zip-line);background:#fff;color:var(--zip-ink);border-radius:20px 20px 0 0}
+.ugo-client-root .ugo-zip-content .ugo-client-profile-identity,.ugo-client-root .ugo-zip-content .ugo-client-profile-sections details{background:#fff;border-color:var(--zip-line);border-radius:16px}
+.ugo-client-root .ugo-zip-content .ugo-client-profile-primary,.ugo-client-root .ugo-zip-content .ugo-client-profile-payment .selected{background:var(--zip-green);color:#fff}
+.ugo-client-root .ugo-zip-content .ugo-client-history-wrap button:focus-visible,.ugo-client-root .ugo-zip-content .ugo-client-profile-panel button:focus-visible{outline:3px solid #0c7c6140;outline-offset:2px}
+@media(max-width:600px){.ugo-client-root .ugo-zip-content .ugo-client-profile-panel,.ugo-client-root .ugo-zip-content .ugo-client-history-wrap{border-radius:14px}.ugo-client-root .ugo-zip-content .ugo-need-screen{border-radius:14px}}
