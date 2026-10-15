@@ -40,3 +40,22 @@ test('home categories and providers still come from live stores and the order li
  assert.match(home,/categories\.map\(c=/)
  assert.match(home,/onlineProviders\.slice/)
 })
+
+test('ZIP Explore, Active and Payments use UGO TEST operational sources instead of the static ZIP records',()=>{
+ const explore=readFileSync('src/features/client/explore/ClientZipExplore.tsx','utf8')
+ const active=readFileSync('src/features/client/active/ClientZipActive.tsx','utf8')
+ const payments=readFileSync('src/features/client/payments/ClientZipPayments.tsx','utf8')
+ assert.match(explore,/from'\.\.\/radar\/providerRadarStore'/)
+ assert.match(explore,/\.from\('categorias'\)/)
+ assert.match(explore,/estado_verificacion!=='verificado'/)
+ assert.match(explore,/flow\.publishHugoIntent/)
+ assert.match(active,/\.from\('servicios'\)/)
+ assert.match(active,/\.eq\('cliente_id',session\.user\.id\)/)
+ assert.match(active,/postgres_changes/)
+ assert.match(active,/openService\(s\.id\)/)
+ assert.match(payments,/\.from\('preferencias_pago_cliente'\)/)
+ assert.match(payments,/set_preorder_payment_preference/)
+ for(const source of [explore,active,payments]){
+  assert.doesNotMatch(source,/Roberto Silva|Ana Martínez|UGO-2048|R\\$ 145,00/)
+ }
+})
