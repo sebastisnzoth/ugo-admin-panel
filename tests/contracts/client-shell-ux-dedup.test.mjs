@@ -29,9 +29,9 @@ test('client menu account card reflects the authenticated profile instead of a h
  assert.doesNotMatch(menu,/ugo-client-account-avatar">S</)
 })
 
-test('client global header stays on home while request history profile and detail own their navigation',async()=>{
+test('ZIP shell controls navigation without duplicate legacy header',async()=>{
  const[root,css]=await Promise.all([read('src/features/client/ClientRoot.tsx'),read('src/features/client/ui/clientPersistentHeader.css')])
- assert.match(root,/flow\.screen==='home'&&!detailOpen&&<ClientPersistentHeader/)
+ assert.match(root,/<ClientZipShell screen=\{flow\.screen\} detailOpen=\{detailOpen\}>/)
  assert.match(root,/ugo-client-detail-open/)
  assert.match(css,/ugo-client-screen-history \.ugo-client-screen-overlay/)
  assert.match(css,/ugo-client-screen-profile \.ugo-client-screen-overlay/)
