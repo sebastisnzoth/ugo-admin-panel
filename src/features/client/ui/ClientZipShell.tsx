@@ -5,10 +5,13 @@ import type{ClientScreen}from'../types/clientTypes'
 import{ClientZipIcon}from'./ClientZipIcon'
 import'./clientZipDesign.css'
 
-type NavItem={id:'home'|'explore'|'request'|'history'|'payments'|'profile';label:string;screen?:ClientScreen;onClick?:()=>void}
+type NavItem={id:'home'|'explore'|'active'|'request'|'history'|'payments'|'profile';label:string;screen?:ClientScreen;onClick?:()=>void}
 type Props={children:React.ReactNode;screen:ClientScreen;detailOpen:boolean}
 const TITLES:Record<string,[string,string]>={
  home:['Inicio','¿Qué necesitás resolver hoy?'],
+ explore:['Explorar servicios','Encontrá profesionales verificados cerca tuyo'],
+ active:['Servicio en curso','Seguí el progreso de tu pedido'],
+ payments:['Pagos y métodos','Gestioná tus formas de pago'],
  request:['Solicitar servicio','Contanos qué necesitás y buscamos un profesional disponible'],
  history:['Tu actividad','Consultá tus pedidos y servicios reales'],
  profile:['Mi perfil','Tus datos, direcciones, preferencias y medios de pago'],
@@ -19,17 +22,18 @@ export function ClientZipShell({children,screen,detailOpen}:Props){
  const[menuOpen,setMenuOpen]=useState(false)
  const name=profile?.nombre?.trim()||'Cliente'
  const first=name.split(/\s+/)[0]
- const active=screen==='request'?'request':screen==='history'?'history':screen==='profile'?'profile':'home'
+ const active=screen==='explore'?'explore':screen==='active'?'active':screen==='payments'?'payments':screen==='request'?'request':screen==='history'?'history':screen==='profile'?'profile':'home'
  const navigate=(next:ClientScreen)=>{setMenuOpen(false);flow.navigate(next)}
- const explore=()=>{navigate('home');window.setTimeout(()=>document.querySelector('.ugo-home-services')?.scrollIntoView({behavior:'smooth',block:'start'}),60)}
- const payments=()=>{navigate('profile');window.setTimeout(()=>document.getElementById('ugo-client-profile-payment-section')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
+ const explore=()=>navigate('explore')
+ const payments=()=>navigate('payments')
  const notify=()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click()
  const items:NavItem[]=[
   {id:'home',label:'Inicio',screen:'home'},
-  {id:'explore',label:'Explorar',onClick:explore},
+  {id:'explore',label:'Explorar',screen:'explore'},
   {id:'request',label:'Solicitar',screen:'request'},
+  {id:'active',label:'Servicio',onClick:()=>navigate('active')},
   {id:'history',label:'Actividad',screen:'history'},
-  {id:'payments',label:'Pagos',onClick:payments},
+  {id:'payments',label:'Pagos',screen:'payments'},
   {id:'profile',label:'Perfil',screen:'profile'},
  ]
  const trigger=(item:NavItem)=>{if(item.onClick)item.onClick();else if(item.screen)navigate(item.screen);setMenuOpen(false)}
@@ -66,7 +70,7 @@ export function ClientZipShell({children,screen,detailOpen}:Props){
    </div>
   </div>
   {!detailOpen&&<nav className="ugo-zip-mobile-nav" aria-label="Navegación móvil">
-   {items.filter(item=>['home','explore','request','history','profile'].includes(item.id)).map(item=><button key={item.id} type="button" onClick={()=>trigger(item)} className={item.id===active?'active':''}><ClientZipIcon name={item.id}/><small>{item.label}</small></button>)}
+   {items.filter(item=>['home','explore','active','history','profile'].includes(item.id)).map(item=><button key={item.id} type="button" onClick={()=>trigger(item)} className={item.id===active?'active':''}><ClientZipIcon name={item.id}/><small>{item.label}</small></button>)}
   </nav>}
  </div>
 }
