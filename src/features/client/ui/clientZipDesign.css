@@ -103,3 +103,42 @@
 .ugo-client-root .ugo-zip-actions{gap:8px}
 .ugo-client-root .ugo-zip-actions button{padding:0 11px}
 }
+
+/* Match ZIP service-card hierarchy while retaining real UGO service data and actions. */
+.ugo-client-root .ugo-zip-content .ugo-home-layout{max-width:none;width:100%;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:22px;align-items:start}
+.ugo-client-root .ugo-zip-content .ugo-home-hero{grid-column:1;grid-row:2;padding:20px;background:#fff;border:1px solid var(--zip-line);box-shadow:none;border-radius:17px}
+.ugo-client-root .ugo-zip-content .ugo-home-hero>.ugo-home-kicker,.ugo-client-root .ugo-zip-content .ugo-home-hero>h1,.ugo-client-root .ugo-zip-content .ugo-home-hero>p{display:none}
+.ugo-client-root .ugo-zip-content .ugo-home-topline{margin-bottom:13px}
+.ugo-client-root .ugo-zip-content .ugo-home-location{font-size:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card{grid-column:2;grid-row:2;box-shadow:none;border:1px solid var(--zip-line);border-radius:17px}
+.ugo-client-root .ugo-zip-content .ugo-home-services{grid-column:1/-1;grid-row:1;padding:20px 0;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head{margin-bottom:18px}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head h2{font-size:20px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head>button{background:transparent;color:var(--zip-green)}
+.ugo-client-root .ugo-zip-content .ugo-home-categories{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button{min-height:125px;padding:16px;background:white;border:1px solid var(--zip-line);box-shadow:none;display:flex;flex-direction:column;align-items:flex-start;gap:0;border-radius:16px;color:var(--zip-ink);position:relative}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button:hover{border-color:#c4d8d0;transform:translateY(-3px);box-shadow:0 12px 35px #18352c14}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button>.ugo-home-category-icon{width:42px;height:42px;border-radius:12px;background:#e6f1ff}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button:nth-child(2n)>.ugo-home-category-icon{background:#fff4d6}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button:nth-child(3n)>.ugo-home-category-icon{background:#f0e9fa}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button>div{display:grid;gap:3px;margin-top:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button b{font-size:12px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button small{font-size:9px;color:var(--zip-muted)}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button em{position:absolute;right:14px;bottom:12px;color:#abb5b2}
+.ugo-client-root .ugo-zip-content .ugo-home-hugo-cta{background:var(--zip-green);box-shadow:none;color:#fff}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card>header{background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card>footer{background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card button{font-size:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-provider-card{border-color:var(--zip-line)}
+.ugo-client-root .ugo-zip-content .ugo-home-mobile-nav{display:none!important}
+@media(max-width:1120px){
+.ugo-client-root .ugo-zip-content .ugo-home-categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ugo-client-root .ugo-zip-content .ugo-home-layout{grid-template-columns:1fr;gap:14px}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card{grid-row:3;grid-column:1}
+.ugo-client-root .ugo-zip-content .ugo-home-hero{grid-row:2;grid-column:1}
+}
+@media(max-width:600px){
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button{min-height:111px;padding:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-services{padding:9px 0}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head h2{font-size:18px}
+}
