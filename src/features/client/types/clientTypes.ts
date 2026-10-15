@@ -1,4 +1,4 @@
-export type ClientScreen = 'auth' | 'onboarding' | 'home' | 'search' | 'provider' | 'request' | 'matching' | 'service' | 'payment' | 'review' | 'history' | 'profile' | 'dispute'
+export type ClientScreen = 'auth' | 'onboarding' | 'home' | 'explore' | 'active' | 'payments' | 'search' | 'provider' | 'request' | 'matching' | 'service' | 'payment' | 'review' | 'history' | 'profile' | 'dispute'
 
 export type ClientHugoIntent = {
   id: number
