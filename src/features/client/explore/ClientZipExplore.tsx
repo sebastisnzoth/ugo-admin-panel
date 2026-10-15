@@ -21,13 +21,14 @@ export function ClientZipExplore(){
    if(!alive)return
    if(loadError)setError('No pudimos cargar las categorías. Reintentá.')
    setCategories((data||[]) as Category[])
-  }).finally(()=>{if(alive)setLoading(false)})
+   setLoading(false)
+  })
   return()=>{alive=false}
  },[supabase,session,refresh])
  useEffect(()=>{
   const unsubscribe=subscribeProviderRadar(s=>setProviders(s.providers))
   void refreshProviderRadar(supabase,true).catch(()=>setError('El radar de profesionales está temporalmente limitado. Podés solicitar tu servicio igualmente.'))
-  return unsubscribe
+  return()=>{unsubscribe()}
  },[supabase,refresh])
  const filtered=useMemo(()=>providers.filter(p=>{
   if(p.estado_verificacion!=='verificado')return false
