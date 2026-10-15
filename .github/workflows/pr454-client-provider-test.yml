@@ -44,6 +44,14 @@ jobs:
         run: |
           node scripts/autonomous-qa-runtime.mjs
           node scripts/autonomous-qa-judge-runtime.mjs
+      - name: Canonical GPS and geofence persisted evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/autonomous-qa-gps-runtime.mjs
+      - name: Verify privately uploaded initial and final media bytes
+        run: node scripts/autonomous-uploaded-media-runtime.mjs
+      - name: Authenticated client-provider Realtime chat
+        run: node scripts/chat-realtime-probe.mjs
       - name: Sentinel integrity
         run: node scripts/autonomous-sentinel-gate.mjs
       - name: Record tested revision
