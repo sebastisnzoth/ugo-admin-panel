@@ -230,3 +230,21 @@
 
 /* ZIP MobileNav: two links + centered primary action + two links. */
 @media(max-width:800px){.ugo-client-root .ugo-zip-mobile-nav .ugo-zip-mobile-add{flex:0 0 54px;width:54px;height:54px;border:0;border-radius:17px;background:#0c7c61;color:#fff;align-self:flex-start;margin-top:-23px;box-shadow:0 9px 18px #0c7c6144;padding:0}.ugo-client-root .ugo-zip-mobile-nav .ugo-zip-mobile-add svg{width:28px;height:28px}.ugo-client-root .ugo-zip-mobile-nav button:not(.ugo-zip-mobile-add){flex:1}}
+
+
+/* Source ZIP Activity: summary cards + white history list, using live ServiceHistoryPanel. */
+.ugo-client-root .ugo-zip-content .ugo-client-history{background:transparent;border:0;box-shadow:none;padding:0;color:#172321}
+.ugo-client-root .ugo-zip-content .ugo-client-history>header{background:transparent;border:0;padding:10px 2px 20px}
+.ugo-client-root .ugo-zip-content .ugo-client-history>header h2{font-size:22px;color:#172321}
+.ugo-client-root .ugo-zip-content .ugo-client-history>header p{font-size:12px;color:#70807b}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:0 0 21px}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary>button{display:flex;gap:13px;align-items:center;min-height:100px;padding:20px;border:1px solid #e4ebe8;border-radius:15px;background:white;text-align:left;color:#172321;box-shadow:none}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary>button.active{border-color:#0c7c61}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary strong{font-size:25px;line-height:1.2;color:#172321}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary small{font-size:10px;color:#70807b;letter-spacing:.06em}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary em{font-size:10px;color:#70807b;font-style:normal}
+.ugo-client-root .ugo-zip-content .ugo-client-history-toolbar{background:#fff;border:1px solid #e4ebe8;border-radius:15px 15px 0 0;padding:14px}
+.ugo-client-root .ugo-zip-content .ugo-history-list{background:#fff;border:1px solid #e4ebe8;border-top:0;border-radius:0 0 15px 15px;padding:15px}
+.ugo-client-root .ugo-zip-content .ugo-history-list article,.ugo-client-root .ugo-zip-content .ugo-history-list>.ugo-history-item{border:1px solid #e4ebe8;border-radius:14px;box-shadow:none;background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-history-open-button{background:#0c7c61;color:white;border-radius:11px}
+@media(max-width:700px){.ugo-client-root .ugo-zip-content .ugo-client-activity-summary{grid-template-columns:1fr}.ugo-client-root .ugo-zip-content .ugo-client-activity-summary>button{min-height:78px}}
