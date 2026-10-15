@@ -48,4 +48,5 @@ test('provider decisions enforce reasons and transaction-scoped audit',()=>{
  assert.match(migration,/comprobante_domicilio/)
  assert.match(migration,/security invoker/)
  assert.match(migration,/grant execute on function[\s\S]*to service_role/)
+ assert.match(providerPanel,/state==='rechazado'\|\|state==='suspendido'/)
 })
