@@ -452,3 +452,91 @@
 @media(prefers-reduced-motion:reduce){
   .ugo-provider-root .provider-home .provider-quick-card{transition:none!important}
 }
+
+/* Approved client-inspired UGO Pro layout — live provider components only. */
+.ugo-provider-root{
+  --provider-client-canvas:#f4f7f5;
+  --provider-client-line:#e2eae5;
+  --provider-client-soft:#e2f2ec;
+  --provider-client-ink:#172321;
+  --provider-client-muted:#526960;
+  background:var(--provider-client-canvas)!important;
+}
+.ugo-provider-root .provider-home{max-width:1160px!important}
+.ugo-provider-root .provider-home-overview{
+  display:grid;
+  grid-template-columns:minmax(0,1.6fr) minmax(280px,.85fr);
+  gap:20px;align-items:stretch;
+}
+.ugo-provider-root .provider-home-overview>.provider-card{margin:0!important;min-width:0}
+.ugo-provider-root .provider-home .provider-focus-card{
+  min-height:280px!important;
+  padding:30px!important;
+  background:linear-gradient(115deg,#075a48,#0c7c61)!important;
+  color:#fff!important;
+  border-radius:20px!important;
+  box-shadow:0 12px 28px rgba(24,53,44,.1)!important;
+}
+.ugo-provider-root .provider-home .provider-focus-card h2{
+  font-size:clamp(28px,3vw,40px)!important;
+  line-height:1.12!important;
+  max-width:23ch!important;
+}
+.ugo-provider-root .provider-home .provider-focus-card p{color:#e4f7ef!important}
+.ugo-provider-root .provider-home .provider-focus-card .provider-main-action{
+  background:#fff!important;color:#075a48!important;
+  align-self:flex-start;min-width:190px;min-height:48px!important;
+}
+.ugo-provider-root .provider-home .provider-status-card{
+  padding:24px!important;background:#fff!important;
+  border:1px solid var(--provider-client-line)!important;
+  border-radius:18px!important;
+  box-shadow:0 10px 25px rgba(24,53,44,.045)!important;
+}
+.ugo-provider-root .provider-home-section-title{
+  margin:30px 0 14px!important;color:var(--provider-client-ink)!important;
+  font-size:20px!important;font-weight:750!important;letter-spacing:-.02em;
+}
+.ugo-provider-root .provider-home .provider-quick-grid{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important;
+}
+.ugo-provider-root .provider-home .provider-quick-card{
+  min-height:140px!important;padding:20px!important;
+  border:1px solid var(--provider-client-line)!important;
+  border-radius:16px!important;
+  box-shadow:0 8px 22px rgba(24,53,44,.045)!important;
+}
+.ugo-provider-root .provider-home .provider-quick-card small{
+  color:#075a48!important;font-size:11px!important;font-weight:750!important;
+}
+.ugo-provider-root .provider-home .provider-quick-card strong{font-size:17px!important}
+.ugo-provider-root .provider-home .provider-quick-card span{font-size:13px!important}
+@media(min-width:1000px){
+  .ugo-provider-root{padding-left:224px!important}
+  .ugo-provider-root .provider-screen{max-width:1160px!important}
+  .ugo-provider-root .provider-studio-sidebar{
+    background:#fff!important;border-right:1px solid var(--provider-client-line)!important;
+  }
+  .ugo-provider-root .provider-studio-brand,
+  .ugo-provider-root .provider-studio-user strong{color:#075a48!important}
+  .ugo-provider-root .provider-studio-user small,
+  .ugo-provider-root .provider-studio-nav button,
+  .ugo-provider-root .provider-studio-utility{color:#526960!important}
+  .ugo-provider-root .provider-studio-nav button.is-active,
+  .ugo-provider-root .provider-studio-nav button[aria-current="page"]{
+    color:#075a48!important;background:var(--provider-client-soft)!important
+  }
+}
+@media(max-width:900px){
+  .ugo-provider-root .provider-home-overview{grid-template-columns:1fr}
+  .ugo-provider-root .provider-home .provider-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:560px){
+  .ugo-provider-root .provider-home .provider-focus-card{min-height:230px!important;padding:24px!important}
+  .ugo-provider-root .provider-home .provider-focus-card .provider-main-action{width:100%!important}
+  .ugo-provider-root .provider-home .provider-quick-card{min-height:110px!important;padding:16px!important}
+  .ugo-provider-root .provider-home-overview{gap:14px}
+}
+@media(max-width:360px){
+  .ugo-provider-root .provider-home .provider-quick-grid{grid-template-columns:1fr!important}
+}
