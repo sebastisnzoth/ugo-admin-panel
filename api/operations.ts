@@ -257,7 +257,8 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
         .select('tipo,estado')
         .eq('usuario_id', providerId)
       if (docsError) throw docsError
-      const requiredDocs = ['identidad_frente', 'identidad_dorso', 'selfie', 'domicilio']
+      // Canonical document type matches ProviderOnboardingGate and AdminProviderVerificationPanel.
+      const requiredDocs = ['identidad_frente', 'identidad_dorso', 'selfie', 'comprobante_domicilio']
       const approvedTypes = new Set((docs || []).filter((d: any) => d.estado === 'aprobado').map((d: any) => d.tipo))
       const missing = requiredDocs.filter((type) => !approvedTypes.has(type))
       if (missing.length) {
