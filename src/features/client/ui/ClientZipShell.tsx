@@ -48,7 +48,7 @@ export function ClientZipShell({children,screen,detailOpen}:Props){
   </aside>
   <div className="ugo-zip-main">
    {!detailOpen&&<header className="ugo-zip-topbar">
-    <button type="button" className="ugo-zip-mobile-menu" onClick={()=>setMenuOpen(true)} aria-label="Abrir menú">☰</button>
+    <button type="button" className="ugo-zip-mobile-menu" onClick={()=>window.dispatchEvent(new Event('ugo:client-menu-open'))} aria-label="Abrir menú">☰</button>
     <div className="ugo-zip-heading"><h1>{screen==='home'?`¡Hola, ${first}! 👋`:(TITLES[screen]?.[0]||'UGO')}</h1><p>{TITLES[screen]?.[1]||'Tu plataforma de servicios'}</p></div>
     <div className="ugo-zip-tools">
      <button type="button" className="ugo-zip-location" onClick={()=>{navigate('home');window.setTimeout(()=>document.querySelector<HTMLButtonElement>('.ugo-home-location')?.click(),60)}}><span>⌖</span><small>Mi ubicación<strong>Actualizar desde GPS</strong></small>⌄</button>
