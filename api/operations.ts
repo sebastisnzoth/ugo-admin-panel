@@ -182,29 +182,8 @@ async function verifyKyc(req: VercelRequest, res: VercelResponse) {
       .eq('id', documentoId)
     if (reviewError) throw reviewError
 
-    if (aprobado) {
-      const { data: docs, error: docsError } = await sb
-        .from('documentos')
-        .select('estado')
-        .eq('usuario_id', doc.usuario_id)
-      if (docsError) throw docsError
-
-      const allApproved = Boolean(docs?.length) && docs.every((item) => item.estado === 'aprobado')
-      if (allApproved) {
-        const { error: activateError } = await sb.from('usuarios').update({ activo: true }).eq('id', doc.usuario_id)
-        if (activateError) throw activateError
-
-        const { error: notificationError } = await sb.from('notificaciones').insert({
-          usuario_id: doc.usuario_id,
-          tipo: 'kyc_aprobado',
-          titulo: '¡Bienvenido a U.GO!',
-          cuerpo: 'Tu perfil ha sido verificado y aprobado.',
-          datos: { source: 'admin_kyc', documentoId },
-          dedupe_key: `kyc_aprobado:${doc.usuario_id}`,
-        })
-        if (notificationError && notificationError.code !== '23505') throw notificationError
-      }
-    }
+    // Document review changes only document status. Account activation and
+    // professional verification are separate authorized admin decisions.
 
     const { error: auditError } = await sb.from('audit_log').insert({
       evento: aprobado ? 'admin.kyc.approved' : 'admin.kyc.rejected',
