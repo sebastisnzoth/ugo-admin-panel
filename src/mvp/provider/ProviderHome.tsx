@@ -26,7 +26,7 @@ export function ProviderHome(){
    :{eyebrow:'FUERA DEL RADAR',title:'Ponete Online para recibir trabajos',text:'Cuando estés disponible, activá tu estado y UGO empezará a buscar pedidos compatibles.',action:d.toggleOnline,label:'Ponerme Online'}
  return <section className="provider-screen provider-home" aria-label="Inicio del proveedor">
   <SectionHeader screenHeading eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`Calificación ${d.karma.toFixed(1)} de 5 · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online} aria-label={d.online?(d.matchingReady?'Desactivar disponibilidad: Online y GPS vigente':'Desactivar disponibilidad: Online, GPS pendiente'):'Activar disponibilidad: Offline'}>{d.online?'Online':'Offline'}</Button>}/>
-  <Card className="provider-card provider-hero provider-focus-card">
+  <div className="provider-home-overview"><Card className="provider-card provider-hero provider-focus-card">
    <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online&&!d.matchingReady?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
    <h2>{next.title}</h2><p>{next.text}</p>
    <Button variant="primary" size="lg" className="provider-primary provider-main-action" onClick={next.action} disabled={d.busy}>{d.busy?'Procesando…':next.label}</Button>
@@ -44,9 +44,11 @@ export function ProviderHome(){
    </div>
    {!d.debtBlocked&&(!d.online||!d.matchingReady)&&<Button variant="primary" className="provider-primary provider-wide" disabled={d.busy} onClick={()=>void d.setOnline(true)}>{d.online?'Actualizar ubicación':'Ponerme Online'}</Button>}
   </Card>
+  </div>
   {d.debtBlocked&&<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">Nuevos pedidos pausados</StatusPill><span>Debés {money(d.ugoDebt)} en {d.pendingDebtCount} comisiones. Tus trabajos ya asignados siguen disponibles, pero no recibirás ni podrás aceptar otros hasta conciliar al menos una.</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></Card>}
+  <h2 className="provider-home-section-title">Accesos rápidos</h2>
   <div className="provider-quick-grid">
-   {d.service&&d.opportunities.length>0&&<button type="button" className="provider-card provider-quick-card" onClick={flow.actions.openOpportunities}><small>NUEVOS PEDIDOS</small><strong>{d.opportunities.length} disponible{d.opportunities.length===1?'':'s'}</strong><span>Podés aceptar otro →</span></button>}
+   <button type="button" className="provider-card provider-quick-card" onClick={flow.actions.openOpportunities}><small>PEDIDOS</small><strong>{d.opportunities.length?`${d.opportunities.length} disponibles`:"Ver pedidos"}</strong><span>Oportunidades para vos →</span></button>
    <button type="button" className="provider-card provider-quick-card" onClick={flow.actions.openAgenda}><small>AGENDA</small><strong>Próximos trabajos</strong><span>Ver horarios →</span></button>
    <button type="button" className="provider-card provider-quick-card" onClick={flow.actions.openEarnings}><small>DINERO</small><strong>Saldo UGO {money(d.released)}</strong><span>Efectivo {money(d.cashReceived)} · Debés UGO {money(d.ugoDebt)} →</span></button>
   </div>
