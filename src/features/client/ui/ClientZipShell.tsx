@@ -1,4 +1,4 @@
-import React,{useState}from'react'
+import React,{useEffect,useState}from'react'
 import{useRoleSession}from'../../../mvp/shared'
 import{useClientFlow}from'../flow/clientFlow'
 import type{ClientScreen}from'../types/clientTypes'
@@ -18,7 +18,9 @@ const TITLES:Record<string,[string,string]>={
 }
 export function ClientZipShell({children,screen,detailOpen}:Props){
  const flow=useClientFlow()
- const {profile,session}=useRoleSession('client')
+ const {profile,session,supabase}=useRoleSession('client')
+ const[clientArea,setClientArea]=useState('Ubicación sin configurar')
+ useEffect(()=>{if(!session)return;let alive=true;void supabase.from('perfiles_cliente').select('barrio,ciudad').eq('usuario_id',session.user.id).maybeSingle().then(({data})=>{if(!alive)return;setClientArea([data?.barrio,data?.ciudad].filter(Boolean).join(' · ')||'Ubicación sin configurar')});return()=>{alive=false}},[session,supabase])
  const[menuOpen,setMenuOpen]=useState(false)
  const name=profile?.nombre?.trim()||'Cliente'
  const first=name.split(/\s+/)[0]
@@ -56,7 +58,7 @@ export function ClientZipShell({children,screen,detailOpen}:Props){
     <button type="button" className="ugo-zip-mobile-menu" onClick={()=>window.dispatchEvent(new Event('ugo:client-menu-open'))} aria-label="Abrir menú"><ClientZipIcon name="menu"/></button>
     <div className="ugo-zip-heading"><h1>{screen==='home'?`¡Hola, ${first}! 👋`:(TITLES[screen]?.[0]||'UGO')}</h1><p>{TITLES[screen]?.[1]||'Tu plataforma de servicios'}</p></div>
     <div className="ugo-zip-tools">
-     <button type="button" className="ugo-zip-location" onClick={()=>{navigate('home');window.setTimeout(()=>document.querySelector<HTMLButtonElement>('.ugo-home-location')?.click(),60)}}><span><ClientZipIcon name="location" size={18}/></span><small>Mi ubicación<strong>Actualizar desde GPS</strong></small>⌄</button>
+     <button type="button" className="ugo-zip-location" onClick={()=>{navigate('home');window.setTimeout(()=>document.querySelector<HTMLButtonElement>('.ugo-home-location')?.click(),60)}}><span><ClientZipIcon name="location" size={18}/></span><small>TU UBICACIÓN<strong>{clientArea}</strong></small>⌄</button>
      <button type="button" className="ugo-zip-bell" onClick={notify} aria-label="Abrir notificaciones"><ClientZipIcon name="notifications"/></button>
      <button type="button" className="ugo-zip-top-person" onClick={()=>navigate('profile')} aria-label="Mi perfil">{avatar}</button>
     </div>
