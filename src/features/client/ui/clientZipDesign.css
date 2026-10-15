@@ -227,3 +227,6 @@
 .ugo-client-root .ugo-zip-notice{padding:13px;background:#fdf8ed;border-radius:12px;color:#745c23;font-size:12px}
 @media(max-width:850px){.ugo-client-root .ugo-zip-explore-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.ugo-client-root .ugo-zip-provider-grid{grid-template-columns:1fr}}
 @media(max-width:550px){.ugo-client-root .ugo-zip-searchpanel{flex-wrap:wrap}.ugo-client-root .ugo-zip-searchpanel>button{width:100%}.ugo-client-root .ugo-zip-section-title h2{font-size:20px}.ugo-client-root .ugo-zip-payment-methods{grid-template-columns:1fr}.ugo-client-root .ugo-zip-active-head{flex-wrap:wrap}.ugo-client-root .ugo-zip-active-head>.ugo-zip-status{margin-left:0}.ugo-client-root .ugo-zip-timeline span{font-size:9px}}
+
+/* ZIP MobileNav: two links + centered primary action + two links. */
+@media(max-width:800px){.ugo-client-root .ugo-zip-mobile-nav .ugo-zip-mobile-add{flex:0 0 54px;width:54px;height:54px;border:0;border-radius:17px;background:#0c7c61;color:#fff;align-self:flex-start;margin-top:-23px;box-shadow:0 9px 18px #0c7c6144;padding:0}.ugo-client-root .ugo-zip-mobile-nav .ugo-zip-mobile-add svg{width:28px;height:28px}.ugo-client-root .ugo-zip-mobile-nav button:not(.ugo-zip-mobile-add){flex:1}}
