@@ -157,3 +157,6 @@
 .ugo-client-root .ugo-zip-content .ugo-client-profile-primary,.ugo-client-root .ugo-zip-content .ugo-client-profile-payment .selected{background:var(--zip-green);color:#fff}
 .ugo-client-root .ugo-zip-content .ugo-client-history-wrap button:focus-visible,.ugo-client-root .ugo-zip-content .ugo-client-profile-panel button:focus-visible{outline:3px solid #0c7c6140;outline-offset:2px}
 @media(max-width:600px){.ugo-client-root .ugo-zip-content .ugo-client-profile-panel,.ugo-client-root .ugo-zip-content .ugo-client-history-wrap{border-radius:14px}.ugo-client-root .ugo-zip-content .ugo-need-screen{border-radius:14px}}
+
+/* Only one visible location/notification header, actions remain reachable through real handlers. */
+.ugo-client-root .ugo-zip-content .ugo-home-topline{display:none}
