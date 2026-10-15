@@ -1,0 +1,53 @@
+name: UGO TEST Client Provider P0 PR454
+on:
+  push:
+    branches:
+      - fix/ugo-worker-audit-shell-20261015
+    paths:
+      - '.github/workflows/pr454-client-provider-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
+jobs:
+  authenticated-e2e:
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 25
+    env:
+      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+      UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+      UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+      UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
+      UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+      UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+      UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+      UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+      UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Guard UGO TEST
+        run: node scripts/assert-test-environment.mjs
+      - name: Contract proof for authenticated client-provider simulator
+        run: node --test tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs
+      - name: Run persisted simulated service through real business RPC paths
+        run: node scripts/autonomous-p0-runtime.mjs
+      - name: Authenticated Client Provider Admin simulator
+        run: node scripts/autonomous-qa-auth-runtime.mjs
+      - name: Deterministic QA runtime and ledgers
+        run: |
+          node scripts/autonomous-qa-runtime.mjs
+          node scripts/autonomous-qa-judge-runtime.mjs
+      - name: Sentinel integrity
+        run: node scripts/autonomous-sentinel-gate.mjs
+      - name: Record tested revision
+        if: always()
+        env:
+          UGO_RUNTIME_WORKFLOW_NAME: UGO TEST Client Provider P0 PR454
+        run: node scripts/autonomous-runtime-revision.mjs
