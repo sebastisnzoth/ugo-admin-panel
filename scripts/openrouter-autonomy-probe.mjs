@@ -78,7 +78,9 @@ if(db){
  if(error)throw error
  knownFree=(data||[]).map(row=>row.model_id).filter(model=>free.includes(model))
 }
-const preferred=[process.env.UGO_OPENROUTER_MODEL,...knownFree,'openrouter/free',...free]
+// Prefer verified concise-response models before reasoning-heavy candidates.
+const conciseFree=knownFree.filter(model=>model.startsWith('poolside/'))
+const preferred=[process.env.UGO_OPENROUTER_MODEL,...conciseFree,...knownFree,'openrouter/free',...free]
  .filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i)
 let last=''
 for(const model of preferred.slice(0,12)){
