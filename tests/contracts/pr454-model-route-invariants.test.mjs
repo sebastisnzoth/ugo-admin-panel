@@ -21,7 +21,7 @@ test('only benchmark-valid Gemini primary and OpenRouter fallback can satisfy co
 test('fallback requires real nonempty model completion and correlated metrics',()=>{
  assert.match(drill,/EMPTY_MODEL_RESPONSE/)
  assert.match(drill,/finish_reason/)
- assert.match(drill,/max_tokens:256/)
+ assert.match(drill,/max_tokens:1024/)
  assert.match(drill,/FAILOVER_METRICS_INCOMPLETE/)
  assert.match(drill,/OPENROUTER_FALLBACK_FAILED_WITHOUT_RECENT_REAL_PROOF/)
 })
