@@ -275,6 +275,34 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
   }
 }
 
+// Profile editor is restricted to UGO Arena until the atomic RPC is reviewed and migrated.
+async function updateAdminUserProfile(req: VercelRequest, res: VercelResponse) {
+  if (!SUPABASE_URL.includes('tmossnqfwfwjrtzwcbmm')) {
+    return res.status(503).json({ error: 'Editor de perfiles habilitado únicamente en UGO TEST.' })
+  }
+  const userId = clean(req.body?.userId, 64)
+  const base = asRecord(req.body?.base)
+  const detail = asRecord(req.body?.detail)
+  if (!UUID_RE.test(userId)) return res.status(400).json({ error: 'Usuario inválido.' })
+  if (!Object.keys(base).length && !Object.keys(detail).length) {
+    return res.status(400).json({ error: 'No hay cambios para guardar.' })
+  }
+  try {
+    const { sb, user } = await requireAdmin(req)
+    const { data, error } = await sb.rpc('admin_update_user_profile_atomic', {
+      p_actor_id: user.id,
+      p_target_id: userId,
+      p_base: base,
+      p_detail: detail,
+    })
+    if (error) throw error
+    if (!data?.saved) throw new Error('El servidor no confirmó el guardado.')
+    return res.status(200).json({ saved: true, userId, role: data.role })
+  } catch (error) {
+    return adminErrorResponse(res, error, 'No se pudo guardar el perfil.')
+  }
+}
+
 async function createAdminManagedUser(req: VercelRequest, res: VercelResponse) {
   const nombre = clean(req.body?.nombre, 80)
   const apellido = clean(req.body?.apellido, 80)
@@ -573,6 +601,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'kyc-verify': return verifyKyc(req, res)
     case 'autonomy-mode': return changeAutonomyMode(req, res)
     case 'provider-verification': return changeProviderVerification(req, res)
+    case 'admin-update-profile': return updateAdminUserProfile(req, res)
     case 'admin-create-user': return createAdminManagedUser(req, res)
     case 'admin-reset-password': return resetAdminManagedUserPassword(req, res)
     case 'admin-import-users': return importAdminManagedUsers(req, res)
