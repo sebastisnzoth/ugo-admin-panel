@@ -540,3 +540,40 @@
 @media(max-width:360px){
   .ugo-provider-root .provider-home .provider-quick-grid{grid-template-columns:1fr!important}
 }
+
+/* Approved UGO Pro preview parity — provider-wide shell, not Home-only. */
+.ugo-provider-root{--provider-preview-green:#0c7c61;--provider-preview-dark:#075a48;--provider-preview-line:#e4ebe8;--provider-preview-muted:#526960;background:#f4f7f5!important}
+.ugo-provider-root .provider-client-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:92px;padding:18px clamp(16px,3vw,42px);background:#fff;border-bottom:1px solid var(--provider-preview-line)}
+.ugo-provider-root .provider-client-topbar-copy{display:grid;gap:3px;min-width:0}
+.ugo-provider-root .provider-client-topbar-copy strong{font-size:clamp(18px,2vw,23px);line-height:1.2;color:#172321;font-weight:800;letter-spacing:-.025em;overflow-wrap:anywhere}
+.ugo-provider-root .provider-client-topbar-copy span{font-size:12px;color:var(--provider-preview-muted)}
+.ugo-provider-root .provider-client-online{flex:none;min-height:48px;border:1px solid var(--provider-preview-line);border-radius:13px;padding:0 18px;background:#fff;color:var(--provider-preview-dark);font-weight:800;cursor:pointer}
+.ugo-provider-root .provider-client-online.is-online{background:#e2f2ec}
+.ugo-provider-root .provider-client-online:focus-visible,.ugo-provider-root .provider-studio-nav button:focus-visible{outline:3px solid #0058be!important;outline-offset:2px}
+.ugo-provider-root .provider-client-online:disabled{opacity:.65;cursor:not-allowed}
+.ugo-provider-root .ugo-ux-screen-host>.provider-screen,
+.ugo-provider-root .ugo-ux-screen-host>.provider-screen.provider-home{width:min(100% - 36px,1300px)!important;max-width:1300px!important;margin:0 auto!important}
+.ugo-provider-root .ugo-ux-screen-host>.provider-screen{padding-top:28px!important}
+@media(min-width:1000px){
+ .ugo-provider-root{padding-left:258px!important}
+ .ugo-provider-root .provider-studio-sidebar{width:258px!important;padding:28px 20px!important;gap:0!important;background:#fff!important;border-right:1px solid var(--provider-preview-line)!important}
+ .ugo-provider-root .provider-studio-brand{font-size:30px!important;letter-spacing:-.045em!important;margin:0 4px 24px!important;color:var(--provider-preview-dark)!important}
+ .ugo-provider-root .provider-studio-brand:after{content:" PRO"!important;font-size:10px!important;color:var(--provider-preview-green)!important;letter-spacing:.08em!important}
+ .ugo-provider-root .provider-studio-user{padding:0 4px 20px!important;border-bottom:0!important;gap:10px!important}
+ .ugo-provider-root .provider-studio-avatar{background:#22bc7c!important;color:#073829!important;border-radius:14px!important}
+ .ugo-provider-root .provider-studio-nav{gap:5px!important;padding:22px 0!important}
+ .ugo-provider-root .provider-studio-nav button{min-height:48px!important;padding:0 14px!important;border-radius:11px!important;color:#526960!important;font-weight:700!important;font-size:13px!important}
+ .ugo-provider-root .provider-studio-nav button:hover{background:#f0f7f3!important;color:var(--provider-preview-dark)!important}
+ .ugo-provider-root .provider-studio-nav button.is-active{background:#e2f2ec!important;color:var(--provider-preview-dark)!important;font-weight:800!important}
+ .ugo-provider-root .provider-studio-footer{background:transparent!important;border-top:1px solid var(--provider-preview-line)!important}
+ .ugo-provider-root .provider-studio-utility{background:#fff!important;color:var(--provider-preview-dark)!important;border:1px solid var(--provider-preview-line)!important}
+ .ugo-provider-root .provider-studio-availability{background:var(--provider-preview-green)!important;color:#fff!important;border-radius:12px!important;font-size:12px!important}
+ .ugo-provider-root .provider-screen{width:min(100% - 70px,1300px)!important;max-width:1300px!important}
+}
+@media(max-width:999px){
+ .ugo-provider-root .provider-client-topbar{min-height:74px;padding:12px 18px}
+ .ugo-provider-root .provider-client-topbar-copy strong{font-size:17px}
+ .ugo-provider-root .provider-client-online{min-height:44px;padding:0 12px}
+ .ugo-provider-root .ugo-ux-screen-host>.provider-screen{width:calc(100% - 28px)!important;padding:20px 0 170px!important}
+}
+@media(prefers-reduced-motion:reduce){.ugo-provider-root .provider-client-online{transition:none!important}}
