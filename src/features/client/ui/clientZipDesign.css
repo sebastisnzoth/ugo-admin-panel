@@ -160,3 +160,6 @@
 
 /* Only one visible location/notification header, actions remain reachable through real handlers. */
 .ugo-client-root .ugo-zip-content .ugo-home-topline{display:none}
+
+/* The global UGO drawer remains available for Hugo, support and saved places. */
+.ugo-client-root .ugo-zip-mobile-menu{display:grid}
