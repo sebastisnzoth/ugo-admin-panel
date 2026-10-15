@@ -15,6 +15,7 @@ for(const route of routes||[]){
  if(route.status!=='READY'||Number(route.max_cost)!==0)throw new Error('MODEL_ROUTE_STATUS_INVALID:'+route.task_class)
  const p=byId.get(route.primary_candidate_id)
  if(!p||!p.free_tier||!p.eligible||p.availability!=='AVAILABLE'||Number(p.benchmark_score)<Number(p.benchmark_threshold))throw new Error('MODEL_ROUTE_PRIMARY_INVALID:'+route.task_class)
+ if(route.task_class==='AGENT_CONSULTATION'&&p.provider!=='gemini')throw new Error('MODEL_ROUTE_PRIMARY_MUST_BE_GEMINI:AGENT_CONSULTATION')
  if(route.task_class==='AGENT_CONSULTATION'){
   const fallback=byId.get(route.fallback_candidate_id)
   if(!fallback||fallback.provider!=='openrouter'||!fallback.free_tier||!fallback.eligible||fallback.availability!=='AVAILABLE'||Number(fallback.benchmark_score)<Number(fallback.benchmark_threshold)){
