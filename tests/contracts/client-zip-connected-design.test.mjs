@@ -14,7 +14,7 @@ test('ZIP design is the actual client root, with real UGO operational screens re
  assert.match(shell,/useClientFlow/)
  assert.match(shell,/useRoleSession\('client'\)/)
  assert.match(shell,/flow\.navigate\(next\)/)
- assert.match(shell,/flow\.actions\.openDispute\(\)/)
+ assert.match(shell,/ugo:client-menu-open/)
 })
 test('ZIP navigation uses real request, history, profile, map and payment actions, not mock state',()=>{
  assert.match(shell,/screen:'payments'/)
