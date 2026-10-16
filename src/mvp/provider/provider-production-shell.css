@@ -643,3 +643,18 @@
 @media(prefers-reduced-motion:reduce){
  .ugo-provider-root .ugo-ux-screen-host .provider-screen :is(button,a){scroll-behavior:auto}
 }
+
+
+/* UGO Pro visual refresh — real provider data and actions remain canonical. */
+.provider-home .ugo-pro-home-intro{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(190px,.6fr);gap:22px;align-items:center;background:radial-gradient(circle at 92% 12%,#26bb9770,transparent 35%),linear-gradient(130deg,#092421,#075743);color:#fff;padding:30px;border-radius:22px;margin:0 0 22px;box-shadow:0 14px 35px #06442d20}
+.provider-home .ugo-pro-home-intro>div:first-child>small{font-size:10px;letter-spacing:.17em;font-weight:850;color:#70f1d4}
+.provider-home .ugo-pro-home-intro h2{font-size:clamp(25px,3vw,38px);letter-spacing:-.04em;line-height:1.14;margin:10px 0;color:#fff}
+.provider-home .ugo-pro-home-intro p{font-size:13px;color:#d7f3e9;max-width:420px;line-height:1.65;margin:0}
+.provider-home .ugo-pro-home-live{display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid #ffffff38;background:#ffffff15;border-radius:16px;backdrop-filter:blur(10px)}
+.provider-home .ugo-pro-home-live>span{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#dcfff2;color:#126448;font-size:24px}
+.provider-home .ugo-pro-home-live strong{font-size:14px;color:#fff}
+.provider-home .ugo-pro-home-live small{font-size:11px;color:#d9f4e7}
+.provider-home .provider-quick-grid .provider-quick-card{border-radius:18px;transition:transform .16s ease,box-shadow .16s ease}
+.provider-home .provider-quick-grid .provider-quick-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px #153d2820}
+@media(max-width:650px){.provider-home .ugo-pro-home-intro{grid-template-columns:minmax(0,1fr);gap:18px;padding:22px}.provider-home .ugo-pro-home-live{padding:14px}.provider-home .ugo-pro-home-intro h2{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.provider-home .provider-quick-grid .provider-quick-card{transition:none}.provider-home .provider-quick-grid .provider-quick-card:hover{transform:none}}
