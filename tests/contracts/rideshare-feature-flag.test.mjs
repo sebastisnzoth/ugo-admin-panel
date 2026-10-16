@@ -8,9 +8,19 @@ test('rideshare flags exist, default to off and are never enabled in production'
   const src = await read('src/lib/featureFlags.ts')
   assert.match(src, /clientRideshareFlow/)
   assert.match(src, /providerRideshareFlow/)
-  assert.match(src, /MODE === 'production'/)
+  assert.match(src, /env\.MODE === 'production'/)
+  assert.match(src, /env\.PROD === true && env\.MODE !== 'demo'/)
   assert.match(src, /return false/)
   assert.match(src, /parseFlagValue\(env\[ENV_KEYS\[flag\]\]\)/)
+})
+
+test('optimized demo builds can explicitly enable the flag without enabling production', async () => {
+  const src = await read('src/lib/featureFlags.ts')
+  // Vite sets PROD=true for optimized builds, including --mode demo.
+  // Production stays fail-closed; only the dedicated demo mode is exempt.
+  assert.match(src, /env\.PROD === true && env\.MODE !== 'demo'/)
+  assert.match(src, /env\.MODE === 'production'/)
+  assert.match(src, /VITE_FLAG_CLIENT_RIDESHARE_FLOW/)
 })
 
 test('rideshare flags are documented as off in .env.example', async () => {
