@@ -759,3 +759,39 @@
 /* Basic accessibility hardening: minimum mobile target and admin login contrast. */
 .mvp-auth-page.role-client .mvp-back,.mvp-auth-page.role-provider .mvp-back{min-height:44px!important}
 .mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card .ugo-admin-login-kicker{color:#111827!important}
+
+
+/* Premium UGO identity refresh — functional Supabase auth remains unchanged. */
+@media(min-width:961px){
+ .mvp-auth-page.role-client,.mvp-auth-page.role-provider{background:radial-gradient(ellipse at 12% 12%,#defaf5 0,transparent 42%),radial-gradient(ellipse at 92% 88%,#e6f2ee 0,transparent 46%),#f8faf9!important}
+ .mvp-auth-page.role-client .mvp-auth-shell,.mvp-auth-page.role-provider .mvp-auth-shell{max-width:1180px!important;min-height:680px!important;margin:24px auto!important;border-radius:28px!important;overflow:hidden;box-shadow:0 24px 75px rgba(12,49,39,.12)!important}
+ .mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{padding:58px clamp(32px,5vw,72px)!important;justify-content:center!important}
+ .mvp-auth-page.role-client .mvp-auth-intro,.mvp-auth-page.role-provider .mvp-auth-intro{padding:52px clamp(30px,4vw,54px)!important}
+}
+.mvp-auth-page.role-client .mvp-auth-intro,.mvp-auth-page.role-provider .mvp-auth-intro{background:radial-gradient(circle at 95% 12%,rgba(20,223,192,.24),transparent 39%),radial-gradient(circle at 98% 99%,rgba(11,155,128,.3),transparent 37%),linear-gradient(145deg,#081513,#111a19 65%,#071b1a)!important}
+.mvp-auth-page.role-client .mvp-auth-brand strong,.mvp-auth-page.role-provider .mvp-auth-brand strong{font-weight:950;letter-spacing:-.065em}
+.mvp-auth-page.role-client .mvp-auth-intro-copy h2,.mvp-auth-page.role-provider .mvp-auth-intro-copy h2{letter-spacing:-.055em!important;text-wrap:balance}
+.mvp-auth-page.role-client .mvp-auth-benefits span,.mvp-auth-page.role-provider .mvp-auth-benefits span{line-height:1.5;gap:12px}
+.mvp-auth-page.role-client .mvp-auth-benefits i,.mvp-auth-page.role-provider .mvp-auth-benefits i{display:inline-grid;place-items:center;width:27px;height:27px;min-width:27px;border-radius:50%;background:#074c47;color:#6ff7e5;font-size:13px;box-shadow:0 0 0 1px #168a7e77,0 0 18px #00bda63a}
+.mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{background:#fff!important}
+.mvp-auth-page.role-client .mvp-auth-card-head h1,.mvp-auth-page.role-provider .mvp-auth-card-head h1{letter-spacing:-.05em!important;line-height:1.11!important}
+.mvp-auth-page.role-client .mvp-auth-tabs,.mvp-auth-page.role-provider .mvp-auth-tabs{padding:4px!important;border-radius:14px!important;background:#f3f5f4!important}
+.mvp-auth-page.role-client .mvp-auth-tabs button,.mvp-auth-page.role-provider .mvp-auth-tabs button{border-radius:11px!important;transition:background .2s ease,box-shadow .2s ease}
+.mvp-auth-page.role-client .mvp-auth-tabs button.active,.mvp-auth-page.role-provider .mvp-auth-tabs button.active{background:#fff!important;box-shadow:0 2px 8px #09291b16!important}
+.mvp-auth-page.role-client .mvp-google-button,.mvp-auth-page.role-provider .mvp-google-button{border-radius:13px!important;transition:border-color .2s,transform .2s}
+.mvp-auth-page.role-client .mvp-google-button:hover,.mvp-auth-page.role-provider .mvp-google-button:hover{border-color:#0f977b!important;transform:translateY(-1px)}
+.mvp-auth-page.role-client .mvp-auth-card input,.mvp-auth-page.role-provider .mvp-auth-card input{border-radius:12px!important;transition:border-color .2s,box-shadow .2s}
+.mvp-auth-page.role-client .mvp-auth-card input:focus-visible,.mvp-auth-page.role-provider .mvp-auth-card input:focus-visible{outline:2px solid #087b65!important;outline-offset:2px;box-shadow:0 0 0 5px rgba(14,152,125,.09)!important}
+.mvp-auth-page.role-client .mvp-primary,.mvp-auth-page.role-provider .mvp-primary{border-radius:13px!important;min-height:54px!important;font-weight:800!important;transition:transform .2s,box-shadow .2s}
+.mvp-auth-page.role-client .mvp-primary:hover:not(:disabled),.mvp-auth-page.role-provider .mvp-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 22px #07130f25!important}
+@media(max-width:960px) and (min-width:601px){
+ .mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{padding:38px 28px!important}
+}
+@media(max-width:600px){
+ .mvp-auth-page.role-client .mvp-auth-intro,.mvp-auth-page.role-provider .mvp-auth-intro{background:linear-gradient(135deg,#081513,#064f46)!important}
+ .mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{border-radius:20px 20px 0 0!important}
+ .mvp-auth-page.role-client .mvp-auth-card input,.mvp-auth-page.role-provider .mvp-auth-card input{font-size:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .mvp-auth-page.role-client .mvp-primary,.mvp-auth-page.role-provider .mvp-primary,.mvp-google-button{transition:none!important;transform:none!important}
+}
