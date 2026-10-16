@@ -27,18 +27,26 @@ test('KYC approval validates its payload before privileged mutation',()=>{
 
 test('provider verification uses the authenticated Admin API instead of a missing RPC',()=>{
  assert.match(source,/case 'provider-verification': return changeProviderVerification\(req, res\)/)
- assert.match(source,/PROVIDER_VERIFICATION_STATES = new Set\(\['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'\]\)/)
+ assert.match(source,/PROVIDER_VERIFICATION_STATES = new Set\(\['pendiente', 'verificado', 'rechazado', 'suspendido'\]\)/)
  assert.match(source,/async function changeProviderVerification[\s\S]*const \{ sb, user \} = await requireAdmin\(req\)/)
- assert.match(source,/evento: 'admin\.provider_verification\.update'/)
- assert.match(source,/actor_id: user\.id/)
+ assert.match(source,/sb\.rpc\('admin_decide_provider_verification_atomic'/)
+ assert.match(source,/p_actor_id: user\.id/)
  assert.doesNotMatch(providerPanel,/admin_cambiar_verificacion_proveedor/)
  assert.match(providerPanel,/supabase\.auth\.getSession\(\)/)
  assert.match(providerPanel,/operationsUrl\('provider-verification'\)/)
  assert.match(providerPanel,/Authorization:`Bearer \$\{token\}`/)
 })
 
-test('provider rejection requires a reason and persists only verification state fields',()=>{
- assert.match(source,/state === 'rechazado' && !reason/)
- assert.match(source,/estado_verificacion: state/)
- assert.match(source,/motivo_rechazo: state === 'rechazado' \? reason : null/)
+test('provider decisions enforce reasons and transaction-scoped audit',()=>{
+ assert.match(source,/\['rechazado','suspendido'\]\.includes\(state\)/)
+ assert.match(source,/p_provider_id: providerId/)
+ const migration=fs.readFileSync('supabase/migrations/20261015224500_admin_atomic_provider_verification.sql','utf8')
+ assert.match(migration,/insert into public\.audit_log/)
+ assert.match(migration,/admin\.provider_verification\.update/)
+ assert.match(migration,/PROVIDER_NOT_SUBMITTED_FOR_REVIEW/)
+ assert.match(migration,/KYC_DOCUMENTS_NOT_APPROVED/)
+ assert.match(migration,/comprobante_domicilio/)
+ assert.match(migration,/security invoker/)
+ assert.match(migration,/grant execute on function[\s\S]*to service_role/)
+ assert.match(providerPanel,/state==='rechazado'\|\|state==='suspendido'/)
 })

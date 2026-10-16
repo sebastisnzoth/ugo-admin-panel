@@ -8,7 +8,7 @@ import { UGO_SUPABASE_URL } from '../src/lib/supabaseProject.js'
 const SUPABASE_URL = process.env.SUPABASE_URL || UGO_SUPABASE_URL
 const SUPABASE_ANON_KEY = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
 const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
-const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
+const PROVIDER_VERIFICATION_STATES = new Set(['pendiente', 'verificado', 'rechazado', 'suspendido'])
 const USER_ROLES = new Set(['cliente', 'proveedor', 'admin', 'superadmin', 'arbitro'])
 const PRIVILEGED_USER_ROLES = new Set(['admin', 'superadmin', 'arbitro'])
 const HUGO_AUDIT_ROLES = new Set(['client', 'provider', 'admin', 'superadmin'])
@@ -182,29 +182,8 @@ async function verifyKyc(req: VercelRequest, res: VercelResponse) {
       .eq('id', documentoId)
     if (reviewError) throw reviewError
 
-    if (aprobado) {
-      const { data: docs, error: docsError } = await sb
-        .from('documentos')
-        .select('estado')
-        .eq('usuario_id', doc.usuario_id)
-      if (docsError) throw docsError
-
-      const allApproved = Boolean(docs?.length) && docs.every((item) => item.estado === 'aprobado')
-      if (allApproved) {
-        const { error: activateError } = await sb.from('usuarios').update({ activo: true }).eq('id', doc.usuario_id)
-        if (activateError) throw activateError
-
-        const { error: notificationError } = await sb.from('notificaciones').insert({
-          usuario_id: doc.usuario_id,
-          tipo: 'kyc_aprobado',
-          titulo: '¡Bienvenido a U.GO!',
-          cuerpo: 'Tu perfil ha sido verificado y aprobado.',
-          datos: { source: 'admin_kyc', documentoId },
-          dedupe_key: `kyc_aprobado:${doc.usuario_id}`,
-        })
-        if (notificationError && notificationError.code !== '23505') throw notificationError
-      }
-    }
+    // Document review changes only document status. Account activation and
+    // professional verification are separate authorized admin decisions.
 
     const { error: auditError } = await sb.from('audit_log').insert({
       evento: aprobado ? 'admin.kyc.approved' : 'admin.kyc.rejected',
@@ -223,75 +202,61 @@ async function verifyKyc(req: VercelRequest, res: VercelResponse) {
 }
 
 async function changeProviderVerification(req: VercelRequest, res: VercelResponse) {
-  const providerId = typeof req.body?.providerId === 'string' ? req.body.providerId.trim() : ''
-  const state = typeof req.body?.state === 'string' ? req.body.state.trim() : ''
-  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 2000) : ''
-
-  if (!providerId) {
-    return res.status(400).json({ error: 'Proveedor inválido.' })
+  if (!SUPABASE_URL.includes('tmossnqfwfwjrtzwcbmm')) {
+    return res.status(503).json({ error: 'Decisiones de proveedor habilitadas únicamente en UGO TEST.' })
   }
-  if (!PROVIDER_VERIFICATION_STATES.has(state)) {
-    return res.status(400).json({ error: 'Estado de verificación inválido.' })
+  const providerId = clean(req.body?.providerId, 64)
+  const state = clean(req.body?.state, 30)
+  const reason = clean(req.body?.reason, 2000)
+  if (!UUID_RE.test(providerId)) return res.status(400).json({ error: 'Proveedor inválido.' })
+  if (!PROVIDER_VERIFICATION_STATES.has(state)) return res.status(400).json({ error: 'Estado inválido.' })
+  if (['rechazado','suspendido'].includes(state) && reason.length < 8) {
+    return res.status(400).json({ error: 'Indicá un motivo de al menos 8 caracteres.' })
   }
-  if (state === 'rechazado' && !reason) {
-    return res.status(400).json({ error: 'El motivo es obligatorio al rechazar.' })
-  }
-
   try {
     const { sb, user } = await requireAdmin(req)
-    const auditSb = SUPABASE_SERVICE_ROLE_KEY
-      ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
-      : sb
-    const { data: current, error: currentError } = await sb
-      .from('perfiles_proveedor')
-      .select('usuario_id,estado_verificacion')
-      .eq('usuario_id', providerId)
-      .maybeSingle()
-
-    if (currentError) throw currentError
-    if (!current) return res.status(404).json({ error: 'Proveedor no encontrado.' })
-
-    if (state === 'verificado') {
-      const { data: docs, error: docsError } = await sb
-        .from('documentos')
-        .select('tipo,estado')
-        .eq('usuario_id', providerId)
-      if (docsError) throw docsError
-      const requiredDocs = ['identidad_frente', 'identidad_dorso', 'selfie', 'domicilio']
-      const approvedTypes = new Set((docs || []).filter((d: any) => d.estado === 'aprobado').map((d: any) => d.tipo))
-      const missing = requiredDocs.filter((type) => !approvedTypes.has(type))
-      if (missing.length) {
-        return res.status(409).json({
-          error: 'No se puede verificar el proveedor: faltan documentos KYC aprobados.',
-          missing_documents: missing,
-        })
-      }
-    }
-
-    const { data: updated, error: updateError } = await sb
-      .from('perfiles_proveedor')
-      .update({
-        estado_verificacion: state,
-        motivo_rechazo: state === 'rechazado' ? reason : null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('usuario_id', providerId)
-      .select('usuario_id,estado_verificacion,motivo_rechazo,updated_at')
-      .single()
-
-    if (updateError) throw updateError
-    const { error: auditError } = await auditSb.from('audit_log').insert({
-      evento: 'admin.provider_verification.update',
-      actor_id: user.id,
-      entidad_tipo: 'proveedor',
-      entidad_id: providerId,
-      detalles: { estado_anterior: current.estado_verificacion, estado_nuevo: state, motivo: reason || null },
+    const { data, error } = await sb.rpc('admin_decide_provider_verification_atomic', {
+      p_actor_id: user.id,
+      p_provider_id: providerId,
+      p_state: state,
+      p_reason: reason || null,
     })
-    if (auditError) throw auditError
-    return res.status(200).json({ success: true, provider: updated })
+    if (error) {
+      const message = String(error.message || '')
+      if (error.code === 'P0001') return res.status(409).json({ error: message })
+      throw error
+    }
+    if (!data?.saved) throw new Error('El servidor no confirmó la decisión.')
+    return res.status(200).json({ success: true, provider: { usuario_id: providerId, estado_verificacion: data.state }, unchanged: Boolean(data.unchanged) })
   } catch (error) {
-    console.error('Provider verification update error:', error)
     return adminErrorResponse(res, error, 'No se pudo actualizar la verificación del proveedor.')
+  }
+}
+
+async function updateAdminUserProfile(req: VercelRequest, res: VercelResponse) {
+  if (!SUPABASE_URL.includes('tmossnqfwfwjrtzwcbmm')) {
+    return res.status(503).json({ error: 'Editor de perfiles habilitado únicamente en UGO TEST.' })
+  }
+  const userId = clean(req.body?.userId, 64)
+  const base = asRecord(req.body?.base)
+  const detail = asRecord(req.body?.detail)
+  if (!UUID_RE.test(userId)) return res.status(400).json({ error: 'Usuario inválido.' })
+  if (!Object.keys(base).length && !Object.keys(detail).length) {
+    return res.status(400).json({ error: 'No hay cambios para guardar.' })
+  }
+  try {
+    const { sb, user } = await requireAdmin(req)
+    const { data, error } = await sb.rpc('admin_update_user_profile_atomic', {
+      p_actor_id: user.id,
+      p_target_id: userId,
+      p_base: base,
+      p_detail: detail,
+    })
+    if (error) throw error
+    if (!data?.saved) throw new Error('El servidor no confirmó el guardado.')
+    return res.status(200).json({ saved: true, userId, role: data.role })
+  } catch (error) {
+    return adminErrorResponse(res, error, 'No se pudo guardar el perfil.')
   }
 }
 
@@ -593,6 +558,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'kyc-verify': return verifyKyc(req, res)
     case 'autonomy-mode': return changeAutonomyMode(req, res)
     case 'provider-verification': return changeProviderVerification(req, res)
+    case 'admin-update-profile': return updateAdminUserProfile(req, res)
     case 'admin-create-user': return createAdminManagedUser(req, res)
     case 'admin-reset-password': return resetAdminManagedUserPassword(req, res)
     case 'admin-import-users': return importAdminManagedUsers(req, res)

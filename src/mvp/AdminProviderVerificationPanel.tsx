@@ -43,7 +43,7 @@ export function AdminProviderVerificationPanel(){
 
  async function providerState(row:ProviderRow,state:VerificationState){
   const reason=(motives[row.usuario_id]||'').trim()
-  if(state==='rechazado'&&reason.length<8){setMessage('Escribí un motivo de rechazo de al menos 8 caracteres.');return}
+  if((state==='rechazado'||state==='suspendido')&&reason.length<8){setMessage('Escribí un motivo de al menos 8 caracteres para rechazar o suspender.');return}
   setBusy(row.usuario_id+state);setMessage('')
   try{
    const{data:{session}}=await supabase.auth.getSession();const token=session?.access_token
@@ -105,7 +105,7 @@ export function AdminProviderVerificationPanel(){
      </div>
     </div>}
     <div className="ugo-provider-verification-details"><div><small>Especialidad</small><b>{specialText(r.especialidades)||r.categoria?.nombre||'—'}</b></div><div><small>Bio</small><b>{r.bio||'Sin bio'}</b></div><div><small>Actualizado</small><b>{when(r.updated_at)}</b></div></div>
-    <label className="ugo-provider-reject-reason"><span>Motivo del rechazo general <em>sólo obligatorio al rechazar proveedor</em></span><textarea value={motives[r.usuario_id]||''} onChange={e=>setMotives(v=>({...v,[r.usuario_id]:e.target.value}))} placeholder="Ej.: Documento ilegible o datos que no coinciden…"/></label>
+    <label className="ugo-provider-reject-reason"><span>Motivo de rechazo o suspensión <em>obligatorio al rechazar o suspender</em></span><textarea value={motives[r.usuario_id]||''} onChange={e=>setMotives(v=>({...v,[r.usuario_id]:e.target.value}))} placeholder="Ej.: Documento ilegible o datos que no coinciden…"/></label>
     <div className="ugo-provider-verification-actions"><button type="button" className="verify" disabled={!!busy} onClick={()=>void providerState(r,'verificado')}>✓ Verificar proveedor</button><button type="button" className="reject" disabled={!!busy} onClick={()=>void providerState(r,'rechazado')}>Rechazar</button><button type="button" disabled={!!busy} onClick={()=>void providerState(r,'pendiente')}>Dejar pendiente</button><button type="button" disabled={!!busy} onClick={()=>void providerState(r,'suspendido')}>Suspender</button></div>
    </article>})}</div>
    <footer>La verificación general no inventa identidad: Admin ve los archivos privados enviados, revisa cada documento y registra la decisión.</footer>
