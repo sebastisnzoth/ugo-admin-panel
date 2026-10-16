@@ -76,7 +76,7 @@ export async function setProviderAvailability(supabase:SupabaseClient,userId:str
  if(persisted===true)return
  if(persisted===false){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(mutationError,online?'No pudimos activar tu disponibilidad con una ubicación válida.':'No se pudo actualizar la disponibilidad.'),error:mutationError,role:'provider',severity:'P1',action:'provider.availability',checklistCode:'MATCH-ONLINE'})}
  else{void reportSentinelIncident({eventType:'provider_availability_recovery_unverified',message:'No pudimos confirmar el estado online/offline persistido. El radar volverá a leer la disponibilidad real.',error:mutationError,role:'provider',severity:'P2',action:'provider.availability.recovery'})}
- throw mutationError||new Error('No se pudo actualizar la disponibilidad.')
+ throw new Error(messageOf(mutationError,online?'No pudimos activar tu disponibilidad. Revisá el permiso y la precisión GPS y reintentá.':'No pudimos desactivar tu disponibilidad. Reintentá.'))
 }
 
 async function opportunityServiceId(supabase:SupabaseClient,opportunityId:string){
