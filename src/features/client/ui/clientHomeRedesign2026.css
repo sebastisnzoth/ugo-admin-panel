@@ -184,3 +184,33 @@
 .ugo-client-root .ugo-home-available{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:var(--client-green);font-size:9px;font-weight:800}
 .ugo-client-root .ugo-home-available i{width:6px;height:6px;border-radius:50%;background:#27a56a;box-shadow:0 0 0 3px #27a56a19}
 @media(max-width:520px){.ugo-client-root .ugo-home-nearby{padding:14px 12px}.ugo-client-root .ugo-home-provider-card{grid-template-columns:38px minmax(0,1fr);gap:9px;padding:9px}.ugo-client-root .ugo-home-provider-avatar{width:36px;height:36px;border-radius:11px}.ugo-client-root .ugo-home-available{grid-column:2;justify-self:start;margin-top:-1px}}
+
+
+/* ZIP visual integration — scoped only to authenticated Cliente home.
+   Preserve the canonical Supabase services, provider radar and matching flow. */
+.ugo-client-root .ugo-home-hero .ugo-zip-welcome{
+  display:grid;grid-template-columns:minmax(0,1.2fr) minmax(150px,.8fr);
+  min-height:270px;gap:22px;overflow:hidden;
+  padding:28px;border-radius:22px;background:linear-gradient(128deg,#0c7047 0%,#148c59 64%,#1c9a64 100%);
+  color:#fff;position:relative;margin:8px 0 18px;
+}
+.ugo-client-root .ugo-zip-welcome-copy{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.ugo-client-root .ugo-zip-welcome-eyebrow{font-size:10px;letter-spacing:.12em;color:#d9f9e6;font-weight:800}
+.ugo-client-root .ugo-zip-welcome h1{font-size:clamp(26px,3vw,39px)!important;line-height:1.12!important;color:#fff!important;letter-spacing:-.04em;margin:13px 0!important}
+.ugo-client-root .ugo-zip-welcome p{font-size:13px!important;line-height:1.6!important;max-width:370px;color:#e4fff0!important;margin:0 0 18px!important}
+.ugo-client-root .ugo-zip-welcome-action{display:flex;align-items:center;gap:16px;padding:12px 17px;border:0;border-radius:12px;background:#fff;color:#126b46;font-size:12px;font-weight:800;cursor:pointer}
+.ugo-client-root .ugo-zip-welcome-action:hover{background:#eafcef}
+.ugo-client-root .ugo-zip-welcome-art{display:flex;align-items:center;justify-content:center;flex-direction:column;position:relative;text-align:center;border-radius:24px 24px 0 0;background:linear-gradient(155deg,#a7dcb9,#2c9c6a);box-shadow:0 18px 45px #06482b65;transform:translateY(25px)}
+.ugo-client-root .ugo-zip-welcome-art>span{font-size:44px;font-weight:900;color:#fff;letter-spacing:-.07em}
+.ugo-client-root .ugo-zip-welcome-art>strong{font-size:11px;color:#f0fff5;max-width:120px}
+.ugo-client-root .ugo-zip-welcome-art>i{position:absolute;top:9px;right:12px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;color:#158555;font-style:normal}
+@media(max-width:680px){
+ .ugo-client-root .ugo-home-hero .ugo-zip-welcome{grid-template-columns:minmax(0,1fr) 100px;padding:21px;min-height:235px;gap:8px}
+ .ugo-client-root .ugo-zip-welcome h1{font-size:27px!important}
+ .ugo-client-root .ugo-zip-welcome-art>span{font-size:23px}
+ .ugo-client-root .ugo-zip-welcome-art>strong{font-size:9px}
+}
+@media(max-width:420px){
+ .ugo-client-root .ugo-home-hero .ugo-zip-welcome{grid-template-columns:minmax(0,1fr);min-height:210px}
+ .ugo-client-root .ugo-zip-welcome-art{display:none}
+}
