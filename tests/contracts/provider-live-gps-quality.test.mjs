@@ -42,7 +42,7 @@ test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acqu
  assert.match(s,/GEO_COMPATIBLE_OPTIONS/)
  assert.match(s,/enableHighAccuracy:false,maximumAge:0,timeout:12_000/)
  assert.match(s,/GEO_HIGH_ACCURACY_OPTIONS/)
- assert.match(s,/enableHighAccuracy:true,maximumAge:0,timeout:15_000/)
+ assert.match(s,/enableHighAccuracy:true,maximumAge:0,timeout:10_000/)
  assert.match(s,/getFreshBrowserPosition/)
  const compatible=s.indexOf('oneBrowserPosition(GEO_COMPATIBLE_OPTIONS)')
  const high=s.indexOf('oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)')
@@ -86,3 +86,6 @@ test('provider browser realtime tracker is continuous, periodic and self-healing
  assert.match(s,/void acquire\(true\)/)
  assert.match(s,/publicar_ubicacion_disponibilidad_proveedor/)
 })
+
+
+test('provider GPS shows explicit recovery guidance for insecure and unsupported browsers',async()=>{const tracker=await read('src/mvp/ProviderLocationTracker.tsx'),service=await read('src/mvp/provider/providerService.ts');for(const source of [tracker,service]){assert.match(source,/isSecureContext/);assert.match(source,/navigator.geolocation/)}assert.match(tracker,/document.visibilityState==='hidden'/);assert.match(service,/enableHighAccuracy:false,maximumAge:GPS_FRESH_MS,timeout:5_000/);})
