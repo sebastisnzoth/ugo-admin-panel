@@ -15,7 +15,7 @@ test('voice order cannot confirm a typed/manual address until coordinates resolv
 
 test('online idle provider refreshes trusted GPS on a heartbeat',async()=>{
  const source=await read('src/mvp/ProviderLocationTracker.tsx')
- assert.match(source,/if\(!available\|\|enRoute\|\|!navigator\.geolocation\)return/)
+ assert.match(source,/if\(!available\|\|enRoute\|\|!navigator\.geolocation\|\|document\.visibilityState==='hidden'\)return/)
  assert.match(source,/const publishHeartbeat=async\(\)=>/)
  assert.match(source,/const pos=await getFreshBrowserPosition\(\)/)
  assert.match(source,/publicar_ubicacion_disponibilidad_proveedor/)
