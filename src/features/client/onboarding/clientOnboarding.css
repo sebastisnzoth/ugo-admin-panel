@@ -45,3 +45,10 @@
  .ugo-client-section-title{gap:8px}
  .ugo-client-field input,.ugo-client-field select{padding-left:10px;padding-right:10px}
 }
+/* The customer completes onboarding inside Perfil, never as a full-screen registration gate. */
+.ugo-client-profile-onboarding-inline .ugo-client-onboarding{min-height:0;padding:0;background:transparent;overflow:visible}
+.ugo-client-profile-onboarding-inline .ugo-client-onboarding-card{min-height:0;width:100%;max-width:none;border-radius:18px;box-shadow:none}
+.ugo-client-profile-onboarding-inline .ugo-client-onboarding-head{padding:20px 16px}
+.ugo-client-profile-onboarding-inline .ugo-client-onboarding-head h1{font-size:24px}
+.ugo-client-profile-onboarding-inline .ugo-client-onboarding-body{padding:14px}
+.ugo-client-profile-onboarding-inline{margin-bottom:16px}

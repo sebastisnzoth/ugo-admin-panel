@@ -126,17 +126,12 @@ try{
   const client=await openRole('client')
   try{
     await visible(client.page.getByRole('main',{name:'Inicio UGO Cliente'}),20000)
-    await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
+    await visible(client.page.getByRole('button',{name:/Nuevo servicio/i}).first(),10000)
     await timed('client_request_navigation_ms',async()=>{
-      await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
-      const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
-      await visible(drawer,5000)
-      const requestButtons=drawer.locator('button:visible').filter({hasText:/Pedir servicio/i})
-      const requestButton=requestButtons.first()
-      await visible(requestButton,5000)
-      await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
-      await drawer.waitFor({state:'hidden',timeout:5000})
-      await visible(client.page.getByRole('textbox',{name:'Buscar servicio'}),5000)
+      // Measure the actual ZIP shell CTA, not an obsolete menu/search form.
+      await client.page.getByRole('button',{name:/Nuevo servicio/i}).first().click()
+      await visible(client.page.getByRole('main',{name:'Qué hay que hacer'}),10000)
+      await visible(client.page.getByRole('textbox',{name:'Descripción del trabajo'}),10000)
     })
   } finally { await client.context.close() }
 

@@ -1,0 +1,250 @@
+/* Design port of user-provided client-app-uxui-design ZIP.
+ * Scoped exclusively to Client; functional service data remains UGO TEST. */
+.ugo-client-root .ugo-zip-layout{--zip-ink:#172321;--zip-muted:#70807b;--zip-line:#e4ebe8;--zip-canvas:#f4f7f5;--zip-green:#0c7c61;--zip-dark:#075a48;--zip-coral:#fa6b52;--zip-soft:#e2f2ec;display:block;min-height:100vh;background:var(--zip-canvas);color:var(--zip-ink);font-family:Arial,'Helvetica Neue',sans-serif;box-sizing:border-box}
+.ugo-client-root .ugo-zip-layout *{box-sizing:border-box}
+.ugo-client-root .ugo-zip-layout button{font:inherit;cursor:pointer}
+.ugo-client-root .ugo-zip-sidebar{position:fixed;z-index:45;inset:0 auto 0 0;width:258px;padding:28px 20px 20px;background:#fff;border-right:1px solid var(--zip-line);display:flex;flex-direction:column;box-shadow:none}
+.ugo-client-root .ugo-zip-brand{display:grid;position:relative;line-height:1;gap:4px}
+.ugo-client-root .ugo-zip-brand>span{font-size:31px;font-weight:900;letter-spacing:-2.5px;color:var(--zip-green)}
+.ugo-client-root .ugo-zip-brand i{font-style:normal;color:var(--zip-coral)}
+.ugo-client-root .ugo-zip-brand small{font-size:9px;color:#84918d;letter-spacing:.13em;font-weight:700;margin-left:3px}
+.ugo-client-root .ugo-zip-close{display:none}
+.ugo-client-root .ugo-zip-new{height:48px;border:0;border-radius:13px;background:var(--zip-green);color:white;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:700;margin:29px 0 30px;box-shadow:0 8px 18px #0c7c6133}
+.ugo-client-root .ugo-zip-new b{font-size:24px;font-weight:400}
+.ugo-client-root .ugo-zip-nav{display:grid;gap:5px}
+.ugo-client-root .ugo-zip-nav>small{font-size:10px;color:#9aa5a1;font-weight:800;letter-spacing:.12em;margin:0 13px 8px}
+.ugo-client-root .ugo-zip-nav button{height:45px;padding:0 13px;border:0;border-radius:11px;background:transparent;color:#667571;display:flex;align-items:center;text-align:left;gap:12px;font-size:14px}
+.ugo-client-root .ugo-zip-nav button>span{font-size:23px;width:23px;text-align:center;font-weight:500;line-height:1}
+.ugo-client-root .ugo-zip-nav button.active{color:var(--zip-green);background:var(--zip-soft);font-weight:750}
+.ugo-client-root .ugo-zip-nav button:hover{background:#f5f8f6}
+.ugo-client-root .ugo-zip-sidebar-bottom{margin-top:auto;display:grid;gap:14px}
+.ugo-client-root .ugo-zip-help{border:0;text-align:left;display:flex;align-items:center;gap:10px;padding:13px;border-radius:14px;background:#f2f7f5}
+.ugo-client-root .ugo-zip-help>span{width:35px;height:35px;border-radius:10px;display:grid;place-items:center;color:var(--zip-green);background:#fff;font-size:24px}
+.ugo-client-root .ugo-zip-help>div{display:grid;gap:4px}
+.ugo-client-root .ugo-zip-help strong,.ugo-client-root .ugo-zip-user strong{font-size:11px;font-weight:700}
+.ugo-client-root .ugo-zip-help small,.ugo-client-root .ugo-zip-user small{font-size:9px;color:var(--zip-muted)}
+.ugo-client-root .ugo-zip-user{border:0;border-top:1px solid var(--zip-line);padding:12px 3px 0;background:transparent;display:flex;align-items:center;gap:10px;text-align:left;min-width:0}
+.ugo-client-root .ugo-zip-user>span:not(.ugo-zip-avatar){display:grid;gap:4px;flex:1;min-width:0}
+.ugo-client-root .ugo-zip-user small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ugo-client-root .ugo-zip-user>b{font-size:12px;color:#70807b}
+.ugo-client-root .ugo-zip-avatar{width:37px;height:37px;min-width:37px;display:grid;place-items:center;border-radius:50%;background:#dcefe8;color:var(--zip-green);font-weight:800;font-size:16px}
+.ugo-client-root .ugo-zip-main{margin-left:258px;min-height:100vh}
+.ugo-client-root .ugo-zip-topbar{height:92px;background:#ffffffef;border-bottom:1px solid var(--zip-line);padding:0 42px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);gap:16px}
+.ugo-client-root .ugo-zip-heading h1{font-size:20px;font-weight:780;line-height:1.2;letter-spacing:-.02em;margin:0}
+.ugo-client-root .ugo-zip-heading p{font-size:11px;color:var(--zip-muted);margin:5px 0 0}
+.ugo-client-root .ugo-zip-tools{display:flex;gap:12px;align-items:center}
+.ugo-client-root .ugo-zip-location{height:48px;border:1px solid var(--zip-line);background:white;border-radius:13px;padding:0 10px 0 6px;display:flex;align-items:center;gap:9px;font-size:12px}
+.ugo-client-root .ugo-zip-location>span{width:35px;height:35px;border-radius:10px;color:var(--zip-green);background:var(--zip-soft);display:grid;place-items:center;font-size:22px}
+.ugo-client-root .ugo-zip-location>small{display:grid;text-align:left;font-size:9px;color:var(--zip-muted);min-width:128px;gap:3px}
+.ugo-client-root .ugo-zip-location strong{font-size:11px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-bell,.ugo-client-root .ugo-zip-top-person,.ugo-client-root .ugo-zip-mobile-menu{background:#fff;border:1px solid var(--zip-line);border-radius:12px;width:42px;height:42px;display:grid;place-items:center}
+.ugo-client-root .ugo-zip-bell{font-size:24px}
+.ugo-client-root .ugo-zip-top-person{border:none;padding:0}
+.ugo-client-root .ugo-zip-top-person .ugo-zip-avatar{width:42px;height:42px}
+.ugo-client-root .ugo-zip-mobile-menu{display:none;font-size:21px}
+.ugo-client-root .ugo-zip-content{padding:28px 42px 65px;max-width:1540px;margin:0 auto;min-width:0}
+.ugo-client-root .ugo-zip-hero{min-height:336px;border-radius:26px;background:linear-gradient(120deg,#0b5f4d 0%,#0c8063 60%,#11a075 100%);color:#fff;display:grid;grid-template-columns:1.15fr .85fr;position:relative;overflow:hidden;box-shadow:0 18px 50px #06523f2b;margin:0 0 30px}
+.ugo-client-root .ugo-zip-hero-copy{padding:43px 18px 36px 48px;z-index:1;position:relative}
+.ugo-client-root .ugo-zip-eyebrow{display:inline-flex;padding:7px 11px;background:#ffffff1f;border:1px solid #ffffff30;border-radius:99px;font-weight:800;font-size:9px;letter-spacing:.08em}
+.ugo-client-root .ugo-zip-hero h2{font-size:38px;line-height:1.05;letter-spacing:-.04em;color:#fff;max-width:460px;margin:20px 0 11px}
+.ugo-client-root .ugo-zip-hero p{font-size:14px;line-height:1.6;color:#ffffffcc;max-width:510px;margin:0}
+.ugo-client-root .ugo-zip-actions{display:flex;align-items:center;gap:17px;margin:27px 0}
+.ugo-client-root .ugo-zip-actions button{height:47px;padding:0 18px;border-radius:11px;font-size:12px;font-weight:750}
+.ugo-client-root .ugo-zip-actions button:first-child{background:#fff;color:var(--zip-green);border:0}
+.ugo-client-root .ugo-zip-actions button:last-child{color:#fff;background:transparent;border:0}
+.ugo-client-root .ugo-zip-trust{display:flex;flex-wrap:wrap;gap:16px;font-size:10px;color:#ffffffd2}
+.ugo-client-root .ugo-zip-hero-art{position:relative;display:flex;justify-content:center;align-items:flex-end;min-width:0}
+.ugo-client-root .ugo-zip-circle-one,.ugo-client-root .ugo-zip-circle-two{position:absolute;border:1px solid #ffffff25;border-radius:50%}
+.ugo-client-root .ugo-zip-circle-one{width:340px;height:340px;top:0;right:-10px}
+.ugo-client-root .ugo-zip-circle-two{width:220px;height:220px;top:58px;right:90px}
+.ugo-client-root .ugo-zip-worker-photo{height:282px;width:238px;overflow:hidden;border:7px solid #ffffff20;border-bottom:0;border-radius:120px 120px 20px 20px;position:relative}
+.ugo-client-root .ugo-zip-worker-photo img{width:100%;height:100%;object-fit:cover}
+.ugo-client-root .ugo-zip-mobile-nav{display:none}
+.ugo-client-root .ugo-zip-backdrop{display:none}
+.ugo-client-root .ugo-zip-content .ugo-home-screen{max-width:none;margin:0;padding:0;background:transparent;min-height:0}
+.ugo-client-root .ugo-zip-content .ugo-home-screen .ugo-home-topbar{display:none}
+.ugo-client-root .ugo-zip-content .ugo-home-screen .ugo-home-services,.ugo-client-root .ugo-zip-content .ugo-home-screen .ugo-home-radar,.ugo-client-root .ugo-zip-content .ugo-home-screen .ugo-home-active-orders{background:#fff;border-radius:17px;border:1px solid var(--zip-line);overflow:hidden}
+.ugo-client-root .ugo-zip-content .ugo-home-categories button{border-radius:16px}
+.ugo-client-root .ugo-zip-content .ugo-home-bottom-nav{display:none}
+.ugo-client-root .ugo-zip-content .ugo-ux-screen-host{min-width:0}
+@media(max-width:1100px){
+.ugo-client-root .ugo-zip-topbar{padding:0 24px}
+.ugo-client-root .ugo-zip-content{padding:24px 24px 90px}
+.ugo-client-root .ugo-zip-hero h2{font-size:32px}
+.ugo-client-root .ugo-zip-hero-copy{padding:32px 16px 30px 30px}
+.ugo-client-root .ugo-zip-trust{gap:10px}
+}
+@media(max-width:800px){
+.ugo-client-root .ugo-zip-sidebar{transform:translateX(-105%);transition:transform .24s;z-index:110;box-shadow:0 12px 40px #17232130}
+.ugo-client-root .ugo-zip-sidebar.open{transform:translateX(0)}
+.ugo-client-root .ugo-zip-close{display:block;position:absolute;right:0;top:0;border:0;background:transparent;font-size:20px}
+.ugo-client-root .ugo-zip-backdrop{display:block;position:fixed;inset:0;z-index:100;background:#15272080;border:0}
+.ugo-client-root .ugo-zip-main{margin-left:0}
+.ugo-client-root .ugo-zip-mobile-menu{display:grid}
+.ugo-client-root .ugo-zip-mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;background:#fff;border-top:1px solid var(--zip-line);height:72px;justify-content:space-around;padding:5px 8px max(5px,env(safe-area-inset-bottom))}
+.ugo-client-root .ugo-zip-mobile-nav button{border:0;background:transparent;display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:3px;font-size:23px;color:var(--zip-muted)}
+.ugo-client-root .ugo-zip-mobile-nav button.active{color:var(--zip-green);font-weight:700}
+.ugo-client-root .ugo-zip-mobile-nav button small{font-size:10px}
+.ugo-client-root .ugo-zip-location{display:none}
+}
+@media(max-width:600px){
+.ugo-client-root .ugo-zip-topbar{height:72px;padding:0 15px;gap:8px}
+.ugo-client-root .ugo-zip-heading h1{font-size:17px}
+.ugo-client-root .ugo-zip-heading p{font-size:10px}
+.ugo-client-root .ugo-zip-tools{gap:7px}
+.ugo-client-root .ugo-zip-bell,.ugo-client-root .ugo-zip-top-person,.ugo-client-root .ugo-zip-mobile-menu{width:36px;height:36px}
+.ugo-client-root .ugo-zip-content{padding:14px 12px 94px}
+.ugo-client-root .ugo-zip-hero{min-height:0;grid-template-columns:1fr;border-radius:20px}
+.ugo-client-root .ugo-zip-hero-copy{padding:26px 20px}
+.ugo-client-root .ugo-zip-hero h2{font-size:29px;max-width:350px}
+.ugo-client-root .ugo-zip-hero p{font-size:12px}
+.ugo-client-root .ugo-zip-hero-art{display:none}
+.ugo-client-root .ugo-zip-trust{gap:9px}
+.ugo-client-root .ugo-zip-actions{gap:8px}
+.ugo-client-root .ugo-zip-actions button{padding:0 11px}
+}
+
+/* Match ZIP service-card hierarchy while retaining real UGO service data and actions. */
+.ugo-client-root .ugo-zip-content .ugo-home-layout{max-width:none;width:100%;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:22px;align-items:start}
+.ugo-client-root .ugo-zip-content .ugo-home-hero{grid-column:1;grid-row:2;padding:20px;background:#fff;border:1px solid var(--zip-line);box-shadow:none;border-radius:17px}
+.ugo-client-root .ugo-zip-content .ugo-home-hero>.ugo-home-kicker,.ugo-client-root .ugo-zip-content .ugo-home-hero>h1,.ugo-client-root .ugo-zip-content .ugo-home-hero>p{display:none}
+.ugo-client-root .ugo-zip-content .ugo-home-topline{margin-bottom:13px}
+.ugo-client-root .ugo-zip-content .ugo-home-location{font-size:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card{grid-column:2;grid-row:2;box-shadow:none;border:1px solid var(--zip-line);border-radius:17px}
+.ugo-client-root .ugo-zip-content .ugo-home-services{grid-column:1/-1;grid-row:1;padding:20px 0;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head{margin-bottom:18px}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head h2{font-size:20px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head>button{background:transparent;color:var(--zip-green)}
+.ugo-client-root .ugo-zip-content .ugo-home-categories{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button{min-height:125px;padding:16px;background:white;border:1px solid var(--zip-line);box-shadow:none;display:flex;flex-direction:column;align-items:flex-start;gap:0;border-radius:16px;color:var(--zip-ink);position:relative}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button:hover{border-color:#c4d8d0;transform:translateY(-3px);box-shadow:0 12px 35px #18352c14}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button>.ugo-home-category-icon{width:42px;height:42px;border-radius:12px;background:#e6f1ff}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button:nth-child(2n)>.ugo-home-category-icon{background:#fff4d6}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button:nth-child(3n)>.ugo-home-category-icon{background:#f0e9fa}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button>div{display:grid;gap:3px;margin-top:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button b{font-size:12px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button small{font-size:9px;color:var(--zip-muted)}
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button em{position:absolute;right:14px;bottom:12px;color:#abb5b2}
+.ugo-client-root .ugo-zip-content .ugo-home-hugo-cta{background:var(--zip-green);box-shadow:none;color:#fff}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card>header{background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card>footer{background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card button{font-size:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-provider-card{border-color:var(--zip-line)}
+.ugo-client-root .ugo-zip-content .ugo-home-mobile-nav{display:none!important}
+@media(max-width:1120px){
+.ugo-client-root .ugo-zip-content .ugo-home-categories{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ugo-client-root .ugo-zip-content .ugo-home-layout{grid-template-columns:1fr;gap:14px}
+.ugo-client-root .ugo-zip-content .ugo-home-map-card{grid-row:3;grid-column:1}
+.ugo-client-root .ugo-zip-content .ugo-home-hero{grid-row:2;grid-column:1}
+}
+@media(max-width:600px){
+.ugo-client-root .ugo-zip-content .ugo-home-categories>button{min-height:111px;padding:12px}
+.ugo-client-root .ugo-zip-content .ugo-home-services{padding:9px 0}
+.ugo-client-root .ugo-zip-content .ugo-home-services-head h2{font-size:18px}
+}
+
+/* ZIP-consistent operational surfaces: retain original real form/state behavior. */
+.ugo-client-root .ugo-zip-content .ugo-need-screen{width:min(900px,100%);max-width:900px;margin:0 auto;min-height:0;border:1px solid var(--zip-line);background:#fff;border-radius:20px;box-shadow:0 12px 35px #18352c12;overflow:hidden;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-need-top{border-bottom:1px solid var(--zip-line);background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-need-category{background:#f2f7f5;border:1px solid var(--zip-line);border-radius:14px}
+.ugo-client-root .ugo-zip-content .ugo-need-screen textarea,.ugo-client-root .ugo-zip-content .ugo-need-screen input,.ugo-client-root .ugo-zip-content .ugo-need-screen select{border:1px solid #dce7e2;background:#fff;border-radius:12px;color:var(--zip-ink)}
+.ugo-client-root .ugo-zip-content .ugo-need-screen button:focus-visible,.ugo-client-root .ugo-zip-content .ugo-need-screen input:focus-visible{outline:3px solid #0c7c6140;outline-offset:2px}
+.ugo-client-root .ugo-zip-content .ugo-need-screen button[type=submit],.ugo-client-root .ugo-zip-content .ugo-need-footer button:last-child{background:var(--zip-green);border-radius:11px;color:white}
+.ugo-client-root .ugo-zip-content .ugo-client-screen-overlay{background:transparent;position:relative;inset:auto;display:block;z-index:auto;padding:0;overflow:visible;max-height:none;min-height:0}
+.ugo-client-root .ugo-zip-content .ugo-client-history-wrap,.ugo-client-root .ugo-zip-content .ugo-client-profile-panel{width:min(1050px,100%);margin:0 auto;max-height:none;min-height:0;box-shadow:none;border:1px solid var(--zip-line);border-radius:20px;background:#fff;overflow:visible}
+.ugo-client-root .ugo-zip-content .ugo-client-profile-panel>header{border-bottom:1px solid var(--zip-line);background:#fff;color:var(--zip-ink);border-radius:20px 20px 0 0}
+.ugo-client-root .ugo-zip-content .ugo-client-profile-identity,.ugo-client-root .ugo-zip-content .ugo-client-profile-sections details{background:#fff;border-color:var(--zip-line);border-radius:16px}
+.ugo-client-root .ugo-zip-content .ugo-client-profile-primary,.ugo-client-root .ugo-zip-content .ugo-client-profile-payment .selected{background:var(--zip-green);color:#fff}
+.ugo-client-root .ugo-zip-content .ugo-client-history-wrap button:focus-visible,.ugo-client-root .ugo-zip-content .ugo-client-profile-panel button:focus-visible{outline:3px solid #0c7c6140;outline-offset:2px}
+@media(max-width:600px){.ugo-client-root .ugo-zip-content .ugo-client-profile-panel,.ugo-client-root .ugo-zip-content .ugo-client-history-wrap{border-radius:14px}.ugo-client-root .ugo-zip-content .ugo-need-screen{border-radius:14px}}
+
+/* Only one visible location/notification header, actions remain reachable through real handlers. */
+.ugo-client-root .ugo-zip-content .ugo-home-topline{display:none}
+
+/* The global UGO drawer remains available for Hugo, support and saved places. */
+.ugo-client-root .ugo-zip-mobile-menu{display:grid}
+
+/* ZIP Lucide-style line icons without external package or font loading. */
+.ugo-client-root .ugo-zip-nav button>svg{width:21px;height:21px;flex:0 0 21px}
+.ugo-client-root .ugo-zip-mobile-nav button>svg{width:22px;height:22px}
+.ugo-client-root .ugo-zip-mobile-nav button{font-size:14px}
+
+
+/* ZIP reference: independent Explore, live Service and Payments screens. */
+.ugo-client-root .ugo-zip-explore,.ugo-client-root .ugo-zip-active-page,.ugo-client-root .ugo-zip-payments-page{display:grid;gap:24px;color:#172321}
+.ugo-client-root .ugo-zip-section-title{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ugo-client-root .ugo-zip-section-title>div{display:grid;gap:5px}
+.ugo-client-root .ugo-zip-section-title>div>span{font-size:10px;letter-spacing:.1em;font-weight:800;color:#0c7c61}
+.ugo-client-root .ugo-zip-section-title h2{margin:0;font-size:23px;line-height:1.2;letter-spacing:-.035em;color:#172321}
+.ugo-client-root .ugo-zip-section-title p{margin:0;color:#70807b;font-size:12px;line-height:1.5}
+.ugo-client-root .ugo-zip-section-title>span{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-section-title>button,.ugo-client-root .ugo-zip-payments-card>button{border:1px solid #dce7e2;background:white;color:#0c7c61;border-radius:11px;padding:12px;font-size:12px;font-weight:700}
+.ugo-client-root .ugo-zip-searchpanel{display:flex;align-items:center;gap:12px;padding:14px;border-radius:17px;border:1px solid #e4ebe8;background:white}
+.ugo-client-root .ugo-zip-searchbox{display:flex;align-items:center;gap:12px;flex:1;padding:0 13px;border:1px solid #e4ebe8;border-radius:12px;height:50px;color:#0c7c61;min-width:0}
+.ugo-client-root .ugo-zip-searchbox input{width:100%;outline:0;border:0!important;background:transparent!important;color:#172321;font:inherit;font-size:13px}
+.ugo-client-root .ugo-zip-searchpanel>button{height:50px;background:#f1f7f4;color:#0c7c61;padding:0 17px;border:0;border-radius:12px;font-size:12px;font-weight:700;white-space:nowrap}
+.ugo-client-root .ugo-zip-searchpanel>button.selected{background:#0c7c61;color:#fff}
+.ugo-client-root .ugo-zip-explore-group{display:grid;gap:16px}
+.ugo-client-root .ugo-zip-explore-categories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.ugo-client-root .ugo-zip-explore-categories>button{display:grid;justify-items:start;gap:9px;padding:19px;border:1px solid #e4ebe8;border-radius:16px;background:#fff;text-align:left}
+.ugo-client-root .ugo-zip-explore-categories>button.selected{border-color:#0c7c61;background:#f3faf6}
+.ugo-client-root .ugo-zip-explore-categories>button>span{display:grid;place-items:center;width:47px;height:47px;background:#e5f2ec;border-radius:13px;font-size:25px}
+.ugo-client-root .ugo-zip-explore-categories strong{font-size:14px}
+.ugo-client-root .ugo-zip-explore-categories small{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ugo-client-root .ugo-zip-provider{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-radius:17px;border:1px solid #e4ebe8;background:#fff;padding:19px}
+.ugo-client-root .ugo-zip-provider-info{display:grid;gap:5px;flex:1;min-width:135px}
+.ugo-client-root .ugo-zip-provider-info strong{font-size:14px}
+.ugo-client-root .ugo-zip-provider-info>small{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-provider-badges{display:flex;flex-wrap:wrap;gap:8px}
+.ugo-client-root .ugo-zip-provider-badges span{font-size:10px;color:#0c7c61;background:#ecf5f0;padding:5px 7px;border-radius:8px}
+.ugo-client-root .ugo-zip-provider>button,.ugo-client-root .ugo-zip-no-providers button,.ugo-client-root .ugo-zip-active-card>button,.ugo-client-root .ugo-zip-empty>button{background:#0c7c61;color:#fff;border:0;border-radius:10px;padding:11px 14px;font-size:12px;font-weight:750}
+.ugo-client-root .ugo-zip-no-providers,.ugo-client-root .ugo-zip-empty{border:1px solid #e4ebe8;border-radius:17px;padding:30px;text-align:center;background:white;display:grid;justify-items:center;gap:12px}
+.ugo-client-root .ugo-zip-no-providers p,.ugo-client-root .ugo-zip-empty p{margin:0;color:#70807b;font-size:12px}
+.ugo-client-root .ugo-zip-empty>span{font-size:42px;color:#0c7c61}
+.ugo-client-root .ugo-zip-active-list{display:grid;gap:14px}
+.ugo-client-root .ugo-zip-active-card{display:grid;gap:16px;padding:24px;background:white;border:1px solid #e4ebe8;border-radius:19px}
+.ugo-client-root .ugo-zip-active-card>p{margin:0;font-size:13px;color:#70807b;line-height:1.5}
+.ugo-client-root .ugo-zip-active-head{display:flex;align-items:center;gap:13px}
+.ugo-client-root .ugo-zip-service-icon{width:50px;height:50px;background:#e9f6ef;border-radius:14px;display:grid;place-items:center;font-size:26px}
+.ugo-client-root .ugo-zip-active-head>div{display:grid;gap:4px;flex:1}
+.ugo-client-root .ugo-zip-active-head small{font-size:10px;color:#70807b;letter-spacing:.07em}
+.ugo-client-root .ugo-zip-active-head h3{margin:0;font-size:18px;color:#172321}
+.ugo-client-root .ugo-zip-status{padding:9px 11px;background:#e9f6ef;color:#0c7c61;border-radius:22px;font-size:11px;font-weight:800}
+.ugo-client-root .ugo-zip-timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ugo-client-root .ugo-zip-timeline span{padding:10px 5px;border-top:3px solid #dbe5e0;text-align:center;color:#81908a;font-size:10px}
+.ugo-client-root .ugo-zip-timeline span.done{border-color:#0c7c61;color:#0c7c61;font-weight:800}
+.ugo-client-root .ugo-zip-payments-card{padding:24px;background:white;border:1px solid #e4ebe8;border-radius:18px;display:grid;gap:13px}
+.ugo-client-root .ugo-zip-payments-card h3{font-size:17px;margin:0}
+.ugo-client-root .ugo-zip-payments-card>p{margin:0;font-size:12px;line-height:1.5;color:#70807b}
+.ugo-client-root .ugo-zip-payment-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ugo-client-root .ugo-zip-payment-methods button{display:grid;justify-items:start;gap:9px;border:1px solid #e4ebe8;background:#fff;border-radius:15px;text-align:left;padding:21px;color:#172321}
+.ugo-client-root .ugo-zip-payment-methods button.selected{border:2px solid #0c7c61;background:#f5fbf7}
+.ugo-client-root .ugo-zip-payment-methods button>span{font-size:29px}
+.ugo-client-root .ugo-zip-payment-methods button strong{font-size:14px}
+.ugo-client-root .ugo-zip-payment-methods button small{font-size:11px;color:#70807b}
+.ugo-client-root .ugo-zip-payment-methods button>b{font-size:11px;color:#0c7c61}
+.ugo-client-root .ugo-zip-notice{padding:13px;background:#fdf8ed;border-radius:12px;color:#745c23;font-size:12px}
+@media(max-width:850px){.ugo-client-root .ugo-zip-explore-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.ugo-client-root .ugo-zip-provider-grid{grid-template-columns:1fr}}
+@media(max-width:550px){.ugo-client-root .ugo-zip-searchpanel{flex-wrap:wrap}.ugo-client-root .ugo-zip-searchpanel>button{width:100%}.ugo-client-root .ugo-zip-section-title h2{font-size:20px}.ugo-client-root .ugo-zip-payment-methods{grid-template-columns:1fr}.ugo-client-root .ugo-zip-active-head{flex-wrap:wrap}.ugo-client-root .ugo-zip-active-head>.ugo-zip-status{margin-left:0}.ugo-client-root .ugo-zip-timeline span{font-size:9px}}
+
+/* ZIP MobileNav: two links + centered primary action + two links. */
+@media(max-width:800px){.ugo-client-root .ugo-zip-mobile-nav .ugo-zip-mobile-add{flex:0 0 54px;width:54px;height:54px;border:0;border-radius:17px;background:#0c7c61;color:#fff;align-self:flex-start;margin-top:-23px;box-shadow:0 9px 18px #0c7c6144;padding:0}.ugo-client-root .ugo-zip-mobile-nav .ugo-zip-mobile-add svg{width:28px;height:28px}.ugo-client-root .ugo-zip-mobile-nav button:not(.ugo-zip-mobile-add){flex:1}}
+
+
+/* Source ZIP Activity: summary cards + white history list, using live ServiceHistoryPanel. */
+.ugo-client-root .ugo-zip-content .ugo-client-history{background:transparent;border:0;box-shadow:none;padding:0;color:#172321}
+.ugo-client-root .ugo-zip-content .ugo-client-history>header{background:transparent;border:0;padding:10px 2px 20px}
+.ugo-client-root .ugo-zip-content .ugo-client-history>header h2{font-size:22px;color:#172321}
+.ugo-client-root .ugo-zip-content .ugo-client-history>header p{font-size:12px;color:#70807b}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:0 0 21px}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary>button{display:flex;gap:13px;align-items:center;min-height:100px;padding:20px;border:1px solid #e4ebe8;border-radius:15px;background:white;text-align:left;color:#172321;box-shadow:none}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary>button.active{border-color:#0c7c61}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary strong{font-size:25px;line-height:1.2;color:#172321}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary small{font-size:10px;color:#70807b;letter-spacing:.06em}
+.ugo-client-root .ugo-zip-content .ugo-client-activity-summary em{font-size:10px;color:#70807b;font-style:normal}
+.ugo-client-root .ugo-zip-content .ugo-client-history-toolbar{background:#fff;border:1px solid #e4ebe8;border-radius:15px 15px 0 0;padding:14px}
+.ugo-client-root .ugo-zip-content .ugo-history-list{background:#fff;border:1px solid #e4ebe8;border-top:0;border-radius:0 0 15px 15px;padding:15px}
+.ugo-client-root .ugo-zip-content .ugo-history-list article,.ugo-client-root .ugo-zip-content .ugo-history-list>.ugo-history-item{border:1px solid #e4ebe8;border-radius:14px;box-shadow:none;background:#fff}
+.ugo-client-root .ugo-zip-content .ugo-history-open-button{background:#0c7c61;color:white;border-radius:11px}
+@media(max-width:700px){.ugo-client-root .ugo-zip-content .ugo-client-activity-summary{grid-template-columns:1fr}.ugo-client-root .ugo-zip-content .ugo-client-activity-summary>button{min-height:78px}}
