@@ -7,8 +7,10 @@ const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8
 test('ClientOnboardingGate renders children instead of recursively loading ClientApp', async () => {
   const gate = await read('src/features/client/onboarding/ClientOnboardingGate.tsx')
   assert.doesNotMatch(gate, /import\('\.\/ClientApp'\)/)
-  assert.match(gate, /ClientOnboardingGate\(\{children\}/)
-  assert.match(gate, /if\(complete\)return <>\{children\}<\/>/); assert.doesNotMatch(gate, /if\(complete\).*ugo-client-stitch-scope/)
+  assert.match(gate, /ClientOnboardingGate\(\{children,embedded=false,onCompleted\}/)
+  assert.match(gate, /if\(complete\)return embedded\?null:<>\{children\}<\/>/)
+  assert.match(gate, /if\(!embedded\)return <>\{children\}<\/>/)
+  assert.doesNotMatch(gate, /if\(complete\).*ugo-client-stitch-scope/)
 })
 
 test('ClientRoot owns the single onboarding boundary', async () => {
