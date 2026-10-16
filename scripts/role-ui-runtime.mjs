@@ -146,15 +146,25 @@ const reopenClientMenu=async page=>{
  await drawer.waitFor({state:'visible',timeout:10000})
 }
 
+async function waitForClientHome(page,step){
+ const home=page.getByRole('main',{name:'Inicio UGO Cliente'})
+ try{await home.waitFor({state:'visible',timeout:45000})}
+ catch(error){
+   const diagnostics=await page.evaluate(()=>({url:location.href,text:(document.body?.innerText||'').slice(0,1400),root:document.querySelector('.ugo-client-root')?.className||null}))
+   await fs.writeFile('artifacts/role-ui-client-error-'+step+'.json',JSON.stringify(diagnostics,null,2))
+   await page.screenshot({path:'artifacts/role-ui-client-error-'+step+'.png',fullPage:true}).catch(()=>{})
+   throw new Error('CLIENT_HOME_NOT_VISIBLE '+JSON.stringify(diagnostics)+' '+String(error))
+ }
+}
 async function testClient(viewport,name){
  const {page,errors}=await openRole('client',viewport)
  try{
-   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+   await waitForClientHome(page,name)
    await assertResponsive(page,'client '+name+' home')
    const menuItems=['Inicio','Pedir servicio','Servicios y categorías','Actividad y pedidos','Direcciones','Formas de pago','Hugo / Asistente IA','Ayuda y soporte','Configuración']
    for(const item of menuItems){
      await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-     await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+     await waitForClientHome(page,name)
      await reopenClientMenu(page)
      const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
      await drawer.waitFor({state:'visible'})
