@@ -160,11 +160,12 @@ function geolocationError(error:GeolocationPositionError){
 }
 function onePosition(options:PositionOptions){return new Promise<GeolocationPosition>((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
 async function currentPosition(){
- if(!navigator.geolocation)throw new Error('Este dispositivo no permite obtener tu ubicación.')
+ if(!window.isSecureContext)throw new Error('El GPS requiere una conexión HTTPS. Abrí UGO Proveedor desde GitHub Pages.')
+ if(!navigator.geolocation)throw new Error('Tu navegador no ofrece geolocalización. Activá los servicios de ubicación del dispositivo y revisá los permisos del sitio.')
  let best:GeolocationPosition|null=null,lastError:GeolocationPositionError|null=null
  // First wake the location provider. A strict maximumAge=0 call can fail on mobile WebViews
  // before the GPS has a fix, so use a recent device fix only as a candidate while acquiring a fresh one.
- try{const warm=await onePosition({enableHighAccuracy:true,maximumAge:GPS_FRESH_MS,timeout:5_000});if(acceptablePosition(warm)){best=warm;if(Number(warm.coords.accuracy)<=GPS_TARGET_ACCURACY_M)return warm}}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
+ try{const warm=await onePosition({enableHighAccuracy:false,maximumAge:GPS_FRESH_MS,timeout:5_000});if(acceptablePosition(warm)){best=warm;if(Number(warm.coords.accuracy)<=GPS_TARGET_ACCURACY_M)return warm}}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
  return await new Promise<GeolocationPosition>((resolve,reject)=>{
   let settled=false,watchId:number|null=null,timer:number|null=null,fallbackTimer:number|null=null
   const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer);if(fallbackTimer!=null)window.clearTimeout(fallbackTimer)}
