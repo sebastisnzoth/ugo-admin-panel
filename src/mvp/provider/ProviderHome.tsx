@@ -46,6 +46,7 @@ export function ProviderHome(){
   </Card>
   </div>
   {d.debtBlocked&&<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">Nuevos pedidos pausados</StatusPill><span>Debés {money(d.ugoDebt)} en {d.pendingDebtCount} comisiones. Tus trabajos ya asignados siguen disponibles, pero no recibirás ni podrás aceptar otros hasta conciliar al menos una.</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></Card>}
+  {d.service&&d.opportunities.length>0&&<Card className="provider-card provider-next-opportunities"><StatusPill tone="success">PRÓXIMOS TRABAJOS</StatusPill><h2>Podés aceptar otro pedido programado</h2><p>Tenés {d.opportunities.length} oportunidad{d.opportunities.length===1?'':'es'} disponible{d.opportunities.length===1?'':'s'}. Revisá horarios y compatibilidad antes de aceptar; tu trabajo activo sigue en curso.</p><Button variant="primary" onClick={flow.actions.openOpportunities}>Revisar pedidos futuros</Button></Card>}
   <h2 className="provider-home-section-title">Accesos rápidos</h2>
   <div className="provider-quick-grid">
    <button type="button" className="provider-card provider-quick-card" onClick={flow.actions.openOpportunities}><small>PEDIDOS</small><strong>{d.opportunities.length?`${d.opportunities.length} disponibles`:"Ver pedidos"}</strong><span>Oportunidades para vos →</span></button>
