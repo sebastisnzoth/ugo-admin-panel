@@ -577,3 +577,69 @@
  .ugo-provider-root .ugo-ux-screen-host>.provider-screen{width:calc(100% - 28px)!important;padding:20px 0 170px!important}
 }
 @media(prefers-reduced-motion:reduce){.ugo-provider-root .provider-client-online{transition:none!important}}
+
+/* Provider premium refinement: shared visual language for every operational screen. */
+.ugo-provider-root .ugo-ux-screen-host{min-width:0}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen{
+  color:var(--provider-client-ink,#172321);
+  overflow-wrap:break-word;
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen :is(h1,h2,h3){
+  letter-spacing:-.025em;
+  text-wrap:balance;
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen :is(input,select,textarea){
+  max-width:100%;
+  font:inherit;
+  accent-color:var(--provider-preview-green,#0c7c61);
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen :is(button,a,input,select,textarea):focus-visible{
+  outline:3px solid var(--ugo-color-tertiary,#0058be)!important;
+  outline-offset:2px!important;
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen :is(button,a){
+  touch-action:manipulation;
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen button:disabled{
+  cursor:not-allowed;
+  opacity:.62;
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen :is(.provider-card,.provider-offer-sheet,.provider-job-summary,.provider-job-control-card,.provider-setting,.provider-opportunity){
+  border-radius:16px!important;
+  border-color:var(--provider-client-line,#e2eae5)!important;
+  box-shadow:0 8px 24px rgba(24,53,44,.045)!important;
+}
+.ugo-provider-root .ugo-ux-screen-host .provider-screen :is(.provider-primary,.provider-main-action){
+  min-height:48px!important;
+  border-radius:12px!important;
+  font-weight:750!important;
+}
+.ugo-provider-root .provider-client-topbar{
+  position:relative;z-index:1;box-sizing:border-box;max-width:100%;
+}
+.ugo-provider-root .provider-client-topbar-copy span{
+  line-height:1.45;
+}
+.ugo-provider-root .provider-studio-nav button:focus-visible{
+  outline:3px solid var(--ugo-color-tertiary,#0058be)!important;
+  outline-offset:1px;
+}
+@media(min-width:1000px){
+ .ugo-provider-root .provider-studio-footer{gap:10px!important}
+ .ugo-provider-root .provider-studio-user-copy{min-width:0}
+ .ugo-provider-root .provider-studio-nav b{min-width:20px}
+}
+@media(max-width:999px){
+ .ugo-provider-root .provider-client-topbar{gap:10px}
+ .ugo-provider-root .provider-client-topbar-copy{min-width:0}
+ .ugo-provider-root .provider-client-topbar-copy span{max-width:38ch}
+}
+@media(max-width:400px){
+ .ugo-provider-root .provider-client-topbar{padding:12px 14px}
+ .ugo-provider-root .provider-client-topbar-copy strong{font-size:16px}
+ .ugo-provider-root .provider-client-topbar-copy span{font-size:11px}
+ .ugo-provider-root .provider-client-online{padding:0 10px;min-width:85px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ugo-provider-root .ugo-ux-screen-host .provider-screen :is(button,a){scroll-behavior:auto}
+}
