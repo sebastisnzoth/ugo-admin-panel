@@ -41,13 +41,14 @@ for(let attempt=1;attempt<=2&&!success;attempt++){
   const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
    method:'POST',
    headers:{authorization:'Bearer '+openrouter,'content-type':'application/json','x-title':'UGO Autonomous Company'},
-   body:JSON.stringify({model:fallback.model_id,messages:[{role:'system',content:'Reply only UGO_FALLBACK_OK'},{role:'user',content:'controlled fallback drill'}],temperature:0,max_tokens:24}),
-   signal:AbortSignal.timeout(12000)
+   body:JSON.stringify({model:fallback.model_id,messages:[{role:'system',content:'Reply only UGO_FALLBACK_OK'},{role:'user',content:'controlled fallback drill'}],temperature:0,max_tokens:1024}),
+   signal:AbortSignal.timeout(24000)
   })
   const payload=await response.json().catch(()=>({}))
   const answer=String(payload?.choices?.[0]?.message?.content||'')
   success=response.ok&&answer.trim().length>0
-  lastFailure=success?'':String(payload?.error?.message||(response.ok?'EMPTY_MODEL_RESPONSE':('OpenRouter '+response.status))).slice(0,180)
+  const finishReason=String(payload?.choices?.[0]?.finish_reason||'unknown').slice(0,40)
+  lastFailure=success?'':String(payload?.error?.message||(response.ok?('EMPTY_MODEL_RESPONSE finish='+finishReason):('OpenRouter '+response.status))).slice(0,180)
  }catch(error){
   lastFailure=error?.name==='TimeoutError'?'OPENROUTER_TIMEOUT':String(error?.message||error).slice(0,180)
  }

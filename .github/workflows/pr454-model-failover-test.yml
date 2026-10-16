@@ -1,0 +1,50 @@
+name: UGO TEST Model Failover PR454
+on:
+  push:
+    branches:
+      - fix/ugo-worker-audit-shell-20261015
+    paths:
+      - 'scripts/openrouter-autonomy-probe.mjs'
+      - 'scripts/autonomous-model-route-runtime.mjs'
+      - 'scripts/autonomous-model-fallback-runtime.mjs'
+      - '.github/workflows/pr454-model-failover-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ugo-test-model-failover-pr454
+  cancel-in-progress: false
+jobs:
+  real-provider-proof:
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Verify TEST environment
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: node scripts/assert-test-environment.mjs
+      - name: Probe Gemini and real OpenRouter free completion
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/openrouter-autonomy-probe.mjs
+      - name: Verify Gemini primary and OpenRouter fallback route
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-model-route-runtime.mjs
+      - name: Exercise actual OpenRouter fallback with correlated evidence
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-model-fallback-runtime.mjs
