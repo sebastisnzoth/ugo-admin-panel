@@ -15,7 +15,7 @@ const MAX_ACCEPTABLE_ACCURACY_M=250
 const MAX_POSITION_AGE_MS=30_000
 const MATCHING_POSITION_AGE_MS=90_000
 const GEO_COMPATIBLE_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:0,timeout:12_000}
-const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:15_000}
+const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:10_000}
 
 function usableBrowserPosition(pos:GeolocationPosition){
  const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
@@ -39,7 +39,7 @@ async function getFreshBrowserPosition(){
   const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
   const fail=(error:GeolocationPositionError)=>{if(settled)return;settled=true;cleanup();reject(error)}
   const timer:number|undefined=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
-  const watchId:number|undefined=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
+  const watchId:number|undefined=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:10_000})
  })
 }
 
@@ -103,7 +103,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  },[supabase,channelEpoch])
 
  useEffect(()=>{
-  if(!navigator.geolocation||(!available&&!enRoute))return
+  if(!available&&!enRoute)return
+  if(!window.isSecureContext){setLocationError('La ubicación requiere HTTPS. Abrí UGO desde GitHub Pages y reintentá.');return}
+  if(!navigator.geolocation){setLocationError('El navegador no ofrece ubicación. Habilitá los servicios de ubicación del sistema y usá Chrome o Safari actualizado.');return}
   let alive=true,watchId:number|null=null,restartTimer:number|undefined
   let lastWrite=0,lastPoint:[number,number]|null=null,writing=false,heartbeatBusy=false,latestPosition:GeolocationPosition|null=null
   const rpc=supabase as unknown as LocationRpcClient
@@ -160,7 +162,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   }
 
   const publishHeartbeat=async()=>{
-   if(!available||enRoute||!navigator.geolocation)return
+   if(!available||enRoute||!navigator.geolocation||document.visibilityState==='hidden')return
    if(heartbeatBusy)return
    heartbeatBusy=true
    try{
