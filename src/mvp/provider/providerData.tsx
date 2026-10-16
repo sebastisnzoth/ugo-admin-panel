@@ -43,7 +43,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const pendingDebtCount=unresolvedDebts.length,debtBlocked=pendingDebtCount>=3
  const setOnline=(target:boolean)=>{if(debtBlocked&&target){setNotice({type:'error',text:`Tenés ${pendingDebtCount} comisiones UGO pendientes. Pagá al menos una para volver a recibir pedidos.`});return Promise.resolve(false)}return run(()=>setProviderAvailability(supabase,session.user.id,target),target?'Ya estás Online.':'Quedaste Offline.')}
  const matchingReady=matchingGpsReady(provider)
- const toggleOnline=()=>setOnline(provider.disponible&&matchingReady?false:true)
+ const toggleOnline=()=>setOnline(!(provider.disponible&&provider.online))
  const acceptOpportunity=(id:string)=>{if(debtBlocked){setNotice({type:'error',text:'Llegaste al límite de 3 servicios con comisión UGO pendiente. Pagá a UGO antes de aceptar otro pedido.'});return Promise.resolve(false)}return run(()=>acceptProviderOpportunity(supabase,id),'Trabajo aceptado.')}
  const rejectOpportunity=(id:string)=>run(()=>rejectProviderOpportunity(supabase,id),'Pedido rechazado.')
  const currentPayment=service?payments.find(p=>p.servicio_id===service.id):null
