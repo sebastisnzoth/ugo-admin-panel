@@ -1,0 +1,28 @@
+name: UGO PR9 Visual Review Build
+on:
+  push:
+    branches:
+      - feat/ugo-pr9-real-screens-review-20261015
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Compile UGO visual review for isolated static hosting
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build -- --base=/
+      - name: Upload preview build (does not overwrite active Pages website)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-pr9-visual-review
+          path: dist/
+          if-no-files-found: error
