@@ -7,7 +7,7 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 test('provider keeps online work and demand status visible across screens',async()=>{
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  assert.match(root,/provider-operational-dock/)
- assert.match(root,/data\.online\?'Online':'Offline'/)
+ assert.match(root,/t\(data\.online\?'providerRoot\.online':'providerRoot\.offline'\)/)
  assert.match(root,/jobLabel/)
  assert.match(root,/data\.opportunities\.length/)
  assert.match(root,/provider-nav-work-dot/)

@@ -79,7 +79,7 @@ await page.addInitScript(userId=>{
 },login.user.id)
 
 async function readOnlineKpi(timeout=20000){
- const card=page.locator('article').filter({hasText:'Proveedores online'}).first()
+ const card=page.getByTestId('admin-kpi-online-providers')
  await card.waitFor({state:'visible',timeout})
  const started=Date.now()
  let raw=''
@@ -106,7 +106,7 @@ try{
  await page.getByPlaceholder(/Usuario o email/i).fill(email)
  await page.getByPlaceholder(/Contraseña/i).fill(password)
  await page.getByRole('button',{name:/Ingresar/i}).click()
- await page.getByText(/Sistema en vivo/).waitFor({state:'visible',timeout:20000})
+ await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
  const before=await readOnlineKpi()
  const expected=before+(targetOnline?1:-1)
  const direct=eventSignal()

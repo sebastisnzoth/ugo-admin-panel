@@ -34,7 +34,7 @@ test('regular admin does not see superadmin navigation as a dead destination',()
 
 test('home dashboard uses operational focus instead of deferred Hugo copilot',()=>{
   assert.match(home,/FOCO OPERATIVO/)
-  assert.match(home,/Prioridades por resolver/)
+  assert.match(home,/t\('admin\.home\.focusPendingTitle'\)/)
   assert.doesNotMatch(home,/HUGO COPILOT/)
 })
 
