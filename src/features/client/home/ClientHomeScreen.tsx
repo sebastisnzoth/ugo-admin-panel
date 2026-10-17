@@ -94,7 +94,7 @@ export function ClientHomeScreen({onOpenService}:Props){
 
    <aside className="ugo-home-map-card" aria-label="Mapa de profesionales cerca">
     <header><div><span className="ugo-home-live-dot"/><strong>{trackedOrder?'Seguimiento de tu profesional':'Mapa en vivo'}</strong><small>{trackedOrder?`Pedido #${trackedOrder.numero??trackedOrder.id.slice(0,8)} · ${trackedOrder.estado==='en_camino'?'En camino':'Asignado'}`:'Profesionales cerca de tu zona'}</small></div><b>{trackedOrder?'Pedido activo':`${onlineProviders.length} conectados`}</b></header>
-    {trackedOrder&&<AssignedProviderCard compact provider={trackedOrder.proveedor} category={trackedOrder.categoria?.nombre} onOpen={()=>openOrder(trackedOrder.id)}/>}
+    {trackedOrder&&<AssignedProviderCard compact provider={trackedOrder.proveedor} providerId={trackedOrder.proveedor_id} category={trackedOrder.categoria?.nombre} onOpen={()=>openOrder(trackedOrder.id)}/>}
     {trackedOrder&&<div className="ugo-home-route-banner"><strong>{trackedOrder.proveedor?.nombre||'Tu profesional'}</strong><span>{trackedOrder.estado==='en_camino'?'Viene hacia tu dirección · seguimiento en vivo':'Profesional asignado · esperando inicio del viaje'}</span><button type="button" onClick={()=>openOrder(trackedOrder.id)}>Abrir pedido →</button></div>}
     {trackedOrder?<div className="ugo-home-route-view"><ClientActiveMap key={trackedOrder.id} supabase={supabase} serviceId={trackedOrder.id} phase={trackedOrder.estado==='en_camino'?'en_camino':'assigned'}/></div>:<div className="ugo-home-map">
      <div ref={mapEl}/>
