@@ -117,22 +117,9 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
   })()
  },[role])
  const value=useMemo<LocaleContextValue>(()=>({locale,setLocale,t:(key,params)=>translate(locale,key,params)}),[locale,setLocale])
- return <LocaleContext.Provider value={value}>{children}<LanguageSelector/></LocaleContext.Provider>
+ return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }
 
 export function useLocale(){const value=useContext(LocaleContext);if(!value)throw new Error('useLocale must be used within LocaleProvider');return value}
 
 export function LocalizedText({id,params}:{id:string;params?:Record<string,string|number>}){const{t}=useLocale();return <>{t(id,params)}</>}
-
-function LanguageSelector(){
- const{locale,setLocale,t}=useLocale()
- const[open,setOpen]=useState(false)
- const[notice,setNotice]=useState('')
- const options:[UgoLocale,string][]=[['pt-BR','🇧🇷 Português (Brasil)'],['es','🇦🇷 Español'],['en','🇺🇸 English']]
- function choose(next:UgoLocale){setLocale(next);setNotice(messages[next]['language.saved']);setOpen(false);window.setTimeout(()=>setNotice(''),2400)}
- return <div className="ugo-language-control" lang={locale}>
-  <button type="button" className="ugo-language-trigger" aria-haspopup="listbox" aria-expanded={open} aria-label={t('language.label')} onClick={()=>setOpen(v=>!v)}><span aria-hidden="true">🌐</span><span>{locale==='pt-BR'?'PT-BR':locale.toUpperCase()}</span><span aria-hidden="true">⌄</span></button>
-  {open&&<div className="ugo-language-menu" role="listbox" aria-label={t('language.label')}>{options.map(([value,label])=><button type="button" role="option" aria-selected={locale===value} key={value} onClick={()=>choose(value)}>{label}{locale===value&&<span aria-hidden="true"> ✓</span>}</button>)}</div>}
-  {notice&&<span className="ugo-language-status" role="status">{notice}</span>}
- </div>
-}
