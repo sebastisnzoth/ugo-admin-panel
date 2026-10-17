@@ -11,3 +11,11 @@
 .provider-demand-map-loading{position:absolute;z-index:4;top:45%;left:50%;transform:translate(-50%,-50%);background:white;padding:12px 18px;border-radius:12px;box-shadow:0 8px 22px #142a2128;text-align:center}
 .provider-demand-zone-pin:focus-visible{outline:3px solid #0b8264;outline-offset:3px}
 @media(max-width:650px){.provider-demand-map{height:390px}.provider-demand-legend{bottom:56px}.provider-demand-zone-pin{max-width:105px;font-size:10px;padding:6px 8px}}
+
+.provider-demand-controls{display:grid;gap:10px;margin:0 0 14px;padding:14px;border:1px solid #daebe4;background:#f4fbf7;border-radius:16px}
+.provider-demand-controls>strong{font-size:15px;color:#164d3d}
+.provider-demand-controls>small{font-size:11px;color:#54766b}
+.provider-demand-chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 7px;scrollbar-width:thin}
+.provider-demand-chips button{flex:none;min-height:40px;border-radius:20px;border:1px solid #c9e1d6;background:#fff;padding:8px 14px;color:#204e40;font-size:12px;font-weight:750;cursor:pointer}
+.provider-demand-chips button.selected{background:#087b63;color:#fff;border-color:#087b63}
+.provider-demand-chips button:focus-visible{outline:3px solid #087b63;outline-offset:2px}
