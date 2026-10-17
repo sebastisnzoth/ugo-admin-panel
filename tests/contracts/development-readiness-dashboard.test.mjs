@@ -5,6 +5,7 @@ import fs from 'node:fs'
 const app=fs.readFileSync('src/mvp/MvpApp.tsx','utf8')
 const router=fs.readFileSync('src/app/router.ts','utf8')
 const dashboard=fs.readFileSync('src/mvp/DevelopmentDashboard.tsx','utf8')
+const developmentCatalog=fs.readFileSync('src/i18n/translations/development.ts','utf8')
 const landing=fs.readFileSync('public/landing/index.html','utf8')
 const migration=fs.readFileSync('supabase/migrations/20260915070000_development_readiness_dashboard.sql','utf8')
 const publicMigration=fs.readFileSync('supabase/migrations/20260916001000_public_development_dashboard.sql','utf8')
@@ -31,9 +32,13 @@ test('verified readiness counts only approved weighted checklist items',()=>{
 test('READY is truthful and only current-build Sentinel risk blocks the candidate',()=>{
  assert.match(dashboard,/const currentIncidents=incidents\.filter\(item=>item\.status!=='resolved'&&isCurrentRevision\(item\)\)/)
  assert.match(dashboard,/const releaseReady=!error&&items\.length>0&&stats\.p0Open===0&&stats\.p1Open===0&&stats\.sentinelP0===0&&stats\.sentinelP1===0/)
- assert.match(dashboard,/releaseReady\?'READY':'NOT READY'/)
+ assert.match(dashboard,/releaseReady\?t\('development\.releaseReady'\):t\('development\.releaseNotReady'\)/)
  assert.match(dashboard,/runtime_revision/)
- assert.match(dashboard,/BUILD ACTUAL/)
+ assert.match(dashboard,/t\('development\.buildCurrent'\)/)
+ assert.match(developmentCatalog,/'development\.releaseReady':'READY'/)
+ assert.match(developmentCatalog,/'development\.releaseNotReady':'NÃO PRONTO'/)
+ assert.match(developmentCatalog,/'development\.releaseNotReady':'NO LISTO'/)
+ assert.match(developmentCatalog,/'development\.releaseNotReady':'NOT READY'/)
 })
 
 test('private readiness tables stay admin-only',()=>{

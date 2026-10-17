@@ -9,6 +9,7 @@ const clientRoot=fs.readFileSync(new URL('../../src/features/client/ClientRoot.t
 const clientRootNavigation=fs.readFileSync(new URL('../../src/features/client/navigation/useClientRootNavigation.ts',import.meta.url),'utf8')
 const detail=fs.readFileSync(new URL('../../src/features/client/order/ClientServiceDetail.tsx',import.meta.url),'utf8')
 const dashboard=fs.readFileSync(new URL('../../src/mvp/DevelopmentDashboard.tsx',import.meta.url),'utf8')
+const developmentCatalog=fs.readFileSync(new URL('../../src/i18n/translations/development.ts',import.meta.url),'utf8')
 
 test('Sentinel carries build revision and sanitizes runtime payloads',()=>{
  assert.match(sentinel,/VITE_APP_REVISION/)
@@ -65,6 +66,7 @@ test('chat reports realtime failures and has an online resync fallback',()=>{
 test('Development dashboard exposes current-build Sentinel incidents and P0 count',()=>{
  assert.match(dashboard,/development_incidents_public/)
  assert.match(dashboard,/isCurrentRevision/)
- assert.match(dashboard,/Sentinela/)
+ assert.match(dashboard,/t\('development\.sentinel'\)/)
+ assert.match(developmentCatalog,/'development\.sentinel':'SENTINELA'/)
  assert.match(dashboard,/sentinelP0/)
 })

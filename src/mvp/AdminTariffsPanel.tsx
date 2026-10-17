@@ -41,13 +41,13 @@ export function AdminTariffsPanel(){
  }
 
  return <section className="ugo-tariffs">
-  <header className="ugo-tariffs-head"><div><small>{t('screen.admin_tariffs.1')}</small><h3>{t('screen.admin_tariffs.2')}</h3><p>Definí la referencia que UGO puede usar al cotizar un pedido. “General” funciona como respaldo cuando no hay una zona específica.</p></div><div><button type="button" onClick={startCreate}>{t('screen.admin_tariffs.3')}</button><button type="button" onClick={()=>void refetch()} disabled={loading}>{t('screen.admin_tariffs.4')}</button></div></header>
+  <header className="ugo-tariffs-head"><div><small>{t('screen.admin_tariffs.1')}</small><h3>{t('screen.admin_tariffs.2')}</h3><p>{t('admin.tariffs.help')}</p></div><div><button type="button" onClick={startCreate}>{t('screen.admin_tariffs.3')}</button><button type="button" onClick={()=>void refetch()} disabled={loading}>{t('screen.admin_tariffs.4')}</button></div></header>
 
   <div className="ugo-tariff-editor">
    <div className="ugo-tariff-editor-title"><div><small>{editing?'EDITANDO TARIFA':'NUEVA TARIFA'}</small><strong>{editing?'Actualizá los valores':'Configurá una categoría y zona'}</strong></div>{editing&&<button type="button" onClick={startCreate}>{t('screen.admin_tariffs.5')}</button>}</div>
    <div className="ugo-tariff-fields">
     <label>{t('screen.admin_tariffs.6')}<select value={draft.categoriaId} onChange={e=>setDraft(v=>({...v,categoriaId:e.target.value}))}><option value="">{t('screen.admin_tariffs.7')}</option>{activeCategories.map((c:any)=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}</select></label>
-    <label>{t('screen.admin_tariffs.8')}<input value={draft.zona} onChange={e=>setDraft(v=>({...v,zona:e.target.value}))} placeholder="General o Canasvieiras"/></label>
+    <label>{t('screen.admin_tariffs.8')}<input value={draft.zona} onChange={e=>setDraft(v=>({...v,zona:e.target.value}))} placeholder={t('admin.tariffs.general')}/></label>
     <label>{t('screen.admin_tariffs.9')}<input inputMode="decimal" value={draft.base} onChange={e=>setDraft(v=>({...v,base:e.target.value}))} placeholder="0,00"/></label>
     <label>{t('screen.admin_tariffs.10')}<input inputMode="decimal" value={draft.hora} onChange={e=>setDraft(v=>({...v,hora:e.target.value}))} placeholder="0,00"/></label>
     <label>{t('screen.admin_tariffs.11')}<input inputMode="decimal" value={draft.min} onChange={e=>setDraft(v=>({...v,min:e.target.value}))} placeholder="0,00"/></label>

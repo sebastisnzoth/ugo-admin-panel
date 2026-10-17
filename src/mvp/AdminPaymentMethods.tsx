@@ -36,7 +36,7 @@ export function AdminPaymentMethods({config,update}:Props){
    <label className="ugo-system-field"><span><b>{t('screen.admin_methods.7')}</b><small>pago_efectivo_br_activo</small></span><select value={br?'true':'false'} disabled={!cash||saving==='pago_efectivo_br_activo'} onChange={e=>void toggle('pago_efectivo_br_activo',e.target.value==='true')}><option value="true">{t('screen.admin_methods.5')}</option><option value="false">{t('screen.admin_methods.6')}</option></select></label>
    <label className="ugo-system-field"><span><b>{t('screen.admin_methods.8')}</b><small>pago_efectivo_ar_activo</small></span><select value={ar?'true':'false'} disabled={!cash||saving==='pago_efectivo_ar_activo'} onChange={e=>void toggle('pago_efectivo_ar_activo',e.target.value==='true')}><option value="true">{t('screen.admin_methods.5')}</option><option value="false">{t('screen.admin_methods.6')}</option></select></label>
   </div>
-  <div className="ugo-payment-contract"><strong>{t('screen.admin_methods.9')}</strong><span>El efectivo no usa credenciales ni pasarela. Debe ser elegido explícitamente por el cliente. El proveedor confirma la recepción al cierre y UGO conserva la trazabilidad.</span></div>
+  <div className="ugo-payment-contract"><strong>{t('screen.admin_methods.9')}</strong><span>{t('admin.payment.cashTrace')}</span></div>
   {message&&<div className="ugo-payment-message" role="status">{message}</div>}
   {dialog}
  </section>

@@ -6,10 +6,14 @@ const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 
 test('client and provider chat keep Uber-style quick replies', async () => {
   const component = await read('src/mvp/ServiceChat.tsx')
-  assert.match(component, /client:\['Perfecto, te espero\.'[^\]]*'Avisame cuando llegues\.'[^\]]*\]/)
-  assert.match(component, /provider:\['Estoy en camino\.'[^\]]*'Llegué al lugar\.'[^\]]*'El trabajo está listo\.'[^\]]*\]/)
+  const catalog = await read('src/i18n/translations/routes.ts')
+  assert.match(component, /chat\.quick\.client\.\$\{i\+1\}/)
+  assert.match(component, /chat\.quick\.provider\.\$\{i\+1\}/)
+  assert.match(catalog, /'chat\.quick\.client\.1':'Perfecto, te espero\.'/)
+  assert.match(catalog, /'chat\.quick\.client\.1':'Perfeito, vou esperar você\.'/)
+  assert.match(catalog, /'chat\.quick\.client\.1':'Perfect, I’ll wait for you\.'/)
   assert.match(component, /sendText\(reply,'quick_reply'\)/)
-  assert.match(component, /RESPUESTAS RÁPIDAS/)
+  assert.match(component, /t\('chat\.quickReplies'\)/)
 })
 
 test('frontend blocks direct contact sharing before insert', async () => {
