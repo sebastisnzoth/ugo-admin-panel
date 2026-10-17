@@ -41,8 +41,8 @@ test('service 360 sheet refreshes trace chat payments disputes and evidence live
   read('src/mvp/AdminServiceTracePanel.tsx'),
   read('src/mvp/AdminServiceExtendedTrace.tsx'),
  ])
- assert.match(services,/Ficha 360°/)
- assert.match(services,/Control integral del servicio/)
+ assert.match(services,/t\('screen\.admin_services\.14'\)/)
+ assert.match(services,/t\('screen\.admin_services\.15'\)/)
  assert.match(services,/services\.find\(\(row:any\)=>row\.id===editingId\)/)
  for(const table of ['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']){
   assert.match(trace,new RegExp("'"+table+"'"))
