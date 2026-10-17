@@ -7,6 +7,7 @@ import{ClientLocationScreen}from'./ClientLocationScreen'
 import{ClientPostConfirmFlow}from'./ClientPostConfirmFlow'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import'./clientNeedScreen.css'
+import'./clientJourneyUnified.css'
 
 const QUICK:Record<string,string[]>={electricidad:['Reparar toma de corriente','Instalar luminaria','Revisar tablero eléctrico','Otro…'],plomeria:['Reparar pérdida de agua','Destapar cañería','Cambiar grifería','Otro…'],limpieza:['Limpieza general','Limpieza profunda','Limpieza después de obra','Otro…'],reparaciones:['Montaje o instalación','Reparación en el hogar','Ajuste o mantenimiento','Otro…']}
 const norm=(value:string)=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
