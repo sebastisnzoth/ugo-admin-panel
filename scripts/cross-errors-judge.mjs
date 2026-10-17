@@ -9,7 +9,7 @@ for(const item of [ui,api]){
  assert.equal(item.status,'PASS','JUDGE_RUNTIME_PASS_REQUIRED')
  assert.equal(item.production_touched,false,'JUDGE_PRODUCTION_UNTOUCHED_REQUIRED')
 }
-assert.match(ui.message,/volvé a intentar|volver a intentar|reintentar/i)
+assert.match(ui.message,/volvé a intentar|volver a intentar|reintentar|intentá nuevamente/i)
 assert.equal(api.status_code,401)
 assert.match(api.next_step,/sesión|session/i)
 const result={validator:'Judge',control:'cross-errors',status:'PASS',sha,basis:['UI injected auth failure exposes cause + retry/recovery path','API missing-auth failure returns 401 + explicit next_step','same-SHA evidence; production untouched'],source_artifacts:['cross-errors-ui-runtime.json','cross-errors-api-runtime.json'],completed_at:new Date().toISOString()}

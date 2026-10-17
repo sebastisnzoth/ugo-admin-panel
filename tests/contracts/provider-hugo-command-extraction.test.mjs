@@ -62,7 +62,7 @@ test('provider Hugo can resolve the active service before lifecycle voice action
  assert.match(provider,/if\(name==='provider_get_active_service'\)/)
  assert.match(provider,/serviceId:data\.service\.id/)
  assert.match(provider,/state:data\.service\.estado/)
- assert.match(provider,/No tenés un trabajo activo en este momento/)
+ assert.match(provider,/t\('voice\.providerTool\.noActiveJob'\)/)
 })
 
 
@@ -70,7 +70,7 @@ test('provider Hugo lifecycle mutations reject missing explicit confirmation',as
  const provider=await read('src/mvp/provider/ProviderHugoBridge.tsx')
  assert.match(provider,/provider_update_service_status'\)\{const serviceId=.*args\.confirmed!==true/)
  assert.match(provider,/CONFIRMATION_REQUIRED/)
- assert.match(provider,/confirmes explícitamente el cambio de estado/)
+ assert.match(provider,/t\('voice\.providerTool\.confirmStatus'\)/)
 })
 
 
