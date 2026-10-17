@@ -45,7 +45,7 @@ export function ProviderOpportunityDetail({id}:{id:string|null}){
   <div className="provider-decision-reasons" aria-label={t('providerOpportunity.why')}>
    {item.urgency==='urgent'&&<span className="is-urgent">{t('screen.opportunities.20')}</span>}
    {item.distanceKm>0&&<span>⌖ {item.distanceKm.toFixed(1)} km</span>}
-   {item.durationMinutes?<span>◷ ~{item.durationMinutes} min</span>:null}
+   {item.durationMinutes?<span>◷ ~{new Intl.NumberFormat(locale,{style:'unit',unit:'minute',unitDisplay:'short'}).format(item.durationMinutes)}</span>:null}
    {item.scheduledAt&&<span>{t('screen.opportunities.21')}</span>}
   </div>
   <Card className="provider-card provider-offer-sheet">

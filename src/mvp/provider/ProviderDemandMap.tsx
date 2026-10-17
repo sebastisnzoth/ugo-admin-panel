@@ -24,6 +24,7 @@ function asGeojson(signals:Located[]){
 }
 export function ProviderDemandMap({signals,online,selectedZone,onSelectZone,providerPosition}:Props){
  const{t}=useLocale();
+ const translateRef=useRef(t);translateRef.current=t
  const el=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([])
  const[mapReady,setMapReady]=useState(false),[error,setError]=useState('')
  const located=useMemo(()=>signals.filter(valid),[signals])
@@ -38,8 +39,8 @@ export function ProviderDemandMap({signals,online,selectedZone,onSelectZone,prov
    map.addControl(new lib.NavigationControl({showCompass:false}),'top-right')
    mapRef.current=map
    map.on('load',()=>{if(!alive)return;map.addSource(HEAT_SOURCE,{type:'geojson',data:{type:'FeatureCollection',features:[]}});map.addLayer(heatLayer);map.resize();setMapReady(true)})
-   map.on('error',()=>{if(alive)setError('O mapa não está disponível. Tente atualizar.')})
-  }).catch(()=>{if(alive)setError('Não foi possível carregar o mapa.')})
+   map.on('error',()=>{if(alive)setError(translateRef.current('providerDemandMap.unavailable'))})
+  }).catch(()=>{if(alive)setError(translateRef.current('providerDemandMap.loadFailed'))})
   return()=>{alive=false;setMapReady(false);markers.current.forEach(m=>m.remove());markers.current=[];providerMarker.current?.remove();providerMarker.current=null;mapRef.current?.remove();mapRef.current=null}
  },[])
  useEffect(()=>{
@@ -54,24 +55,24 @@ export function ProviderDemandMap({signals,online,selectedZone,onSelectZone,prov
    const bounds=new lib.LngLatBounds()
    located.forEach(s=>{
     const node=document.createElement('button');node.type='button';node.className='provider-demand-zone-pin'+(s.zone===selectedZone?' selected':'')
-    node.textContent=s.zone;node.setAttribute('aria-label',`Selecionar zona ${s.zone}`)
+    node.textContent=s.zone;node.setAttribute('aria-label',translateRef.current('providerDemandMap.zone',{zone:s.zone}))
     node.addEventListener('click',()=>onSelectZone?.(s.zone))
     const pt:[number,number]=[s.longitude,s.latitude];bounds.extend(pt)
     markers.current.push(new lib.Marker({element:node,anchor:'bottom'}).setLngLat(pt).addTo(map))
    })
    if(located.length===1)map.easeTo({center:[located[0].longitude,located[0].latitude],zoom:13,duration:350})
    else map.fitBounds(bounds,{padding:70,maxZoom:14,duration:400})
-  }).catch(()=>{if(alive)setError('Não foi possível atualizar as zonas.')})
+  }).catch(()=>{if(alive)setError(translateRef.current('providerDemandMap.zoneError'))})
   return()=>{alive=false}
  },[geojson,located,mapReady,onSelectZone,selectedZone])
  useEffect(()=>{const map=mapRef.current;if(!mapReady||!map)return;providerMarker.current?.remove();providerMarker.current=null;if(!providerPosition)return;let alive=true;void loadMaplibre().then(lib=>{if(!alive||mapRef.current!==map)return;const node=document.createElement('div');node.className='provider-demand-self-pin';node.setAttribute('aria-label','Minha localização GPS');providerMarker.current=new lib.Marker({element:node}).setLngLat(providerPosition).addTo(map);map.easeTo({center:providerPosition,zoom:12,duration:400})});return()=>{alive=false}},[providerPosition,mapReady])
- const status=!online?'Radar visível · fique Online para receber ofertas':located.length?`${located.length} sinal${located.length===1?'':'is'} de demanda geolocalizado${located.length===1?'':'s'}`:signals.length?'Demanda sem coordenadas públicas':'Sem demanda compatível agora'
+ const status=!online?t('providerDemandMap.offline'):located.length?located.length===1?t('providerDemandMap.locatedOne'):t('providerDemandMap.locatedMany',{count:located.length}):signals.length?t('providerDemandMap.noCoords'):t('providerDemandMap.noDemand')
  return <div className="provider-demand-map">
-  <div ref={el} className="provider-demand-map-canvas" aria-label="Mapa de calor de demanda real UGO"/>
+  <div ref={el} className="provider-demand-map-canvas" aria-label={t('providerDemandMap.aria')}/>
   {!mapReady&&!error&&<div className="provider-demand-map-loading" role="status">{t('screen.provider_demandmap.1')}</div>}
   {error&&<div className="provider-demand-map-loading" role="alert">{error}</div>}
   <div className="provider-map-label">{status}</div>
-  <div className="provider-demand-legend" aria-label="Intensidade da demanda"><span>{t('screen.provider_demandmap.2')}</span><i/><span>{t('screen.provider_demandmap.3')}</span></div>
-  {signals.length>located.length&&<div className="provider-demand-map-note">{signals.length-located.length} sinal(is) sem coordenadas não exibido(s).</div>}
+  <div className="provider-demand-legend" aria-label={t('providerDemandMap.legend')}><span>{t('screen.provider_demandmap.2')}</span><i/><span>{t('screen.provider_demandmap.3')}</span></div>
+  {signals.length>located.length&&<div className="provider-demand-map-note">{signals.length-located.length} {t('providerDemandMap.hiddenSignals')}</div>}
  </div>
 }
