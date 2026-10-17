@@ -1,4 +1,5 @@
 import React,{useEffect,useRef,useState}from'react'
+import{useLocale,type UgoLocale}from'../../i18n/locale'
 import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{ProviderCategoriesEditor}from'./ProviderCategoriesEditor'
@@ -11,6 +12,7 @@ const verificationLabel=(state?:string)=>state==='verificado'?'Perfil verificado
 
 export function ProviderProfileScreen(){
  const d=useProviderData(),flow=useProviderFlow(),p=d.provider,photoInput=useRef<HTMLInputElement>(null)
+ const{locale,setLocale}=useLocale()
  const[editing,setEditing]=useState(false),[zoneEditing,setZoneEditing]=useState(false),[bio,setBio]=useState(p.bio||''),[city,setCity]=useState(p.ciudad_base||''),[rate,setRate]=useState(String(p.tarifa_base||'')),[radius,setRadius]=useState(String(p.zona_radio_km||15)),[error,setError]=useState(''),[zoneError,setZoneError]=useState(''),[zoneSaved,setZoneSaved]=useState(''),[password,setPassword]=useState(''),[passwordConfirm,setPasswordConfirm]=useState(''),[passwordError,setPasswordError]=useState('')
  useEffect(()=>{setBio(p.bio||'');setCity(p.ciudad_base||'');setRate(String(p.tarifa_base||''));setRadius(String(p.zona_radio_km||15))},[p.bio,p.ciudad_base,p.tarifa_base,p.zona_radio_km])
  const save=async(event:React.FormEvent)=>{event.preventDefault();setError('');const tarifa=Number(rate),radio=Number(radius);if(!Number.isFinite(tarifa)||tarifa<0)return setError('Ingresá una tarifa válida.');if(!Number.isFinite(radio)||radio<1||radio>100)return setError('El radio de trabajo debe estar entre 1 y 100 km.');const ok=await d.saveProfile({bio:bio.trim()||null,tarifa_base:tarifa,ciudad_base:city.trim()||null,zona_radio_km:radio});if(ok)setEditing(false)}
@@ -21,6 +23,7 @@ export function ProviderProfileScreen(){
  const changePassword=async(event:React.FormEvent)=>{event.preventDefault();setPasswordError('');if(password.length<8)return setPasswordError('La nueva contraseña debe tener al menos 8 caracteres.');if(password!==passwordConfirm)return setPasswordError('Las contraseñas no coinciden.');const ok=await d.changePassword(password);if(ok){setPassword('');setPasswordConfirm('')}}
  return <section className="provider-screen provider-profile-complete" aria-labelledby="provider-profile-title">
   <SectionHeader eyebrow="TU CUENTA" title="Perfil" description="Tu identidad profesional, operación y dinero en un solo lugar." actions={<Button variant="ghost" onClick={()=>setEditing(value=>!value)}>{editing?'Cerrar':'Editar'}</Button>}/>
+  <section className="provider-card" style={{padding:16,marginBottom:14,borderRadius:16}}><label htmlFor="ugo-provider-profile-language" style={{display:'block',fontWeight:800,marginBottom:8}}>Idioma do aplicativo</label><select id="ugo-provider-profile-language" value={locale} onChange={e=>setLocale(e.target.value as UgoLocale)} style={{minHeight:46,width:'100%',borderRadius:10,padding:10,border:'1px solid #cde2d8'}}><option value="pt-BR">Português (Brasil)</option><option value="es">Español</option><option value="en">English</option></select><small style={{display:'block',marginTop:8}}>A preferência é salva na sua conta e neste dispositivo.</small></section>
   <article className="provider-profile-identity">
    <div className="provider-profile-avatar">{d.profilePhotoUrl?<img src={d.profilePhotoUrl} alt={`Foto de perfil de ${d.name}`}/>:<span aria-hidden="true">{initials(d.name)}</span>}</div>
    <div><h2>{d.name}</h2><p>⭐ {d.karma.toFixed(1)} · {p.ciudad_base||'Ciudad por completar'}</p><StatusPill tone={p.estado_verificacion==='verificado'?'success':p.estado_verificacion==='rechazado'||p.estado_verificacion==='suspendido'?'danger':'warning'}>✓ {verificationLabel(p.estado_verificacion)}</StatusPill><div className="provider-profile-photo-actions"><input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="provider-profile-photo-input" aria-label="Elegir foto de perfil" onChange={event=>{const file=event.target.files?.[0];if(file)void d.uploadProfilePhoto(file);event.currentTarget.value=''}}/><Button type="button" variant="ghost" onClick={()=>photoInput.current?.click()} disabled={d.busy}>{d.profilePhotoUrl?'Cambiar foto':'Agregar foto'}</Button><small>JPG, PNG o WebP · máximo 5 MB</small></div></div>
