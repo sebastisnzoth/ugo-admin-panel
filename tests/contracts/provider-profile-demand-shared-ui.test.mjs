@@ -19,7 +19,7 @@ test('provider profile and categories consume shared form primitives',async()=>{
 test('provider demand consumes shared UI and keeps live data actions',async()=>{
  const s=await read('src/mvp/provider/ProviderDemand.tsx')
  for(const token of ['SectionHeader','StatusPill','EmptyState','Card','Button'])assert.match(s,new RegExp(token))
- assert.match(s,/ProviderDemandMap signals=\{d\.demand\}/)
+ assert.match(s,/ProviderDemandMap signals=\{visible\}/);assert.match(s,/selectedZone/)
  assert.match(s,/d\.reload\(\)/)
  assert.match(s,/flow\.actions\.openOpportunities/)
 })
