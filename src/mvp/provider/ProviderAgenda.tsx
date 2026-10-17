@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../lib/roleSupabase'
+import{useLocale}from'../../i18n/locale'
 import{reportSentinelIncident}from'../../lib/sentinel'
 import{ServiceChat}from'../ServiceChat'
 import type{Service}from'../shared'
