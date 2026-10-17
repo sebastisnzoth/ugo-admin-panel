@@ -3,18 +3,18 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import ts from 'typescript'
 
-const catalogPath = 'src/i18n/translations/core.ts'
+const catalogPaths = ['src/i18n/translations/coreBase.ts', 'src/i18n/translations/recovery.ts', 'src/i18n/translations/opportunities.ts', 'src/i18n/translations/payout.ts', 'src/i18n/translations/earnings.ts']
 const localePath = 'src/i18n/locale.tsx'
 const supported = ['pt-BR', 'es', 'en']
-const catalogText = fs.readFileSync(catalogPath, 'utf8')
+const catalogs = catalogPaths.map(file => ({file, text: fs.readFileSync(file, 'utf8')}))
 const localeText = fs.readFileSync(localePath, 'utf8')
-const source = ts.createSourceFile(catalogPath, catalogText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+const sources = catalogs.map(({file,text}) => ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS))
 
 function localeCatalogs() {
   const result = new Map()
   function visit(node) {
     if (ts.isPropertyAssignment(node) && supported.includes(node.name?.text) && ts.isObjectLiteralExpression(node.initializer)) {
-      const keys = new Set()
+      const keys = result.get(node.name.text) ?? new Set()
       for (const property of node.initializer.properties) {
         if (ts.isPropertyAssignment(property) && ts.isStringLiteral(property.name)) keys.add(property.name.text)
       }
@@ -22,7 +22,10 @@ function localeCatalogs() {
     }
     ts.forEachChild(node, visit)
   }
-  visit(source)
+  for (const source of sources) {
+    assert.equal(source.parseDiagnostics.length, 0, `${source.fileName} must be valid TypeScript`)
+    visit(source)
+  }
   return result
 }
 
