@@ -1,4 +1,5 @@
-import React from 'react'
+import React,{useEffect,useState} from 'react'
+import{getRoleSupabase}from'../../../lib/roleSupabase'
 import {UserProfileAvatar} from '../../../mvp/UserProfileAvatar'
 import './AssignedProviderCard.css'
 
@@ -8,7 +9,9 @@ export type AssignedProviderProfile={
  servicios_completados?:number|null
  foto_url?:string|null
 }
-export function AssignedProviderCard({provider,category,onOpen,compact=false}:{provider:AssignedProviderProfile|null|undefined;category?:string|null;onOpen?:()=>void;compact?:boolean}){
+export function AssignedProviderCard({provider,providerId,category,onOpen,compact=false}:{provider:AssignedProviderProfile|null|undefined;providerId?:string|null;category?:string|null;onOpen?:()=>void;compact?:boolean}){
+ const[portfolio,setPortfolio]=useState<Array<{name:string;url:string}>>([])
+ useEffect(()=>{if(!providerId){setPortfolio([]);return}let alive=true;const db=getRoleSupabase('client');void db.storage.from('provider-public').list(`${providerId}/portfolio`,{limit:4,sortBy:{column:'created_at',order:'desc'}}).then(({data,error})=>{if(!alive||error)return;setPortfolio((data||[]).filter(f=>/\.(jpe?g|png|webp)$/i.test(f.name)).map(f=>({name:f.name,url:db.storage.from('provider-public').getPublicUrl(`${providerId}/portfolio/${f.name}`).data.publicUrl}))) }).catch(()=>{});return()=>{alive=false}},[providerId])
  if(!provider)return null
  const rating=Number(provider.karma)
  const hasRating=provider.karma!=null&&Number.isFinite(rating)&&rating>0
@@ -27,6 +30,7 @@ export function AssignedProviderCard({provider,category,onOpen,compact=false}:{p
    <div><strong>{hasRating?`★ ${rating.toFixed(1)}`:'Sin calificar'}</strong><span>Calificación</span></div>
    <div><strong>{hasCompleted?completed:'—'}</strong><span>Servicios completados</span></div>
   </div>
+  {portfolio.length>0&&<div className="ugo-assigned-provider-portfolio"><strong>Trabajos anteriores</strong><div>{portfolio.map(p=><figure key={p.name}><img src={p.url} alt={`Proyecto: ${p.name.replace(/^\d+_/,"").replace(/\.[^.]+$/,"").replaceAll("-"," ")}`} loading="lazy"/></figure>)}</div></div>}
   {onOpen&&<button type="button" onClick={onOpen}>Ver seguimiento del pedido <span aria-hidden="true">→</span></button>}
  </section>
 }
