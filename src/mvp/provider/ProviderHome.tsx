@@ -46,6 +46,7 @@ export function ProviderHome(){
    {!d.debtBlocked&&(!d.online||!d.matchingReady)&&<Button variant="primary" className="provider-primary provider-wide" disabled={d.busy} onClick={()=>void d.setOnline(true)}>{d.online?'Actualizar ubicación':'Ponerme Online'}</Button>}
   </Card>
   </div>
+  {d.service?.cliente_id&&<ProviderCustomerCard clientId={d.service.cliente_id} serviceId={d.service.id} compact/>}
   {d.debtBlocked&&<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">Nuevos pedidos pausados</StatusPill><span>Debés {money(d.ugoDebt)} en {d.pendingDebtCount} comisiones. Tus trabajos ya asignados siguen disponibles, pero no recibirás ni podrás aceptar otros hasta conciliar al menos una.</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></Card>}
   <h2 className="provider-home-section-title">Accesos rápidos</h2>
   <div className="provider-quick-grid">
