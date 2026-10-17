@@ -1,3 +1,4 @@
+import{useLocale}from'../i18n/locale'
 import React,{useMemo,useState}from'react'
 import{useCategorias,useTarifas}from'../hooks/useAdminData'
 import{useDialog}from'./dialogs'
@@ -9,6 +10,7 @@ const emptyDraft=(categoriaId=''):Draft=>({categoriaId,zona:'General',base:'',ho
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 
 export function AdminTariffsPanel(){
+ const{t}=useLocale();
  const{tarifas,loading,error,upsert,setActiva,refetch}=useTarifas()
  const{categorias}=useCategorias()
  const activeCategories=useMemo(()=>categorias.filter((c:any)=>c.activa),[categorias])
@@ -39,25 +41,25 @@ export function AdminTariffsPanel(){
  }
 
  return <section className="ugo-tariffs">
-  <header className="ugo-tariffs-head"><div><small>FINANZAS · TARIFAS</small><h3>Precios por categoría y zona</h3><p>Definí la referencia que UGO puede usar al cotizar un pedido. “General” funciona como respaldo cuando no hay una zona específica.</p></div><div><button type="button" onClick={startCreate}>＋ Nueva tarifa</button><button type="button" onClick={()=>void refetch()} disabled={loading}>↻ Actualizar</button></div></header>
+  <header className="ugo-tariffs-head"><div><small>{t('screen.admin_tariffs.1')}</small><h3>{t('screen.admin_tariffs.2')}</h3><p>Definí la referencia que UGO puede usar al cotizar un pedido. “General” funciona como respaldo cuando no hay una zona específica.</p></div><div><button type="button" onClick={startCreate}>{t('screen.admin_tariffs.3')}</button><button type="button" onClick={()=>void refetch()} disabled={loading}>{t('screen.admin_tariffs.4')}</button></div></header>
 
   <div className="ugo-tariff-editor">
-   <div className="ugo-tariff-editor-title"><div><small>{editing?'EDITANDO TARIFA':'NUEVA TARIFA'}</small><strong>{editing?'Actualizá los valores':'Configurá una categoría y zona'}</strong></div>{editing&&<button type="button" onClick={startCreate}>Cancelar edición</button>}</div>
+   <div className="ugo-tariff-editor-title"><div><small>{editing?'EDITANDO TARIFA':'NUEVA TARIFA'}</small><strong>{editing?'Actualizá los valores':'Configurá una categoría y zona'}</strong></div>{editing&&<button type="button" onClick={startCreate}>{t('screen.admin_tariffs.5')}</button>}</div>
    <div className="ugo-tariff-fields">
-    <label>Categoría<select value={draft.categoriaId} onChange={e=>setDraft(v=>({...v,categoriaId:e.target.value}))}><option value="">Seleccionar…</option>{activeCategories.map((c:any)=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}</select></label>
-    <label>Zona<input value={draft.zona} onChange={e=>setDraft(v=>({...v,zona:e.target.value}))} placeholder="General o Canasvieiras"/></label>
-    <label>Base (R$)<input inputMode="decimal" value={draft.base} onChange={e=>setDraft(v=>({...v,base:e.target.value}))} placeholder="0,00"/></label>
-    <label>Por hora (R$)<input inputMode="decimal" value={draft.hora} onChange={e=>setDraft(v=>({...v,hora:e.target.value}))} placeholder="0,00"/></label>
-    <label>Mínimo (R$)<input inputMode="decimal" value={draft.min} onChange={e=>setDraft(v=>({...v,min:e.target.value}))} placeholder="0,00"/></label>
-    <label>Máximo (R$)<input inputMode="decimal" value={draft.max} onChange={e=>setDraft(v=>({...v,max:e.target.value}))} placeholder="opcional"/></label>
+    <label>{t('screen.admin_tariffs.6')}<select value={draft.categoriaId} onChange={e=>setDraft(v=>({...v,categoriaId:e.target.value}))}><option value="">{t('screen.admin_tariffs.7')}</option>{activeCategories.map((c:any)=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}</select></label>
+    <label>{t('screen.admin_tariffs.8')}<input value={draft.zona} onChange={e=>setDraft(v=>({...v,zona:e.target.value}))} placeholder="General o Canasvieiras"/></label>
+    <label>{t('screen.admin_tariffs.9')}<input inputMode="decimal" value={draft.base} onChange={e=>setDraft(v=>({...v,base:e.target.value}))} placeholder="0,00"/></label>
+    <label>{t('screen.admin_tariffs.10')}<input inputMode="decimal" value={draft.hora} onChange={e=>setDraft(v=>({...v,hora:e.target.value}))} placeholder="0,00"/></label>
+    <label>{t('screen.admin_tariffs.11')}<input inputMode="decimal" value={draft.min} onChange={e=>setDraft(v=>({...v,min:e.target.value}))} placeholder="0,00"/></label>
+    <label>{t('screen.admin_tariffs.12')}<input inputMode="decimal" value={draft.max} onChange={e=>setDraft(v=>({...v,max:e.target.value}))} placeholder="opcional"/></label>
    </div>
-   <div className="ugo-tariff-editor-actions"><span>Base = salida/referencia inicial · Hora = valor horario · Mín./Máx. = límites operativos.</span><button type="button" className="primary" onClick={()=>void save()} disabled={busy}>{busy?'Guardando…':editing?'Guardar cambios':'Crear tarifa'}</button></div>
+   <div className="ugo-tariff-editor-actions"><span>{t('screen.admin_tariffs.13')}</span><button type="button" className="primary" onClick={()=>void save()} disabled={busy}>{busy?'Guardando…':editing?'Guardar cambios':'Crear tarifa'}</button></div>
   </div>
 
   {message&&<div className="ugo-tariff-message" role="status">{message}</div>}
-  {error&&<div className="ugo-tariff-error" role="alert"><strong>No se pudieron cargar las tarifas</strong><span>{error}</span><button type="button" onClick={()=>void refetch()}>Reintentar</button></div>}
+  {error&&<div className="ugo-tariff-error" role="alert"><strong>{t('screen.admin_tariffs.14')}</strong><span>{error}</span><button type="button" onClick={()=>void refetch()}>{t('screen.admin_tariffs.15')}</button></div>}
 
-  {loading&&!tarifas.length?<div className="ugo-tariff-empty">Cargando tarifas…</div>:tarifas.length?<div className="ugo-tariff-table-wrap"><table><thead><tr><th>Categoría</th><th>Zona</th><th>Base</th><th>Hora</th><th>Mín.</th><th>Máx.</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>{tarifas.map((t:any)=><tr key={t.id} className={t.activa?'':'disabled'}><td><strong>{t.categorias?.emoji} {t.categorias?.nombre||'Categoría'}</strong></td><td>{t.zona||'General'}</td><td>{money(t.precio_base)}</td><td>{money(t.precio_hora)}</td><td>{money(t.precio_min)}</td><td>{t.precio_max==null?'—':money(t.precio_max)}</td><td><span className={t.activa?'active':'inactive'}>{t.activa?'Activa':'Desactivada'}</span></td><td><div className="ugo-tariff-row-actions"><button type="button" onClick={()=>startEdit(t)}>Editar</button><button type="button" onClick={()=>void toggle(t)} disabled={busy}>{t.activa?'Desactivar':'Activar'}</button></div></td></tr>)}</tbody></table></div>:<div className="ugo-tariff-empty"><strong>Todavía no hay tarifas</strong><span>Creá la primera tarifa para que UGO pueda cotizar por categoría y zona.</span><button type="button" onClick={startCreate}>＋ Crear primera tarifa</button></div>}
+  {loading&&!tarifas.length?<div className="ugo-tariff-empty">{t('screen.admin_tariffs.16')}</div>:tarifas.length?<div className="ugo-tariff-table-wrap"><table><thead><tr><th>{t('screen.admin_tariffs.6')}</th><th>{t('screen.admin_tariffs.8')}</th><th>{t('screen.admin_tariffs.17')}</th><th>{t('screen.admin_tariffs.18')}</th><th>{t('screen.admin_tariffs.19')}</th><th>{t('screen.admin_tariffs.20')}</th><th>{t('screen.admin_tariffs.21')}</th><th>{t('screen.admin_tariffs.22')}</th></tr></thead><tbody>{tarifas.map((t:any)=><tr key={t.id} className={t.activa?'':'disabled'}><td><strong>{t.categorias?.emoji} {t.categorias?.nombre||'Categoría'}</strong></td><td>{t.zona||'General'}</td><td>{money(t.precio_base)}</td><td>{money(t.precio_hora)}</td><td>{money(t.precio_min)}</td><td>{t.precio_max==null?'—':money(t.precio_max)}</td><td><span className={t.activa?'active':'inactive'}>{t.activa?'Activa':'Desactivada'}</span></td><td><div className="ugo-tariff-row-actions"><button type="button" onClick={()=>startEdit(t)}>{t('screen.admin_tariffs.23')}</button><button type="button" onClick={()=>void toggle(t)} disabled={busy}>{t.activa?'Desactivar':'Activar'}</button></div></td></tr>)}</tbody></table></div>:<div className="ugo-tariff-empty"><strong>{t('screen.admin_tariffs.24')}</strong><span>{t('screen.admin_tariffs.25')}</span><button type="button" onClick={startCreate}>{t('screen.admin_tariffs.26')}</button></div>}
  {dialog}
  </section>
 }
