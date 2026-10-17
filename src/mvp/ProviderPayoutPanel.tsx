@@ -1,7 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{useLocale}from'../i18n/locale'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{getRoleSupabase}from'../lib/roleSupabase'
-import{money}from'./shared'
 import{ProviderMercadoPagoConnect}from'./ProviderMercadoPagoConnect'
 import'./provider-payout.css'
 
@@ -11,6 +11,8 @@ type Withdrawal={id:string;monto:number;moneda:string;estado:string;created_at:s
 type Payment={id:string;servicio_id:string;ganancia_proveedor:number;moneda:string;estado:string;metodo?:string|null;liberado_at?:string|null;created_at:string}
 
 export function ProviderPayoutPanel({accessToken}:Props){
+ const{t,locale}=useLocale()
+ const formatMoney=(value:number,currency='BRL')=>new Intl.NumberFormat(locale,{style:'currency',currency:/^[A-Z]{3}$/i.test(currency)?currency:'BRL'}).format(Number(value||0))
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[userId,setUserId]=useState(''),[account,setAccount]=useState('')
  const[balance,setBalance]=useState<Balance>({total_liberado:0,total_retirado:0,saldo_disponible:0,saldo_procesando:0})
@@ -30,26 +32,26 @@ export function ProviderPayoutPanel({accessToken}:Props){
   setWithdrawals((w||[])as Withdrawal[]);setPayments(((p||[])as Payment[]).filter(row=>row.metodo!=='efectivo').slice(0,30));setAccount(String((profile as any)?.cuenta_pago_externa||''))
  },[supabase])
 
- useEffect(()=>{load().catch(e=>setMessage(e.message||'No se pudo cargar ganancias.'))},[load])
+ useEffect(()=>{load().catch(e=>setMessage(e.message||t('providerPayout.loadFailed')))},[load,t])
  const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{if(!userId)return;const ch=supabase.channel(`provider-payouts-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'retiros',filter:`proveedor_id=eq.${userId}`},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},()=>load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,supabase,userId,channelEpoch])
 
- async function saveAccount(){if(!userId)return;setBusy(true);const{error}=await (supabase as any).from('perfiles_proveedor').update({cuenta_pago_externa:account.trim()||null}).eq('usuario_id',userId);setBusy(false);setMessage(error?error.message:'Cuenta de cobro guardada.')}
- async function requestWithdrawal(){const value=Number(amount);if(!Number.isFinite(value)||value<50)return setMessage('El retiro mínimo es R$ 50.');if(value>balance.saldo_disponible)return setMessage('El monto supera tu saldo disponible.');if(!account.trim())return setMessage('Guardá primero tu cuenta de cobro.');setBusy(true);setMessage('');try{const r=await fetch('/api/retiros/solicitar',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({monto:value})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'No se pudo solicitar el retiro.');setAmount('');setMessage('Retiro solicitado. Queda pendiente hasta que exista confirmación real del pago externo.');await load()}catch(e){setMessage(e instanceof Error?e.message:'No se pudo solicitar el retiro.')}finally{setBusy(false)}}
- const statusLabel=(s:string)=>s==='pendiente'?'Pendiente':s==='procesando'?'Procesando':s==='pagado'?'Pagado':s==='fallido'?'Fallido':s
+ async function saveAccount(){if(!userId)return;setBusy(true);const{error}=await (supabase as any).from('perfiles_proveedor').update({cuenta_pago_externa:account.trim()||null}).eq('usuario_id',userId);setBusy(false);setMessage(error?error.message:t('providerPayout.accountSaved'))}
+ async function requestWithdrawal(){const value=Number(amount);if(!Number.isFinite(value)||value<50)return setMessage(t('providerPayout.minWithdrawal'));if(value>balance.saldo_disponible)return setMessage(t('providerPayout.overBalance'));if(!account.trim())return setMessage(t('providerPayout.saveAccountFirst'));setBusy(true);setMessage('');try{const r=await fetch('/api/retiros/solicitar',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({monto:value})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||t('providerPayout.requestFailed'));setAmount('');setMessage(t('providerPayout.withdrawRequested'));await load()}catch(e){setMessage(e instanceof Error?e.message:t('providerPayout.requestFailed'))}finally{setBusy(false)}}
+ const statusLabel=(s:string)=>['pendiente','procesando','pagado','fallido'].includes(s)?t('providerPayout.status.'+s):s
 
- return <div className="ugo-provider-payout"><strong className="ugo-payout-title">Ganancias y retiros</strong>
-  <div style={{marginTop:8,fontSize:13}}>Disponible: <b>{money(balance.saldo_disponible)}</b> · En proceso: {money(balance.saldo_procesando)}</div>
-  <div style={{marginTop:4,fontSize:11,opacity:.7}}>Liberado histórico: {money(balance.total_liberado)} · Retirado/comprometido: {money(balance.total_retirado)}</div>
+ return <div className="ugo-provider-payout"><strong className="ugo-payout-title">{t('providerPayout.title')}</strong>
+  <div style={{marginTop:8,fontSize:13}}>{t('providerPayout.available')}: <b>{formatMoney(balance.saldo_disponible)}</b> · {t('providerPayout.processing')}: {formatMoney(balance.saldo_procesando)}</div>
+  <div style={{marginTop:4,fontSize:11,opacity:.7}}>{t('providerPayout.released')}: {formatMoney(balance.total_liberado)} · {t('providerPayout.withdrawn')}: {formatMoney(balance.total_retirado)}</div>
   <ProviderMercadoPagoConnect accessToken={accessToken}/>
-  <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid #e5e7eb'}}><strong style={{fontSize:13}}>Retiro manual / legado</strong><p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>Se mantiene para saldos internos. Cuando Split Payments esté activo para un proveedor, Mercado Pago divide el cobro directamente y este retiro deja de ser el camino principal.</p></div>
-  <label style={{display:'block',marginTop:10}}>Cuenta de cobro<input value={account} onChange={e=>setAccount(e.target.value)} placeholder="Mercado Pago / cuenta vinculada"/></label>
-  <button type="button" className="mvp-voice-btn" onClick={saveAccount} disabled={busy}>Guardar cuenta</button>
-  <label style={{display:'block',marginTop:10}}>Retirar<input type="number" min="50" max={Math.max(50,balance.saldo_disponible)} step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="50.00"/></label>
-  <button type="button" className="mvp-voice-btn" onClick={requestWithdrawal} disabled={busy||balance.saldo_disponible<50}>{busy?'Procesando…':'Solicitar retiro'}</button>
-  <p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>Un retiro pendiente o procesando no significa que el dinero ya salió a una cuenta externa. UGO solo lo marca como pagado cuando existe confirmación real.</p>
+  <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid #e5e7eb'}}><strong style={{fontSize:13}}>{t('providerPayout.manualLegacy')}</strong><p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>{t('providerPayout.manualHelp')}</p></div>
+  <label style={{display:'block',marginTop:10}}>{t('providerPayout.account')}<input value={account} onChange={e=>setAccount(e.target.value)} placeholder={t('providerPayout.accountPlaceholder')}/></label>
+  <button type="button" className="mvp-voice-btn" onClick={saveAccount} disabled={busy}>{t('providerPayout.saveAccountButton')}</button>
+  <label style={{display:'block',marginTop:10}}>{t('providerPayout.withdraw')}<input type="number" min="50" max={Math.max(50,balance.saldo_disponible)} step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder={t('providerPayout.withdrawPlaceholder')}/></label>
+  <button type="button" className="mvp-voice-btn" onClick={requestWithdrawal} disabled={busy||balance.saldo_disponible<50}>{busy?t('providerPayout.processing'):t('providerPayout.request')}</button>
+  <p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>{t('providerPayout.pendingWarning')}</p>
   {message&&<div style={{marginTop:8,fontSize:12}}>{message}</div>}
-  <details style={{marginTop:10}}><summary>Historial de retiros ({withdrawals.length})</summary>{withdrawals.map(w=><div key={w.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(w.created_at).toLocaleDateString('pt-BR')} · {statusLabel(w.estado)} · <b>{money(w.monto,w.moneda)}</b>{w.transferencia_externa_id?<small style={{display:'block',opacity:.65}}>Ref: {w.transferencia_externa_id}</small>:null}</div>)}</details>
-  <details style={{marginTop:8}}><summary>Pagos digitales liberados ({payments.length})</summary>{payments.map(p=><div key={p.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(p.liberado_at||p.created_at).toLocaleDateString('pt-BR')} · <b>{money(p.ganancia_proveedor,p.moneda)}</b></div>)}</details>
+  <details style={{marginTop:10}}><summary>{t('providerPayout.withdrawHistory',{count:withdrawals.length})}</summary>{withdrawals.map(w=><div key={w.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(w.created_at).toLocaleDateString(locale)} · {statusLabel(w.estado)} · <b>{formatMoney(w.monto,w.moneda)}</b>{w.transferencia_externa_id?<small style={{display:'block',opacity:.65}}>Ref: {w.transferencia_externa_id}</small>:null}</div>)}</details>
+  <details style={{marginTop:8}}><summary>{t('providerPayout.digitalHistory',{count:payments.length})}</summary>{payments.map(p=><div key={p.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(p.liberado_at||p.created_at).toLocaleDateString(locale)} · <b>{formatMoney(p.ganancia_proveedor,p.moneda)}</b></div>)}</details>
  </div>
 }

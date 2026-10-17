@@ -23,14 +23,14 @@ export function ClientGlobalMenu(){
  const hugo=()=>{close();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientHugo),80)}
  const notifications=()=>{close();window.setTimeout(()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click(),60)}
  const logout=async()=>{close();await supabase.auth.signOut();window.location.replace(`${window.location.pathname}?app=client`)}
- const displayName=String(profile?.nombre||'Mi cuenta').trim()||'Mi cuenta'
+ const displayName=String(profile?.nombre||t('clientMenu.accountDefault')).trim()||t('clientMenu.accountDefault')
  const initials=useMemo(()=>displayName.split(/\s+/).map(part=>part[0]).filter(Boolean).slice(0,2).join('').toUpperCase()||'UG',[displayName])
  return <>
   {open&&<div className="ugo-client-menu-backdrop ugo-client-global-backdrop" onClick={close} role="presentation">
    <aside className="ugo-client-menu ugo-client-global-drawer" onClick={event=>event.stopPropagation()} aria-label={t('client.menu')}>
     <div className="ugo-client-menu-head ugo-client-global-head">
-     <div className="ugo-client-menu-brand"><strong>UGO</strong><span>Cliente</span></div>
-     <button type="button" className="ugo-client-menu-close" onClick={close} aria-label="Cerrar menú">×</button>
+     <div className="ugo-client-menu-brand"><strong>UGO</strong><span>{t('clientMenu.customer')}</span></div>
+     <button type="button" className="ugo-client-menu-close" onClick={close} aria-label={t('clientMenu.close')}>×</button>
     </div>
     <button type="button" className="ugo-client-account-card" onClick={()=>go('profile')}><span className="ugo-client-account-avatar">{initials}</span><div><b>{displayName}</b><small>{t('client.account')}</small></div><em>›</em></button>
     <nav className="ugo-client-menu-list ugo-client-global-list">
@@ -41,12 +41,12 @@ export function ClientGlobalMenu(){
      <button type="button" onClick={addresses}><span>⌖</span><div><b >{t('client.addresses')}</b></div></button>
      <button type="button" onClick={payment}><span>▤</span><div><b >{t('client.payment')}</b></div></button>
      <button type="button" onClick={notifications}><span>♢</span><div><b >{t('client.notifications')}</b></div></button>
-     <button type="button" onClick={hugo}><span>✦</span><div><b>Hugo / Asistente IA</b></div></button>
+     <button type="button" onClick={hugo}><span>✦</span><div><b>{t('clientMenu.assistant')}</b></div></button>
      <button type="button" onClick={()=>go('dispute')}><span>?</span><div><b >{t('nav.help')}</b></div></button>
-     <button type="button" onClick={()=>go('profile')}><span>⚙</span><div><b>Configuración</b></div></button>
+     <button type="button" onClick={()=>go('profile')}><span>⚙</span><div><b>{t('clientMenu.settings')}</b></div></button>
      <button type="button" className="ugo-menu-logout" onClick={()=>void logout()}><span>⇥</span><div><b >{t('client.logout')}</b></div></button>
     </nav>
-    <div className="ugo-client-global-footer"><b>UGO</b><span>Un pedido. Un profesional. Sin vueltas.</span></div>
+    <div className="ugo-client-global-footer"><b>UGO</b><span>{t('clientMenu.tagline')}</span></div>
    </aside>
   </div>}
  </>

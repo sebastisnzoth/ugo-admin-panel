@@ -21,11 +21,11 @@ export function ProviderCustomerCard({clientId,serviceId,compact=false}:{clientI
  return()=>{alive=false}
  },[clientId,serviceId])
  const rating=Number(customer?.karma),rated=customer?.karma!=null&&Number.isFinite(rating)&&rating>0
- return <section className={`ugo-provider-customer-card${compact?' is-compact':''}`} aria-label="Ficha del cliente del pedido">
+ return <section className={`ugo-provider-customer-card${compact?' is-compact':''}`} aria-label={t('screen.provider_customer.1')}>
  <header><span>{t('screen.provider_customer.1')}</span><strong>{t('screen.provider_customer.2')}</strong></header>
- <div className="ugo-provider-customer-main"><UserProfileAvatar name={customer?.nombre||'Cliente UGO'} role="client" photoUrl={customer?.foto_url||null} size={64}/>
- <div><h3>{customer?.nombre||'Cliente UGO'}</h3><p>{t('screen.provider_customer.3')}</p></div></div>
- <div className="ugo-provider-customer-stats"><div><strong>{rated?`★ ${rating.toFixed(1)}`:'Sin valoración'}</strong><small>{t('screen.provider_customer.4')}</small></div><div><strong>{previous??'—'}</strong><small>{t('screen.provider_customer.5')}</small></div></div>
- <p className="ugo-provider-customer-caption">{loading?'Cargando ficha…':'Las contrataciones mostradas son las que compartís con este cliente. Su historial con otros proveedores es privado.'}</p>
+ <div className="ugo-provider-customer-main"><UserProfileAvatar name={customer?.nombre||t('providerCustomer.ugoClient')} role="client" photoUrl={customer?.foto_url||null} size={64}/>
+ <div><h3>{customer?.nombre||t('providerCustomer.ugoClient')}</h3><p>{t('screen.provider_customer.3')}</p></div></div>
+ <div className="ugo-provider-customer-stats"><div><strong>{rated?`★ ${rating.toFixed(1)}`:t('providerCustomer.notRated')}</strong><small>{t('screen.provider_customer.4')}</small></div><div><strong>{previous??'—'}</strong><small>{t('screen.provider_customer.5')}</small></div></div>
+ <p className="ugo-provider-customer-caption">{loading?t('providerCustomer.loading'):t('providerCustomer.caption')}</p>
  </section>
 }

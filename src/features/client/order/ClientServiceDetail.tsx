@@ -50,7 +50,7 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
    <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.chat" checklistCode="CHAT-REALTIME" severity="P0" title={t('clientOrder.chatUnavailable')} compact><ServiceChat role="client" serviceId={service.id} compact/></SentinelErrorBoundary>
    {!awaitingApproval&&!disputeActive&&service.estado!=='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.expansion" title={t('clientOrder.changesUnavailable')} compact><ServiceExpansionPanel role="client" serviceId={service.id} compact/></SentinelErrorBoundary>}
    {service.estado==='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.rating.submit" checklistCode="RATING" severity="P1" title={t('clientOrder.ratingUnavailable')} compact><ClientRatingPrompt serviceId={service.id} embedded/></SentinelErrorBoundary>}
-   <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.dispute" title="Ayuda temporalmente no disponible" compact><DisputeDock role="client" serviceId={service.id} key={`client-dispute-${service.id}`} openRequestKey={disputeOpenKey} showLauncher={!awaitingApproval&&!disputeActive}/></SentinelErrorBoundary>
+   <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.dispute" title={t('clientDetail.helpUnavailable')} compact><DisputeDock role="client" serviceId={service.id} key={`client-dispute-${service.id}`} openRequestKey={disputeOpenKey} showLauncher={!awaitingApproval&&!disputeActive}/></SentinelErrorBoundary>
   </>}
  </div>{dialog}</div>
 }

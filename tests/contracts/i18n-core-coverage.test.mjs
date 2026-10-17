@@ -38,6 +38,9 @@ test('active role entry screens only reference keys present in all core catalogs
     'src/features/client/home/ClientHomeScreen.tsx',
     'src/features/client/onboarding/ClientOnboardingGate.tsx',
     'src/mvp/provider/ProviderRoot.tsx',
+    'src/mvp/ProviderLocationTracker.tsx',
+    'src/mvp/ProviderPayoutPanel.tsx',
+    'src/mvp/provider/ProviderEarnings.tsx',
     'src/mvp/provider/ProviderHome.tsx',
     'src/mvp/ProviderOnboardingGate.tsx',
     'src/mvp/AdminGate.tsx',
@@ -51,6 +54,7 @@ test('active role entry screens only reference keys present in all core catalogs
     'src/mvp/provider/ProviderAgenda.tsx',
     'src/mvp/provider/ProviderActiveJob.tsx',
     'src/mvp/provider/ProviderEvidencePanel.tsx',
+    'src/mvp/provider/ProviderOpportunities.tsx',
     'src/features/client/rating/ClientRatingPrompt.tsx'
     ,'src/features/client/request/ClientRequestEvidence.tsx'
     ,'src/features/client/request/ClientLocationScreen.tsx'
@@ -59,7 +63,7 @@ test('active role entry screens only reference keys present in all core catalogs
   const catalogs = localeCatalogs()
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8')
-    for (const [, key] of text.matchAll(/t\(['"]((?:clientHome|clientOnboarding|providerHome|providerOnboarding|adminAuth|adminShell|landing|clientMatch|clientOrder|clientEvidence|clientLocation|clientMap|clientRating|clientPayment|clientProfile|providerAgenda|providerJob|providerEvidence)\.[^'"]+)['"]/g)) {
+    for (const [, key] of text.matchAll(/t\(['"]((?:clientHome|clientOnboarding|providerHome|providerOnboarding|adminAuth|adminShell|landing|clientMatch|clientOrder|clientEvidence|clientLocation|clientMap|clientRating|clientPayment|clientProfile|providerAgenda|providerJob|providerEvidence|clientNeed|clientMenu|clientHeader|clientRoot|providerRoot|clientReview|clientTracking|clientAssigned|clientBoundary|clientHistory|clientSummary|clientPayment|clientDetail|clientProfile|providerGps|providerOpportunity|providerPayout|providerEarnings)\.[^'"]+)['"](?!\s*\+)/g)) {
       for (const locale of supported) assert.ok(catalogs.get(locale).has(key), `${file} uses missing ${locale} key ${key}`)
     }
   }
