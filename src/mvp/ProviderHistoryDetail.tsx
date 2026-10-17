@@ -1,3 +1,4 @@
+import{useLocale}from'../i18n/locale'
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{ProviderRatingPrompt}from'./ProviderRatingPrompt'
@@ -31,6 +32,7 @@ const money=(value?:number|string|null,currency='BRL')=>new Intl.NumberFormat('p
 const method=(value?:string|null)=>value==='efectivo'?'Efectivo':value==='pix'||value==='pix_direto'?'PIX':value==='mercadopago'?'Mercado Pago':value||'Pago UGO'
 
 export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=>void}){
+ const{t}=useLocale();
  const db=useMemo(()=>getRoleSupabase('provider'),[])
  const[evidence,setEvidence]=useState<Evidence[]>([]),[requestEvidence,setRequestEvidence]=useState<RequestEvidence[]>([]),[events,setEvents]=useState<Event[]>([]),[payment,setPayment]=useState<Payment|null>(null),[clientPhotoPath,setClientPhotoPath]=useState<string|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[channelEpoch,setChannelEpoch]=useState(0)
  const load=useCallback(async()=>{
@@ -67,30 +69,30 @@ export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=
   return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void db.removeChannel(channel)}
  },[channelEpoch,db,load,service.id])
  const grouped=(kind:EvidenceKind)=>evidence.filter(item=>item.tipo===kind)
- const gallery=(items:(Evidence|RequestEvidence)[],label:string)=>items.length?<div className="ugo-provider-history-gallery">{items.map(item=><figure key={item.id}>{item.url?<a href={item.url} target="_blank" rel="noreferrer" aria-label={`Abrir foto ${label}`}><img loading="lazy" decoding="async" src={item.url} alt={`Foto ${label}`}/></a>:<div className="ugo-provider-history-photo-missing">Sin vista previa</div>}<figcaption>{'tipo'in item?<strong>{EVIDENCE[item.tipo]}</strong>:<strong>{label}</strong>}{item.descripcion&&<span>{item.descripcion}</span>}<time>{when(item.created_at)}</time></figcaption></figure>)}</div>:<p className="ugo-provider-history-empty-block">No hay fotos registradas en esta etapa.</p>
+ const gallery=(items:(Evidence|RequestEvidence)[],label:string)=>items.length?<div className="ugo-provider-history-gallery">{items.map(item=><figure key={item.id}>{item.url?<a href={item.url} target="_blank" rel="noreferrer" aria-label={`Abrir foto ${label}`}><img loading="lazy" decoding="async" src={item.url} alt={`Foto ${label}`}/></a>:<div className="ugo-provider-history-photo-missing">{t('screen.provider_history.1')}</div>}<figcaption>{'tipo'in item?<strong>{EVIDENCE[item.tipo]}</strong>:<strong>{label}</strong>}{item.descripcion&&<span>{item.descripcion}</span>}<time>{when(item.created_at)}</time></figcaption></figure>)}</div>:<p className="ugo-provider-history-empty-block">{t('screen.provider_history.2')}</p>
  return <div className="ugo-provider-history-detail-backdrop" onClick={onClose}>
   <section className="ugo-provider-history-detail" role="dialog" aria-modal="true" aria-labelledby="ugo-provider-history-detail-title" onClick={event=>event.stopPropagation()}>
-   <header><div><small>TRABAJO GUARDADO · #{service.numero??service.id.slice(0,8)}</small><h2 id="ugo-provider-history-detail-title">{service.categoria?.emoji||'🧰'} {service.categoria?.nombre||'Servicio UGO'}</h2><p>Registro completo y sólo lectura de lo realizado.</p></div><button type="button" onClick={onClose} aria-label="Cerrar">×</button></header>
+   <header><div><small>TRABAJO GUARDADO · #{service.numero??service.id.slice(0,8)}</small><h2 id="ugo-provider-history-detail-title">{service.categoria?.emoji||'🧰'} {service.categoria?.nombre||'Servicio UGO'}</h2><p>{t('screen.provider_history.3')}</p></div><button type="button" onClick={onClose} aria-label="Cerrar">×</button></header>
    <div className="ugo-provider-history-detail-state"><span>{STATE[service.estado]||service.estado}</span><b>{when(service.completado_at||service.updated_at||service.created_at)}</b></div>
    <section className="ugo-provider-history-summary">
-    <div><small>CLIENTE</small><span style={{display:'inline-flex',alignItems:'center',gap:8}}><UserProfileAvatar name={service.cliente?.nombre||'Cliente UGO'} role="client" photoPath={clientPhotoPath} size={34}/><strong>{service.cliente?.nombre||'Cliente UGO'}</strong></span></div>
-    <div><small>VALOR</small><strong>{money(service.tarifa)}</strong></div>
-    <div><small>PROGRAMADO</small><strong>{when(service.programado_para||service.created_at)}</strong></div>
-    <div><small>DIRECCIÓN</small><strong>{service.direccion_cliente||'No registrada'}</strong></div>
+    <div><small>{t('screen.provider_history.4')}</small><span style={{display:'inline-flex',alignItems:'center',gap:8}}><UserProfileAvatar name={service.cliente?.nombre||'Cliente UGO'} role="client" photoPath={clientPhotoPath} size={34}/><strong>{service.cliente?.nombre||'Cliente UGO'}</strong></span></div>
+    <div><small>{t('screen.provider_history.5')}</small><strong>{money(service.tarifa)}</strong></div>
+    <div><small>{t('screen.provider_history.6')}</small><strong>{when(service.programado_para||service.created_at)}</strong></div>
+    <div><small>{t('screen.provider_history.7')}</small><strong>{service.direccion_cliente||'No registrada'}</strong></div>
    </section>
-   {service.descripcion&&<section className="ugo-provider-history-block"><small>QUÉ HABÍA QUE HACER</small><p>{service.descripcion}</p></section>}
-   {loading&&<div className="ugo-provider-history-loading">Reconstruyendo trabajo, fotos y recorrido…</div>}
-   {error&&<div className="ugo-provider-history-error" role="alert"><strong>No pudimos cargar todo el registro.</strong><span>{error}</span><button type="button" onClick={()=>void load()}>Reintentar</button></div>}
+   {service.descripcion&&<section className="ugo-provider-history-block"><small>{t('screen.provider_history.8')}</small><p>{service.descripcion}</p></section>}
+   {loading&&<div className="ugo-provider-history-loading">{t('screen.provider_history.9')}</div>}
+   {error&&<div className="ugo-provider-history-error" role="alert"><strong>{t('screen.provider_history.10')}</strong><span>{error}</span><button type="button" onClick={()=>void load()}>{t('screen.provider_history.11')}</button></div>}
    {!loading&&<>
-    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>FOTOS DEL CLIENTE</small><strong>Cómo llegó el pedido</strong></div><span>{requestEvidence.length}</span></div>{gallery(requestEvidence,'del pedido')}</section>
-    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>EVIDENCIA DEL TRABAJO</small><strong>Antes</strong></div><span>{grouped('antes').length}</span></div>{gallery(grouped('antes'),'antes')}</section>
-    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>EVIDENCIA DEL TRABAJO</small><strong>Durante</strong></div><span>{grouped('durante').length}</span></div>{gallery(grouped('durante'),'durante')}</section>
-    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>EVIDENCIA DEL TRABAJO</small><strong>Resultado final</strong></div><span>{grouped('despues').length}</span></div>{gallery(grouped('despues'),'después')}</section>
-    {payment&&<section className="ugo-provider-history-payment"><div><small>PAGO</small><strong>{method(payment.metodo)} · {STATE[payment.estado]||payment.estado}</strong></div><div><span>Total</span><b>{money(payment.monto_bruto,payment.moneda||'BRL')}</b></div><div><span>Comisión UGO</span><b>{money(payment.comision_ugo,payment.moneda||'BRL')}</b></div><div><span>Tu ganancia</span><strong>{money(payment.ganancia_proveedor,payment.moneda||'BRL')}</strong></div></section>}
-    <section className="ugo-provider-history-timeline"><div className="ugo-provider-history-block-head"><div><small>RECORRIDO</small><strong>Cómo se hizo</strong></div><span>{events.length}</span></div>{events.length?<ol>{events.map(item=><li key={item.id}><span></span><div><strong>{STATE[item.estado_nuevo]||item.estado_nuevo}</strong><time>{when(item.created_at)} · {item.actor_role}</time>{item.motivo&&<p>{item.motivo}</p>}</div></li>)}</ol>:<p className="ugo-provider-history-empty-block">No hay eventos históricos disponibles para este servicio.</p>}</section>
+    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>{t('screen.provider_history.12')}</small><strong>{t('screen.provider_history.13')}</strong></div><span>{requestEvidence.length}</span></div>{gallery(requestEvidence,'del pedido')}</section>
+    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>{t('screen.provider_history.14')}</small><strong>{t('screen.provider_history.15')}</strong></div><span>{grouped('antes').length}</span></div>{gallery(grouped('antes'),'antes')}</section>
+    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>{t('screen.provider_history.14')}</small><strong>{t('screen.provider_history.16')}</strong></div><span>{grouped('durante').length}</span></div>{gallery(grouped('durante'),'durante')}</section>
+    <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>{t('screen.provider_history.14')}</small><strong>{t('screen.provider_history.17')}</strong></div><span>{grouped('despues').length}</span></div>{gallery(grouped('despues'),'después')}</section>
+    {payment&&<section className="ugo-provider-history-payment"><div><small>{t('screen.provider_history.18')}</small><strong>{method(payment.metodo)} · {STATE[payment.estado]||payment.estado}</strong></div><div><span>{t('screen.provider_history.19')}</span><b>{money(payment.monto_bruto,payment.moneda||'BRL')}</b></div><div><span>{t('screen.provider_history.20')}</span><b>{money(payment.comision_ugo,payment.moneda||'BRL')}</b></div><div><span>{t('screen.provider_history.21')}</span><strong>{money(payment.ganancia_proveedor,payment.moneda||'BRL')}</strong></div></section>}
+    <section className="ugo-provider-history-timeline"><div className="ugo-provider-history-block-head"><div><small>{t('screen.provider_history.22')}</small><strong>{t('screen.provider_history.23')}</strong></div><span>{events.length}</span></div>{events.length?<ol>{events.map(item=><li key={item.id}><span></span><div><strong>{STATE[item.estado_nuevo]||item.estado_nuevo}</strong><time>{when(item.created_at)} · {item.actor_role}</time>{item.motivo&&<p>{item.motivo}</p>}</div></li>)}</ol>:<p className="ugo-provider-history-empty-block">{t('screen.provider_history.24')}</p>}</section>
     {service.estado==='completado'&&<ProviderRatingPrompt serviceId={service.id} embedded/>}
    </>}
-   <footer><span>serviceId</span><code>{service.id}</code><button type="button" className="ugo-history-open-button" onClick={onClose}>Cerrar trabajo</button></footer>
+   <footer><span>serviceId</span><code>{service.id}</code><button type="button" className="ugo-history-open-button" onClick={onClose}>{t('screen.provider_history.25')}</button></footer>
   </section>
  </div>
 }
