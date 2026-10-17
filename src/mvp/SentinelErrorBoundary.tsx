@@ -14,7 +14,7 @@ export class SentinelErrorBoundary extends React.Component<Props,State>{
  render(){
   if(!this.state.error)return this.props.children
   return <section className={this.props.compact?'ugo-history-panel embedded':'ugo-history-panel embedded'} style={{padding:16,display:'grid',gap:10}} role="alert">
-   <strong>{this.props.title||'Este módulo no pudo cargarse'}</strong>
+   <strong>{this.props.title||<LocalizedText id="uiCopy.expression192"/>}</strong>
    <p style={{margin:0}}><LocalizedText id="sentinelBoundary.description"/></p>
    <div style={{display:'flex',gap:8,flexWrap:'wrap'}}><button type="button" className="ugo-guided-primary" onClick={()=>this.setState({error:null})}><LocalizedText id="sentinelBoundary.retry"/></button>{this.props.onClose&&<button type="button" className="ugo-history-cancel-button" onClick={this.props.onClose}><LocalizedText id="sentinelBoundary.back"/></button>}</div>
   </section>

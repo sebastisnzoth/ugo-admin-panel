@@ -1,3 +1,4 @@
+import{LanguageSelector}from'../../../i18n/LanguageSelector'
 import{LocalizedText}from'../../../i18n/locale'
 import React,{useEffect,useMemo,useState}from'react'
 import{useClientFlow}from'../flow/clientFlow'
@@ -34,7 +35,7 @@ export function ClientGlobalMenu(){
      <button type="button" className="ugo-client-menu-close" onClick={close} aria-label={t('clientMenu.close')}>×</button>
     </div>
     <button type="button" className="ugo-client-account-card" onClick={()=>go('profile')}><span className="ugo-client-account-avatar">{initials}</span><div><b>{displayName}</b><small>{t('client.account')}</small></div><em>›</em></button>
-    <nav className="ugo-client-menu-list ugo-client-global-list">
+    <LanguageSelector/><nav className="ugo-client-menu-list ugo-client-global-list">
      <button type="button" onClick={()=>go('home')}><span>⌂</span><div><b >{t('nav.home')}</b></div></button>
      <button type="button" onClick={request}><span>＋</span><div><b >{t('client.request')}</b></div></button>
      <button type="button" onClick={categories}><span>▦</span><div><b >{t('client.categories')}</b></div></button>

@@ -28,7 +28,7 @@ export function ProviderHome(){
    ?{eyebrow:t('provider.ready'),title:t('provider.work'),text:t('provider.available'),action:()=>void d.reload(),label:t('provider.refresh')}
    :{eyebrow:t('providerHome.offRadar'),title:t('providerHome.goOnline'),text:t('providerHome.onlineHelp'),action:d.toggleOnline,label:t('providerHome.setOnline')}
  return <section className="provider-screen provider-home" aria-label={t('providerHome.area')}>
-  <SectionHeader screenHeading eyebrow="UGO PRO" title={t('provider.welcome').replace('{name}',d.name)} description={t('provider.rating').replace('{rating}',d.karma.toFixed(1)).replace('{zone}',d.provider.ciudad_base||'Florianópolis')} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online} aria-label={d.online?(d.matchingReady?t('providerHome.deactivateOnlineReady'):t('providerHome.deactivateOnlinePending')):t('providerHome.activateOffline')}>{d.online?'Online':'Offline'}</Button>}/>
+  <SectionHeader screenHeading eyebrow="UGO PRO" title={t('provider.welcome').replace('{name}',d.name)} description={t('provider.rating').replace('{rating}',d.karma.toFixed(1)).replace('{zone}',d.provider.ciudad_base||'Florianópolis')} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online} aria-label={d.online?(d.matchingReady?t('providerHome.deactivateOnlineReady'):t('providerHome.deactivateOnlinePending')):t('providerHome.activateOffline')}>{d.online?t("providerScreen.online"):t("screen.demand.2")}</Button>}/>
   <div className="provider-home-overview"><Card className="provider-card provider-hero provider-focus-card">
    <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online&&!d.matchingReady?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
    <h2>{next.title}</h2><p>{next.text}</p>
@@ -37,7 +37,7 @@ export function ProviderHome(){
   <Card className={`provider-card provider-status-card is-${availability.tone}`} aria-live="polite">
    <div className="provider-status-card-head">
     <div><small>{t('providerHome.operational')}</small><strong>{availability.title}</strong></div>
-    <StatusPill tone={availability.tone}>{d.debtBlocked?t('providerHome.paused'):!d.online?'Offline':!d.matchingReady?t('providerHome.gpsPending'):t('providerHome.available')}</StatusPill>
+    <StatusPill tone={availability.tone}>{d.debtBlocked?t('providerHome.paused'):!d.online?t("screen.demand.2"):!d.matchingReady?t('providerHome.gpsPending'):t('providerHome.available')}</StatusPill>
    </div>
    <p>{availability.text}</p>
    <div className="provider-status-facts">

@@ -52,9 +52,9 @@ const LocaleContext=createContext<LocaleContextValue|null>(null)
 function isLocale(value:unknown):value is UgoLocale{return typeof value==='string'&&SUPPORTED.includes(value as UgoLocale)}
 function roleFromLocation():UgoRole|'admin'|null{
  const app=new URLSearchParams(window.location.search).get('app')
- if(app==='client'||app==='client-web'||app==='stitch-client')return'client'
- if(app==='provider'||app==='provider-web'||app==='recruit')return'provider'
- if(app==='admin')return'admin'
+ if(app==='client'||app==='client-web'||app==='web-client'||app==='stitch-client')return'client'
+ if(app==='provider'||app==='provider-web'||app==='web-provider'||app==='recruit')return'provider'
+ if(app==='admin'||app==='superadmin')return'admin'
  return null
 }
 function authClient(){const role=roleFromLocation();return role==='client'||role==='provider'?getRoleSupabase(role):role==='admin'?adminSupabase:null}
@@ -66,6 +66,7 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
  const role=roleFromLocation()
  const accountKey=useRef<string|null>(null)
  const revision=useRef(0)
+ const syncQueue=useRef<Promise<void>>(Promise.resolve())
  useEffect(()=>{document.documentElement.lang=locale},[locale])
  useEffect(()=>{
   const client=authClient()
@@ -73,17 +74,20 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
   let alive=true
   const apply=(session:{user:{id:string;user_metadata?:Record<string,unknown>}}|null)=>{
    if(!alive)return
-   if(!session){accountKey.current=null;pending.current=null;setLocaleState(initialLocale());return}
+   if(!session){accountKey.current=null;pending.current=null;++revision.current;setLocaleState(initialLocale());return}
    const key=accountLocaleKey(role||'unknown',session.user.id)
-   if(accountKey.current!==key){accountKey.current=key;pending.current=null}
+   if(accountKey.current!==key)accountKey.current=key
    // Local changes made during async metadata updates take priority over token refresh events.
    if(pending.current)return
    let local:unknown
    try{local=window.localStorage.getItem(key)}catch{}
    const metadata=session.user.user_metadata?.preferred_language
-   const chosen=isLocale(local)?local:isLocale(metadata)?metadata:'pt-BR'
+   const remoteTime=Number(session.user.user_metadata?.preferred_language_updated_at)||0
+   let localTime=0
+   try{localTime=Number(window.localStorage.getItem(key+'.updatedAt'))||0}catch{}
+   const chosen=isLocale(metadata)&&remoteTime>=localTime?metadata:isLocale(local)?local:isLocale(metadata)?metadata:'pt-BR'
    setLocaleState(chosen)
-   try{window.localStorage.setItem(key,chosen)}catch{}
+   try{window.localStorage.setItem(key,chosen);window.localStorage.setItem(key+'.updatedAt',String(Math.max(remoteTime,localTime)));window.localStorage.setItem(guestLocaleKey(),chosen)}catch{}
   }
   const startedRevision=revision.current
   void client.auth.getSession().then(({data,error})=>{if(!error&&revision.current===startedRevision)apply(data.session)}).catch(()=>{})
@@ -100,21 +104,27 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
   pending.current=next
   const seq=++revision.current
   const key=accountKey.current
-  try{window.localStorage.setItem(key||guestLocaleKey(),next)}catch{}
+  const selectedAt=Date.now()
+  try{window.localStorage.setItem(key||guestLocaleKey(),next);window.localStorage.setItem(guestLocaleKey(),next);if(key)window.localStorage.setItem(key+'.updatedAt',String(selectedAt))}catch{}
   const client=authClient()
   if(!client){pending.current=null;return}
-  void (async()=>{
+  syncQueue.current=syncQueue.current.then(async()=>{
    try{
     const{data,error}=await client.auth.getSession()
-    if(error||!data.session)return
+    if(error||!data.session||seq!==revision.current)return
     const actualKey=accountLocaleKey(role||'unknown',data.session.user.id)
+    if(key&&key!==actualKey)return
     accountKey.current=actualKey
-    try{window.localStorage.setItem(actualKey,next)}catch{}
-    const{error:updateError}=await client.auth.updateUser({data:{preferred_language:next}})
+    try{window.localStorage.setItem(actualKey,next);window.localStorage.setItem(actualKey+'.updatedAt',String(selectedAt))}catch{}
+    const{error:updateError}=await client.auth.updateUser({data:{preferred_language:next,preferred_language_updated_at:selectedAt}})
     if(updateError)console.warn('[UGO i18n] Language saved locally; account sync failed.')
+    if(!updateError&&role==='client'&&seq===revision.current){
+     const{error:profileError}=await client.from('perfiles_cliente').update({idioma_preferido:next}).eq('usuario_id',data.session.user.id)
+     if(profileError)console.warn('[UGO i18n] Profile language sync failed.')
+    }
    }catch{console.warn('[UGO i18n] Language saved locally; account sync failed.')}
    finally{if(seq===revision.current)pending.current=null}
-  })()
+  })
  },[role])
  const value=useMemo<LocaleContextValue>(()=>({locale,setLocale,t:(key,params)=>translate(locale,key,params)}),[locale,setLocale])
  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>

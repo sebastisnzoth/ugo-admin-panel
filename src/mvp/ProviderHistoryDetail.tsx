@@ -76,10 +76,10 @@ export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=
    <header><div><small>{t('providerHistory.savedJob')} · #{service.numero??service.id.slice(0,8)}</small><h2 id="ugo-provider-history-detail-title">{service.categoria?.emoji||'🧰'} {service.categoria?.nombre||t('screen.provider_history.2')}</h2><p>{t('screen.provider_history.3')}</p></div><button type="button" onClick={onClose} aria-label={t('providerHistory.close')}>×</button></header>
    <div className="ugo-provider-history-detail-state"><span>{stateLabel(service.estado)}</span><b>{when(service.completado_at||service.updated_at||service.created_at,locale)}</b></div>
    <section className="ugo-provider-history-summary">
-    <div><small>{t('screen.provider_history.4')}</small><span style={{display:'inline-flex',alignItems:'center',gap:8}}><UserProfileAvatar name={service.cliente?.nombre||'Cliente UGO'} role="client" photoPath={clientPhotoPath} size={34}/><strong>{service.cliente?.nombre||'Cliente UGO'}</strong></span></div>
+    <div><small>{t('screen.provider_history.4')}</small><span style={{display:'inline-flex',alignItems:'center',gap:8}}><UserProfileAvatar name={service.cliente?.nombre||'Cliente UGO'} role="client" photoPath={clientPhotoPath} size={34}/><strong>{service.cliente?.nombre||t("providerCustomer.ugoClient")}</strong></span></div>
     <div><small>{t('screen.provider_history.5')}</small><strong>{money(service.tarifa)}</strong></div>
     <div><small>{t('screen.provider_history.6')}</small><strong>{when(service.programado_para||service.created_at)}</strong></div>
-    <div><small>{t('screen.provider_history.7')}</small><strong>{service.direccion_cliente||'No registrada'}</strong></div>
+    <div><small>{t('screen.provider_history.7')}</small><strong>{service.direccion_cliente||t("uiCopy.expression191")}</strong></div>
    </section>
    {service.descripcion&&<section className="ugo-provider-history-block"><small>{t('screen.provider_history.8')}</small><p>{service.descripcion}</p></section>}
    {loading&&<div className="ugo-provider-history-loading">{t('screen.provider_history.9')}</div>}

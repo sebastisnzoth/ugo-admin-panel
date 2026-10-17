@@ -1,3 +1,4 @@
+import{useLocale}from'../i18n/locale'
 import React,{useCallback,useEffect,useRef,useState}from'react'
 import{Modal,Button,Input}from'./shared'
 import'./dialogs.css'
@@ -30,6 +31,7 @@ const normalizePrompt=(input:PromptDialogOptions|string):PromptDialogOptions=>ty
 const normalizeAlert=(input:AlertDialogOptions|string):AlertDialogOptions=>typeof input==='string'?{message:input}:input
 
 export function useDialog(){
+ const{t}=useLocale()
  const[pending,setPending]=useState<PendingRequest|null>(null)
  const[value,setValue]=useState('')
  const inputRef=useRef<HTMLInputElement|null>(null)
@@ -71,8 +73,8 @@ export function useDialog(){
      <div className="ugo-dialog">
        <p className="ugo-dialog-message">{pending.options.message}</p>
        <div className="ugo-dialog-actions">
-         <Button variant="secondary" onClick={()=>{pending.resolve(false);close()}}>{pending.options.cancelLabel??'Cancelar'}</Button>
-         <Button variant={pending.options.danger?'danger':'primary'} onClick={()=>{pending.resolve(true);close()}}>{pending.options.confirmLabel??'Confirmar'}</Button>
+         <Button variant="secondary" onClick={()=>{pending.resolve(false);close()}}>{pending.options.cancelLabel??t("screen.admin_decision.49")}</Button>
+         <Button variant={pending.options.danger?'danger':'primary'} onClick={()=>{pending.resolve(true);close()}}>{pending.options.confirmLabel??t("uiCopy.short53")}</Button>
        </div>
      </div>
    </Modal>
@@ -85,8 +87,8 @@ export function useDialog(){
          <Input ref={inputRef} type={pending.options.inputType??'text'} value={value} placeholder={pending.options.placeholder} onChange={event=>setValue(event.target.value)}/>
        </label>
        <div className="ugo-dialog-actions">
-         <Button type="button" variant="secondary" onClick={()=>{pending.resolve(null);close()}}>{pending.options.cancelLabel??'Cancelar'}</Button>
-         <Button type="submit" variant="primary" disabled={pending.options.required&&!value.trim()}>{pending.options.confirmLabel??'Aceptar'}</Button>
+         <Button type="button" variant="secondary" onClick={()=>{pending.resolve(null);close()}}>{pending.options.cancelLabel??t("screen.admin_decision.49")}</Button>
+         <Button type="submit" variant="primary" disabled={pending.options.required&&!value.trim()}>{pending.options.confirmLabel??t("dispute.accept")}</Button>
        </div>
      </form>
    </Modal>
@@ -95,7 +97,7 @@ export function useDialog(){
      <div className="ugo-dialog">
        <p className="ugo-dialog-message">{pending.options.message}</p>
        <div className="ugo-dialog-actions">
-         <Button variant="primary" onClick={()=>{pending.resolve();close()}}>{pending.options.confirmLabel??'Entendido'}</Button>
+         <Button variant="primary" onClick={()=>{pending.resolve();close()}}>{pending.options.confirmLabel??t("uiCopy.short54")}</Button>
        </div>
      </div>
    </Modal>

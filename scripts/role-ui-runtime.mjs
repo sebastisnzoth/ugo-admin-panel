@@ -113,8 +113,8 @@ async function openRole(role,viewport){
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
-   localStorage.setItem('ugo.locale.guest.'+role,'es')
-   if(session.user?.id)localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es')
+   if(!localStorage.getItem('ugo.locale.guest.'+role))localStorage.setItem('ugo.locale.guest.'+role,'es')
+   if(session.user?.id&&!localStorage.getItem('ugo.locale.'+role+'.'+session.user.id)){localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es');localStorage.setItem('ugo.locale.'+role+'.'+session.user.id+'.updatedAt',String(Date.now()))}
  },{role,session:sessions[role]})
  await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded'})
  return {page,errors}
@@ -192,12 +192,14 @@ async function testProvider(viewport,name){
  page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
  try{
    await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
-   const authEmail=page.getByPlaceholder('tu@email.com')
+   await page.getByTestId('language-selector').selectOption('es')
+   const authEmail=page.getByTestId('auth-email')
    await authEmail.waitFor({state:'visible',timeout:20000})
    await authEmail.fill(providerEmail)
-   await page.getByPlaceholder('Mínimo 6 caracteres').fill(providerPassword)
-   await page.getByRole('button',{name:'Ingresar a UGO'}).click()
+   await page.getByTestId('auth-password').fill(providerPassword)
+   await page.getByTestId('auth-form').locator('button[type=submit]').click()
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
+   await page.getByTestId('language-selector').selectOption('es')
    await assertResponsive(page,'provider '+name+' home')
    let checkedItems=0
    if(viewport.width>=1000){
@@ -256,6 +258,7 @@ async function testAdminAuthBoundary(viewport,name){
  for(const item of cases){
    const page=await browser.newPage({viewport})
    try{
+     await page.addInitScript(()=>localStorage.setItem('ugo.locale.guest.admin','es'))
      if(item.session)await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),item.session)
      await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
      await page.getByRole('heading',{name:/Panel de control|Desarrollo UGO/}).waitFor({state:'visible',timeout:20000})
@@ -314,6 +317,29 @@ async function testAdmin(viewport,name){
  } finally {await page.close()}
 }
 
+async function testTranslations(role,viewport,name){
+ const {page,errors}=await openRole(role==='superadmin'?'admin':role,viewport)
+ try{
+  const root=role==='client'?'.ugo-client-root':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
+  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
+  for(const locale of ['pt-BR','en','es']){
+   if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
+   const selector=page.getByTestId('language-selector').first()
+   await selector.selectOption(locale)
+   await page.waitForFunction(value=>document.documentElement.lang===value,locale)
+   await assertResponsive(page,role+' '+locale+' '+name)
+   const snapshot=await page.locator('body').innerText()
+   assert.ok(!/\b(?:clientNeed|clientTracking|clientAssigned|clientSummary|screen\.need|providerRoot)\.[A-Za-z0-9_.-]+/.test(snapshot),'visible translation key '+role+' '+locale)
+   await page.reload({waitUntil:'domcontentloaded'})
+   await page.locator(root).waitFor({state:'visible',timeout:30000})
+   await page.waitForFunction(value=>document.documentElement.lang===value,locale)
+   results.push({role,locale,viewport:name,status:'PASS',checks:['language switch','reload persistence','no visible keys','responsive']})
+  }
+  assert.deepEqual(errors,[],role+' language page errors')
+ }finally{await page.close()}
+}
+
 try{
  const viewports=[['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]
  for(const [name,viewport] of viewports){
@@ -324,6 +350,7 @@ try{
    await freshRoleSession('admin')
    await testAdminAuthBoundary(viewport,name)
    await testAdmin(viewport,name)
+   for(const role of ['client','provider','admin','superadmin'])await testTranslations(role,viewport,name)
  }
  await fs.writeFile('artifacts/role-ui-runtime.json',JSON.stringify({task:'role-ui-runtime',sha,environment:'UGO TEST',results,page_errors:0,completed_at:new Date().toISOString()},null,2)+'\n')
  console.log(JSON.stringify({status:'PASS',sha,results}))

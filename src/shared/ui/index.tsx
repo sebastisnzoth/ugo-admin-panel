@@ -1,3 +1,4 @@
+import{useLocale}from'../../i18n/locale'
 import React,{forwardRef}from'react'
 
 export type ButtonProps=React.ButtonHTMLAttributes<HTMLButtonElement>&{
@@ -6,7 +7,8 @@ export type ButtonProps=React.ButtonHTMLAttributes<HTMLButtonElement>&{
  loading?:boolean
 }
 export const Button=forwardRef<HTMLButtonElement,ButtonProps>(function Button({variant='secondary',size='md',loading=false,className='',disabled,children,...props},ref){
- return <button ref={ref} className={'ugo-ui-button ugo-ui-button--'+variant+' ugo-ui-button--'+size+' '+className} disabled={disabled||loading} aria-busy={loading||undefined} {...props}>{loading?'Procesando…':children}</button>
+ const{t}=useLocale()
+ return <button ref={ref} className={'ugo-ui-button ugo-ui-button--'+variant+' ugo-ui-button--'+size+' '+className} disabled={disabled||loading} aria-busy={loading||undefined} {...props}>{loading?t("clientReview.processing"):children}</button>
 })
 export const Input=forwardRef<HTMLInputElement,React.InputHTMLAttributes<HTMLInputElement>>(function Input({className='',...props},ref){return <input ref={ref} className={'ugo-ui-field '+className} {...props}/>})
 export const Select=forwardRef<HTMLSelectElement,React.SelectHTMLAttributes<HTMLSelectElement>>(function Select({className='',children,...props},ref){return <select ref={ref} className={'ugo-ui-field '+className} {...props}>{children}</select>})

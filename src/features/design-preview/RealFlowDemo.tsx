@@ -205,7 +205,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
             <div><span><LocalizedText id="preview.problem"/></span><b>{categories[s.category].problem}</b></div>
             <div><span><LocalizedText id="preview.place"/></span><b><LocalizedText id="preview.placeCenter"/></b></div>
             <div><span><LocalizedText id="screen.summary.5"/></span><b><LocalizedText id="screen.active.3"/></b></div>
-            <div><span><LocalizedText id="preview.evidence"/></span><b>{categories[s.category].initialRequired ? 'Foto inicial requerida' : 'Sin foto inicial'}</b></div>
+            <div><span><LocalizedText id="preview.evidence"/></span><b>{categories[s.category].initialRequired ? t("uiCopy.expression60") : t("uiCopy.expression61")}</b></div>
           </div>
         </div>
         <div className="ugo-dp-plain-footer">
@@ -222,7 +222,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
       <Phone label="Cliente · buscando" caption="Cliente · Buscando profesional">
         <MapBackground pins={false} />
         <div className="ugo-dp-pulse" aria-hidden="true"><i /></div>
-        <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong><LocalizedText id="preview.findProfessionals"/></strong></span><span className="ugo-dp-loc-sub">{s.providerOnline ? 'Revisamos profesionales cerca' : 'Sin profesionales disponibles ahora'}</span></div></div>
+        <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong><LocalizedText id="preview.findProfessionals"/></strong></span><span className="ugo-dp-loc-sub">{s.providerOnline ? t("uiCopy.expression62") : t("uiCopy.expression63")}</span></div></div>
         <div className="ugo-dp-sheet ugo-dp-sheet--route">
           <div className="ugo-dp-handle" />
           <p className="ugo-dp-desc"><LocalizedText id="preview.requestActive"/></p>
@@ -254,7 +254,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
               </label>
             ))}
           </div>
-          <p className="ugo-dp-small ugo-dp-center-text">{s.payment ? `Elegiste: ${payLabel}. El profesional sale cuando confirme.` : 'Elegí una forma de pago para continuar.'}</p>
+          <p className="ugo-dp-small ugo-dp-center-text">{s.payment ? `Elegiste: ${payLabel}. El profesional sale cuando confirme.` : t("uiCopy.expression64")}</p>
         </div>
       </Phone>
     )
@@ -266,7 +266,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
       <Phone label="Cliente · seguimiento" caption={s.phase === 'enroute' ? 'Cliente · En camino' : s.phase === 'arrived' ? 'Cliente · Llegó' : 'Cliente · Trabajo en curso'}>
         <MapBackground pins={false} />
         <div className="ugo-dp-marker" style={{ left: '50%', top: '42%' }}><UgoMark size={20} /></div>
-        <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>{s.phase === 'enroute' ? 'Tu proveedor viene' : s.phase === 'arrived' ? 'Tu proveedor llegó' : 'Trabajo en curso'}</strong></span></div></div>
+        <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>{s.phase === 'enroute' ? t("uiCopy.expression65") : s.phase === 'arrived' ? t("uiCopy.expression66") : t("screen.client_tracking.4")}</strong></span></div></div>
         {s.phase === 'enroute' && (
           <>
             <svg className="ugo-dp-route" viewBox="0 0 360 760" preserveAspectRatio="none" aria-hidden="true">
@@ -284,10 +284,10 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
             <Avatar />
             <div className="ugo-dp-grow">
               <div className="ugo-dp-name ugo-dp-name--sm">{p.name}</div>
-              <div className="ugo-dp-onroute">{s.phase === 'enroute' ? 'En camino a tu ubicación' : s.phase === 'arrived' ? 'Llegó a tu ubicación' : 'Trabajando en tu servicio'}</div>
+              <div className="ugo-dp-onroute">{s.phase === 'enroute' ? t("preview.enRouteLocation") : s.phase === 'arrived' ? t("uiCopy.expression67") : t("uiCopy.expression68")}</div>
             </div>
           </div>
-          <div className="ugo-dp-banner"><Icon name={isArrived ? 'check' : 'walk'} size={22} /><div><b>{s.phase === 'enroute' ? 'Tu proveedor está en camino' : s.phase === 'arrived' ? 'Llegada registrada' : 'El trabajo está en curso'}</b><small>{s.phase === 'enroute' ? 'Te avisamos cuando llegue.' : s.phase === 'arrived' ? 'El profesional empieza en breve.' : 'Te avisamos cuando lo marque terminado.'}</small></div></div>
+          <div className="ugo-dp-banner"><Icon name={isArrived ? 'check' : 'walk'} size={22} /><div><b>{s.phase === 'enroute' ? t("preview.providerEnRoute") : s.phase === 'arrived' ? t("providerHistory.state.llegado") : t("uiCopy.expression69")}</b><small>{s.phase === 'enroute' ? t("uiCopy.expression70") : s.phase === 'arrived' ? t("uiCopy.expression71") : t("uiCopy.expression72")}</small></div></div>
           <p className="ugo-dp-small"><LocalizedText id="screen.admin_trace.9"/> {payLabel}</p>
         </div>
       </Phone>
@@ -380,7 +380,7 @@ function ProviderHeader({ s, d }: { s: State; d: Dispatch<Action> }) {
   return (
     <div className="ugo-dp-topbar">
       <div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>{s.providerOnline?t('preview.available'):t('preview.disconnected')}</strong></span><span className="ugo-dp-loc-sub">Centro · Florianópolis</span></div>
-      <button type="button" className="ugo-dp-switch" aria-pressed={s.providerOnline} onClick={() => d({ type: 'TOGGLE_ONLINE' })}><i style={{ background: s.providerOnline ? '#006948' : '#9AA3AD' }} />{s.providerOnline ? 'En línea' : 'Conectarme'}</button>
+      <button type="button" className="ugo-dp-switch" aria-pressed={s.providerOnline} onClick={() => d({ type: 'TOGGLE_ONLINE' })}><i style={{ background: s.providerOnline ? '#006948' : '#9AA3AD' }} />{s.providerOnline ? t("providerProfile.online") : t("uiCopy.short18")}</button>
     </div>
   )
 }
@@ -429,7 +429,7 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     return (
       <Job title={t('preview.mission')} sub="Aceptado · esperando forma de pago">
         <div className="ugo-dp-address"><Icon name="pin" size={16} /> <LocalizedText id="preview.placeCenter"/></div>
-        <p className="ugo-dp-small">{s.payment ? 'El cliente eligió cómo pagar.' : 'El cliente todavía no eligió forma de pago.'}</p>
+        <p className="ugo-dp-small">{s.payment ? t("uiCopy.expression73") : t("uiCopy.expression74")}</p>
         <div className="ugo-dp-footer-stack">
           <button type="button" className="ugo-dp-btn" disabled={!s.payment} onClick={() => d({ type: 'ON_WAY' })}><LocalizedText id="screen.active.12"/></button>
         </div>
@@ -531,8 +531,8 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
       <ProviderHeader s={s} d={d} />
       <div className="ugo-dp-sheet ugo-dp-sheet--offers">
         <div className="ugo-dp-handle" />
-        <h3 className="ugo-dp-section-title">{s.providerOnline ? '¿Qué tengo que hacer ahora?' : 'Estás desconectado'}</h3>
-        <p className="ugo-dp-desc">{s.providerOnline ? 'Esperando oportunidades cerca. Te avisamos cuando haya una.' : 'Conectate para recibir oportunidades.'}</p>
+        <h3 className="ugo-dp-section-title">{s.providerOnline ? t("uiCopy.expression75") : t("uiCopy.expression76")}</h3>
+        <p className="ugo-dp-desc">{s.providerOnline ? t("uiCopy.expression77") : t("uiCopy.expression78")}</p>
       </div>
     </Phone>
   )

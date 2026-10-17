@@ -1,3 +1,4 @@
+import{useLocale}from'../../i18n/locale'
 import React,{useEffect,useRef}from'react'
 import{useNetworkStatus}from'./useNetworkStatus'
 
@@ -9,6 +10,7 @@ type Props={onRestored?:()=>void;className?:string}
  * avisa a la shell para que resincronice datos persistidos.
  */
 export function ConnectionBanner({onRestored,className}:Props){
+ const{t}=useLocale()
  const{online,restored}=useNetworkStatus()
  const notified=useRef(false)
  useEffect(()=>{
@@ -21,8 +23,8 @@ export function ConnectionBanner({onRestored,className}:Props){
  return <div className={`ugo-ux-connection ${online?'is-restored':'is-offline'}${className?` ${className}`:''}`} role="status" aria-live="polite">
   <span className="ugo-ux-connection-icon" aria-hidden="true">{online?'✓':'⌁'}</span>
   <div className="ugo-ux-connection-copy">
-   <strong>{online?'Conexión restablecida':'Sin conexión'}</strong>
-   <small>{online?'Actualizando la información del pedido.':'Seguís viendo los últimos datos guardados. Cuando vuelva internet, UGO se sincroniza solo.'}</small>
+   <strong>{online?t("uiCopy.expression228"):t("uiCopy.expression229")}</strong>
+   <small>{online?t("uiCopy.expression230"):t("uiCopy.expression231")}</small>
   </div>
  </div>
 }

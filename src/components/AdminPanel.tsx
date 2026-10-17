@@ -617,7 +617,7 @@ export function AdminPanel() {
       <div className="st"><LocalizedText id="screen.admin_users.1"/><button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={()=>{setUserForm({email:'',nombre:'',apellido:'',tipo:'cliente',telefono:'',zona:'',pais:'BR',endereco:'',lat:'',lng:'',georef:'',categoria:'',bio:'',tarifa_base:'',karma:'5',activo:true,foto_url:''});setGeoInput('');setModal({type:'user-form'});}}><LocalizedText id="adminSurface.createUser"/></button></div>
       <div className="tab-row">
         {(['perfiles','auth'] as const).map(t=><button key={t} className={`tab-btn${usrTab===t?' active':''}`} onClick={()=>setUsrTab(t)}>{t==='perfiles'?`Perfiles (${users.length})`:`Auth Users${authUsers.length?` (${authUsers.length})`:''}`}</button>)}
-        {usrTab==='perfiles'&&<div style={{marginLeft:'auto',display:'flex',gap:3}}>{(['all','proveedor','cliente','pendiente'] as const).map(f=><button key={f} className={`tab-btn${usrFilter===f?' active':''}`} onClick={()=>setUsrFilter(f)} style={f==='pendiente'?{color:'var(--amber)'}:{}}>{f==='all'?'Todos':f==='pendiente'?`⏳ Docs (${pendienteDocs.length})`:f}</button>)}</div>}
+        {usrTab==='perfiles'&&<div style={{marginLeft:'auto',display:'flex',gap:3}}>{(['all','proveedor','cliente','pendiente'] as const).map(f=><button key={f} className={`tab-btn${usrFilter===f?' active':''}`} onClick={()=>setUsrFilter(f)} style={f==='pendiente'?{color:'var(--amber)'}:{}}>{f==='all'?t("screen.admin_services.3"):f==='pendiente'?`⏳ Docs (${pendienteDocs.length})`:f}</button>)}</div>}
       </div>
       {usrTab==='perfiles'?(
         <div className="tw">
@@ -634,9 +634,9 @@ export function AdminPanel() {
                   {u.tipo==='proveedor'&&<span title={docStatus[u.id]||'sin docs'} style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:docStatus[u.id]==='aprobado'?'var(--green)':docStatus[u.id]==='pendiente'?'var(--amber)':docStatus[u.id]==='rechazado'?'var(--red)':'#ccc'}}/>}
                 </div>
               </div>
-              <div className="tc" style={{flex:1}}><div style={{fontSize:10}}>{u.zona||'—'}</div><div style={{fontSize:9,color:u.lat?'var(--green)':'var(--muted)'}}>{u.lat?`🌍 ${Number(u.lat).toFixed(3)},${Number(u.lng).toFixed(3)}`:'Sin geo'}</div></div>
+              <div className="tc" style={{flex:1}}><div style={{fontSize:10}}>{u.zona||'—'}</div><div style={{fontSize:9,color:u.lat?'var(--green)':'var(--muted)'}}>{u.lat?`🌍 ${Number(u.lat).toFixed(3)},${Number(u.lng).toFixed(3)}`:t("uiCopy.expression1")}</div></div>
               <div className="tc" style={{flex:0.7,color:Number(u.karma)<4?'var(--red)':'var(--text)'}}>{u.karma}⭐</div>
-              <div className="tc" style={{flex:0.7}}><span className={`pill pill-${u.activo?'g':'r'}`}>{u.activo?'activo':'inactivo'}</span></div>
+              <div className="tc" style={{flex:0.7}}><span className={`pill pill-${u.activo?'g':'r'}`}>{u.activo?t("uiCopy.short1"):t("uiCopy.short2")}</span></div>
               <div className="tc" style={{flex:1.5,display:'flex',gap:3}}>
                 <button className="btn btn-s btn-sm" onClick={()=>{setUserForm({email:u.email,nombre:u.nombre,apellido:u.apellido||'',tipo:u.tipo,telefono:u.telefono||'',zona:u.zona||'',pais:u.pais||'BR',endereco:u.endereco||'',lat:u.lat||'',lng:u.lng||'',georef:u.georef||'',categoria:u.categoria||'',bio:u.bio||'',tarifa_base:u.tarifa_base||'',karma:u.karma||'5',activo:u.activo,foto_url:u.foto_url||''});setGeoInput('');setModal({type:'user-edit',data:u});}}><LocalizedText id="screen.admin_tariffs.23"/></button>
                 {u.tipo==='proveedor'&&<button className="btn btn-p btn-sm" onClick={()=>{setContactModal(u);setContactMsg({titulo:'',cuerpo:''});setContactSent(false);}}>📨</button>}
@@ -655,8 +655,8 @@ export function AdminPanel() {
               <div className="tc" style={{flex:1.5,color:'var(--muted)'}}>{u.usuario_nombre?.trim()||'—'}</div>
               <div className="tc" style={{flex:1}}>{u.usuario_tipo?<span className={`pill pill-${u.usuario_tipo==='proveedor'?'a':'m'}`}>{u.usuario_tipo}</span>:<span className="pill pill-m"><LocalizedText id="adminSurface.noProfile"/></span>}</div>
               <div className="tc" style={{flex:1}}><span className={`pill pill-${u.email_confirmed?'g':'r'}`}>{u.email_confirmed?'sí':'no'}</span></div>
-              <div className="tc" style={{flex:1}}><span className={`pill pill-${u.has_profile?'g':'a'}`}>{u.has_profile?'completo':'pendiente'}</span></div>
-              <div className="tc" style={{flex:1,color:'var(--muted)'}}>{u.last_sign_in_at?timeAgo(u.last_sign_in_at):'nunca'}</div>
+              <div className="tc" style={{flex:1}}><span className={`pill pill-${u.has_profile?'g':'a'}`}>{u.has_profile?t("uiCopy.short3"):t("uiCopy.short4")}</span></div>
+              <div className="tc" style={{flex:1,color:'var(--muted)'}}>{u.last_sign_in_at?timeAgo(u.last_sign_in_at):t("uiCopy.short5")}</div>
             </div>
           ))}
         </div>
@@ -760,7 +760,7 @@ export function AdminPanel() {
                 </button>
                 <button className={`btn btn-sm ${cat.activa?'btn-d':'btn-g'}`}
                   onClick={e=>{e.stopPropagation();toggleActiva(cat.id,!cat.activa);}}>
-                  {cat.activa?'Off':'On'}
+                  {cat.activa?t("uiCopy.short6"):'On'}
                 </button>
                 <span style={{color:'var(--muted)',fontSize:11,marginLeft:2}}>{expanded?'▲':'▼'}</span>
               </div>
@@ -1219,7 +1219,7 @@ export function AdminPanel() {
           {metrics&&<>{criticalCount>0&&<div className="chip chip-r" onClick={()=>setSection('alertas')}>🚨 {criticalCount} <LocalizedText id="screen.admin_decision.1"/></div>}{disputes.length>0&&<div className="chip chip-a">⚖️ {disputes.length}</div>}</>}
           <div className="ua-tb-r">
             <button type="button" className={`gmail-top${scoutGmail.connected?' connected':''}`} onClick={()=>void connectScoutGmail()} disabled={scoutGmailBusy} title={scoutGmail.connected?'Abrir CRM Scout':scoutGmail.configured?'Conectar una cuenta Gmail a Scout':'Configurar OAuth de Google para Scout'}>
-              <span className="gmail-dot"/><span>{scoutGmailBusy?'Conectando…':scoutGmail.connected?`Gmail · ${scoutGmail.email||'conectado'}`:'✉ Conectar Gmail'}</span>
+              <span className="gmail-dot"/><span>{scoutGmailBusy?t("admin.dashboard.connecting"):scoutGmail.connected?`Gmail · ${scoutGmail.email||'conectado'}`:t("uiCopy.expression2")}</span>
             </button>
             <div className="live-pill"><div className="live-dot"/><LocalizedText id="development.live"/></div><div className="ua-clock">{clock}</div>
           </div>
@@ -1248,7 +1248,7 @@ export function AdminPanel() {
               {mapProviders.map(p=>(
                 <div key={p.id} className="map-pi" onClick={()=>{if(mapRef.current&&p.lat&&p.lng)mapRef.current.setView([p.lat,p.lng],15);}}>
                   <div className="map-pn"><span className="map-dot" style={{background:p.disponible?'var(--green)':'var(--amber)'}}/>{p.nombre} {p.apellido||''}</div>
-                  <div className="map-ps">⭐{p.karma} · {p.disponible?'disponible':(p.categoria_nombre||'en trabajo')}</div>
+                  <div className="map-ps">⭐{p.karma} · {p.disponible?t("uiCopy.short7"):(p.categoria_nombre||'en trabajo')}</div>
                 </div>
               ))}
               {mapProviders.length===0&&<div style={{padding:'14px',textAlign:'center',color:'var(--muted)',fontSize:9}}><LocalizedText id="adminSurface.noProvidersOnline"/></div>}
@@ -1300,14 +1300,14 @@ export function AdminPanel() {
       {modal.type==='cat-form'&&(
         <div className="modal-bd" onClick={e=>{if(e.target===e.currentTarget)closeModal();}}>
           <div className="modal-box">
-            <div className="modal-title"><span>{modal.data?'Editar':'Nueva'} <LocalizedText id="screen.admin_tariffs.6"/></span><button className="mclose" onClick={closeModal}>✕</button></div>
+            <div className="modal-title"><span>{modal.data?t("providerProfile.edit"):t("uiCopy.short8")} <LocalizedText id="screen.admin_tariffs.6"/></span><button className="mclose" onClick={closeModal}>✕</button></div>
             <div className="fgrid">
               <div className="fg"><label><LocalizedText id="adminSurface.emoji"/></label><input className="finput" value={catForm.emoji} onChange={e=>setCatForm(p=>({...p,emoji:e.target.value}))} style={{fontSize:22,textAlign:'center'}}/></div>
               <div className="fg"><label><LocalizedText id="screen.admin_users.11"/></label><input className="finput" value={catForm.nombre} onChange={e=>setCatForm(p=>({...p,nombre:e.target.value}))} placeholder={t('adminPanel.electricianExample')}/></div>
             </div>
             <div className="modal-acts">
               <button className="btn btn-p" disabled={!catForm.nombre.trim()} onClick={async()=>{if(modal.data)await actualizarCat(modal.data.id,catForm.nombre,catForm.emoji,modal.data.activa);else await crearCat(catForm.nombre,catForm.emoji);closeModal();}}>
-                {modal.data?'Guardar cambios':'Crear categoría'}
+                {modal.data?t("clientProfile.saveChanges"):t("uiCopy.expression3")}
               </button>
               <button className="btn btn-s" onClick={closeModal}><LocalizedText id="screen.admin_services.27"/></button>
             </div>
@@ -1320,7 +1320,7 @@ export function AdminPanel() {
         <div className="modal-bd" onClick={e=>{if(e.target===e.currentTarget)closeModal();}}>
           <div className="modal-box" style={{width:'min(720px,96vw)'}}>
             <div className="modal-title">
-              <span>{modal.type==='user-form'?'Crear':'Editar'} <LocalizedText id="adminSurface.user"/> {modal.data&&<span style={{fontSize:12,color:'var(--muted)',fontWeight:400}}>— {modal.data.email}</span>}</span>
+              <span>{modal.type==='user-form'?t("adminSurface.create"):t("providerProfile.edit")} <LocalizedText id="adminSurface.user"/> {modal.data&&<span style={{fontSize:12,color:'var(--muted)',fontWeight:400}}>— {modal.data.email}</span>}</span>
               <button className="mclose" onClick={closeModal}>✕</button>
             </div>
 
@@ -1395,7 +1395,7 @@ export function AdminPanel() {
                   else await updateUsuario(modal.data.id, userForm);
                   closeModal();
                 }}>
-                {modal.type==='user-form'?'Crear usuario':'💾 Guardar cambios'}
+                {modal.type==='user-form'?t("uiCopy.expression4"):t("uiCopy.expression5")}
               </button>
               <button className="btn btn-s" onClick={closeModal}><LocalizedText id="screen.admin_services.27"/></button>
             </div>
@@ -1490,7 +1490,7 @@ export function AdminPanel() {
                       {modal.data.ocr_confianza >= 0.85 ? '✓' : modal.data.ocr_confianza >= 0.6 ? '⚠️' : '✗'} <LocalizedText id="adminSurface.confidence"/> {(modal.data.ocr_confianza * 100).toFixed(0)}%
                     </div>
                     <div style={{fontSize:10,color:'var(--muted)'}}>
-                      {modal.data.ocr_valido === true ? '✓ Validado correctamente' : modal.data.ocr_valido === false ? '✗ Fallos detectados' : 'Pendiente de validación'}
+                      {modal.data.ocr_valido === true ? t("uiCopy.expression6") : modal.data.ocr_valido === false ? t("uiCopy.expression7") : t("uiCopy.expression8")}
                     </div>
                   </div>
                 )}
@@ -1576,7 +1576,7 @@ export function AdminPanel() {
               <>
                 <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:'var(--bg2)',borderRadius:8,marginBottom:12,fontSize:11}}>
                   <span style={{width:8,height:8,borderRadius:'50%',background:contactModal.online?'var(--green)':'var(--muted)',display:'inline-block'}}/>
-                  <span>{contactModal.online?'🟢 Online — recibirá el mensaje en la app ahora mismo':'⚪ Offline — recibirá el mensaje cuando se conecte'}</span>
+                  <span>{contactModal.online?t("uiCopy.expression9"):t("uiCopy.expression10")}</span>
                 </div>
                 <div style={{marginBottom:9}}><div style={{fontSize:9,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}><LocalizedText id="adminSurface.title"/></div>
                   <input className="finput" value={contactMsg.titulo} onChange={e=>setContactMsg(p=>({...p,titulo:e.target.value}))} placeholder={t('adminPanel.notificationExample')}/>
@@ -1603,7 +1603,7 @@ export function AdminPanel() {
               <div style={{textAlign:'center',padding:'24px 0'}}>
                 <div style={{fontSize:40,marginBottom:12}}>✅</div>
                 <div style={{fontWeight:700,fontSize:15,marginBottom:6}}><LocalizedText id="adminSurface.messageSent"/></div>
-                <div style={{fontSize:12,color:'var(--muted)',marginBottom:16}}>{contactModal.nombre} {contactModal.online?'lo recibió en su app ahora mismo.':'lo recibirá cuando se conecte.'}</div>
+                <div style={{fontSize:12,color:'var(--muted)',marginBottom:16}}>{contactModal.nombre} {contactModal.online?t("uiCopy.expression11"):t("uiCopy.expression12")}</div>
                 <button className="btn btn-p" onClick={()=>setContactModal(null)}><LocalizedText id="screen.earnings.15"/></button>
               </div>
             )}
