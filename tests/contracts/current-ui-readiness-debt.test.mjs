@@ -29,6 +29,6 @@ test('Provider role runtime follows canonical current sidebar labels',async()=>{
  assert.match(providerRuntime,/\['Inicio','Pedidos','Historial','Ganancias','Perfil'\]/)
  assert.match(providerRuntime,/Mis trabajos\|Trabajo activo/)
  assert.doesNotMatch(providerRuntime,/\['Inicio','Trabajos','Calendario'/)
- assert.match(sidebar,/>Pedidos /)
- assert.match(sidebar,/Trabajo activo':'Mis trabajos/)
+ assert.match(sidebar,/t\('nav\.orders'\)/)
+ assert.match(sidebar,/d\.service\?t\('nav\.active'\):t\('nav\.jobs'\)/)
 })
