@@ -1,9 +1,11 @@
+import{useLocale}from'../../i18n/locale'
 import React,{useEffect,useState}from'react'
 import{getRoleSupabase}from'../../lib/roleSupabase'
 import{UserProfileAvatar}from'../UserProfileAvatar'
 import'./ProviderCustomerCard.css'
 type Customer={nombre:string|null;foto_url:string|null;karma:number|null}
 export function ProviderCustomerCard({clientId,serviceId,compact=false}:{clientId:string;serviceId:string;compact?:boolean}){
+ const{t}=useLocale();
  const[customer,setCustomer]=useState<Customer|null>(null),[previous,setPrevious]=useState<number|null>(null),[loading,setLoading]=useState(true)
  useEffect(()=>{let alive=true;const supabase=getRoleSupabase('provider');setLoading(true);setCustomer(null);setPrevious(null)
  // Only count contracts involving the signed-in provider: RLS prevents seeing unrelated orders.
@@ -20,10 +22,10 @@ export function ProviderCustomerCard({clientId,serviceId,compact=false}:{clientI
  },[clientId,serviceId])
  const rating=Number(customer?.karma),rated=customer?.karma!=null&&Number.isFinite(rating)&&rating>0
  return <section className={`ugo-provider-customer-card${compact?' is-compact':''}`} aria-label="Ficha del cliente del pedido">
- <header><span>CLIENTE DEL PEDIDO</span><strong>✓ Pedido asignado</strong></header>
+ <header><span>{t('screen.provider_customer.1')}</span><strong>{t('screen.provider_customer.2')}</strong></header>
  <div className="ugo-provider-customer-main"><UserProfileAvatar name={customer?.nombre||'Cliente UGO'} role="client" photoUrl={customer?.foto_url||null} size={64}/>
- <div><h3>{customer?.nombre||'Cliente UGO'}</h3><p>Contratante del servicio</p></div></div>
- <div className="ugo-provider-customer-stats"><div><strong>{rated?`★ ${rating.toFixed(1)}`:'Sin valoración'}</strong><small>Valoración disponible</small></div><div><strong>{previous??'—'}</strong><small>Pedidos con vos</small></div></div>
+ <div><h3>{customer?.nombre||'Cliente UGO'}</h3><p>{t('screen.provider_customer.3')}</p></div></div>
+ <div className="ugo-provider-customer-stats"><div><strong>{rated?`★ ${rating.toFixed(1)}`:'Sin valoración'}</strong><small>{t('screen.provider_customer.4')}</small></div><div><strong>{previous??'—'}</strong><small>{t('screen.provider_customer.5')}</small></div></div>
  <p className="ugo-provider-customer-caption">{loading?'Cargando ficha…':'Las contrataciones mostradas son las que compartís con este cliente. Su historial con otros proveedores es privado.'}</p>
  </section>
 }
