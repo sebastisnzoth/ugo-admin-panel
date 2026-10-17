@@ -10,6 +10,7 @@ import{SkeletonCard}from'../../../shared/ux'
 import{UserProfileAvatar}from'../../../mvp/UserProfileAvatar'
 import{ClientActiveMap}from'../order/ClientActiveMap'
 import{AssignedProviderCard}from'../order/AssignedProviderCard'
+import{useLocale}from'../../../i18n/locale'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const MAP_STYLE:maplibregl.StyleSpecification={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
@@ -27,6 +28,7 @@ type ClientPlace={barrio?:string|null;ciudad?:string|null}
 type Props={onOpenService?:(serviceId:string)=>void}
 
 export function ClientHomeScreen({onOpenService}:Props){
+ const{t}=useLocale()
  const flow=useClientFlow(),{supabase,session,profile}=useRoleSession('client'),{navigate:flowNavigate}=flow
  const[categories,setCategories]=useState<Category[]>([]),[orders,setOrders]=useState<ActiveOrder[]>([]),[showAll,setShowAll]=useState(false)
  const[categoriesLoading,setCategoriesLoading]=useState(true),[ordersLoading,setOrdersLoading]=useState(true),[homeEpoch,setHomeEpoch]=useState(0),[lastService,setLastService]=useState<LastService|null>(null)
@@ -84,16 +86,16 @@ export function ClientHomeScreen({onOpenService}:Props){
      <button type="button" className="ugo-home-bell" onClick={()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click()} aria-label="Notificaciones">◇</button>
     </div>
     <span className="ugo-home-kicker"><i/> UGO CERCA TUYO</span>
-    <h1 data-ux-screen-heading tabIndex={-1}>{firstName==='Hola'?'¿Qué necesitás hoy?':`Hola, ${firstName}.\n¿Qué necesitás hoy?`}</h1>
+    <h1 data-ux-screen-heading tabIndex={-1}>{firstName==='Hola'?t('home.question'):`${t('home.greeting').replace('{name}',firstName)}\n${t('home.question')}`}</h1>
     <p>Elegí el servicio que necesitás. Buscamos profesionales verificados cerca tuyo.</p>
     {ordersLoading&&orders.length===0&&<div className="ugo-home-active-orders is-loading" aria-hidden="true"><SkeletonCard lines={2} className="ugo-home-order-skeleton"/></div>}
     {orders.length>0&&<div className="ugo-home-active-orders" aria-label="Pedidos activos">{orders.map(order=>{const matching=['buscando','ofrecido'].includes(order.estado)&&!order.proveedor_id,parsedDeadline=order.matching_expires_at?new Date(order.matching_expires_at).getTime():NaN,deadline=Number.isFinite(parsedDeadline)?parsedDeadline:null,remaining=deadline===null?0:Math.max(0,deadline-now),missingDeadline=matching&&deadline===null,expired=matching&&(missingDeadline||remaining<=0);const scheduledLabel=order.programado_para?new Date(order.programado_para).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'}):null,stage=orderStage(order.estado);return <button type="button" key={order.id} className={order.proveedor_id?'is-assigned':'is-searching'} disabled={expired&&retryingId===order.id} onClick={()=>{if(expired){void retryOrder(order.id);return}openOrder(order.id)}}><span className="ugo-home-order-icon">{order.proveedor_id?'✓':'⌁'}</span><span className="ugo-home-order-copy"><small>PEDIDO #{order.numero??String(order.id).slice(0,8)}</small><b>{order.proveedor_id?'Profesional asignado':scheduledLabel?`Programado · ${scheduledLabel}`:expired?'No encontramos un profesional disponible':matching&&deadline!==null?`Buscando profesional · ${formatCountdown(remaining)}`:(STATE_LABEL[order.estado]||'Pedido activo')}</b><strong>{order.proveedor_id?(order.proveedor?.nombre||'Profesional UGO'):(order.categoria?.nombre||'UGO está buscando')}</strong><span className="ugo-home-order-steps" aria-hidden="true">{ORDER_STAGES.map(([state,label],index)=><i key={state} className={index<stage?'is-done':undefined} title={label}/>)}</span><em>{expired?(retryingId===order.id?'Reintentando…':'Reintentar pedido →'):`${order.categoria?.emoji||'🧰'} ${order.categoria?.nombre||'Servicio'} · Abrir pedido →`}</em></span></button>})}</div>}
-    <button type="button" className="ugo-home-hugo-cta" onClick={()=>flow.navigate('request')}><span className="ugo-home-search-icon" aria-hidden="true">＋</span><span className="ugo-home-search-copy"><strong>Pedir un servicio</strong><small>Contanos qué necesitás y encontramos un profesional.</small></span><b aria-hidden="true">→</b></button>
+    <button type="button" className="ugo-home-hugo-cta" onClick={()=>flow.navigate('request')}><span className="ugo-home-search-icon" aria-hidden="true">＋</span><span className="ugo-home-search-copy"><strong>{t('home.request')}</strong><small>{t('home.requestHelp')}</small></span><b aria-hidden="true">→</b></button>
     {lastService&&<button type="button" className="ugo-home-repeat" aria-label="Iniciar otro pedido con los datos del último servicio" onClick={()=>flow.publishHugoIntent({text:`Necesito ${lastService.categoria?.nombre||'el mismo servicio'} otra vez`,categoryHint:lastService.categoria?.slug||lastService.categoria?.nombre||null,urgent:false,description:lastService.descripcion||null})}><span aria-hidden="true">↻</span><div><strong>Volver a pedir {lastService.categoria?.nombre||'este servicio'}</strong><small>{lastService.descripcion?lastService.descripcion.slice(0,70):'Usamos los mismos datos del pedido anterior.'}</small></div><b aria-hidden="true">→</b></button>}
    </div>
 
    <aside className="ugo-home-map-card" aria-label="Mapa de profesionales cerca">
-    <header><div><span className="ugo-home-live-dot"/><strong>{trackedOrder?'Seguimiento de tu profesional':'Mapa en vivo'}</strong><small>{trackedOrder?`Pedido #${trackedOrder.numero??trackedOrder.id.slice(0,8)} · ${trackedOrder.estado==='en_camino'?'En camino':'Asignado'}`:'Profesionales cerca de tu zona'}</small></div><b>{trackedOrder?'Pedido activo':`${onlineProviders.length} conectados`}</b></header>
+    <header><div><span className="ugo-home-live-dot"/><strong>{trackedOrder?t('home.tracking'):t('home.live')}</strong><small>{trackedOrder?`Pedido #${trackedOrder.numero??trackedOrder.id.slice(0,8)} · ${trackedOrder.estado==='en_camino'?'En camino':'Asignado'}` :t('home.near')}</small></div><b>{trackedOrder?'Pedido activo':`${onlineProviders.length} conectados`}</b></header>
     {trackedOrder&&<AssignedProviderCard compact provider={trackedOrder.proveedor} providerId={trackedOrder.proveedor_id} category={trackedOrder.categoria?.nombre} onOpen={()=>openOrder(trackedOrder.id)}/>}
     {trackedOrder&&<div className="ugo-home-route-banner"><strong>{trackedOrder.proveedor?.nombre||'Tu profesional'}</strong><span>{trackedOrder.estado==='en_camino'?'Viene hacia tu dirección · seguimiento en vivo':'Profesional asignado · esperando inicio del viaje'}</span><button type="button" onClick={()=>openOrder(trackedOrder.id)}>Abrir pedido →</button></div>}
     {trackedOrder?<div className="ugo-home-route-view"><ClientActiveMap key={trackedOrder.id} supabase={supabase} serviceId={trackedOrder.id} phase={trackedOrder.estado==='en_camino'?'en_camino':'assigned'}/></div>:<div className="ugo-home-map">
