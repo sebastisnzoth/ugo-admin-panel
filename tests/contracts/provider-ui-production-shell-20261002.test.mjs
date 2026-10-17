@@ -16,11 +16,11 @@ test('provider root exposes a stable view class for layout-specific cleanup',()=
 test('provider desktop navigation is compact, active-aware and has no duplicate service chooser',()=>{
   const sidebar=fs.readFileSync('src/mvp/provider/ProviderStudioSidebar.tsx','utf8')
   assert.match(sidebar,/aria-current=/)
-  assert.match(sidebar,/Ayuda y disputa/)
-  assert.match(sidebar,/Online · dejar de recibir/)
+  assert.match(sidebar,/t\('nav\.help'\)/)
+  assert.match(sidebar,/t\('nav\.goOffline'\)/)
   assert.doesNotMatch(sidebar,/Elegir servicio/)
-  const labels=[...sidebar.matchAll(/>(Inicio|Pedidos|Trabajo activo|Agenda|Historial|Ganancias|Perfil)/g)].map(match=>match[1])
-  assert.ok(labels.length>=5)
+  const labels=[...sidebar.matchAll(/t\('nav\.(home|orders|active|jobs|history|earnings|profile)'\)/g)].map(match=>match[1])
+  assert.ok(new Set(labels).size>=5)
 })
 
 test('provider production shell removes conflicting desktop bottom navigation and duplicate dock',()=>{
