@@ -55,3 +55,85 @@
  .ugo-client-root.ugo-client-screen-request .prototype-hugo .ugo-real-state i{margin:0!important}
  .ugo-client-root.ugo-client-screen-request .ugo-hugo-stage-card{position:absolute!important;left:82px!important;bottom:0!important;width:320px!important;margin:0!important;border-radius:20px!important}
 }
+
+
+/* 2026 request composer — fluid app layout, usable desktop width and clear hierarchy. */
+.ugo-need-screen{
+  --need-ink:#122e2b;--need-muted:#5d706d;--need-brand:#087b63;
+  --need-edge:#d7e8e2;--need-surface:#fff;
+  color:var(--need-ink);
+  background:linear-gradient(155deg,#eaf7f1 0%,#f4faf9 44%,#edf5fb 100%);
+}
+.ugo-need-top{flex-shrink:0;border-color:var(--need-edge)}
+.ugo-need-top>button{border-radius:12px;cursor:pointer}
+.ugo-need-top>button:hover{background:#ecf6f1}
+.ugo-need-top>button:focus-visible,
+.ugo-need-screen button:focus-visible,
+.ugo-need-body textarea:focus-visible{outline:3px solid #087b63;outline-offset:3px}
+.ugo-need-body{box-sizing:border-box;scrollbar-gutter:stable;overscroll-behavior:contain}
+.ugo-need-category{
+  background:linear-gradient(115deg,#fff,#f0fbf7);
+  border:1px solid #d6eae1;border-radius:20px;
+  padding:16px;align-items:center;
+}
+.ugo-need-category>span{flex:0 0 auto;background:#fff0c8}
+.ugo-need-category h1{font-size:clamp(26px,3vw,34px);letter-spacing:-.04em}
+.ugo-need-category p,.ugo-need-body .ugo-need-field-label{color:var(--need-muted)}
+.ugo-need-field-label{font-size:15px;font-weight:750}
+.ugo-need-body textarea{
+  min-height:144px;border-color:#c8ddd5;border-radius:17px;
+  font-size:16px;padding:17px;background:#fff;
+}
+.ugo-need-body textarea:focus{border-color:#087b63;box-shadow:0 0 0 4px #087b631c}
+.ugo-need-body h2{font-size:16px;letter-spacing:-.015em}
+.ugo-need-quick button{
+  cursor:pointer;min-height:48px;border-radius:13px;
+  border:1px solid #dce9e5;background:#fff;color:#24413c;
+  padding:12px 14px;font-size:14px;font-weight:600;
+}
+.ugo-need-quick button:hover{background:#effaf5;border-color:#9bccb9}
+.ugo-need-quick button.selected{background:#def4e8;color:#08654e;border-color:#70b89a}
+.ugo-need-footer-inner>button{background:linear-gradient(110deg,#087b63,#0a718a);border-radius:14px;cursor:pointer}
+.ugo-need-footer-inner>button:disabled{cursor:not-allowed}
+.ugo-need-screen footer{border-top:1px solid #e3eee9}
+@media(min-width:900px){
+  .ugo-need-screen{
+    position:absolute;top:72px;bottom:18px;left:50%;right:auto;
+    inset-block-start:72px;inset-block-end:18px;
+    width:min(880px,calc(100vw - 72px));max-width:880px;
+    transform:translateX(-50%);border-radius:26px;
+    border:1px solid #d9e8e3;box-shadow:0 22px 70px #123a3420;
+    overflow:hidden;
+  }
+  .ugo-need-top{
+    display:grid;grid-template-columns:44px minmax(0,1fr) auto;
+    gap:12px;padding:19px 30px 16px;
+  }
+  .ugo-need-progress{grid-column:1/-1;gap:9px}
+  .ugo-need-progress i{height:5px}
+  .ugo-need-body{width:100%;max-width:none;padding:27px 42px 145px}
+  .ugo-need-category{padding:19px 23px;margin-bottom:25px;gap:18px}
+  .ugo-need-body textarea{min-height:156px}
+  .ugo-need-quick{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+  .ugo-need-screen footer{padding:14px 42px 18px}
+  .ugo-need-footer-inner{width:100%;max-width:none;display:grid;grid-template-columns:1fr minmax(230px,290px);align-items:center;gap:16px}
+  .ugo-need-footer-inner>small{text-align:left;margin:0;font-size:13px}
+  .ugo-need-footer-inner>button{min-height:54px}
+}
+@media(max-width:899px){
+  .ugo-need-screen{position:fixed;inset:0;width:100%;max-width:none;transform:none;box-shadow:none;border-radius:0}
+  .ugo-need-body{width:100%;max-width:640px;padding:21px 17px 138px}
+  .ugo-need-category{padding:14px}
+  .ugo-need-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ugo-need-quick button{min-width:0;min-height:49px;font-size:13px;text-align:left}
+  .ugo-need-screen footer{padding:12px 17px max(15px,env(safe-area-inset-bottom))}
+  .ugo-need-footer-inner{width:100%;max-width:606px}
+}
+@media(max-width:380px){
+  .ugo-need-quick{grid-template-columns:1fr}
+  .ugo-need-category h1{font-size:26px}
+  .ugo-need-top{padding-left:12px;padding-right:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .ugo-need-screen button{transition:none!important;transform:none!important}
+}
