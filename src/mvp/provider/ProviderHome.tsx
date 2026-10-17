@@ -1,19 +1,21 @@
 import{ProviderCustomerCard}from'./ProviderCustomerCard'
 import React from'react'
+import{useLocale}from'../../i18n/locale'
 import{Button,Card,SectionHeader,StatusPill}from'../../shared/ui'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData,money}from'./providerData'
 
 export function ProviderHome(){
+ const{t}=useLocale()
  const flow=useProviderFlow(),d=useProviderData()
  const demandTop=[...d.demand].sort((a,b)=>(b.demandLevel==='high'?3:b.demandLevel==='medium'?2:1)-(a.demandLevel==='high'?3:a.demandLevel==='medium'?2:1))[0]||null
  const availability=d.debtBlocked
   ?{tone:'danger' as const,title:'Pedidos pausados',text:`Tenés ${d.pendingDebtCount} servicios con comisión pendiente. Pagá al menos una para volver al radar.`}
   :!d.online
-   ?{tone:'neutral' as const,title:'Estás Offline',text:'Activá Online para entrar al radar y recibir pedidos compatibles con tu categoría.'}
+   ?{tone:'neutral' as const,title:t('provider.offline'),text:t('provider.offlineHelp')}
    :!d.matchingReady
     ?{tone:'warning' as const,title:'Online pero fuera del radar',text:'UGO necesita una ubicación reciente (menos de 90 segundos) para enviarte pedidos.'}
-    :{tone:'success' as const,title:'En el radar de UGO',text:'Estás disponible y con ubicación vigente. UGO te avisa cuando llegue un pedido compatible.'}
+    :{tone:'success' as const,title:t('provider.title'),text:t('provider.available')}
  const next=d.service
   ?{eyebrow:'TRABAJO ACTIVO',title:'Tenés un trabajo en marcha',text:d.cashSelected?'El cliente eligió efectivo. Seguí el trabajo y marcá cada paso.':d.funded?'El pago está confirmado. Andá, resolvé y marcá listo.':'Esperá la confirmación de pago antes de salir.',action:flow.actions.openActiveJob,label:'Continuar trabajo'}
   :d.debtBlocked
@@ -23,10 +25,10 @@ export function ProviderHome(){
   :d.online&&!d.matchingReady
    ?{eyebrow:'GPS NECESITA ATENCIÓN',title:'Estás Online, pero todavía fuera del radar',text:'UGO necesita una ubicación reciente para poder enviarte pedidos. Renovala ahora sin apagar tu disponibilidad.',action:()=>void d.setOnline(true),label:'Actualizar ubicación'}
   :d.online
-   ?{eyebrow:'LISTO PARA TRABAJAR',title:'Estás en el radar de UGO',text:'Tu GPS está vigente y podés recibir pedidos compatibles. Podés dejar la app abierta: UGO te avisa cuando llegue uno.',action:()=>void d.reload(),label:'Actualizar ahora'}
+   ?{eyebrow:t('provider.ready'),title:t('provider.work'),text:t('provider.available'),action:()=>void d.reload(),label:t('provider.refresh')}
    :{eyebrow:'FUERA DEL RADAR',title:'Ponete Online para recibir trabajos',text:'Cuando estés disponible, activá tu estado y UGO empezará a buscar pedidos compatibles.',action:d.toggleOnline,label:'Ponerme Online'}
  return <section className="provider-screen provider-home" aria-label="Inicio del proveedor">
-  <SectionHeader screenHeading eyebrow="UGO PRO" title={`Hola, ${d.name}`} description={`Calificación ${d.karma.toFixed(1)} de 5 · ${d.provider.ciudad_base||'Tu zona'}`} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online} aria-label={d.online?(d.matchingReady?'Desactivar disponibilidad: Online y GPS vigente':'Desactivar disponibilidad: Online, GPS pendiente'):'Activar disponibilidad: Offline'}>{d.online?'Online':'Offline'}</Button>}/>
+  <SectionHeader screenHeading eyebrow="UGO PRO" title={t('provider.welcome').replace('{name}',d.name)} description={t('provider.rating').replace('{rating}',d.karma.toFixed(1)).replace('{zone}',d.provider.ciudad_base||'Florianópolis')} actions={<Button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy||(d.debtBlocked&&!d.online)} aria-pressed={d.online} aria-label={d.online?(d.matchingReady?'Desactivar disponibilidad: Online y GPS vigente':'Desactivar disponibilidad: Online, GPS pendiente'):'Activar disponibilidad: Offline'}>{d.online?'Online':'Offline'}</Button>}/>
   <div className="provider-home-overview"><Card className="provider-card provider-hero provider-focus-card">
    <StatusPill tone={d.debtBlocked?'danger':d.service?'warning':d.online&&!d.matchingReady?'warning':d.online?'success':'neutral'}>{next.eyebrow}</StatusPill>
    <h2>{next.title}</h2><p>{next.text}</p>
