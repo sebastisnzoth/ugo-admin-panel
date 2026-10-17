@@ -124,8 +124,8 @@ test('provider simple flow keeps automatic arrival with a manual fallback',async
 test('provider opportunity UI is problem-first and avoids exposing ranking bureaucracy',async()=>{
  const opportunities=await read('src/mvp/provider/ProviderOpportunities.tsx')
  assert.match(opportunities,/ACEPTAR/)
- assert.match(opportunities,/No puedo tomarlo/i)
- assert.match(opportunities,/¿Lo podés resolver\?/)
+ assert.match(opportunities,/t\('screen\.opportunities\.25'\)/)
+ assert.match(opportunities,/t\('screen\.opportunities\.16'\)/)
  assert.doesNotMatch(opportunities,/COMPATIBILIDAD/)
  assert.doesNotMatch(opportunities,/TU VISITA BASE/)
 })
