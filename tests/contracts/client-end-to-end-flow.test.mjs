@@ -36,14 +36,14 @@ test('canonical client request covers need, optional evidence, location, when, p
  assert.match(summary,/Fotos/)
 })
 
-test('confirm is idempotent per draft, preserves one immediate active order and allows scheduled coexistence',()=>{
+test('confirm is idempotent per draft, allows bounded concurrent immediate orders and scheduled coexistence',()=>{
  assert.match(post,/metadata->>request_draft_id/)
  assert.match(post,/code\|\|'\'\)==='23505'/)
  assert.doesNotMatch(post,/canonical-active-service/)
  assert.match(post,/if\(!row&&!draft\.scheduleAt\)/)
  assert.match(post,/\.is\('programado_para',null\)/)
- assert.match(post,/Ya tenés un pedido inmediato activo/)
- assert.match(post,/programar otro servicio para más adelante/)
+ assert.match(post,/hasta 3 pedidos inmediatos activos/)
+ assert.match(post,/programá otro servicio para más adelante/)
  assert.match(post,/clearDraft\(\);await load\(row\.id\);setNow\(Date\.now\(\)\)/)
 })
 
