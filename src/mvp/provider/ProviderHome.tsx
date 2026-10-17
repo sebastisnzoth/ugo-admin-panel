@@ -1,3 +1,4 @@
+import{ProviderCustomerCard}from'./ProviderCustomerCard'
 import React from'react'
 import{Button,Card,SectionHeader,StatusPill}from'../../shared/ui'
 import{useProviderFlow}from'./providerFlow'
