@@ -1,3 +1,4 @@
+import{useLocale}from'../../../i18n/locale'
 import React,{Suspense,lazy,useCallback,useEffect,useMemo,useState}from'react'
 import{subscribeRealtimeChannel}from'../../../lib/realtimeChannel'
 import type{RealtimeChannel}from'@supabase/supabase-js'
@@ -28,6 +29,7 @@ function StatusTimeline({state}:{state:TrackedState}){
 }
 
 export function ClientLiveTracking({serviceId=null,embedded=false}:{serviceId?:string|null;embedded?:boolean}={}){
+ const{t}=useLocale();
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[service,setService]=useState<TrackedService|null>(null)
  const[payment,setPayment]=useState<TrackedPayment|null>(null)
@@ -57,11 +59,11 @@ export function ClientLiveTracking({serviceId=null,embedded=false}:{serviceId?:s
   const electronicPending=Boolean(payment&&!cashSelected&&!electronicConfirmed)
   const title=cashSelected?'Efectivo seleccionado':electronicConfirmed?'Pago confirmado':electronicPending?'Esperando confirmación del pago':'Profesional aceptó el pedido'
   const text=cashSelected?'La forma de pago ya está definida. Vas a ver el recorrido apenas el profesional inicie el viaje.':electronicConfirmed?'El pago electrónico quedó confirmado. Vas a ver el recorrido apenas el profesional inicie el viaje.':electronicPending?'Terminá el pago electrónico para habilitar la salida del profesional.':'El profesional ya está asignado y aceptó. Te avisamos cuando salga hacia tu dirección.'
-  return <aside className={`${rootClass} is-assigned-map`} aria-live="polite"><header><div><small>SERVICIO #{service.numero}</small><strong>{title}</strong><p>{text}</p></div><span className="ugo-live-dot is-waiting">●</span></header>{timeline}<Suspense fallback={<div className="ugo-active-map-wrap"><div className="ugo-active-eta is-syncing"><small>Cargando mapa del profesional…</small></div></div>}><ClientActiveMap supabase={supabase} serviceId={service.id} phase="assigned"/></Suspense></aside>
+  return <aside className={`${rootClass} is-assigned-map`} aria-live="polite"><header><div><small>SERVICIO #{service.numero}</small><strong>{title}</strong><p>{text}</p></div><span className="ugo-live-dot is-waiting">●</span></header>{timeline}<Suspense fallback={<div className="ugo-active-map-wrap"><div className="ugo-active-eta is-syncing"><small>{t('screen.client_tracking.1')}</small></div></div>}><ClientActiveMap supabase={supabase} serviceId={service.id} phase="assigned"/></Suspense></aside>
  }
- if(service.estado==='llegado')return <aside className={`${rootClass} is-compact is-arrived`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>📍</span><div><strong>El profesional llegó</strong><p>Ya está en el punto del servicio. El siguiente paso es validar el inicio del trabajo.</p></div></div></aside>
- if(service.estado==='en_progreso')return <aside className={`${rootClass} is-compact is-working`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>🛠</span><div><strong>Trabajo en curso</strong><p>El profesional ya comenzó. El estado sigue sincronizado con este pedido.</p></div></div></aside>
- if(service.estado==='esperando_aprobacion')return <aside className={`${rootClass} is-compact is-finished`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>✓</span><div><strong>Trabajo finalizado</strong><p>El profesional terminó. Revisá el trabajo para aprobar, disputar o continuar con el cierre.</p></div></div></aside>
- if(service.estado==='completado')return <aside className={`${rootClass} is-compact is-completed`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>✓</span><div><strong>Servicio completado</strong><p>El cierre quedó confirmado y guardado en tu historial.</p></div></div></aside>
- return <aside className={rootClass} aria-live="polite"><header><div><small>SERVICIO #{service.numero}</small><strong>Profesional en camino</strong><p>Seguimiento en vivo hasta tu dirección.</p></div><span className="ugo-live-dot">●</span></header>{timeline}<Suspense fallback={<div className="ugo-active-map-wrap"><div className="ugo-active-eta is-syncing"><small>Cargando mapa en vivo…</small></div></div>}><ClientActiveMap supabase={supabase} serviceId={service.id} phase="en_camino"/></Suspense></aside>
+ if(service.estado==='llegado')return <aside className={`${rootClass} is-compact is-arrived`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>📍</span><div><strong>{t('screen.client_tracking.2')}</strong><p>{t('screen.client_tracking.3')}</p></div></div></aside>
+ if(service.estado==='en_progreso')return <aside className={`${rootClass} is-compact is-working`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>🛠</span><div><strong>{t('screen.client_tracking.4')}</strong><p>{t('screen.client_tracking.5')}</p></div></div></aside>
+ if(service.estado==='esperando_aprobacion')return <aside className={`${rootClass} is-compact is-finished`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>✓</span><div><strong>{t('screen.client_tracking.6')}</strong><p>{t('screen.client_tracking.7')}</p></div></div></aside>
+ if(service.estado==='completado')return <aside className={`${rootClass} is-compact is-completed`} aria-live="polite">{timeline}<div className="ugo-live-tracking-status"><span>✓</span><div><strong>{t('screen.client_tracking.8')}</strong><p>{t('screen.client_tracking.9')}</p></div></div></aside>
+ return <aside className={rootClass} aria-live="polite"><header><div><small>SERVICIO #{service.numero}</small><strong>{t('screen.client_tracking.10')}</strong><p>{t('screen.client_tracking.11')}</p></div><span className="ugo-live-dot">●</span></header>{timeline}<Suspense fallback={<div className="ugo-active-map-wrap"><div className="ugo-active-eta is-syncing"><small>{t('screen.client_tracking.12')}</small></div></div>}><ClientActiveMap supabase={supabase} serviceId={service.id} phase="en_camino"/></Suspense></aside>
 }
