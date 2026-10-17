@@ -6,7 +6,7 @@ import'./provider-demand-map.css'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const MAP_STYLE:maplibregl.StyleSpecification={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
-type Props={signals:DemandSignal[];online:boolean;selectedZone?:string|null;onSelectZone?:(zone:string)=>void}
+type Props={signals:DemandSignal[];online:boolean;selectedZone?:string|null;onSelectZone?:(zone:string)=>void;providerPosition?:[number,number]|null}
 type Located=DemandSignal&{latitude:number;longitude:number}
 const valid=(s:DemandSignal):s is Located=>Number.isFinite(s.latitude)&&Number.isFinite(s.longitude)&&s.latitude!==null&&s.longitude!==null&&Math.abs(s.latitude)<=90&&Math.abs(s.longitude)<=180
 const weight=(level:DemandSignal['demandLevel'])=>level==='high'?1:level==='medium'?.65:.3
@@ -21,11 +21,12 @@ const heatLayer:maplibregl.HeatmapLayerSpecification={id:'ugo-demand-heat',type:
 function asGeojson(signals:Located[]){
  return{type:'FeatureCollection' as const,features:signals.map(s=>({type:'Feature' as const,geometry:{type:'Point' as const,coordinates:[s.longitude,s.latitude]},properties:{id:s.id,zone:s.zone,weight:weight(s.demandLevel)}}))}
 }
-export function ProviderDemandMap({signals,online,selectedZone,onSelectZone}:Props){
+export function ProviderDemandMap({signals,online,selectedZone,onSelectZone,providerPosition}:Props){
  const el=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([])
  const[mapReady,setMapReady]=useState(false),[error,setError]=useState('')
  const located=useMemo(()=>signals.filter(valid),[signals])
  const geojson=useMemo(()=>asGeojson(located),[located])
+ const providerMarker=useRef<maplibregl.Marker|null>(null)
  useEffect(()=>{
   if(!el.current||mapRef.current)return
   let alive=true
@@ -37,7 +38,7 @@ export function ProviderDemandMap({signals,online,selectedZone,onSelectZone}:Pro
    map.on('load',()=>{if(!alive)return;map.addSource(HEAT_SOURCE,{type:'geojson',data:{type:'FeatureCollection',features:[]}});map.addLayer(heatLayer);map.resize();setMapReady(true)})
    map.on('error',()=>{if(alive)setError('O mapa não está disponível. Tente atualizar.')})
   }).catch(()=>{if(alive)setError('Não foi possível carregar o mapa.')})
-  return()=>{alive=false;setMapReady(false);markers.current.forEach(m=>m.remove());markers.current=[];mapRef.current?.remove();mapRef.current=null}
+  return()=>{alive=false;setMapReady(false);markers.current.forEach(m=>m.remove());markers.current=[];providerMarker.current?.remove();providerMarker.current=null;mapRef.current?.remove();mapRef.current=null}
  },[])
  useEffect(()=>{
   const map=mapRef.current;if(!map||!mapReady)return
@@ -61,6 +62,7 @@ export function ProviderDemandMap({signals,online,selectedZone,onSelectZone}:Pro
   }).catch(()=>{if(alive)setError('Não foi possível atualizar as zonas.')})
   return()=>{alive=false}
  },[geojson,located,mapReady,onSelectZone,selectedZone])
+ useEffect(()=>{const map=mapRef.current;if(!mapReady||!map)return;providerMarker.current?.remove();providerMarker.current=null;if(!providerPosition)return;let alive=true;void loadMaplibre().then(lib=>{if(!alive||mapRef.current!==map)return;const node=document.createElement('div');node.className='provider-demand-self-pin';node.setAttribute('aria-label','Minha localização GPS');providerMarker.current=new lib.Marker({element:node}).setLngLat(providerPosition).addTo(map);map.easeTo({center:providerPosition,zoom:12,duration:400})});return()=>{alive=false}},[providerPosition,mapReady])
  const status=!online?'Radar visível · fique Online para receber ofertas':located.length?`${located.length} sinal${located.length===1?'':'is'} de demanda geolocalizado${located.length===1?'':'s'}`:signals.length?'Demanda sem coordenadas públicas':'Sem demanda compatível agora'
  return <div className="provider-demand-map">
   <div ref={el} className="provider-demand-map-canvas" aria-label="Mapa de calor de demanda real UGO"/>
