@@ -42,7 +42,7 @@ test('superadmin surfaces autonomy mode and gates before deep navigation',()=>{
   assert.match(superadmin,/EMPRESA AUTÓNOMA/)
   assert.match(superadmin,/AUTONOMY GATE/)
   assert.match(superadmin,/CUSTOMER #1/)
-  assert.match(superadmin,/aria-label="Navegación Super Admin"/)
+  assert.match(superadmin,/aria-label=\{t\('admin\.nav'\)\}/)
   assert.match(finalCss,/Super Admin control hierarchy 2026-10-03/)
 })
 
