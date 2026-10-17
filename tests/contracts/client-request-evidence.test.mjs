@@ -14,7 +14,7 @@ test('request photos stay optional and upload failures never block the canonical
  assert.doesNotMatch(source,/Necesitás al menos una foto para enviar la solicitud/)
  assert.doesNotMatch(source,/Adjuntá al menos una foto clara/)
  assert.match(source,/Probá otra vez o enviá la solicitud sin foto/)
- assert.match(need,/Fotos del trabajo <small>\(opcional\)<\/small>/)
+ assert.match(need,/t\('screen\.need\.5'\).*t\('screen\.need\.6'\)/)
  assert.match(need,/Podés continuar sin fotos/)
  assert.match(need,/disabled=\{!canContinue\|\|photoBusy\}/)
  assert.doesNotMatch(need,/photoCount\s*===\s*0.*return/)
