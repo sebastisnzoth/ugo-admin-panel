@@ -62,6 +62,7 @@ function KillSwitchInlineRow(p:{entry:any;onKillSwitch:(scopeType:string,scopeKe
 }
 
 function ModelRouterPanel({candidates,routes,metrics,grid}:{candidates:any[];routes:any[];metrics:any[];grid:React.CSSProperties}){
+ const{t}=useLocale();
  const byId=new Map(candidates.map(c=>[c.id,c]));
  const label=(id:any)=>{const c=byId.get(id);return c?String(c.provider)+' / '+String(c.model_id):id||'sin seleccionar'};
  const recent=metrics.slice(0,12);
@@ -73,6 +74,7 @@ function ModelRouterPanel({candidates,routes,metrics,grid}:{candidates:any[];rou
 }
 
 function LiveOperations(p:{agents:any[];jobs:any[];decisions:any[];evidence:any[];departments:any[];autonomy:any;onDecision:(id:string,approve:boolean)=>void}){
+ const{t}=useLocale();
  const[dept,setDept]=useState('ALL'),[selected,setSelected]=useState(''),[state,setState]=useState('ALL'),[now,setNow]=useState(()=>Date.now())
  useEffect(()=>{const id=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(id)},[])
  const agentMap=useMemo(()=>new Map(p.agents.map(a=>[a.id,a])),[p.agents]),deptMap=useMemo(()=>new Map(p.departments.map(d=>[String(d.department_id),d.name])),[p.departments])
