@@ -44,10 +44,10 @@ test('provider agenda exposes immediate, today and upcoming work without hiding 
  assert.match(agenda,/immediateRows=rows\.filter\(row=>!row\.programado_para/)
  assert.match(agenda,/todayRows=rows\.filter/)
  assert.match(agenda,/upcomingRows=rows\.filter/)
- assert.match(agenda,/>AHORA</)
- assert.match(agenda,/>HOY</)
- assert.match(agenda,/>PRÓXIMOS</)
- assert.match(agenda,/Mis trabajos/)
+ assert.match(agenda,/t\('agenda\.now'\)/)
+ assert.match(agenda,/t\('agenda\.today'\)/)
+ assert.match(agenda,/t\('agenda\.upcoming'\)/)
+ assert.match(agenda,/t\('agenda\.title'\)/)
 })
 
 test('provider agenda resyncs from realtime and reports operational failures to Sentinel',async()=>{
