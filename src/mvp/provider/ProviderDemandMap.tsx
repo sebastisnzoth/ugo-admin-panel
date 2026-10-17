@@ -18,8 +18,8 @@ const heatLayer:maplibregl.HeatmapLayerSpecification={id:'ugo-demand-heat',type:
  'heatmap-opacity':.78,
  'heatmap-color':['interpolate',['linear'],['heatmap-density'],0,'rgba(20,120,95,0)',.15,'#5cbf91',.35,'#e9d45a',.62,'#f39d40',.85,'#de5442',1,'#b91c1c']
 }}
-function asGeojson(signals:Located[]):GeoJSON.FeatureCollection<GeoJSON.Point>{
- return{type:'FeatureCollection',features:signals.map(s=>({type:'Feature',geometry:{type:'Point',coordinates:[s.longitude,s.latitude]},properties:{id:s.id,zone:s.zone,weight:weight(s.demandLevel)}}))}
+function asGeojson(signals:Located[]){
+ return{type:'FeatureCollection' as const,features:signals.map(s=>({type:'Feature' as const,geometry:{type:'Point' as const,coordinates:[s.longitude,s.latitude]},properties:{id:s.id,zone:s.zone,weight:weight(s.demandLevel)}}))}
 }
 export function ProviderDemandMap({signals,online,selectedZone,onSelectZone}:Props){
  const el=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([])
