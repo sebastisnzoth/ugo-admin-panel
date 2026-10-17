@@ -15,9 +15,9 @@ function walk(dir){
   const ast=ts.createSourceFile(name,source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX)
   const matches=[]
   const add=(node,value)=>{
-   const trimmed=value.replace(/\\s+/g,' ').trim()
-   if(!trimmed||!/\\p{L}/u.test(trimmed)||trimmed.length<3)return
-   if(/^[-_A-Z0-9 .·/]+$/.test(trimmed)&&trimmed.length<6)return
+   const trimmed=value.replace(/\s+/g,' ').trim()
+   if(!trimmed||!/\p{L}/u.test(trimmed)||trimmed.length<3)return
+   if(/^[-_A-Z0-9 .·]+$/.test(trimmed)&&trimmed.length<6)return
    const loc=ast.getLineAndCharacterOfPosition(node.getStart(ast))
    matches.push({line:loc.line+1,text:trimmed.slice(0,110)})
   }
@@ -31,7 +31,7 @@ function walk(dir){
  }
 }
 walk(root)
-const group=p=>p.includes('/provider/')||/Provider/.test(p)?'provider':p.includes('/client/')||/Client/.test(p)?'client':p.includes('/admin/')||/Admin/.test(p)?'admin':p.includes('SuperAdmin')?'superadmin':'shared'
+const group=p=>p.includes('/provider/')||/Provider/.test(p)?'provider':p.includes('/client/')||/Client/.test(p)?'client':p.includes('SuperAdmin')?'superadmin':p.includes('/admin/')||/Admin/.test(p)?'admin':'shared'
 const totals={}
 for(const row of results)totals[group(row.file)]=(totals[group(row.file)]||0)+row.count
 const report={filesWithUntranslatedText:results.length,estimatedVisibleLiterals:Object.values(totals).reduce((a,b)=>a+b,0),byArea:totals,files:results}
