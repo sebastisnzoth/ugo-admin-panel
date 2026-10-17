@@ -1003,6 +1003,11 @@ export const extendedMessages={
     "providerDemandMap.unavailable": "O mapa não está disponível. Tente atualizar.",
     "providerDemandMap.loadFailed": "Não foi possível carregar o mapa.",
 
+    "clientHome.repeatAria": "Iniciar outro pedido com os dados do último serviço",
+    "clientHome.repeatFallback": "este serviço",
+    "clientHome.repeatHelp": "Usaremos os mesmos dados do pedido anterior.",
+    "clientHome.allCategoriesAria": "Todas as categorias",
+
   },
   "es": {
     "screen.need.1": "Contanos qué necesitás",
@@ -2007,6 +2012,11 @@ export const extendedMessages={
     "providerDemandMap.unavailable": "El mapa no está disponible. Intentá actualizar.",
     "providerDemandMap.loadFailed": "No pudimos cargar el mapa.",
 
+    "clientHome.repeatAria": "Iniciar otro pedido con los datos del último servicio",
+    "clientHome.repeatFallback": "este servicio",
+    "clientHome.repeatHelp": "Usaremos los mismos datos del pedido anterior.",
+    "clientHome.allCategoriesAria": "Todas las categorías",
+
   },
   "en": {
     "screen.need.1": "Tell us what you need",
@@ -3010,6 +3020,11 @@ export const extendedMessages={
     "providerProfile.saveZoneRate": "Save zone and rate",
     "providerDemandMap.unavailable": "The map is unavailable. Try refreshing.",
     "providerDemandMap.loadFailed": "We couldn’t load the map.",
+
+    "clientHome.repeatAria": "Start another request with the last service details",
+    "clientHome.repeatFallback": "this service",
+    "clientHome.repeatHelp": "We’ll reuse the previous request details.",
+    "clientHome.allCategoriesAria": "All categories",
 
   }
 } as const
