@@ -2,6 +2,7 @@ import React,{createContext,useCallback,useContext,useEffect,useMemo,useRef,useS
 import{getRoleSupabase,type UgoRole}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
 import{extendedMessages}from'./translations/extended'
+import{coreMessages}from'./translations/core'
 
 export type UgoLocale='pt-BR'|'es'|'en'
 type LocaleContextValue={locale:UgoLocale;setLocale:(locale:UgoLocale)=>void;t:(key:string,params?:Record<string,string|number>)=>string}
@@ -38,6 +39,7 @@ Object.assign(messages["en"],{"status.buscando":"Searching for a professional","
 Object.assign(messages["pt-BR"],{"admin.dashboard.title":"Monitoramento em tempo real do UGO","admin.dashboard.eyebrow":"CENTRO DE CONTROLE OPERACIONAL","admin.dashboard.sync":"Sincronizando dados reais…","admin.dashboard.live":"Ao vivo","admin.dashboard.connecting":"Conectando…","admin.dashboard.resync":"Ressincronizando","admin.dashboard.operation":"Ver operação","admin.dashboard.kpis":"Indicadores operacionais","admin.dashboard.active":"Serviços ativos agora","admin.dashboard.providers":"Profissionais online","admin.dashboard.users":"Usuários ativos","admin.dashboard.completed":"Concluídos hoje","admin.dashboard.pending":"Pendências","admin.dashboard.decision":"CENTRO DE DECISÕES","admin.dashboard.immediate":"Atenção imediata","admin.dashboard.map":"Mapa ao vivo","admin.dashboard.state":"Estado dos serviços"})
 Object.assign(messages["es"],{"admin.dashboard.title":"Monitoreo en tiempo real de UGO","admin.dashboard.eyebrow":"CENTRO DE CONTROL OPERACIONAL","admin.dashboard.sync":"Sincronizando datos reales…","admin.dashboard.live":"En vivo","admin.dashboard.connecting":"Conectando…","admin.dashboard.resync":"Resincronizando","admin.dashboard.operation":"Ver operación","admin.dashboard.kpis":"Indicadores operativos","admin.dashboard.active":"Servicios activos ahora","admin.dashboard.providers":"Proveedores online","admin.dashboard.users":"Usuarios activos","admin.dashboard.completed":"Completados hoy","admin.dashboard.pending":"Atención pendiente","admin.dashboard.decision":"CENTRO DE DECISIONES","admin.dashboard.immediate":"Atención inmediata","admin.dashboard.map":"Mapa en vivo","admin.dashboard.state":"Estado de servicios"})
 Object.assign(messages["en"],{"admin.dashboard.title":"UGO real-time monitoring","admin.dashboard.eyebrow":"OPERATIONS CONTROL CENTER","admin.dashboard.sync":"Syncing live data…","admin.dashboard.live":"Live","admin.dashboard.connecting":"Connecting…","admin.dashboard.resync":"Resyncing","admin.dashboard.operation":"View operations","admin.dashboard.kpis":"Operational indicators","admin.dashboard.active":"Active services now","admin.dashboard.providers":"Providers online","admin.dashboard.users":"Active users","admin.dashboard.completed":"Completed today","admin.dashboard.pending":"Needs attention","admin.dashboard.decision":"DECISION CENTER","admin.dashboard.immediate":"Immediate attention","admin.dashboard.map":"Live map","admin.dashboard.state":"Service status"})
+for(const locale of ['pt-BR','es','en'] as const)Object.assign(messages[locale],coreMessages[locale])
 for(const locale of ['pt-BR','es','en'] as const)Object.assign(messages[locale],extendedMessages[locale])
 function translate(locale:UgoLocale,key:string,params?:Record<string,string|number>):string{
  const template=messages[locale][key]??messages['pt-BR'][key]??key
@@ -64,6 +66,7 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
  const role=roleFromLocation()
  const accountKey=useRef<string|null>(null)
  const revision=useRef(0)
+ useEffect(()=>{document.documentElement.lang=locale},[locale])
  useEffect(()=>{
   const client=authClient()
   if(!client)return
