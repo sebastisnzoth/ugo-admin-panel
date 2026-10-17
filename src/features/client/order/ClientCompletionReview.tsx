@@ -1,3 +1,4 @@
+import{useLocale}from'../../../i18n/locale'
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
 import{approvePendingClientService,confirmApprovedCashClientService}from'../services/clientActionService'
@@ -21,6 +22,7 @@ function money(value:number|null|undefined,currency:string|null|undefined){
 }
 
 export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted}:{onOpenDispute?:()=>void;serviceId?:string|null;onCompleted?:()=>void|Promise<void>}){
+ const{t}=useLocale();
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
  const[service,setService]=useState<ReviewService|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
@@ -105,13 +107,13 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  return <section aria-live="polite" className="ugo-completion-review">
   <header><div><h2>{title}</h2><p>{completed?`Servicio #${service.numero} · El pedido quedó cerrado y las fotos siguen disponibles en su historial.`:isCash&&workApproved?`Servicio #${service.numero} · Trabajo aprobado. Falta completar el pago en efectivo.`:`Servicio #${service.numero} · Revisá el registro final antes de confirmar el trabajo.`}</p></div><span aria-hidden="true">✓</span></header>
   {!completed&&!hasFinalEvidence&&<div className="ugo-completion-warning">Todavía no hay una foto final “Después” del proveedor asignado. UGO no habilita la aprobación hasta poder revisarla.</div>}
-  {!completed&&!payment&&<div className="ugo-completion-warning">UGO todavía no encuentra una forma de pago confirmada para este servicio.</div>}
-  {!completed&&!isCash&&payment&&!electronicReady&&<div className="ugo-completion-warning">El pago electrónico todavía no está protegido. Cuando se confirme, vas a poder aprobar el trabajo.</div>}
+  {!completed&&!payment&&<div className="ugo-completion-warning">{t('screen.client_review.1')}</div>}
+  {!completed&&!isCash&&payment&&!electronicReady&&<div className="ugo-completion-warning">{t('screen.client_review.2')}</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
-  {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision"><strong>Pagá {amount} a {providerName}</strong><span>Después de entregar el efectivo, tocá “YA PAGUÉ”. UGO avisará al proveedor y cerrará el servicio.</span></div>}
+  {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision"><strong>Pagá {amount} a {providerName}</strong><span>{t('screen.client_review.3')}</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(isCash?'Primero confirmá que el trabajo quedó bien. Después UGO te muestra cuánto pagar al proveedor.':'El trabajo está listo para confirmar. Al aprobar, UGO libera el pago electrónico protegido.')}</span></div>}
   {!completed&&<div className="ugo-completion-actions">
-   {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>ABRIR DISPUTA</button>}
+   {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>{t('screen.client_review.4')}</button>}
    {isCash&&workApproved
     ?<button type="button" onClick={confirmCashPaid} disabled={busy||!canConfirmCash}>{busy?'Procesando…':`YA PAGUÉ ${amount}`}</button>
     :<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'CONFIRMAR TRABAJO':'CONFIRMAR Y LIBERAR PAGO'}</button>}
