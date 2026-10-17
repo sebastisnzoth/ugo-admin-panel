@@ -10,9 +10,9 @@ const sentinel=fs.readFileSync('scripts/client-location-sentinel.mjs','utf8')
 const workflow=fs.readFileSync('.github/workflows/client-location-runtime.yml','utf8')
 
 test('client location map reflects authoritative pickup state',()=>{
-  assert.match(screen,/Mapa de ubicación del servicio/)
-  assert.match(screen,/Ubicación confirmada/)
-  assert.match(screen,/Ubicación pendiente/)
+  assert.match(screen,/t\('screen\.location\.7'\)/)
+  assert.match(screen,/t\('screen\.location\.12'\)/)
+  assert.match(screen,/t\('screen\.location\.13'\)/)
   assert.match(screen,/className=\{'ugo-location-map'\+\(pickup\?' has-location':''\)\}/)
   assert.match(css,/\.ugo-location-map\.has-location/)
 })
