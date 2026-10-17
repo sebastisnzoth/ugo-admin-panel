@@ -58,6 +58,10 @@ const pageErrors=[]
 let topNavigations=0
 page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)))
 page.on('framenavigated',frame=>{if(frame===page.mainFrame())topNavigations++})
+await page.addInitScript(userId=>{
+ localStorage.setItem('ugo.locale.guest.admin','es')
+ localStorage.setItem(`ugo.locale.admin.${userId}`,'es')
+},login.user.id)
 
 async function readOnlineKpi(timeout=20000){
  const card=page.locator('article').filter({hasText:'Proveedores online'}).first()

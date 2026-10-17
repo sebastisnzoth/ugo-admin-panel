@@ -15,7 +15,7 @@ let page
 try{
  const context=await browser.newContext({viewport:{width:390,height:844}})
  page=await context.newPage()
- await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+ await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem(`ugo.locale.client.${session.user.id}`,'es')},login.session)
  const install=async()=>{await page.evaluate(()=>{window.__ugoToolResponses=[];window.UGOVoiceBridge={isAvailable:()=>true,startListening:()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})}
  const call=async(name,args={})=>{const id='rt-'+Math.random().toString(36).slice(2);await page.evaluate(({id,name,args})=>window.dispatchEvent(new CustomEvent('ugo:native-voice-tool-call',{detail:{id,name,args}})),{id,name,args});await page.waitForFunction(id=>Array.isArray(window.__ugoToolResponses)&&window.__ugoToolResponses.some(item=>item.id===id),id,{timeout:20000});return await page.evaluate(id=>window.__ugoToolResponses.find(item=>item.id===id)?.response,id)}
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})

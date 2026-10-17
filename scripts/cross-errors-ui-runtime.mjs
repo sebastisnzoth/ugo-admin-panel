@@ -10,6 +10,7 @@ const result={control:'cross-errors',surface:'ui',sha,environment:'LOCAL_UGO_TES
 const browser=await chromium.launch({headless:true})
 try{
  const page=await browser.newPage({viewport:{width:390,height:844}})
+ await page.addInitScript(()=>localStorage.setItem('ugo.locale.guest.client','es'))
  await page.route('**/auth/v1/token?grant_type=password',async route=>{
    await route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error_code:'invalid_credentials',msg:'Credenciales incorrectas.'})})
  })

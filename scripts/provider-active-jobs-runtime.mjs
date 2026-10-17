@@ -15,6 +15,7 @@ try{
  const c=await admin.auth.admin.createUser({email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Active Client',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
  const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId});assert.ifError(prep.error);assert.equal(prep.data.invalid_assignment_blocked,true);assert.equal(prep.data.state,'asignado');assert.equal(prep.data.payment_method,'efectivo');serviceId=prep.data.service_id
  browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}})
+ await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(pe);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click()
  await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000})
  await page.getByRole('button',{name:'Continuar trabajo'}).click()

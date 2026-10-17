@@ -113,6 +113,8 @@ async function openRole(role,viewport){
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
+   localStorage.setItem('ugo.locale.guest.'+role,'es')
+   if(session.user?.id)localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es')
  },{role,session:sessions[role]})
  await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded'})
  return {page,errors}
