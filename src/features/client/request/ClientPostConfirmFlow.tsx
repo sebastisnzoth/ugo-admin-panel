@@ -33,9 +33,9 @@ export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
   const context:DispatchContext={category:draft.categorySlug||draft.categoryId,pickup:draftPickup(draft)};setDispatchContext(context)
   let row=await findByDraft(requestDraftId)
   if(!row&&!draft.scheduleAt){
-   const conflict=await supabase.from('servicios').select('id,numero,estado').eq('cliente_id',session.user.id).in('estado',[...CLIENT_ACTIVE_SERVICE_STATES]).is('programado_para',null).order('created_at',{ascending:false}).limit(1).maybeSingle()
+   const conflict=await supabase.from('servicios').select('id',{count:'exact',head:true}).eq('cliente_id',session.user.id).in('estado',[...CLIENT_ACTIVE_SERVICE_STATES]).is('programado_para',null)
    if(conflict.error)throw conflict.error
-   if(conflict.data?.id)throw new Error(`Ya tenés un pedido inmediato activo${conflict.data.numero?` (#${conflict.data.numero})`:''}. Podés seguirlo o programar otro servicio para más adelante.`)
+   if((conflict.count||0)>=3)throw new Error('Podés tener hasta 3 pedidos inmediatos activos. Seguí alguno desde Actividad o programá otro servicio para más adelante.')
   }
   if(!row){
    const quoted=Number(draft.tariffQuote?.precio_referencia||0),requested=Number(draft.amount||0),serviceAmount=requested>0?requested:quoted>0?quoted:null,commission=serviceAmount?Math.round(serviceAmount*15)/100:null,providerNet=serviceAmount&&commission!=null?Math.round((serviceAmount-commission)*100)/100:null
