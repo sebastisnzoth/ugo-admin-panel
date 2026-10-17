@@ -138,7 +138,7 @@ try{
       await visible(requestButton,5000)
       await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
       await drawer.waitFor({state:'hidden',timeout:5000})
-      await visible(client.page.getByRole('textbox',{name:'Buscar servicio'}),5000)
+      await visible(client.page.getByRole('textbox',{name:'Descripción del trabajo'}),5000)
     })
   } finally { await client.context.close() }
 

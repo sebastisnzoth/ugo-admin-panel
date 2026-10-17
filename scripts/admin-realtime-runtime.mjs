@@ -24,16 +24,31 @@ assert.ifError(profileError)
 assert.ok(['admin','superadmin'].includes(profile.tipo),'ADMIN_ROLE_REQUIRED')
 assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
 
-const {data:candidates,error:candidateError}=await root.from('perfiles_proveedor').select('usuario_id,online,disponible').limit(50)
-assert.ifError(candidateError)
-const fixture=(candidates||[]).find(row=>row.disponible===true)||(candidates||[])[0]
-assert.ok(fixture?.usuario_id,'PROVIDER_PROFILE_FIXTURE_REQUIRED')
-const original={online:Boolean(fixture.online),disponible:Boolean(fixture.disponible)}
-if(!original.disponible){
- const {error}=await root.from('perfiles_proveedor').update({disponible:true}).eq('usuario_id',fixture.usuario_id)
- assert.ifError(error)
+const fixtureToken=sha.slice(0,8)+'-'+Date.now()
+const fixtureEmail=`ugo-admin-realtime-provider-${fixtureToken}@example.test`
+const fixturePassword='UGO-Test-'+fixtureToken+'-A9!'
+const {data:createdProvider,error:providerCreateError}=await root.auth.admin.createUser({email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}})
+assert.ifError(providerCreateError)
+assert.ok(createdProvider.user?.id,'PROVIDER_PROFILE_FIXTURE_REQUIRED')
+const providerId=createdProvider.user.id
+let providerFixtureCreated=false
+try{
+ const {error:userError}=await root.from('usuarios').upsert({id:providerId,nombre:'UGO Admin Realtime Fixture',tipo:'proveedor',activo:true,es_demo:true,online:false},{onConflict:'id'})
+ assert.ifError(userError)
+ const {data:category,error:categoryError}=await root.from('categorias').select('id').eq('activa',true).limit(1).single()
+ assert.ifError(categoryError)
+ const {error:providerError}=await root.from('perfiles_proveedor').upsert({usuario_id:providerId,estado_verificacion:'verificado',online:false,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100},{onConflict:'usuario_id'})
+ assert.ifError(providerError)
+ providerFixtureCreated=true
+}catch(error){
+ await root.from('perfiles_proveedor').delete().eq('usuario_id',providerId)
+ await root.from('usuarios').delete().eq('id',providerId)
+ await root.auth.admin.deleteUser(providerId)
+ throw error
 }
-const targetOnline=!original.online
+const fixture={usuario_id:providerId,online:false,disponible:true}
+const original={online:false,disponible:true}
+const targetOnline=true
 
 function subscribed(channel,label){
  return new Promise((resolve,reject)=>{
@@ -144,6 +159,11 @@ try{
  if(!restored){try{await root.from('perfiles_proveedor').update(original).eq('usuario_id',fixture.usuario_id)}catch{}}
  await browser.close()
  await user.auth.signOut()
+ if(providerFixtureCreated){
+  await root.from('perfiles_proveedor').delete().eq('usuario_id',providerId)
+  await root.from('usuarios').delete().eq('id',providerId)
+  await root.auth.admin.deleteUser(providerId)
+ }
 }
 
 // same-sha runtime refresh 2026-09-30
