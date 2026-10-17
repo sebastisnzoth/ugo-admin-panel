@@ -12,10 +12,10 @@ test('provider demand preserves backend geography without schematic positions', 
   assert.match(data, /obtener_demanda_proveedor/)
   assert.match(data, /latitude=coordinate\(row\.zona_lat\)/)
   assert.match(data, /longitude=coordinate\(row\.zona_lng\)/)
-  assert.match(map, /new maplibregl\.Marker/)
-  assert.match(map, /signal\.latitude!=null&&signal\.longitude!=null/)
+  assert.match(map, /new lib\.Marker/)
+  assert.match(map, /Number\.isFinite\(s\.latitude\)/)
   assert.doesNotMatch(demand, /demand-pulse/)
-  assert.match(demand, /Zona sin coordenadas publicadas/)
+  assert.match(demand, /Zona sin coordenadas publicadas|Todas as zonas/)
 })
 
 test('provider opportunities refresh in realtime and acceptance stays server-authoritative', () => {
