@@ -63,7 +63,7 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
   })()
  },[])
  const value=useMemo<LocaleContextValue>(()=>({locale,setLocale,t:(key)=>messages[locale][key]??messages['pt-BR'][key]??key}),[locale,setLocale])
- return <LocaleContext.Provider value={value}>{children}<LanguageSelector/></LocaleContext.Provider>
+ return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }
 
 export function useLocale(){const value=useContext(LocaleContext);if(!value)throw new Error('useLocale must be used within LocaleProvider');return value}
