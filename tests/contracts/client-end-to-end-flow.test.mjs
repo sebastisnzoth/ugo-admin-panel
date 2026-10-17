@@ -19,11 +19,11 @@ const [need,location,when,payment,summary,post,detail,completion,rating,evidence
 ])
 
 test('canonical client request covers need, optional evidence, location, when, payment and summary',()=>{
- assert.match(need,/¿Qué hay que hacer\?/)
+ assert.match(need,/t\('screen\.need\.2'\)/)
  assert.match(need,/ClientRequestEvidence/)
  assert.match(need,/Podés continuar sin fotos/)
  assert.match(evidence,/request-evidence/)
- assert.match(location,/Tus lugares/)
+ assert.match(location,/t\('screen\.location\.5'\)/)
  assert.match(location,/Usar mi ubicación/)
  assert.match(location,/pickupSource/)
  assert.match(when,/¿Cuándo lo necesitás\?/)
