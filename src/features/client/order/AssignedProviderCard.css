@@ -23,3 +23,11 @@
 .ugo-assigned-provider-card.is-compact .ugo-assigned-provider-heading>div>strong{font-size:12px}
 @media(max-width:450px){.ugo-assigned-provider-card{padding:15px;gap:13px}.ugo-assigned-provider-main{gap:12px}.ugo-assigned-provider-identity h3{font-size:20px}.ugo-assigned-provider-stats strong{font-size:18px}.ugo-assigned-provider-stats span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.ugo-assigned-provider-card>button{transition:none}}
+
+
+.ugo-assigned-provider-portfolio{display:grid;gap:9px;border-top:1px solid #e2eee8;padding-top:13px}
+.ugo-assigned-provider-portfolio>strong{font-size:13px;color:#24483d}
+.ugo-assigned-provider-portfolio>div{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.ugo-assigned-provider-portfolio figure{margin:0;min-width:0;border-radius:10px;overflow:hidden;background:#e6f5ec;aspect-ratio:1}
+.ugo-assigned-provider-portfolio img{width:100%;height:100%;object-fit:cover}
+@media(max-width:450px){.ugo-assigned-provider-portfolio>div{gap:5px}}
