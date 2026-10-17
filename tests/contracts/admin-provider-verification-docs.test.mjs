@@ -7,7 +7,7 @@ const panel=fs.readFileSync('src/mvp/AdminProviderVerificationPanel.tsx','utf8')
 test('provider verification loads and groups canonical documents',()=>{
  assert.match(panel,/from\('documentos'\)/)
  assert.match(panel,/usuario_id,tipo,estado,url_storage/)
- assert.match(panel,/DOCUMENTOS ENVIADOS/)
+ assert.match(panel,/t\('screen\.admin_verification\.5'\)/)
  assert.match(panel,/docsByUser/)
  assert.match(panel,/identidad_frente/)
  assert.match(panel,/identidad_dorso/)
