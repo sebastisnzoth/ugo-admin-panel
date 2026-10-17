@@ -1,3 +1,4 @@
+import{useLocale}from'../../../i18n/locale'
 import React,{useCallback,useEffect,useRef,useState}from'react'
 import{reportSentinelIncident}from'../../../lib/sentinel'
 import{useRoleSession}from'../../../mvp/shared'
@@ -10,6 +11,7 @@ type Props={serviceId?:string|null;embedded?:boolean}
 const shouldEscalate=()=>document.visibilityState==='visible'&&navigator.onLine
 
 export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
+ const{t}=useLocale();
  const{session,supabase}=useRoleSession('client'),userId=session?.user.id||null
  const[target,setTarget]=useState<RatingTarget|null>(null)
  const[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
@@ -91,12 +93,12 @@ export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
   <button type="button" className="ugo-client-rating-close" onClick={()=>setDismissed(target.service.id)} aria-label="Calificar más tarde">×</button>
   <small>SERVICIO FINALIZADO · PEDIDO #{number}</small>
   <h2>¿Cómo te fue con {target.providerName}?</h2>
-  <p>Tu experiencia ayuda a mantener la calidad de UGO.</p>
+  <p>{t('screen.client_rating.1')}</p>
   <form onSubmit={submit}>
    <div className="ugo-client-rating-stars" role="radiogroup" aria-label="Puntuación de 1 a 5 estrellas">{[1,2,3,4,5].map(value=><button key={value} type="button" role="radio" aria-checked={score===value} aria-label={`${value} estrella${value===1?'':'s'}`} className={value<=score?'is-active':''} onClick={()=>setScore(value)}>★</button>)}</div>
-   <label>Comentario <span>opcional</span><textarea value={comment} onChange={event=>setComment(event.target.value)} maxLength={500} rows={2} placeholder="Contanos brevemente cómo salió el trabajo"/></label>
+   <label>Comentario <span>{t('screen.client_rating.3')}</span><textarea value={comment} onChange={event=>setComment(event.target.value)} maxLength={500} rows={2} placeholder="Contanos brevemente cómo salió el trabajo"/></label>
    {message&&<p className="ugo-client-rating-message" role="status">{message}</p>}
-   <div className="ugo-client-rating-actions"><button type="submit" disabled={busy||score===0}>{busy?'Guardando…':'Enviar calificación'}</button><button type="button" onClick={()=>setDismissed(target.service.id)}>Ahora no</button></div>
+   <div className="ugo-client-rating-actions"><button type="submit" disabled={busy||score===0}>{busy?'Guardando…':'Enviar calificación'}</button><button type="button" onClick={()=>setDismissed(target.service.id)}>{t('screen.client_rating.4')}</button></div>
   </form>
  </aside>
 }
