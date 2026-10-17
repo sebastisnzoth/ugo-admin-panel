@@ -57,11 +57,12 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
    let local:unknown
    try{local=window.localStorage.getItem(key)}catch{}
    const metadata=session.user.user_metadata?.preferred_language
-   const chosen=isLocale(metadata)?metadata:isLocale(local)?local:'pt-BR'
+   const chosen=isLocale(local)?local:isLocale(metadata)?metadata:'pt-BR'
    setLocaleState(chosen)
    try{window.localStorage.setItem(key,chosen)}catch{}
   }
-  void client.auth.getSession().then(({data,error})=>{if(!error)apply(data.session)}).catch(()=>{})
+  const startedRevision=revision.current
+  void client.auth.getSession().then(({data,error})=>{if(!error&&revision.current===startedRevision)apply(data.session)}).catch(()=>{})
   const{data:{subscription}}=client.auth.onAuthStateChange((event,session)=>{
    if(!alive)return
    if(event==='SIGNED_OUT'){apply(null);return}
