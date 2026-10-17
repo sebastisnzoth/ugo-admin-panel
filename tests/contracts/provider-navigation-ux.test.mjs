@@ -45,7 +45,7 @@ test('provider tablet keeps mobile navigation until the desktop studio sidebar t
 test('provider work navigation opens agenda when there is no actionable mission', async () => {
   const sidebar = await read('src/mvp/provider/ProviderStudioSidebar.tsx')
   assert.match(sidebar, /d\.service\?f\.actions\.openActiveJob:f\.actions\.openAgenda/)
-  assert.match(sidebar, /d\.service\?'Trabajo activo':'Mis trabajos'/)
+  assert.match(sidebar, /d\.service\?t\('nav\.active'\):t\('nav\.jobs'\)/)
   assert.doesNotMatch(sidebar, /d\.service\?f\.actions\.openActiveJob:f\.actions\.openHistory/)
 })
 
