@@ -30,6 +30,6 @@
 
 
 /* Notification control gets its own slot to the left of language. */
-.ugo-notification-center{top:23px;right:116px;z-index:12020}
+.ugo-notification-center{top:36px;right:116px;z-index:12020}
 .ugo-notification-trigger{width:44px;height:44px}
-@media(max-width:520px){.ugo-notification-center{top:22px;right:104px}.ugo-notification-trigger{height:40px;width:40px}}
+@media(max-width:520px){.ugo-notification-center{top:33px;right:104px}.ugo-notification-trigger{height:40px;width:40px}}
