@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{reportSentinelIncident}from'../lib/sentinel'
 import{getRoleSupabase,type UgoRole}from'../lib/roleSupabase'
 import{UserProfileAvatar}from'./UserProfileAvatar'
+import{useLocale}from'../i18n/locale'
 import'./service-chat.css'
 
 type ChatMessage={id:number|string;servicio_id:string;emisor_id:string|null;emisor_rol:string;contenido:string;created_at:string}
