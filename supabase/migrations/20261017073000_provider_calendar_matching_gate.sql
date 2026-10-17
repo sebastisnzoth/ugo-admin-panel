@@ -151,7 +151,7 @@ begin
 
   return true;
 end;
-$function$
+$function$;
 
 CREATE OR REPLACE FUNCTION private.aceptar_oferta_impl(p_oferta_id uuid)
  RETURNS servicios
@@ -389,4 +389,4 @@ begin
 
   return v_servicio;
 end;
-$function$
+$function$;
