@@ -153,7 +153,7 @@ async function testClient(viewport,name){
  try{
    await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
    await assertResponsive(page,'client '+name+' home')
-   const menuItems=['Inicio','Pedir servicio','Servicios y categorías','Actividad y pedidos','Direcciones','Formas de pago','Hugo / Asistente IA','Ayuda y soporte','Configuración']
+   const menuItems=['Inicio','Pedir servicio','Categorías','Actividad','Mis direcciones','Medios de pago','Asistente de Hugo','Ayuda y disputa','Configuración']
    for(const item of menuItems){
      await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
      await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
