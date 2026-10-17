@@ -1,1 +1,21 @@
 .provider-demand-map{height:260px;margin-bottom:var(--ugo-space-4,16px);position:relative;overflow:hidden;border-radius:var(--ugo-radius-20,20px);border:1px solid var(--ugo-color-border,rgba(23,33,27,.08));background:var(--ugo-color-surface-muted,#e9f2ed);box-shadow:var(--ugo-shadow-sm,0 8px 24px rgba(23,33,27,.06))}.provider-demand-map-canvas{position:absolute;inset:0}.provider-demand-marker{display:grid;place-items:center;min-width:48px;min-height:48px;padding:0 10px;border-radius:var(--ugo-radius-pill,999px);background:var(--ugo-color-surface,#fff);color:var(--ugo-color-text,#17211b);font-size:12px;font-weight:800;box-shadow:var(--ugo-shadow-md,0 5px 18px rgba(23,33,27,.22));border:2px solid var(--ugo-color-surface,#fff)}.provider-demand-marker.is-high{background:var(--ugo-color-primary,#128c4a);color:#fff}.provider-demand-map .provider-map-label{z-index:2;background:rgba(255,255,255,.92);padding:8px 10px;border-radius:var(--ugo-radius-12,12px)}.provider-demand-map-note{position:absolute;z-index:2;right:12px;top:12px;max-width:230px;padding:7px 9px;border-radius:10px;background:rgba(255,255,255,.92);font-size:11px;font-weight:700}
+
+
+/* Real heatmap: larger radar and interactive provider zone selection. */
+.provider-demand-map{height:clamp(355px,52vh,600px);background:#dfeae6}
+.provider-demand-map-canvas{height:100%;width:100%}
+.provider-demand-zone-pin{border:1px solid #beded1;background:#fff;color:#124d3c;box-shadow:0 4px 16px #0e3c3555;border-radius:30px;padding:8px 12px;cursor:pointer;font-size:12px;font-weight:800;max-width:160px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.provider-demand-zone-pin.selected{background:#086c57;color:white;border-color:white;box-shadow:0 0 0 3px #0a9d78}
+.provider-demand-legend{position:absolute;z-index:3;bottom:12px;right:12px;display:flex;gap:7px;align-items:center;background:#fffef5ee;border:1px solid #dfebe4;padding:9px;border-radius:12px;font-size:11px;color:#244a3e;font-weight:750}
+.provider-demand-legend i{display:block;height:8px;width:86px;border-radius:10px;background:linear-gradient(90deg,#5cbf91,#e9d45a,#f39d40,#de5442,#b91c1c)}
+.provider-demand-map-loading{position:absolute;z-index:4;top:45%;left:50%;transform:translate(-50%,-50%);background:white;padding:12px 18px;border-radius:12px;box-shadow:0 8px 22px #142a2128;text-align:center}
+.provider-demand-zone-pin:focus-visible{outline:3px solid #0b8264;outline-offset:3px}
+@media(max-width:650px){.provider-demand-map{height:390px}.provider-demand-legend{bottom:56px}.provider-demand-zone-pin{max-width:105px;font-size:10px;padding:6px 8px}}
+
+.provider-demand-controls{display:grid;gap:10px;margin:0 0 14px;padding:14px;border:1px solid #daebe4;background:#f4fbf7;border-radius:16px}
+.provider-demand-controls>strong{font-size:15px;color:#164d3d}
+.provider-demand-controls>small{font-size:11px;color:#54766b}
+.provider-demand-chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 7px;scrollbar-width:thin}
+.provider-demand-chips button{flex:none;min-height:40px;border-radius:20px;border:1px solid #c9e1d6;background:#fff;padding:8px 14px;color:#204e40;font-size:12px;font-weight:750;cursor:pointer}
+.provider-demand-chips button.selected{background:#087b63;color:#fff;border-color:#087b63}
+.provider-demand-chips button:focus-visible{outline:3px solid #087b63;outline-offset:2px}
