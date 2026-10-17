@@ -414,3 +414,11 @@
     background:linear-gradient(180deg,#dcf5e9 0%,#e7f4ff 230px,#f2f8f7 430px)!important;
   }
 }
+
+/* Mobile UX polish: larger touch areas, readable states and scroll anchoring. */
+.ugo-client-root .ugo-home-services{scroll-margin-top:80px}
+.ugo-client-root .ugo-home-categories>button{min-height:94px!important}
+.ugo-client-root .ugo-home-mobile-nav button{min-width:44px;min-height:48px}
+.ugo-client-root .ugo-home-map-recenter{min-height:44px}
+.ugo-client-root .ugo-home-map-card>footer button{min-height:44px}
+@media(max-width:899px){.ugo-client-root .ugo-home-services{scroll-margin-top:18px}.ugo-client-root .ugo-home-mobile-nav button{min-height:56px}}
