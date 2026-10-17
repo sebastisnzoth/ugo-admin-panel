@@ -86,6 +86,16 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
    let localTime=0
    try{localTime=Number(window.localStorage.getItem(key+'.updatedAt'))||0}catch{}
    const chosen=isLocale(metadata)&&remoteTime>=localTime?metadata:isLocale(local)?local:isLocale(metadata)?metadata:'pt-BR'
+   if(role==='client'&&!isLocale(local)&&!isLocale(metadata)){
+    const selectionRevision=revision.current
+    // Defer REST access until outside Supabase's synchronous auth callback.
+    void Promise.resolve().then(async()=>{
+     const{data,error}=await client.from('perfiles_cliente').select('idioma_preferido').eq('usuario_id',session.user.id).maybeSingle()
+     if(!alive||error||accountKey.current!==key||pending.current||revision.current!==selectionRevision||!isLocale(data?.idioma_preferido))return
+     setLocaleState(data.idioma_preferido)
+     try{window.localStorage.setItem(key,data.idioma_preferido);window.localStorage.setItem(guestLocaleKey(),data.idioma_preferido)}catch{}
+    }).catch(()=>{})
+   }
    setLocaleState(chosen)
    try{window.localStorage.setItem(key,chosen);window.localStorage.setItem(key+'.updatedAt',String(Math.max(remoteTime,localTime)));window.localStorage.setItem(guestLocaleKey(),chosen)}catch{}
   }

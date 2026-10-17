@@ -1,7 +1,7 @@
 import {createRequire} from 'node:module'
 import {spawn} from 'node:child_process'
 const require=createRequire(process.cwd()+'/package.json'),{chromium}=require('playwright')
-const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','4181'],{stdio:'pipe'})
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4181'],{stdio:'pipe'})
 let browser
 try{
  for(let i=0;i<40;i++){try{await fetch('http://127.0.0.1:4181/');break}catch{await new Promise(r=>setTimeout(r,150))}}
