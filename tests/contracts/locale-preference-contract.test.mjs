@@ -14,7 +14,8 @@ test('UGO locale preference supports Brazilian Portuguese, Spanish and English w
 })
 
 test('UGO locale preference persists locally and in authenticated user metadata',()=>{
- assert.match(locale,/localStorage\.setItem\(STORAGE_KEY,next\)/)
+ assert.match(locale,/localStorage\.setItem\(key\|\|guestLocaleKey\(\),next\)/)
+ assert.match(locale,/accountLocaleKey\(role\|\|'unknown',session\.user\.id\)/)
  assert.match(locale,/preferred_language:next/)
  assert.match(locale,/user_metadata\?\.preferred_language/)
 })
