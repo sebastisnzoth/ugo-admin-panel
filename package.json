@@ -14,7 +14,8 @@
     "test:integration": "npm run verify:test-env && node --test --test-concurrency=1 tests/integration/**/*.test.mjs",
     "preview": "vite preview",
     "bootstrap:test-auth": "node scripts/bootstrap-test-auth.mjs",
-    "audit:i18n": "node scripts/audit-i18n.mjs --json"
+    "audit:i18n": "node scripts/audit-i18n.mjs --json",
+    "audit:i18n:keys": "node scripts/audit-i18n-keys.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",
