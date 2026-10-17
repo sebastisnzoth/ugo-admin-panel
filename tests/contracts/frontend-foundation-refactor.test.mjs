@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -28,9 +29,10 @@ test('app route selection is centralized in app/router',async()=>{
 
 test('runtime boundary is extracted from main bootstrap',async()=>{
  const main=await read('src/main.tsx')
+ const app=await read('src/mvp/MvpApp.tsx')
  const boundary=await read('src/app/AppErrorBoundary.tsx')
- assert.match(main,/AppErrorBoundary/)
- assert.match(main,/EnvironmentBadge/)
+ assert.match(app,/AppErrorBoundary/)
+ assert.match(app,/EnvironmentBadge/)
  assert.doesNotMatch(main,/class AppErrorBoundary/)
  assert.match(boundary,/reportSentinelIncident/)
  assert.match(boundary,/shared\/ui/)

@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -13,9 +14,9 @@ test('admin auth exposes loading, recovery and error semantics', async () => {
   assert.match(gate, /invalid_credentials/)
   assert.match(gate, /Usuario\/email o contraseña incorrectos/)
   assert.match(gate, /Demasiados intentos seguidos/)
-  assert.match(gate, /catch\(err:unknown\)\{setError\(adminAuthErrorMessage\(err\)\)\}/)
+  assert.match(gate, /catch\(err:unknown\)\{setError\(adminAuthErrorMessage\(err,t\)\)\}/)
   assert.match(gate, /ADMIN_PROFILE_RETRY_DELAYS/)
-  assert.match(gate, /Login aceptado\. UGO está recuperando la conexión con tu perfil Admin/)
+  assert.match(gate, /t\('adminAuth\.recoverySent'\)/)
   assert.match(gate, /withAdminProfileTimeout/)
 })
 

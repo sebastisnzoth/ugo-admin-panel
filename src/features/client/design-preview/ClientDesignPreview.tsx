@@ -1,3 +1,4 @@
+import{LocalizedText,useLocale}from'../../../i18n/locale'
 import type { ReactNode } from 'react'
 import './design-preview.css'
 import { Icon, UgoMark, type IconName } from './icons'
@@ -65,6 +66,7 @@ export function StatusBar({ dark }: { dark?: boolean }) {
 }
 
 function TopBar({ onBack }: { onBack?: boolean }) {
+  const{t}=useLocale()
   return (
     <div className="ugo-dp-topbar">
       <button type="button" className="ugo-dp-round" aria-label={onBack ? 'Volver' : 'Menú'}>
@@ -73,11 +75,11 @@ function TopBar({ onBack }: { onBack?: boolean }) {
       <div className="ugo-dp-pill ugo-dp-loc">
         <span className="ugo-dp-loc-main">
           <Icon name="pin" size={18} />
-          <strong>Mi ubicación</strong>
+          <strong><LocalizedText id="clientQuantum.location"/></strong>
         </span>
         <span className="ugo-dp-loc-sub">{previewAddress}</span>
       </div>
-      <button type="button" className="ugo-dp-round" aria-label="Notificaciones">
+      <button type="button" className="ugo-dp-round" aria-label={t('preview.notifications')}>
         <Icon name="bell" size={22} />
         <span className="ugo-dp-dot" />
       </button>
@@ -101,7 +103,8 @@ export function Phone({ children, dark, label, caption }: { children: ReactNode;
 }
 
 export function Avatar({ large }: { large?: boolean }) {
-  return <img src={avatar} alt="Foto de Carlos Méndez" className={`ugo-dp-photo${large ? ' ugo-dp-photo--lg' : ''}`} />
+  const{t}=useLocale()
+  return <img src={avatar} alt={t('preview.avatarAlt')} className={`ugo-dp-photo${large ? ' ugo-dp-photo--lg' : ''}`} />
 }
 
 export function Stars({ value }: { value: number }) {
@@ -116,6 +119,7 @@ export function Stars({ value }: { value: number }) {
 
 /** 1 · Inicio: mapa, buscador y categorías */
 export function ClientHomeScreen() {
+  const{t}=useLocale()
   return (
     <Phone label="Pantalla de inicio del cliente" caption="1 · Inicio">
       <MapBackground />
@@ -124,7 +128,7 @@ export function ClientHomeScreen() {
         <div className="ugo-dp-handle" />
         <div className="ugo-dp-search">
           <Icon name="search" size={20} />
-          <span>¿Qué servicio necesitás?</span>
+          <span><LocalizedText id="clientQuantum.serviceQuestion"/></span>
         </div>
         <div className="ugo-dp-cats">
           {previewCategories.map((c) => (
@@ -137,11 +141,11 @@ export function ClientHomeScreen() {
           ))}
         </div>
       </div>
-      <nav className="ugo-dp-tabbar" aria-label="Navegación principal">
-        <span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} />Inicio</span>
-        <span className="ugo-dp-tab"><Icon name="list" size={22} />Mis servicios</span>
-        <span className="ugo-dp-tab"><Icon name="message" size={22} />Mensajes</span>
-        <span className="ugo-dp-tab"><Icon name="user" size={22} />Perfil</span>
+      <nav className="ugo-dp-tabbar" aria-label={t('sharedUi.navigation')}>
+        <span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} /><LocalizedText id="screen.client_history.1"/></span>
+        <span className="ugo-dp-tab"><Icon name="list" size={22} /><LocalizedText id="preview.myServices"/></span>
+        <span className="ugo-dp-tab"><Icon name="message" size={22} /><LocalizedText id="preview.messages"/></span>
+        <span className="ugo-dp-tab"><Icon name="user" size={22} /><LocalizedText id="providerProfile.title"/></span>
       </nav>
     </Phone>
   )
@@ -149,6 +153,7 @@ export function ClientHomeScreen() {
 
 /** 2 · Proveedor seleccionado */
 export function ProviderDetailScreen() {
+  const{t}=useLocale()
   const p = previewProvider
   return (
     <Phone label="Detalle del proveedor seleccionado" caption="2 · Proveedor seleccionado">
@@ -165,28 +170,28 @@ export function ProviderDetailScreen() {
             <div className="ugo-dp-name">{p.name}</div>
             <div className="ugo-dp-service">{p.service} <Icon name="bolt" size={14} className="ugo-dp-bolt" /></div>
             <div className="ugo-dp-rating">
-              <Stars value={p.rating} /> <strong>{p.rating}</strong> ({p.reviews} reseñas)
+              <Stars value={p.rating} /> <strong>{p.rating}</strong> ({p.reviews} <LocalizedText id="admin.reports.reviews"/>
             </div>
           </div>
-          <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Guardar proveedor">
+          <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.saveProvider')}>
             <Icon name="heart" size={20} />
           </button>
         </div>
         <div className="ugo-dp-price">
-          <b>$ {formatArs(p.pricePerHour)}</b> <small>/ hora</small>
+          <b>$ {formatArs(p.pricePerHour)}</b> <small><LocalizedText id="screen.admin_tariffs.18"/></small>
         </div>
         <div className="ugo-dp-chips">
-          {p.verified && <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="check" size={14} />Verificado</span>}
-          <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="shield" size={14} />Seguro</span>
-          <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="clock" size={14} />{p.yearsExperience}+ años exp.</span>
+          {p.verified && <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="check" size={14} /><LocalizedText id="clientHome.verified"/></span>}
+          <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="shield" size={14} /><LocalizedText id="clientQuantum.insured"/></span>
+          <span className="ugo-dp-chip ugo-dp-chip--ok"><Icon name="clock" size={14} />{p.yearsExperience}<LocalizedText id="verification.years"/></span>
         </div>
-        <p className="ugo-dp-desc">Técnico matriculado. {p.description}</p>
-        <div className="ugo-dp-works" aria-label="Trabajos realizados">
+        <p className="ugo-dp-desc"><LocalizedText id="preview.listedTechnician"/> {p.description}</p>
+        <div className="ugo-dp-works" aria-label={t('preview.works')}>
           {works.map((src, i) => (
             <img key={i} src={src} alt="" />
           ))}
         </div>
-        <button type="button" className="ugo-dp-btn">Elegir forma de pago</button>
+        <button type="button" className="ugo-dp-btn"><LocalizedText id="preview.choosePayment"/></button>
       </div>
     </Phone>
   )
@@ -194,19 +199,20 @@ export function ProviderDetailScreen() {
 
 /** 3 · Asistente (mockup; la voz está deshabilitada en producción) */
 export function AssistantListeningScreen() {
+  const{t}=useLocale()
   return (
     <Phone dark label="Asistente escuchando (mockup)" caption="3 · Asistente Hugo (mockup)">
       <MapBackground dark />
       <div className="ugo-dp-scrim" aria-hidden="true" />
       <div className="ugo-dp-orb" aria-hidden="true" />
-      <div className="ugo-dp-listening">Te estoy escuchando…</div>
-      <div className="ugo-dp-quote">“Necesito un electricista hoy en mi casa”</div>
+      <div className="ugo-dp-listening"><LocalizedText id="preview.listening"/></div>
+      <div className="ugo-dp-quote"><LocalizedText id="preview.voiceSample"/></div>
       <div className="ugo-dp-actions">
-        <button type="button"><Icon name="search" size={22} /><span>Buscar electricistas</span></button>
-        <button type="button"><Icon name="bolt" size={22} /><span>Pedir ahora</span></button>
-        <button type="button"><Icon name="calendar" size={22} /><span>Agendar para después</span></button>
+        <button type="button"><Icon name="search" size={22} /><span><LocalizedText id="preview.searchElectricians"/></span></button>
+        <button type="button"><Icon name="bolt" size={22} /><span><LocalizedText id="preview.requestNow"/></span></button>
+        <button type="button"><Icon name="calendar" size={22} /><span><LocalizedText id="preview.scheduleLater"/></span></button>
       </div>
-      <button type="button" className="ugo-dp-close" aria-label="Cerrar asistente">
+      <button type="button" className="ugo-dp-close" aria-label={t('preview.closeAssistant')}>
         <Icon name="x" size={22} />
       </button>
     </Phone>
@@ -230,8 +236,8 @@ export function ProviderEnRouteScreen() {
       </div>
       <TopBar onBack />
       <div className="ugo-dp-bubble" style={{ left: 240, top: 215 }}>
-        <span>Llegando en</span>
-        <b>{previewEnRoute.etaMinutes} min</b>
+        <span><LocalizedText id="preview.arrivingIn"/></span>
+        <b>{previewEnRoute.etaMinutes} <LocalizedText id="screen.admin_tariffs.19"/></b>
       </div>
       <div className="ugo-dp-sheet ugo-dp-sheet--route">
         <div className="ugo-dp-handle" />
@@ -239,7 +245,7 @@ export function ProviderEnRouteScreen() {
           <Avatar />
           <div className="ugo-dp-grow">
             <div className="ugo-dp-name ugo-dp-name--sm">{p.name}</div>
-            <div className="ugo-dp-onroute">En camino a tu ubicación</div>
+            <div className="ugo-dp-onroute"><LocalizedText id="preview.enRouteLocation"/></div>
           </div>
         </div>
         <div className="ugo-dp-meta">
@@ -248,17 +254,17 @@ export function ProviderEnRouteScreen() {
           <span className="ugo-dp-plate">{previewEnRoute.plate}</span>
         </div>
         <div className="ugo-dp-eta-box">
-          Llegada estimada <b>{previewEnRoute.etaMinutes} min</b>
+          <LocalizedText id="preview.estimatedArrival"/> <b>{previewEnRoute.etaMinutes} <LocalizedText id="screen.admin_tariffs.19"/></b>
         </div>
         <div className="ugo-dp-btnrow">
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost"><Icon name="message" size={18} />Mensaje</button>
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost"><Icon name="phone" size={18} />Llamar</button>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost"><Icon name="message" size={18} /><LocalizedText id="adminSurface.message"/></button>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost"><Icon name="phone" size={18} /><LocalizedText id="preview.call"/></button>
         </div>
         <div className="ugo-dp-banner">
           <Icon name="walk" size={22} />
           <div>
-            <b>Tu proveedor está en camino</b>
-            <small>Te avisaremos cuando llegue.</small>
+            <b><LocalizedText id="preview.providerEnRoute"/></b>
+            <small><LocalizedText id="preview.weWillNotify"/></small>
           </div>
         </div>
       </div>
@@ -268,15 +274,16 @@ export function ProviderEnRouteScreen() {
 
 /** 5 · Versión web de escritorio */
 export function ClientWebScreen() {
+  const{t}=useLocale()
   const p = previewProvider
   return (
     <figure className="ugo-dp-figure ugo-dp-figure--web">
       <div className="ugo-dp-web">
         <div className="ugo-dp-web-top">
-          <span className="ugo-dp-logo"><UgoMark size={30} /> UGO</span>
-          <span className="ugo-dp-chip ugo-dp-chip--loc"><Icon name="pin" size={16} />{previewAddress}, Florianópolis</span>
+          <span className="ugo-dp-logo"><UgoMark size={30} /> <LocalizedText id="ugoWebRemaining.brand"/></span>
+          <span className="ugo-dp-chip ugo-dp-chip--loc"><Icon name="pin" size={16} />{previewAddress}<LocalizedText id="providerProfile.cityPlaceholder"/></span>
           <div className="ugo-dp-web-actions">
-            <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Notificaciones">
+            <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.notifications')}>
               <Icon name="bell" size={20} />
             </button>
           </div>
@@ -284,7 +291,7 @@ export function ClientWebScreen() {
         <div className="ugo-dp-web-body">
           <aside className="ugo-dp-side">
             <div className="ugo-dp-search">
-              <span>¿Qué servicio necesitás?</span>
+              <span><LocalizedText id="clientQuantum.serviceQuestion"/></span>
               <Icon name="search" size={20} />
             </div>
             <div className="ugo-dp-cat-grid">
@@ -299,45 +306,45 @@ export function ClientWebScreen() {
               <img src={work1} alt="" className="ugo-dp-card-hero" />
               <div className="ugo-dp-card-body">
                 <div className="ugo-dp-name ugo-dp-center">{p.name}</div>
-                <div className="ugo-dp-service ugo-dp-center">{p.service} matriculado</div>
+                <div className="ugo-dp-service ugo-dp-center">{p.service} <LocalizedText id="preview.registered"/></div>
                 <div className="ugo-dp-rating ugo-dp-center">
-                  <Stars value={p.rating} /> <strong>{p.rating}</strong> ({p.reviews} reseñas)
+                  <Stars value={p.rating} /> <strong>{p.rating}</strong> ({p.reviews} <LocalizedText id="admin.reports.reviews"/>
                 </div>
                 <div className="ugo-dp-price ugo-dp-center">
-                  <b>$ {formatArs(p.pricePerHour)}</b> <small>/ hora</small>
+                  <b>$ {formatArs(p.pricePerHour)}</b> <small><LocalizedText id="screen.admin_tariffs.18"/></small>
                 </div>
-                <button type="button" className="ugo-dp-btn">Elegir forma de pago</button>
+                <button type="button" className="ugo-dp-btn"><LocalizedText id="preview.choosePayment"/></button>
               </div>
             </div>
           </aside>
-          <main className="ugo-dp-web-map" aria-label="Mapa">
+          <main className="ugo-dp-web-map" aria-label={t('adminShell.map')}>
             <MapBackground pins={false} />
             <div className="ugo-dp-marker ugo-dp-marker--web" style={{ left: '52%', top: '48%' }}>
               <UgoMark size={22} />
             </div>
             <div className="ugo-dp-float">
               <div className="ugo-dp-float-head">
-                <strong>Llegando en {previewEnRoute.etaMinutes} min</strong>
+                <strong><LocalizedText id="preview.arrivingIn"/> {previewEnRoute.etaMinutes} <LocalizedText id="screen.admin_tariffs.19"/></strong>
               </div>
               <div className="ugo-dp-provider">
                 <Avatar />
                 <div className="ugo-dp-grow">
-                  <div className="ugo-dp-onroute">En camino…</div>
-                  <div className="ugo-dp-small">{previewEnRoute.etaMinutes} min restantes</div>
+                  <div className="ugo-dp-onroute"><LocalizedText id="clientWeb.onTheWay"/></div>
+                  <div className="ugo-dp-small"><LocalizedText id="preview.minutesRemaining" params={{count:previewEnRoute.etaMinutes}}/></div>
                 </div>
-                <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Mensaje"><Icon name="message" size={18} /></button>
-                <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Llamar"><Icon name="phone" size={18} /></button>
+                <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('chat.message')}><Icon name="message" size={18} /></button>
+                <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.call')}><Icon name="phone" size={18} /></button>
               </div>
             </div>
             <div className="ugo-dp-map-tools">
-              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Acercar"><Icon name="plus" size={18} /></button>
-              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Alejar"><Icon name="minus" size={18} /></button>
-              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Mi ubicación"><Icon name="locate" size={18} /></button>
+              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.zoomIn')}><Icon name="plus" size={18} /></button>
+              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.zoomOut')}><Icon name="minus" size={18} /></button>
+              <button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.myLocation')}><Icon name="locate" size={18} /></button>
             </div>
           </main>
         </div>
       </div>
-      <figcaption className="ugo-dp-caption">5 · Versión web</figcaption>
+      <figcaption className="ugo-dp-caption"><LocalizedText id="preview.webVersion"/></figcaption>
     </figure>
   )
 }

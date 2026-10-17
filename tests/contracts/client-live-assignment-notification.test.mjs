@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -45,7 +46,7 @@ test('assignment notification and active home card open the exact service id',as
 
 test('client recovers an unread service alert after reopening the app',async()=>{
  const center=await read('src/mvp/NotificationCenter.tsx')
- assert.match(center,/role==='client'[\s\S]*pending=next\.find\(notice=>!notice\.leida_at&&actionable\.has\(notice\.id\)&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)\)/)
+ assert.match(center,/role==='client'\)\{const pending=next\.find\(notice=>!notice\.leida_at&&actionable\.has\(notice\.id\)&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)&&freshLiveNotice\(notice\)\)/)
  assert.match(center,/\[attentionEnabled,db,role,signalClientAlert,signalProviderAlert\]/)
 })
 

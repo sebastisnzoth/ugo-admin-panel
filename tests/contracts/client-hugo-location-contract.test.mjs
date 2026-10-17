@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -35,7 +36,7 @@ test('Hugo understands gardening aliases and scheduled natural language', () => 
 
 test('Hugo voice address cannot advance without resolved pickup coordinates', () => {
   assert.match(locationScreen, /geocodeClientAddress\(nextAddress,zone\)/)
-  assert.match(locationScreen, /No pudimos ubicar la dirección indicada por Hugo/)
+ assert.match(locationScreen, /t\('clientLocation\.addressNotFound'\)/)
   assert.match(locationScreen, /savePickup\(pickupLat,pickupLng,pickupSource\)/)
   const voiceBlock=locationScreen.match(/const onVoiceDraft=[\s\S]*?window\.addEventListener\(UGO_UI_EVENTS\.clientHugoDraft/)?.[0]||''
   assert.match(voiceBlock, /if\(pickupLat==null\|\|pickupLng==null\)[\s\S]*geocodeClientAddress/)

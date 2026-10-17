@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -29,7 +30,7 @@ test('AI dispute analysis is admin-only decision support and can inspect images'
  assert.match(api,/nunca atribuyas quién causó un daño/i)
  assert.match(api,/disputa_ai_analisis/)
  assert.ok(vercel.rewrites?.some(r=>r.source==='/api/disputes/analyze'&&r.destination==='/api/test?ugo_dispute_ai=1'))
- assert.match(panel,/no ejecuta pagos ni resuelve el caso por sí sola/i)
+ assert.match(panel,/adminDispute\.explanation/)
  assert.match(panel,/from\('evidencias_servicio'\)/)
  assert.match(panel,/storage\.from\(item\.bucket\)/)
  assert.match(panel,/service-evidence/)

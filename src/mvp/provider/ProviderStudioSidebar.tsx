@@ -1,3 +1,4 @@
+import{LocalizedText}from'../../i18n/locale'
 import React from'react'
 import{useLocale}from'../../i18n/locale'
 import{useProviderData}from'./providerData'
@@ -8,19 +9,19 @@ export function ProviderStudioSidebar(){
  const{t}=useLocale()
  const d=useProviderData(),f=useProviderFlow(),screen=f.screen
  const active=(...screens:string[])=>screens.includes(screen)?'is-active':''
- return <aside className="provider-studio-sidebar" aria-label="Menú proveedor">
-  <div className="provider-studio-brand">UGO</div>
+ return <aside className="provider-studio-sidebar" aria-label={t('providerScreen.navMenu')}>
+  <div className="provider-studio-brand"><LocalizedText id="ugoWebRemaining.brand"/></div>
   <div className="provider-studio-user">
    <span className="provider-studio-avatar" aria-hidden="true">{(d.name||'P').slice(0,1).toUpperCase()}</span>
    <div className="provider-studio-user-copy">
-    <strong>{d.name||'Proveedor UGO'}</strong>
+    <strong>{d.name||t('providerScreen.noName')}</strong>
     <small>★ {d.karma.toFixed(1)} · {d.online?t('nav.available'):t('nav.unavailable')}</small>
    </div>
   </div>
 
-  <nav className="provider-studio-nav" aria-label="Navegación principal">
+  <nav className="provider-studio-nav" aria-label={t('providerScreen.navMain')}>
    <Button variant="ghost" className={active('home')} aria-current={screen==='home'?'page':undefined} onClick={f.actions.openHome}>{t('nav.home')}</Button>
-   <Button variant="ghost" className={active('demand','opportunities','opportunity-detail')} aria-label="Trabajos y pedidos" aria-current={['demand','opportunities','opportunity-detail'].includes(screen)?'page':undefined} onClick={f.actions.openOpportunities} >{t('nav.orders')} {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</Button>
+   <Button variant="ghost" className={active('demand','opportunities','opportunity-detail')} aria-label={t('providerScreen.navJobsOrders')} aria-current={['demand','opportunities','opportunity-detail'].includes(screen)?'page':undefined} onClick={f.actions.openOpportunities} >{t('nav.orders')} {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</Button>
    <Button variant="ghost" className={active('active-job','agenda')} aria-current={['active-job','agenda'].includes(screen)?'page':undefined} onClick={d.service?f.actions.openActiveJob:f.actions.openAgenda}>{d.service?t('nav.active'):t('nav.jobs')}</Button>
    <Button variant="ghost" className={active('history')} aria-current={screen==='history'?'page':undefined} onClick={f.actions.openHistory}>{t('nav.history')}</Button>
    <Button variant="ghost" className={active('earnings')} aria-current={screen==='earnings'?'page':undefined} onClick={f.actions.openEarnings}>{t('nav.earnings')}</Button>

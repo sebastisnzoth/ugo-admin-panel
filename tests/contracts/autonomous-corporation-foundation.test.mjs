@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -56,7 +57,7 @@ test('Department 14 has exactly six independent assurance agents',()=>{
 
 
 test('autonomy mode control explains persisted state and preserves audited backend mutation',()=>{
- assert.match(ui,/Estado actual/);assert.match(ui,/MODO SEGURO/);assert.match(ui,/GREEN puede ser automático/);assert.match(ui,/motivo auditable/)
+ assert.match(ui,/adminAutonomy\.currentMode/);assert.match(ui,/adminAutonomy\.governedWork/);assert.match(ui,/adminAutonomy\.greenReconcile/);assert.match(ui,/adminAutonomy\.auditReasonLabel/)
  const operations=fs.readFileSync('api/operations.ts','utf8')
  // Shell delegates to backend; backend preserves audited RPC mutation
  assert.match(shell,/api\/operations\?op=autonomy-mode/);assert.match(shell,/reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/)

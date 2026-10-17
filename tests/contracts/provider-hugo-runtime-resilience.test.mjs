@@ -9,7 +9,7 @@ test('provider Hugo delegates voice resilience to the shared bridge and never ha
  assert.match(provider,/await bridge\.startListening\(\)/)
  assert.match(provider,/window\.setTimeout\(\(\)=>/)
  assert.match(provider,/PROVIDER_VOICE_CONNECT_TIMEOUT_MS=16_000/)
- assert.match(provider,/Hugo no pudo conectar con el servicio de voz\. Reintentá en unos segundos\./)
+ assert.match(provider,/t\('voice\.error\.connect'\)/)
  assert.doesNotMatch(provider,/SpeechRecognition|webkitSpeechRecognition|speechSynthesis|deviceSpeech|Gemini TTS/)
  assert.match(bridge,/gemini-live-start-fallback/)
 })

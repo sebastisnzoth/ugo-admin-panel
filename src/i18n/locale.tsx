@@ -122,7 +122,7 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
 
 export function useLocale(){const value=useContext(LocaleContext);if(!value)throw new Error('useLocale must be used within LocaleProvider');return value}
 
-export function LocalizedText({id}:{id:string}){const{t}=useLocale();return <>{t(id)}</>}
+export function LocalizedText({id,params}:{id:string;params?:Record<string,string|number>}){const{t}=useLocale();return <>{t(id,params)}</>}
 
 function LanguageSelector(){
  const{locale,setLocale,t}=useLocale()

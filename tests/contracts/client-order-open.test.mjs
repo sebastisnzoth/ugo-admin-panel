@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -34,6 +35,6 @@ test('embedded tracking stays ahead of chat and each module is isolated',()=>{
 })
 
 test('map failure stays local instead of replacing the order or chat',()=>{
- assert.match(map,/const FALLBACK='El mapa en vivo no está disponible ahora\. El pedido y el chat siguen funcionando\.'/)
+ assert.match(map,/const FALLBACK=t\('clientMap\.fallback'\)/)
  assert.match(map,/if\(mapError\)return <div className="ugo-active-map-fallback"/)
 })

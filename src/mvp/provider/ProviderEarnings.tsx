@@ -1,4 +1,4 @@
-import{useLocale}from'../../i18n/locale'
+import{useLocale,LocalizedText}from'../../i18n/locale'
 import React,{useState}from'react'
 import{ProviderPayoutPanel}from'../ProviderPayoutPanel'
 import{useProviderData}from'./providerData'
@@ -50,7 +50,7 @@ const{prompt,node:dialog}=useDialog()
 
   {d.debtBlocked&&<Card className="provider-debt-lock" role="alert"><StatusPill tone="danger">{t('screen.earnings.10')}</StatusPill><strong>{t('screen.earnings.11')}</strong><span>{t('providerEarnings.debtMessage',{count:d.pendingDebtCount})}</span></Card>}
 
-  {pix&&<Card className="provider-card provider-debt-payment" aria-label={t('providerEarnings.pixAria')}><div><span className="provider-kicker">{t('screen.earnings.12')}</span><h2>{t('providerEarnings.serviceNumber',{number:pix.servicio})} · {formatMoney(pix.monto,pix.moneda)}</h2><p>{t('screen.earnings.13')}</p></div><Textarea readOnly value={pix.pixCopiaCola} aria-label={t('providerEarnings.pixCodeAria')}/><div className="provider-debt-payment-actions"><Button variant="primary" className="provider-primary" onClick={()=>void copyPix()}>{t('screen.earnings.14')}</Button><Button variant="secondary" className="provider-secondary" onClick={()=>setPix(null)}>{t('screen.earnings.15')}</Button></div><small>{t('providerEarnings.ugoKey')}: {pix.pixChave} · TXID {pix.txid}</small></Card>}
+  {pix&&<Card className="provider-card provider-debt-payment" aria-label={t('providerEarnings.pixAria')}><div><span className="provider-kicker">{t('screen.earnings.12')}</span><h2>{t('providerEarnings.serviceNumber',{number:pix.servicio})} · {formatMoney(pix.monto,pix.moneda)}</h2><p>{t('screen.earnings.13')}</p></div><Textarea readOnly value={pix.pixCopiaCola} aria-label={t('providerEarnings.pixCodeAria')}/><div className="provider-debt-payment-actions"><Button variant="primary" className="provider-primary" onClick={()=>void copyPix()}>{t('screen.earnings.14')}</Button><Button variant="secondary" className="provider-secondary" onClick={()=>setPix(null)}>{t('screen.earnings.15')}</Button></div><small>{t('providerEarnings.ugoKey')}: {pix.pixChave} <LocalizedText id="pix.txid"/> {pix.txid}</small></Card>}
 
   {pendingDebts.length>0&&<Card className="provider-card" aria-label={t('providerEarnings.pendingCommissionsAria')}>
    <div className="provider-section-head"><div><span className="provider-kicker">{t('screen.earnings.16')}</span><h2 style={{margin:'4px 0'}}>{t('screen.earnings.17')}</h2><p>{t('screen.earnings.18')}</p></div></div>

@@ -1,3 +1,4 @@
+import{LocalizedText}from'../../../i18n/locale'
 import{useLocale}from'../../../i18n/locale'
 import React,{useEffect,useState}from'react'
 import{useRoleSession}from'../../../mvp/shared'
@@ -80,7 +81,7 @@ export function ClientLocationScreen({onBack,onContinue}:{onBack:()=>void;onCont
  if(!session)return null
  if(stage==='when')return <ClientWhenScreen onBack={()=>setStage('location')} onContinue={onContinue}/>
  return <main className="ugo-location-screen" aria-label={t('screen.location.1')}>
-  <header><button type="button" onClick={onBack} aria-label={t('screen.location.2')}>←</button><strong>UGO</strong><div className="ugo-location-progress"><i/><i/><i/><i/><i/></div><small>{t('screen.location.20')}</small></header>
+  <header><button type="button" onClick={onBack} aria-label={t('screen.location.2')}>←</button><strong><LocalizedText id="ugoWebRemaining.brand"/></strong><div className="ugo-location-progress"><i/><i/><i/><i/><i/></div><small>{t('screen.location.20')}</small></header>
   <section><h1>{t('screen.location.3')}</h1><p>{t('screen.location.4')}</p>
    {places.length>0&&<div className="ugo-location-saved"><div className="ugo-location-saved-head"><strong>{t('screen.location.5')}</strong><small>{t('clientLocation.savedCount',{count:places.length})}</small></div><div className="ugo-location-saved-list">{places.map(place=><button type="button" key={place.id} className={selectedPlace===place.id?'selected':''} onClick={()=>void choosePlace(place)}><span>{/casa|hogar/i.test(place.etiqueta)?'⌂':/oficina|trabajo/i.test(place.etiqueta)?'▣':'⌖'}</span><div><b>{place.etiqueta}</b><small>{place.direccion}{place.complemento?' · '+place.complemento:''}</small></div>{place.es_predeterminada&&<em>{t('screen.location.6')}</em>}<i>→</i></button>)}</div></div>}
    <div className={'ugo-location-map'+(pickup?' has-location':'')} role="region" aria-label={t('screen.location.7')}><div className="ugo-location-map-grid"/><span className="ugo-location-pin">●</span><div className="ugo-location-map-status"><strong>{pickup?t('clientLocation.mapConfirmed'):t('clientLocation.mapPending')}</strong><small>{pickup?t('clientLocation.validCoordinates'):t('clientLocation.useGpsOrAddress')}</small></div><button type="button" onClick={useLocation} disabled={locating}>⌖ {locating?t('clientLocation.finding'):t('clientLocation.useLocation')}</button></div>

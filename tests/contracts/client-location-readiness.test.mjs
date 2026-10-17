@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -11,8 +12,8 @@ const workflow=fs.readFileSync('.github/workflows/client-location-runtime.yml','
 
 test('client location map reflects authoritative pickup state',()=>{
   assert.match(screen,/t\('screen\.location\.7'\)/)
-  assert.match(screen,/t\('screen\.location\.12'\)/)
-  assert.match(screen,/t\('screen\.location\.13'\)/)
+  assert.match(screen,/t\('clientLocation\.mapConfirmed'\)/)
+  assert.match(screen,/t\('clientLocation\.validCoordinates'\)/)
   assert.match(screen,/className=\{'ugo-location-map'\+\(pickup\?' has-location':''\)\}/)
   assert.match(css,/\.ugo-location-map\.has-location/)
 })

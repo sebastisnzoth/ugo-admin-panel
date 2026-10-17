@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -17,7 +18,7 @@ test('recruitment landing validates invite, creates provider account and continu
  assert.match(src,/scout_claim_invitation/)
  assert.match(src,/tipo:'proveedor'/)
  assert.match(src,/ProviderOnboardingGate/)
- assert.match(src,/Subí documentos/)
+ assert.match(src,/t\('recruit\.step\.documents'\)/)
 })
 
 test('growth migration contains campaign, timeline, invite, dedupe and conversion primitives',async()=>{

@@ -1,3 +1,4 @@
+import{LocalizedText,useLocale}from'../i18n/locale'
 import React from'react'
 import'./payment-timeline.css'
 
@@ -18,6 +19,7 @@ const SERVICE_STARTED=['en_camino','llegado','en_progreso','esperando_aprobacion
 const WORK_FINISHED=['esperando_aprobacion','completado']
 
 export function PaymentTimeline({payment,serviceState,compact=false}:Props){
+ const{t}=useLocale()
  const isCash=payment?.metodo==='efectivo'||payment?.modelo_pago==='presencial'
  const protectedElectronic=Boolean(payment&&payment.estado==='retenido'&&(payment.mp_payment_id||payment.pix_e2e_id||payment.pago_externo_id))
  const electronicReleased=Boolean(payment&&payment.estado==='liberado'&&!isCash)
@@ -47,8 +49,8 @@ export function PaymentTimeline({payment,serviceState,compact=false}:Props){
   ?cashConfirmed?'El cliente confirmó “YA PAGUÉ” y UGO registró el cobro en efectivo.':'Efectivo seleccionado. Después de aprobar el trabajo y entregar el dinero, el cliente confirma “YA PAGUÉ”; UGO registra el cobro, no custodia este dinero.'
   :failed?payment?.estado==='reembolsado'?'Pago reembolsado.':'El pago falló. Podés intentarlo nuevamente.'
   :electronicReleased?'Pago electrónico liberado.':protectedElectronic?'Pago electrónico protegido por UGO.':payment?'Pago electrónico pendiente de confirmación.':'Todavía falta elegir o iniciar la forma de pago.'
- return <section className={`ugo-payment-timeline${compact?' compact':''}`} aria-label="Estado del pago">
-  <header><div><small>ESTADO DEL PAGO</small><strong>{isCash?'Efectivo':'Pago electrónico'}</strong></div><span className={failed?'error':cashConfirmed||electronicReleased?'success':protectedElectronic?'protected':'pending'}>{failed?'Revisar':cashConfirmed||electronicReleased?'Listo':protectedElectronic?'Protegido':'En curso'}</span></header>
+ return <section className={`ugo-payment-timeline${compact?' compact':''}`} aria-label={t('paymentTimeline.aria')}>
+  <header><div><small><LocalizedText id="clientPayment.state"/></small><strong>{isCash?t('paymentTimeline.cash'):t('paymentTimeline.electronic')}</strong></div><span className={failed?'error':cashConfirmed||electronicReleased?'success':protectedElectronic?'protected':'pending'}>{failed?t('paymentTimeline.review'):cashConfirmed||electronicReleased?t('paymentTimeline.ready'):protectedElectronic?t('paymentTimeline.protected'):t('paymentTimeline.progress')}</span></header>
   <ol>{steps.map(step=><li key={step.key} className={`${step.done?'done ':''}${step.current?'current':''}`.trim()}><i aria-hidden="true">{step.done?'✓':'•'}</i><span>{step.label}</span></li>)}</ol>
   {!compact&&<p>{summary}</p>}
  </section>

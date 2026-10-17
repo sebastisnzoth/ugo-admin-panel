@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -21,8 +22,8 @@ test('advisory specialists cannot use the generic operational execute action',()
   assert.match(ui,/const advisoryOnly=/)
   assert.match(ui,/!advisoryOnly\(a\).*Ejecutar ahora/)
   assert.match(ui,/advisoryOnly\(a\).*Consultar/)
-  assert.match(ui,/Modo ASESORÍA/)
-  assert.match(ui,/no puede ejecutar mutaciones operativas/)
+  assert.match(ui,/LocalizedText id="adminWorkforce\.advisorMode"/)
+  assert.match(ui,/LocalizedText id="adminWorkforce\.advisorLimits"/)
 })
 
 test('new advisory specialist consultation fails open only to a truthful no-evidence answer',()=>{

@@ -49,7 +49,7 @@ test('primary Gemini Live session owns streamed audio and tool responses',()=>{
 
 test('Hugo keeps Gemini Live as the only voice path instead of falling back to browser recognition',()=>{
  assert.match(dock,/await nb\.startListening\(\)/)
- assert.match(dock,/Gemini Live no está disponible\. Tocá el orbe para reconectar\./)
+ assert.match(dock,/t\('voice\.error\.reconnect'\)/)
  assert.doesNotMatch(dock,/usando reconocimiento del dispositivo/)
  assert.doesNotMatch(provider,/usando reconocimiento del dispositivo/)
  assert.doesNotMatch(dock,/void handleText\(value\)/)

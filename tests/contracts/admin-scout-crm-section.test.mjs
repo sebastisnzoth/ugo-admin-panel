@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -28,7 +29,7 @@ test('CRM provides funnel, demand, filtering, follow-up and prospect cards',asyn
  assert.match(crm,/Seguimientos vencidos/)
  assert.match(crm,/recruitment_score/)
  assert.match(crm,/proximo_contacto_at/)
- assert.match(crm,/FICHA CRM/)
+ assert.match(crm,/scout\.scoutSheet/)
  assert.match(crm,/Guardar cambios/)
 })
 

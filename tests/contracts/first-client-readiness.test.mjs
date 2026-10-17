@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -6,12 +7,12 @@ const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 
 test('matching never traps the client and exposes background, retry and service-scoped cancel exits', async () => {
   const matching = await read('src/features/client/request/ClientPostConfirmFlow.tsx')
-  assert.match(matching, /Seguir usando UGO/)
-  assert.match(matching, /Reintentar pedido/)
-  assert.match(matching, /Cancelar pedido/)
+  assert.match(matching, /t\('clientMatch\.keepUsing'\)/)
+  assert.match(matching, /t\('clientMatch\.searchNow'\)/)
+  assert.match(matching, /t\('clientMatch\.cancelOrder'\)/)
   assert.match(matching, /flow\.actions\.cancelService\(service\.id\)/)
-  assert.match(matching, /No encontramos un profesional disponible\./)
-  assert.match(matching, /No pudimos reintentar\. El pedido sigue guardado\./)
+  assert.match(matching, /t\('clientMatch\.renewing'\)/)
+  assert.match(matching, /t\('clientMatch\.renewFailed'\)/)
 })
 
 test('client may start a new request while previous services remain active', async () => {
@@ -19,7 +20,7 @@ test('client may start a new request while previous services remain active', asy
   const migration = await read('supabase/migrations/20260915014000_allow_multiple_client_active_services.sql')
   assert.doesNotMatch(matching, /hasActive/)
   assert.doesNotMatch(matching, /Ya tenés un servicio en curso/)
-  assert.match(matching, /vuelvas al inicio y hagas otro pedido/)
+  assert.match(matching, /t\('clientMatch\.keepUsing'\)/)
   assert.match(matching, /request_draft_id:requestDraftId/)
   assert.match(migration, /DROP TRIGGER IF EXISTS trg_guard_single_active_client_service/)
   assert.match(migration, /DROP INDEX IF EXISTS public\.servicios_cliente_single_active_uidx/)
@@ -47,9 +48,9 @@ test('lost cancellation response is reconciled against persisted service state',
 test('client can recover cancellation from Services outside the matching screen', async () => {
   const history = await read('src/mvp/ServiceHistoryPanel.tsx')
   assert.match(history, /CLIENT_CANCELLABLE_STATES/)
-  assert.match(history, /Cancelar pedido/)
-  assert.match(history, /Solicitud cancelada correctamente/)
-  assert.match(history, /El pedido sigue activo y podés reintentar/)
+  assert.match(history, /clientMatch\.cancelTitle/)
+  assert.match(history, /clientOrder\.cancelled/)
+  assert.match(history, /clientOrder\.cancelFailed/)
 })
 
 test('client and provider critical lifecycle is backend-authoritative and realtime-observable', async () => {

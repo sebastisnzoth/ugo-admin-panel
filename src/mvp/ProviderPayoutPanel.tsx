@@ -51,7 +51,7 @@ export function ProviderPayoutPanel({accessToken}:Props){
   <button type="button" className="mvp-voice-btn" onClick={requestWithdrawal} disabled={busy||balance.saldo_disponible<50}>{busy?t('providerPayout.processing'):t('providerPayout.request')}</button>
   <p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>{t('providerPayout.pendingWarning')}</p>
   {message&&<div style={{marginTop:8,fontSize:12}}>{message}</div>}
-  <details style={{marginTop:10}}><summary>{t('providerPayout.withdrawHistory',{count:withdrawals.length})}</summary>{withdrawals.map(w=><div key={w.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(w.created_at).toLocaleDateString(locale)} · {statusLabel(w.estado)} · <b>{formatMoney(w.monto,w.moneda)}</b>{w.transferencia_externa_id?<small style={{display:'block',opacity:.65}}>Ref: {w.transferencia_externa_id}</small>:null}</div>)}</details>
+  <details style={{marginTop:10}}><summary>{t('providerPayout.withdrawHistory',{count:withdrawals.length})}</summary>{withdrawals.map(w=><div key={w.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(w.created_at).toLocaleDateString(locale)} · {statusLabel(w.estado)} · <b>{formatMoney(w.monto,w.moneda)}</b>{w.transferencia_externa_id?<small style={{display:'block',opacity:.65}}>{t('providerPayout.externalRef')} {w.transferencia_externa_id}</small>:null}</div>)}</details>
   <details style={{marginTop:8}}><summary>{t('providerPayout.digitalHistory',{count:payments.length})}</summary>{payments.map(p=><div key={p.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(p.liberado_at||p.created_at).toLocaleDateString(locale)} · <b>{formatMoney(p.ganancia_proveedor,p.moneda)}</b></div>)}</details>
  </div>
 }

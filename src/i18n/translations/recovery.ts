@@ -55,7 +55,9 @@ export const recoveryMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> =
     "providerRoot.title.history": "Histórico",
     "providerRoot.announce.history": "Tela: Histórico",
     "providerRoot.title.dispute": "Disputa",
-    "providerRoot.announce.dispute": "Tela: Disputa"
+    "providerRoot.announce.dispute": "Tela: Disputa",
+    "recovery.linkError": "Não foi possível validar o link de recuperação.",
+    "recovery.linkExpired": "Este link de recuperação expirou. Solicite um novo."
   },
   "es": {
     "clientHome.repeatAria": "Hacer otro pedido",
@@ -112,7 +114,9 @@ export const recoveryMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> =
     "providerRoot.title.history": "Historial",
     "providerRoot.announce.history": "Pantalla: Historial",
     "providerRoot.title.dispute": "Disputa",
-    "providerRoot.announce.dispute": "Pantalla: Disputa"
+    "providerRoot.announce.dispute": "Pantalla: Disputa",
+    "recovery.linkError": "No se pudo validar el enlace de recuperación.",
+    "recovery.linkExpired": "Este enlace de recuperación venció. Solicitá uno nuevo."
   },
   "en": {
     "clientHome.repeatAria": "Place another request",
@@ -169,6 +173,8 @@ export const recoveryMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> =
     "providerRoot.title.history": "History",
     "providerRoot.announce.history": "Screen: History",
     "providerRoot.title.dispute": "Dispute",
-    "providerRoot.announce.dispute": "Screen: Dispute"
+    "providerRoot.announce.dispute": "Screen: Dispute",
+    "recovery.linkError": "The recovery link couldn’t be validated.",
+    "recovery.linkExpired": "This recovery link has expired. Request a new one."
   }
 }

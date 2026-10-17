@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -22,7 +23,7 @@ test('new Hugo intent replaces stale request form content instead of mixing cate
 
 
 
-test('request description can correct a stale Hugo category before the client continues',()=>{assert.match(need,/resolveVoiceCategoryFromCatalog/);assert.match(need,/descriptionCategory=useMemo/);assert.match(need,/category=descriptionCategory\|\|intentCategory/);assert.match(need,/Hugo ajustó la categoría según lo que escribiste/);assert.match(need,/categoryId:category\.id/)})
+test('request description can correct a stale Hugo category before the client continues',()=>{assert.match(need,/resolveVoiceCategoryFromCatalog/);assert.match(need,/descriptionCategory=useMemo/);assert.match(need,/category=descriptionCategory\|\|intentCategory/);assert.match(need,/t\('clientNeed\.categoryAdjusted'/);assert.match(need,/categoryId:category\.id/)})
 
 
 test('need step has responsive premium desktop layout and description-gated continuation',()=>{assert.match(need,/canContinue=Boolean\(category&&description\.trim\(\)\.length>=8\)/);assert.match(need,/disabled=\{!canContinue\|\|photoBusy\}/);assert.match(need,/ugo-need-field-label/);assert.match(need,/aria-pressed=\{description\.trim\(\)===option\}/);assert.match(need,/Object\.entries\(QUICK\)\.find\(\(\[name\]\)=>key\.includes\(name\)\)/)})

@@ -19,6 +19,8 @@ import'./ugo-visual-refresh.css'
 import'./ugo-auth-redesign.css'
 import'./browser-role-shell.css'
 import{LocaleProvider,useLocale}from'../i18n/locale'
+import{AppErrorBoundary}from'../app/AppErrorBoundary'
+import{EnvironmentBadge}from'../app/EnvironmentBadge'
 import'../i18n/locale.css'
 
 const ClientFlowV2=lazy(()=>import('../features/client/flow-v2/ClientFlowV2').then(module=>({default:module.ClientFlowV2})))
@@ -71,4 +73,4 @@ function RecoveryGate({role,children}:{role:'client'|'provider';children:React.R
 }
 
 
-export function MvpApp(){return <LocaleProvider><MvpAppRoutes/></LocaleProvider>}
+export function MvpApp(){return <LocaleProvider><AppErrorBoundary><EnvironmentBadge/><MvpAppRoutes/></AppErrorBoundary></LocaleProvider>}

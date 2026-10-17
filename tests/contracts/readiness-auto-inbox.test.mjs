@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -17,12 +18,12 @@ test('Executive Inbox deduplicates work and orders escalations by SLA and author
  assert.match(inbox,/isGreenApprovalInconsistency/)
  assert.match(inbox,/job\.status==='WAITING_APPROVAL'&&!requiresHumanApproval\(job\)/)
  assert.match(dashboard,/buildExecutiveInboxItems\(p\.jobs\)/)
- assert.match(dashboard,/Prioridad \{j\.inbox_priority\}/)
+ assert.ok(dashboard.includes('adminAutonomy.priorityPrefix')&&dashboard.includes('{j.inbox_priority}'))
  assert.match(dashboard,/formatInboxSla\(j\)/)
  assert.match(dashboard,/data-correlation-id/)
  assert.match(dashboard,/Intervención humana real/)
  assert.match(dashboard,/Inconsistencias de autonomía detectadas/)
- assert.match(dashboard,/GREEN nunca se presenta como aprobación humana/)
+ assert.ok(dashboard.includes('adminAutonomy.governedWork'))
 })
 
 test('Executive Inbox dedupe is deterministic when duplicate timestamps collide',()=>{

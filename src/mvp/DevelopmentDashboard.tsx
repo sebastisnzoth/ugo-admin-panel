@@ -2,7 +2,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
-import{useLocale}from'../i18n/locale'
+import{useLocale,LocalizedText}from'../i18n/locale'
 import'./development-dashboard.css'
 
 type ChecklistStatus='pending'|'in_progress'|'implemented'|'validated'|'blocked'|'failed'|'approved'
@@ -81,13 +81,13 @@ export function DevelopmentDashboard(){
 
  return <main className="devdash">
   <header className="devdash-topbar">
-   <a className="devdash-brand" href="/">UGO <span>{t('development.title')}</span></a>
+   <a className="devdash-brand" href="/"><LocalizedText id="ugoWebRemaining.brand"/> <span>{t('development.title')}</span></a>
    <div className="devdash-top-actions"><span className={`devdash-live ${live?'on':''}`}><i/>{live?t('development.live'):t('development.refreshing')}</span><a href="/landing/">{t('development.landing')}</a><a href="/?app=admin">{t('development.admin')}</a></div>
   </header>
 
   <section className="devdash-hero">
    <div className="devdash-hero-copy"><p className="devdash-kicker">{t('development.cityPilot')} {releaseLabel} {t('development.source')}</p><h1>{releaseReady?t('development.readyTitle'):t('development.notReadyTitle')}</h1><p>{releaseReady?t('development.readyCopy'):t('development.notReadyCopy')}</p><div className="devdash-hero-badges"><span>{stats.built}{t('development.built')}</span><span>{stats.technical}{t('development.technical')}</span><span>{stats.verified}{t('development.readiness')}</span><span>{stats.p0Open} {t('development.p0Accept')}</span><span>{stats.p0Blocked} {t('development.p0Blocked')}</span><span>{t('development.build')} {RUNTIME_REVISION.slice(0,8)}</span></div></div>
-   <div className="devdash-progress-card"><div className="devdash-ring" style={{'--progress':`${stats.verified*3.6}deg`} as React.CSSProperties}><div><b>{stats.verified}%</b><span>{t('development.readinessLabel')}</span></div></div><p><strong>{stats.approvedWeight}</strong> de {stats.totalWeight} {t('development.acceptedPoints')}</p></div>
+   <div className="devdash-progress-card"><div className="devdash-ring" style={{'--progress':`${stats.verified*3.6}deg`} as React.CSSProperties}><div><b>{stats.verified}%</b><span>{t('development.readinessLabel')}</span></div></div><p><strong>{stats.approvedWeight}</strong> <LocalizedText id="development.of"/> {stats.totalWeight} {t('development.acceptedPoints')}</p></div>
   </section>
 
   {error&&<div className="devdash-alert" role="alert">{error}</div>}
@@ -98,7 +98,7 @@ export function DevelopmentDashboard(){
    <article className="tone-orange"><span>{t('development.pilotReadiness')}</span><strong>{stats.verified}%</strong><small>{stats.approvedWeight}/{stats.totalWeight} {t('development.evidenceOnly')}</small></article>
    <article className="tone-red"><span>{t('development.p0Close')}</span><strong>{stats.p0Open}</strong><small>{stats.p0Blocked} {t('development.blockedWait')}</small></article>
    <article className="tone-orange"><span>{t('development.p1Close')}</span><strong>{stats.p1Open}</strong><small>{t('development.noMix')}</small></article>
-   <article className="tone-blue"><span>{t('development.sentinelBuild')}</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} P0 · {stats.sentinelP1} P1 · {stats.historicalOpen} {t('development.historical')}</small></article>
+   <article className="tone-blue"><span>{t('development.sentinelBuild')}</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} <LocalizedText id="development.filter.P0"/> {stats.sentinelP1} P1 · {stats.historicalOpen} {t('development.historical')}</small></article>
   </section>
 
   {nextP0&&<section className="devdash-next"><div className="devdash-next-icon">!</div><div className="devdash-next-copy"><span>{t('development.criticalPath')}</span><h2>{nextP0.title}</h2><p>{nextP0.description}</p></div><div className={`devdash-pill status-${nextP0.status}`}>{statusLabel(nextP0.status)}</div></section>}

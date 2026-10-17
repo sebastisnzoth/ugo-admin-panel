@@ -3,22 +3,34 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import ts from 'typescript'
 
-const catalogPaths = ['src/i18n/translations/coreBase.ts', 'src/i18n/translations/recovery.ts', 'src/i18n/translations/opportunities.ts', 'src/i18n/translations/payout.ts', 'src/i18n/translations/earnings.ts', 'src/i18n/translations/followup.ts', 'src/i18n/translations/gpsErrors.ts']
+const catalogPaths = fs.readdirSync('src/i18n/translations').filter(file => file.endsWith('.ts')).map(file => `src/i18n/translations/${file}`).filter(file => !file.endsWith('/core.ts')).concat('src/i18n/locale.tsx')
 const localePath = 'src/i18n/locale.tsx'
 const supported = ['pt-BR', 'es', 'en']
 const catalogs = catalogPaths.map(file => ({file, text: fs.readFileSync(file, 'utf8')}))
 const localeText = fs.readFileSync(localePath, 'utf8')
-const sources = catalogs.map(({file,text}) => ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS))
+const sources = catalogs.map(({file,text}) => ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS))
 
 function localeCatalogs() {
   const result = new Map()
   function visit(node) {
     if (ts.isPropertyAssignment(node) && supported.includes(node.name?.text) && ts.isObjectLiteralExpression(node.initializer)) {
-      const keys = result.get(node.name.text) ?? new Set()
+      const keys = result.get(node.name.text) ?? new Map()
       for (const property of node.initializer.properties) {
-        if (ts.isPropertyAssignment(property) && ts.isStringLiteral(property.name)) keys.add(property.name.text)
+        if (ts.isPropertyAssignment(property) && ts.isStringLiteral(property.name) && ts.isStringLiteral(property.initializer)) keys.set(property.name.text, property.initializer.text)
       }
       result.set(node.name.text, keys)
+    }
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.expression.getText(node.getSourceFile()) === 'Object' && node.expression.name.text === 'assign' && node.arguments.length >= 2) {
+      const target = node.arguments[0]
+      const value = node.arguments[1]
+      const locale = ts.isElementAccessExpression(target) && ts.isStringLiteral(target.argumentExpression) ? target.argumentExpression.text : undefined
+      if (locale && supported.includes(locale) && ts.isObjectLiteralExpression(value)) {
+        const keys = result.get(locale) ?? new Map()
+        for (const property of value.properties) {
+          if (ts.isPropertyAssignment(property) && ts.isStringLiteral(property.name) && ts.isStringLiteral(property.initializer)) keys.set(property.name.text, property.initializer.text)
+        }
+        result.set(locale, keys)
+      }
     }
     ts.forEachChild(node, visit)
   }
@@ -32,44 +44,40 @@ function localeCatalogs() {
 test('core translation catalog contains the same keys in every supported language', () => {
   const catalogs = localeCatalogs()
   assert.deepEqual([...catalogs.keys()].sort(), [...supported].sort())
-  const baseline = [...catalogs.get('pt-BR')].sort()
-  for (const locale of supported) assert.deepEqual([...catalogs.get(locale)].sort(), baseline, `${locale} catalog differs`)
+  const baseline = [...catalogs.get('pt-BR').keys()].sort()
+  for (const locale of supported) assert.deepEqual([...catalogs.get(locale).keys()].sort(), baseline, `${locale} catalog differs`)
+  const parameters = value => [...value.matchAll(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g)].map(match => match[1]).sort()
+  for (const key of baseline) {
+    const expected = parameters(catalogs.get('pt-BR').get(key))
+    for (const locale of supported.slice(1)) assert.deepEqual(parameters(catalogs.get(locale).get(key)), expected, `${key} interpolation differs in ${locale}`)
+  }
 })
 
 test('active role entry screens only reference keys present in all core catalogs', () => {
-  const files = [
-    'src/features/client/home/ClientHomeScreen.tsx',
-    'src/features/client/onboarding/ClientOnboardingGate.tsx',
-    'src/mvp/provider/ProviderRoot.tsx',
-    'src/mvp/ProviderLocationTracker.tsx',
-    'src/mvp/ProviderPayoutPanel.tsx',
-    'src/mvp/provider/ProviderEarnings.tsx',
-    'src/mvp/provider/ProviderHome.tsx',
-    'src/mvp/ProviderOnboardingGate.tsx',
-    'src/mvp/AdminGate.tsx',
-    'src/mvp/AdminPhase2.tsx',
-    'src/mvp/UgoLanding.tsx',
-    'src/features/client/request/ClientPostConfirmFlow.tsx',
-    'src/features/client/order/ClientServiceDetail.tsx',
-    'src/features/client/order/ClientEvidenceGallery.tsx',
-    'src/features/client/payments/ClientPaymentChoice.tsx',
-    'src/features/client/profile/ClientProfilePanel.tsx',
-    'src/mvp/provider/ProviderAgenda.tsx',
-    'src/mvp/provider/ProviderActiveJob.tsx',
-    'src/mvp/provider/ProviderEvidencePanel.tsx',
-    'src/mvp/provider/ProviderOpportunities.tsx',
-    'src/features/client/rating/ClientRatingPrompt.tsx'
-    ,'src/features/client/request/ClientRequestEvidence.tsx'
-    ,'src/features/client/request/ClientLocationScreen.tsx'
-    ,'src/features/client/order/ClientActiveMap.tsx'
-  ]
-  const catalogs = localeCatalogs()
-  for (const file of files) {
-    const text = fs.readFileSync(file, 'utf8')
-    for (const [, key] of text.matchAll(/t\(['"]((?:clientHome|clientOnboarding|providerHome|providerOnboarding|adminAuth|adminShell|landing|clientMatch|clientOrder|clientEvidence|clientLocation|clientMap|clientRating|clientPayment|clientProfile|providerAgenda|providerJob|providerEvidence|clientNeed|clientMenu|clientHeader|clientRoot|providerRoot|clientReview|clientTracking|clientAssigned|clientBoundary|clientHistory|clientSummary|clientPayment|clientDetail|clientProfile|providerGps|providerOpportunity|providerPayout|providerEarnings)\.[^'"]+)['"](?!\s*\+)/g)) {
-      for (const locale of supported) assert.ok(catalogs.get(locale).has(key), `${file} uses missing ${locale} key ${key}`)
+  const files = []
+  const visit = directory => {
+    for (const entry of fs.readdirSync(directory, {withFileTypes:true})) {
+      const file = `${directory}/${entry.name}`
+      if (entry.isDirectory()) visit(file)
+      else if (file.endsWith('.tsx')) files.push(file)
     }
   }
+  visit('src')
+  const catalogs = localeCatalogs()
+  const namespaces = new Set([...catalogs.get('pt-BR').keys()].map(key => key.split('.')[0]))
+  const missing = []
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8')
+    const references = [
+      ...text.matchAll(/t\(['"]([A-Za-z][A-Za-z0-9_-]*\.[^'"]+)['"](?!\s*\+)/g),
+      ...text.matchAll(/LocalizedText\s+id=['"]([A-Za-z][A-Za-z0-9_-]*\.[^'"]+)['"]/g),
+    ]
+    for (const [, key] of references) {
+      if (!namespaces.has(key.split('.')[0])) continue // Ignore Supabase select() strings that happen to contain dots.
+      for (const locale of supported) if (!catalogs.get(locale).has(key)) missing.push(`${file} uses missing ${locale} key ${key}`)
+    }
+  }
+  assert.deepEqual(missing, [], 'every UI translation reference must be present in every supported locale')
 })
 
 test('selected language is exposed to browsers and assistive technology', () => {

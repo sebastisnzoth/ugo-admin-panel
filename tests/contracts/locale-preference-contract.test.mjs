@@ -22,5 +22,5 @@ test('UGO locale preference persists locally and in authenticated user metadata'
 
 test('UGO language selector is mounted for every application route through the root app',()=>{
  assert.match(app,/LocaleProvider/)
- assert.match(app,/<LocaleProvider><MvpAppRoutes\s*\/><\/LocaleProvider>/)
+ assert.match(app,/<LocaleProvider><AppErrorBoundary><EnvironmentBadge\/><MvpAppRoutes\s*\/><\/AppErrorBoundary><\/LocaleProvider>/)
 })

@@ -1,5 +1,5 @@
 import React from'react'
-import{useLocale}from'../i18n/locale'
+import{useLocale,LocalizedText}from'../i18n/locale'
 import'./ugo-landing.css'
 
 type LandingRole='client'|'provider'|'admin'
@@ -45,7 +45,7 @@ export function UgoLanding(){
    <div className="ugo-hero-demo">
     <div className="ugo-demo-shell">
      <div className="ugo-demo-top">
-      <div><small>UGO</small><strong>{t('landing.demoQuestion')}</strong></div>
+      <div><small><LocalizedText id="ugoWebRemaining.brand"/></small><strong>{t('landing.demoQuestion')}</strong></div>
       <div className="ugo-avatar">SZ</div>
      </div>
      <div className="ugo-demo-search"><span>⌕</span><b>{t('landing.demoSearch')}</b></div>
@@ -70,7 +70,7 @@ export function UgoLanding(){
   </section>
 
   <section className="ugo-marquee">
-   <span>UGO</span><i/> <span>{t('landing.cleaning')}</span><i/> <span>{t('landing.electricity')}</span><i/> <span>{t('landing.plumbing')}</span><i/> <span>{t('landing.repairs')}</span><i/> <span>{t('landing.assembly')}</span>
+   <span><LocalizedText id="ugoWebRemaining.brand"/></span><i/> <span>{t('landing.cleaning')}</span><i/> <span>{t('landing.electricity')}</span><i/> <span>{t('landing.plumbing')}</span><i/> <span>{t('landing.repairs')}</span><i/> <span>{t('landing.assembly')}</span>
   </section>
 
   <section className="ugo-services" id="servicios">
@@ -120,7 +120,7 @@ export function UgoLanding(){
   <section className="ugo-provider" id="proveedores">
    <div className="ugo-provider-art">
     <div className="ugo-provider-phone">
-     <div className="ugo-provider-head"><span>{t('landing.providerApp')}</span><b>Online</b></div>
+     <div className="ugo-provider-head"><span>{t('landing.providerApp')}</span><b><LocalizedText id="providerRoot.online"/></b></div>
      <div className="ugo-provider-money"><small>{t('landing.today')}</small><strong>R$ 486</strong><span>{t('landing.completed')}</span></div>
      <div className="ugo-provider-job"><small>{t('landing.newOpportunity')}</small><strong>{t('landing.electricalInstall')}</strong><span>2,4 km · R$ 180</span><button>{t('landing.acceptJob')}</button></div>
     </div>
@@ -143,7 +143,7 @@ export function UgoLanding(){
   <footer className="ugo-footer">
    <div><strong>U.GO</strong><span>{t('landing.tagline')}</span></div>
    <div className="ugo-footer-links"><button onClick={()=>goRole('client')}>{t('landing.client')}</button><button onClick={()=>goRole('provider')}>{t('landing.provider')}</button><button onClick={()=>goRole('admin')}>{t('landing.admin')}</button></div>
-   <small>© 2026 UGO · Florianópolis, Brasil</small>
+   <small><LocalizedText id="landing.footer" params={{year:2026}}/></small>
   </footer>
  </main>
 }

@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -18,7 +19,7 @@ test('client can start a request without configuring payment on Home',async()=>{
  assert.match(payment,/useState<Method>\('cash'\)/)
  assert.match(payment,/Predeterminado · pagás al profesional/)
  assert.match(payment,/set_preorder_payment_preference/)
- assert.match(payment,/[Ll]a forma de pago nunca bloquea que empieces el pedido/)
+ assert.match(payment,/t\('clientPayment\.guarantee'\)|t\('clientPayment\.optional[^']*'\)/)
  assert.match(summary,/d\.paymentMethod==='pix'\?'PIX · se confirma con el profesional asignado':'Efectivo · pagás al finalizar'/)
  assert.match(profile,/Forma de pago/)
  assert.match(profile,/Efectivo/)

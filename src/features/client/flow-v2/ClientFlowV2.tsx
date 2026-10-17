@@ -1,4 +1,5 @@
 import { RealFlowDemo } from '../../design-preview/RealFlowDemo'
+import { LocalizedText } from '../../../i18n/locale'
 import '../../design-preview/roles.css'
 import '../design-preview/design-preview.css'
 
@@ -10,7 +11,7 @@ import '../design-preview/design-preview.css'
 export function ClientFlowV2() {
   return (
     <div className="ugo-dp-gallery">
-      <p className="ugo-rp-role-desc">Flujo v2 · datos de demostración (no conectado a servicios reales)</p>
+      <p className="ugo-rp-role-desc"><LocalizedText id="clientFlow.demoNotice"/></p>
       <RealFlowDemo />
     </div>
   )

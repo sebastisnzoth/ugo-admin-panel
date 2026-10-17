@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -29,5 +30,5 @@ test('client home distinguishes scheduled active orders',async()=>{
   const home=await read('src/features/client/home/ClientHomeScreen.tsx')
   assert.match(home,/programado_para/)
   assert.match(home,/scheduledLabel/)
-  assert.match(home,/Programado ·/)
+ assert.match(home,/t\('clientHome\.scheduled'\)/)
 })

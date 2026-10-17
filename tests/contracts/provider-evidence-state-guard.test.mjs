@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -18,7 +19,7 @@ test('provider evidence is state-gated and storage-bound',async()=>{
  assert.match(screen,/estado==='llegado'\?\['antes'\]/)
  assert.match(screen,/estado==='en_progreso'\?\['durante','despues'\]/)
  assert.match(active,/evidence\.initial\?'Empezá el trabajo':'Sacá la foto inicial'/)
- assert.match(active,/evidence\.final\?'Marcá el trabajo listo':'Sacá la foto final'/)
+ assert.match(active,/evidence\.final\?t\('providerJob\.nextMarkDone'\):t\('providerJob\.nextFinalPhoto'\)/)
  assert.match(active,/forceKind="antes"/)
  assert.match(active,/forceKind="despues"/)
 })

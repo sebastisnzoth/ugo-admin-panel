@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -44,5 +45,5 @@ test('Super Admin renders persisted IP data and honest empty state',()=>{
  assert.match(admin,/from\('ip_innovations'\)/)
  assert.match(admin,/from\('ip_gate_decisions'\)/)
  assert.match(admin,/from\('ip_audit_findings'\)/)
- assert.match(admin,/UGO no muestra actividad IP ficticia/)
+ assert.match(admin,/t\('admin\.noInnovations'\)/)
 })

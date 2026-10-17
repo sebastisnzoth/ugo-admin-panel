@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -13,9 +14,9 @@ test('client Activity loads the stylesheet that defines its real runtime surface
 })
 
 test('client Activity separates current upcoming and finished work at a glance',()=>{
- assert.match(activity,/ACTIVOS AHORA/)
- assert.match(activity,/PRÓXIMOS/)
- assert.match(activity,/FINALIZADOS/)
+ assert.match(activity,/history\.active/)
+ assert.match(activity,/history\.upcoming/)
+ assert.match(activity,/history\.finished/)
  assert.match(activity,/currentCount/)
  assert.match(activity,/upcomingCount/)
  assert.match(activity,/finalCount/)
@@ -24,26 +25,26 @@ test('client Activity separates current upcoming and finished work at a glance',
 
 test('client Activity has one state-navigation surface instead of duplicate filter rows',()=>{
  assert.match(activity,/ugo-client-history-toolbar/)
- assert.match(activity,/Todos <b>\{rows\.length\}<\/b>/)
+ assert.match(activity,/t\('history\.all'\)\} <b>\{rows\.length\}<\/b>/)
  assert.doesNotMatch(activity,/>En curso <b>\{currentCount\}<\/b>/)
  assert.doesNotMatch(activity,/>Próximos <b>\{upcomingCount\}<\/b>/)
  assert.doesNotMatch(activity,/>Finalizados <b>\{finalCount\}<\/b>/)
 })
 
 test('every client order exposes an operational state before secondary metadata',()=>{
- assert.match(activity,/ESTADO DEL PEDIDO/)
- assert.match(activity,/Profesional en camino/)
- assert.match(activity,/Esperando respuesta/)
- assert.match(activity,/Esperando tu aprobación/)
+ assert.match(activity,/history\.orderState/)
+ assert.match(activity,/STATUS_KEYS:[\s\S]*en_camino:'en_camino'/)
+ assert.match(activity,/STATUS_KEYS:[\s\S]*ofrecido:'ofrecido'/)
+ assert.match(activity,/STATUS_KEYS:[\s\S]*esperando_aprobacion:'esperando_aprobacion'/)
  assert.match(activity,/ugo-history-state-focus/)
  assert.match(styles,/\.ugo-history-state-focus\.tone-live/)
  assert.match(styles,/\.ugo-history-state-focus\.tone-waiting/)
 })
 
 test('opening the exact order and chat stays the primary Activity action',()=>{
- assert.match(activity,/Abrir pedido y chat/)
+ assert.match(activity,/history\.openOrder/)
  assert.match(activity,/onOpenService\(r\.id\)/)
- assert.match(activity,/Cancelar pedido/)
+ assert.match(activity,/clientMatch\.cancelTitle/)
  assert.match(styles,/\.ugo-history-open-button/)
 })
 
@@ -51,7 +52,7 @@ test('Activity cancellation shares the canonical client action service',()=>{
  assert.match(activity,/cancelOwnedClientService/)
  assert.match(activity,/CLIENT_CANCELLABLE_SERVICE_STATES/)
  assert.doesNotMatch(activity,/getDispatchProvider/)
- assert.match(activity,/Este pedido ya cambió de estado y no se puede cancelar desde Actividad/)
+ assert.match(activity,/t\('clientOrder\.cancelFailed'\)|t\('clientMatch\.cancelFailed'\)/)
 })
 
 test('client Activity groups Todos into activos, próximos y finalizados with operational priority',()=>{

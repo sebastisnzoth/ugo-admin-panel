@@ -51,7 +51,7 @@ export function AdminTariffsPanel(){
     <label>{t('screen.admin_tariffs.9')}<input inputMode="decimal" value={draft.base} onChange={e=>setDraft(v=>({...v,base:e.target.value}))} placeholder="0,00"/></label>
     <label>{t('screen.admin_tariffs.10')}<input inputMode="decimal" value={draft.hora} onChange={e=>setDraft(v=>({...v,hora:e.target.value}))} placeholder="0,00"/></label>
     <label>{t('screen.admin_tariffs.11')}<input inputMode="decimal" value={draft.min} onChange={e=>setDraft(v=>({...v,min:e.target.value}))} placeholder="0,00"/></label>
-    <label>{t('screen.admin_tariffs.12')}<input inputMode="decimal" value={draft.max} onChange={e=>setDraft(v=>({...v,max:e.target.value}))} placeholder="opcional"/></label>
+    <label>{t('screen.admin_tariffs.12')}<input inputMode="decimal" value={draft.max} onChange={e=>setDraft(v=>({...v,max:e.target.value}))} placeholder={t('providerRate.optional')}/></label>
    </div>
    <div className="ugo-tariff-editor-actions"><span>{t('screen.admin_tariffs.13')}</span><button type="button" className="primary" onClick={()=>void save()} disabled={busy}>{busy?'Guardando…':editing?'Guardar cambios':'Crear tarifa'}</button></div>
   </div>

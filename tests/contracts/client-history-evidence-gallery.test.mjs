@@ -8,8 +8,8 @@ test('client completed history exposes service-scoped evidence on demand',async(
  assert.match(history,/ClientEvidenceGallery/)
  assert.match(history,/clientEvidenceServiceId/)
  assert.match(history,/r\.estado==='completado'/)
- assert.match(history,/Ver fotos/)
- assert.match(history,/Ocultar fotos/)
+ assert.match(history,/history\.viewPhotos/)
+ assert.match(history,/history\.hidePhotos/)
  assert.match(history,/ClientEvidenceGallery serviceId=\{r\.id\} compact hideWhenEmpty/)
 })
 

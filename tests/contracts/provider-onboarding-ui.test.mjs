@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
@@ -15,10 +16,10 @@ test('provider onboarding keeps actions visible in app layout',()=>{
 test('provider onboarding keeps explicit save available on mobile',()=>{
   assert.match(css,/@media\(max-width:640px\)[\s\S]*?\.ugo-provider-save\{display:block\}/)
   assert.doesNotMatch(css,/@media\(max-width:640px\)[\s\S]*?\.ugo-provider-save\{display:none/)
-  assert.match(component,/>Guardar<|\{busy\?'Guardando…':'Guardar'\}/)
+  assert.match(component,/t\('providerOnboarding\.save'\)/)
 })
 
 test('provider onboarding exposes all six guided steps',()=>{
-  for(const label of ['Cuenta','Servicio','Perfil','Documentos','Cobro','Revisión']) assert.match(component,new RegExp(`name:'${label}'`))
-  assert.match(component,/Paso \{step\} de 6/)
+  for(const label of ['stepData','stepService','stepProfile','stepDocuments','stepPayout','stepReview']) assert.match(component,new RegExp(`name:'${label}'`))
+  assert.match(component,/t\('providerOnboarding\.step'\)\}\{step\} \{t\('providerOnboarding\.of'\)\}/)
 })

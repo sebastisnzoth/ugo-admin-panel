@@ -1,3 +1,4 @@
+import{LocalizedText}from'../../../i18n/locale'
 import React,{useEffect,useMemo,useState}from'react'
 import{useClientFlow}from'../flow/clientFlow'
 import{useRoleSession}from'../../../mvp/shared'
@@ -29,7 +30,7 @@ export function ClientGlobalMenu(){
   {open&&<div className="ugo-client-menu-backdrop ugo-client-global-backdrop" onClick={close} role="presentation">
    <aside className="ugo-client-menu ugo-client-global-drawer" onClick={event=>event.stopPropagation()} aria-label={t('client.menu')}>
     <div className="ugo-client-menu-head ugo-client-global-head">
-     <div className="ugo-client-menu-brand"><strong>UGO</strong><span>{t('clientMenu.customer')}</span></div>
+     <div className="ugo-client-menu-brand"><strong><LocalizedText id="ugoWebRemaining.brand"/></strong><span>{t('clientMenu.customer')}</span></div>
      <button type="button" className="ugo-client-menu-close" onClick={close} aria-label={t('clientMenu.close')}>×</button>
     </div>
     <button type="button" className="ugo-client-account-card" onClick={()=>go('profile')}><span className="ugo-client-account-avatar">{initials}</span><div><b>{displayName}</b><small>{t('client.account')}</small></div><em>›</em></button>
@@ -46,7 +47,7 @@ export function ClientGlobalMenu(){
      <button type="button" onClick={()=>go('profile')}><span>⚙</span><div><b>{t('clientMenu.settings')}</b></div></button>
      <button type="button" className="ugo-menu-logout" onClick={()=>void logout()}><span>⇥</span><div><b >{t('client.logout')}</b></div></button>
     </nav>
-    <div className="ugo-client-global-footer"><b>UGO</b><span>{t('clientMenu.tagline')}</span></div>
+    <div className="ugo-client-global-footer"><b><LocalizedText id="ugoWebRemaining.brand"/></b><span>{t('clientMenu.tagline')}</span></div>
    </aside>
   </div>}
  </>

@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -10,12 +11,12 @@ test('request photos stay optional and upload failures never block the canonical
   read('src/features/client/request/ClientNeedScreen.tsx'),
   read('src/features/client/request/ClientPostConfirmFlow.tsx')
  ])
- assert.match(source,/Son opcionales/)
+ assert.match(need,/clientNeed\.continueWithoutPhotos/)
  assert.doesNotMatch(source,/Necesitás al menos una foto para enviar la solicitud/)
  assert.doesNotMatch(source,/Adjuntá al menos una foto clara/)
- assert.match(source,/Probá otra vez o enviá la solicitud sin foto/)
- assert.match(need,/t\('screen\.need\.5'\).*t\('screen\.need\.6'\)/)
- assert.match(need,/Podés continuar sin fotos/)
+ assert.match(source,/clientEvidence\.uploadFailed/)
+ assert.match(need,/t\('clientNeed\.photosTitle'\)[\s\S]*t\('screen\.need\.6'\)/)
+ assert.match(need,/t\('clientNeed\.continueWithoutPhotos'\)/)
  assert.match(need,/disabled=\{!canContinue\|\|photoBusy\}/)
  assert.doesNotMatch(need,/photoCount\s*===\s*0.*return/)
  assert.match(post,/request_draft_id:requestDraftId/)

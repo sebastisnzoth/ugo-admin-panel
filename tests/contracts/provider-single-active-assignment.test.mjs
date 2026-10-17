@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -47,7 +48,7 @@ test('ambiguous provider acceptance only recovers the exact requested service',a
 
 test('provider opportunity copy never promises an acceptance that backend may reject',async()=>{
  const screen=await read('src/mvp/provider/ProviderOpportunities.tsx')
- assert.match(screen,/UGO validará que este horario no se superponga/)
- assert.match(screen,/no tiene un horario futuro confirmado/)
+ assert.match(screen,/t\('providerOpportunity\.otherScheduled'\)/)
+ assert.match(screen,/providerOpportunity\.otherScheduled/)
  assert.doesNotMatch(screen,/Podés aceptar este también: UGO lo agrega a tu agenda/)
 })

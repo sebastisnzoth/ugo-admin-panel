@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -5,14 +6,7 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('Admin map controls expose accessible names',async()=>{
  const map=await read('src/components/MapaOperativo.tsx')
- for(const label of[
-  'Buscar ciudad o barrio en el mapa operativo',
-  'Radio de búsqueda del mapa operativo',
-  'Ir a la ubicación buscada',
-  'Actualizar mapa operativo',
-  'Filtrar mapa por zona o barrio',
-  'Actualizar mapa automáticamente',
- ])assert.ok(map.includes('aria-label="'+label+'"'))
+ for(const key of['searchLabel','radiusLabel','goToSearch','refresh','filterLabel','autoRefresh'])assert.match(map,new RegExp(`translate\\('adminMap\\.${key}'\\)`))
 })
 
 test('Admin live status metadata keeps readable contrast',async()=>{

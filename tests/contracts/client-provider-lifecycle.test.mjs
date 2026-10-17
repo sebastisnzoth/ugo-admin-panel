@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -62,7 +63,7 @@ test('request photos are optional but any supplied evidence stays bound to its e
   read('supabase/migrations/20260911_request_evidence_draft_binding.sql'),
  ])
  assert.match(post,/request_draft_id:requestDraftId/)
- assert.match(need,/Podés continuar sin fotos/)
+ assert.match(need,/t\('clientNeed\.continueWithoutPhotos'\)/)
  assert.match(need,/disabled=\{!canContinue\|\|photoBusy\}/)
  assert.doesNotMatch(need,/photoCount<1/)
  assert.match(binding,/draft_id=v_draft_id/)
@@ -123,7 +124,7 @@ test('provider simple flow keeps automatic arrival with a manual fallback',async
 
 test('provider opportunity UI is problem-first and avoids exposing ranking bureaucracy',async()=>{
  const opportunities=await read('src/mvp/provider/ProviderOpportunities.tsx')
- assert.match(opportunities,/ACEPTAR/)
+ assert.match(opportunities,/t\('providerOpportunity\.accept'\)/)
  assert.match(opportunities,/t\('screen\.opportunities\.25'\)/)
  assert.match(opportunities,/t\('screen\.opportunities\.16'\)/)
  assert.doesNotMatch(opportunities,/COMPATIBILIDAD/)
@@ -170,11 +171,11 @@ test('client and provider require cancellation confirmation before mutating an o
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/providerService.ts'),
  ])
- assert.match(postConfirm,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
- assert.match(detail,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
- assert.match(history,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
- assert.match(activeJob,/await confirm\(\{title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido\?'/)
- assert.match(activeJob,/await prompt\(\{title:'Cancelar pedido',message:'Contanos brevemente por qué cancelás este pedido/)
+ assert.match(postConfirm,/t\('clientMatch\.cancelTitle'\)/)
+ assert.match(detail,/t\('clientMatch\.cancelTitle'\)/)
+ assert.match(history,/t\('clientMatch\.cancelTitle'\)/)
+ assert.match(activeJob,/t\('providerAgenda\.confirmCancel'\)/)
+ assert.match(activeJob,/t\('providerJob\.cancelReasonPrompt'\)/)
  for(const source of [postConfirm,detail,history,activeJob]){
   assert.doesNotMatch(source,/window\.(confirm|prompt|alert)\(/)
   assert.match(source,/\{dialog\}/)

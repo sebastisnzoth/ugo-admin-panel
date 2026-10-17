@@ -1,4 +1,4 @@
-import{useLocale}from'../i18n/locale'
+import{useLocale,LocalizedText}from'../i18n/locale'
 import React,{useCallback,useEffect,useState}from'react'
 import{supabase}from'../lib/supabase'
 
@@ -62,9 +62,9 @@ export function AdminDeliveryIntegrations(){
    <p>{item.note}</p>
    <div className="ugo-delivery-capabilities">{item.capabilities.map(x=><span key={x}>{x}</span>)}</div>
    <div className="ugo-delivery-required"><b>{t('screen.admin_integrations.4')}</b>{item.required.map(x=><code key={x}>{x}</code>)}</div>
-   {result&&<div className={`ugo-delivery-test-result ${result.ok?'ok':'fail'}`}><strong>{result.message}</strong>{result.merchants!=null&&<span>{result.merchants} merchant(s) acessível(is)</span>}{result.expiresIn!=null&&<span>Token válido por {Math.round(result.expiresIn/60)} min</span>}</div>}
+   {result&&<div className={`ugo-delivery-test-result ${result.ok?'ok':'fail'}`}><strong>{result.message}</strong>{result.merchants!=null&&<span>{result.merchants} <LocalizedText id="adminDelivery.merchants"/></span>}{result.expiresIn!=null&&<span><LocalizedText id="adminDelivery.tokenValid"/> {Math.round(result.expiresIn/60)} <LocalizedText id="screen.admin_tariffs.19"/></span>}</div>}
    <footer><a href={item.docs} target="_blank" rel="noreferrer">{t('screen.admin_integrations.5')}</a><button type="button" onClick={()=>void test(item.id)} disabled={testing===item.id}>{testing===item.id?'Testando…':'Testar conexão'}</button></footer>
   </article>})}</div>
-  <div className="ugo-system-note"><strong>{t('screen.admin_integrations.6')}</strong><span>O conector pode ser instalado agora, mas a ativação real depende das credenciais e permissões de cada plataforma. O UGO não marca uma integração como operacional até o teste server-side passar.</span></div>
+  <div className="ugo-system-note"><strong>{t('screen.admin_integrations.6')}</strong><span><LocalizedText id="adminDelivery.installInfo"/></span></div>
  </div>
 }

@@ -1822,7 +1822,7 @@ export const extendedMessages={
     "providerReceipt.cashRegistered": "PAGO EN EFECTIVO REGISTRADO",
     "providerReceipt.paymentReleased": "PAGO LIBERADO EN UGO",
     "providerReceipt.approved": "Trabajo aprobado",
-    "providerReceipt.cashApproved": "El cliente confirmó que te pagó en efectivo el servicio #{number}. Ya recibiste ese dinero.",
+    "providerReceipt.cashApproved": "El cliente confirmó que te pagó en efectivo el servicio #{number}. Ese dinero ya lo recibiste directamente.",
     "providerReceipt.digitalApproved": "El cliente aprobó el servicio #{number}. Tu ganancia está disponible en el saldo UGO.",
     "providerReceipt.service": "Servicio",
     "providerReceipt.client": "Cliente",
