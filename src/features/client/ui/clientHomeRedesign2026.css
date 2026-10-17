@@ -517,3 +517,15 @@
 @media(prefers-reduced-motion:reduce){
   .ugo-client-root .ugo-home-provider-card{transition:none!important}
 }
+
+
+/* Active service takes priority over nearby provider discovery on Home. */
+.ugo-client-root .ugo-home-route-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:15px 20px;background:#effaf5;border-bottom:1px solid #d2e8df}
+.ugo-client-root .ugo-home-route-banner strong{color:#113e34;font-size:15px}
+.ugo-client-root .ugo-home-route-banner span{flex:1;min-width:160px;color:#4f7068;font-size:12px}
+.ugo-client-root .ugo-home-route-banner button{min-height:42px;padding:8px 13px;background:#087b63;color:white;border:0;border-radius:11px;font-size:12px;font-weight:750;cursor:pointer}
+.ugo-client-root .ugo-home-route-view{min-height:350px;overflow:hidden;position:relative}
+.ugo-client-root .ugo-home-route-view .ugo-active-map-wrap{height:clamp(350px,45vh,510px)!important;min-height:350px}
+.ugo-client-root .ugo-home-route-view .ugo-active-map{height:100%!important;width:100%!important}
+.ugo-client-root .ugo-home-route-banner button:focus-visible{outline:3px solid #087b63;outline-offset:3px}
+@media(max-width:899px){.ugo-client-root .ugo-home-route-banner{padding:13px 16px}.ugo-client-root .ugo-home-route-view .ugo-active-map-wrap{height:320px!important;min-height:320px}}
