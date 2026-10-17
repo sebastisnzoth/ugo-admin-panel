@@ -233,3 +233,19 @@
   .ugo-client-root .ugo-client-profile-shortcuts button{min-height:112px!important}
   .ugo-client-root .ugo-active-map-wrap{height:235px!important}
 }
+
+
+/* Client route visibility and recovery — preserve the real MapLibre layer. */
+.ugo-client-root .ugo-live-tracking{border:1px solid #d5e7df!important;border-radius:22px!important;overflow:hidden;box-shadow:0 12px 34px rgba(14,58,48,.07)!important}
+.ugo-client-root .ugo-active-map-wrap{position:relative;min-height:350px;height:clamp(350px,44vh,490px)!important;background:#dcece9!important;overflow:hidden}
+.ugo-client-root .ugo-active-map{position:absolute;inset:0;width:100%!important;height:100%!important;min-height:350px}
+.ugo-client-root .ugo-active-map-state{
+ position:absolute;z-index:3;top:18px;left:18px;right:18px;max-width:370px;
+ padding:13px 15px;border:1px solid #d1e8df;border-radius:14px;
+ background:rgba(255,255,255,.97);color:#20534b;font-size:13px;font-weight:700;
+ box-shadow:0 8px 22px #12483918;pointer-events:none;
+}
+.ugo-client-root .ugo-active-map-state small{display:block;color:#59736e;font-size:11px;margin-top:4px;font-weight:500}
+.ugo-client-root .ugo-active-map .maplibregl-canvas{display:block}
+.ugo-client-root .ugo-active-eta{z-index:4}
+@media(max-width:600px){.ugo-client-root .ugo-active-map-wrap{height:330px!important;min-height:330px}.ugo-client-root .ugo-active-map-state{top:12px;left:12px;right:12px}}
