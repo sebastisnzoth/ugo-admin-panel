@@ -1,3 +1,4 @@
+import{useLocale}from'../../i18n/locale'
 import{ProviderCustomerCard}from'./ProviderCustomerCard'
 import React,{useState}from'react'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
@@ -16,10 +17,11 @@ const CANCELLABLE=new Set(['asignado','en_camino','llegado'])
 function scheduledLabel(value:string){const date=new Date(value);return Number.isNaN(date.getTime())?'Horario programado':date.toLocaleString('es-AR',{weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'})}
 
 export function ProviderActiveJob(){
+ const{t}=useLocale()
  const d=useProviderData(),flow=useProviderFlow(),s=d.service
 const{confirm,prompt,alert,node:dialog}=useDialog()
  const[evidence,setEvidence]=useState({initial:false,final:false})
- if(!s)return <section className="provider-screen provider-empty-screen"><EmptyState title="No tenés un trabajo activo" description="Cuando aparezca un pedido, mirá el problema y aceptalo si lo podés resolver." action={<Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>Ver pedidos</Button>}/></section>
+ if(!s)return <section className="provider-screen provider-empty-screen"><EmptyState title="No tenés un trabajo activo" description="Cuando aparezca un pedido, mirá el problema y aceptalo si lo podés resolver." action={<Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>{t('screen.active.1')}</Button>}/></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
  const paymentReady=d.funded||d.cashSelected||d.paymentPreferenceSelected
  const amountReady=Number(s.tarifa||0)>0
@@ -43,46 +45,46 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
  const confirmArrival=async()=>{await d.advance('llegado')}
  const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!await confirm({title:'Cancelar pedido',message:'¿Realmente querés cancelar este pedido?',danger:true}))return;const reason=await prompt({title:'Cancelar pedido',message:'Contanos brevemente por qué cancelás este pedido. El motivo queda registrado.',label:'Motivo de cancelación',required:true});if(reason===null)return;if(reason.trim().length<5){await alert({title:'Cancelar pedido',message:'Indicá un motivo de al menos 5 caracteres para cancelar el pedido.'});return}await d.cancelService(reason)}
  return <section className="provider-screen provider-active-job" aria-labelledby="provider-job-title">
-  <><Button variant="ghost" className="provider-back" onClick={flow.actions.openHome}>← Inicio</Button><SectionHeader eyebrow="TRABAJO ACTIVO" title={stateLabel} description="Un paso por vez. UGO se ocupa del resto."/></>
+  <><Button variant="ghost" className="provider-back" onClick={flow.actions.openHome}>{t('screen.active.2')}</Button><SectionHeader eyebrow="TRABAJO ACTIVO" title={stateLabel} description="Un paso por vez. UGO se ocupa del resto."/></>
   <div className="provider-job-progress" aria-label="Progreso del trabajo">{FLOW_STEPS.map((step,index)=><div key={step.state} className={index<=progressIndex?'is-done':''}><span>{index<progressIndex?'✓':index+1}</span><small>{step.label}</small></div>)}</div>
   <Card className="provider-card provider-mission-brief" aria-label="Qué hacer ahora">
-   <div className="provider-mission-brief-head"><div><small>AHORA</small><strong>{nextAction}</strong></div><span className="provider-mission-state">{stateLabel}</span></div>
+   <div className="provider-mission-brief-head"><div><small>{t('screen.active.3')}</small><strong>{nextAction}</strong></div><span className="provider-mission-state">{stateLabel}</span></div>
    <div className="provider-mission-brief-chips"><span>{paymentLabel}</span><span>{locationLabel}</span><span>#{s.numero??String(s.id).slice(0,8)}</span></div>
-   <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">📍 Abrir mapa</a>}<span className="provider-mission-brief-hint">La acción del paso actual queda siempre a la vista abajo.</span></div>
+   <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">{t('screen.active.4')}</a>}<span className="provider-mission-brief-hint">{t('screen.active.5')}</span></div>
   </Card>
   <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
   <Card className="provider-card provider-job-summary">
-   <div className="provider-job-problem"><small>QUÉ HAY QUE RESOLVER</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h2><p>{s.descripcion}</p></div>
+   <div className="provider-job-problem"><small>{t('screen.active.6')}</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h2><p>{s.descripcion}</p></div>
    <div className="provider-job-facts">
-    <div><small>DÓNDE</small><strong>📍 {address}</strong>{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">Abrir mapa →</a>}</div>
-    {scheduledAt&&<div><small>CUÁNDO</small><strong>🗓 {scheduledLabel(scheduledAt)}</strong></div>}
-    <div><small>COBRÁS</small><strong>{money(s.ganancia_proveedor||s.tarifa,s.moneda)}</strong><span>{s.tarifa?`Total cliente ${money(s.tarifa,s.moneda)} · Comisión UGO ${money(s.comision_ugo||0,s.moneda)}`:'Importe por confirmar'} · {d.funded?'Pago protegido por UGO':d.cashSelected?'Pago en efectivo':'Forma de pago pendiente'}</span></div>
+    <div><small>{t('screen.active.7')}</small><strong>📍 {address}</strong>{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">{t('screen.active.8')}</a>}</div>
+    {scheduledAt&&<div><small>{t('screen.active.9')}</small><strong>🗓 {scheduledLabel(scheduledAt)}</strong></div>}
+    <div><small>{t('screen.active.10')}</small><strong>{money(s.ganancia_proveedor||s.tarifa,s.moneda)}</strong><span>{s.tarifa?`Total cliente ${money(s.tarifa,s.moneda)} · Comisión UGO ${money(s.comision_ugo||0,s.moneda)}`:'Importe por confirmar'} · {d.funded?'Pago protegido por UGO':d.cashSelected?'Pago en efectivo':'Forma de pago pendiente'}</span></div>
    </div>
-   <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
+   <details className="provider-secondary-details"><summary>{t('screen.active.11')}</summary><ProviderRequestEvidence serviceId={s.id}/></details>
   </Card>
 
   <Card id="provider-primary-control" tabIndex={-1} className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
    <small>CONTROL DEL PEDIDO · #{s.numero??String(s.id).slice(0,8)}</small>
-   {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>ESTOY YENDO</Button><div className="provider-simple-status" role="status"><strong>El cliente tiene que elegir cómo pagar</strong><span>PIX o efectivo se elige desde la app Cliente. No tenés que elegirlo vos. Cuando el cliente confirme, UGO habilita “ESTOY YENDO” automáticamente.</span></div></>}
+   {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>{t('screen.active.12')}</Button><div className="provider-simple-status" role="status"><strong>{t('screen.active.13')}</strong><span>PIX o efectivo se elige desde la app Cliente. No tenés que elegirlo vos. Cuando el cliente confirme, UGO habilita “ESTOY YENDO” automáticamente.</span></div></>}
    {s.estado==='asignado'&&paymentReady&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</Button>}
-   {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO intenta detectar tu llegada automáticamente. Si el GPS no la confirma, el botón siempre te permite confirmarla.</span><Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void confirmArrival()}>{d.busy?'Confirmando…':'YA LLEGUÉ'}</Button></div>}
-   {s.estado==='llegado'&&!amountReady&&<div className="provider-simple-status" role="status"><strong>Definí el importe antes de empezar</strong><span>Proponé el presupuesto al cliente. Cuando lo apruebe, UGO actualiza el total y conecta la forma de pago elegida.</span><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></div>}
-   {s.estado==='llegado'&&amountReady&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>Esperá la confirmación del pago</strong><span>El importe ya está aprobado. UGO habilita el inicio cuando efectivo quede registrado o Pix esté confirmado.</span></div>}
+   {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>{t('screen.active.14')}</strong><span>{t('screen.active.15')}</span><Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void confirmArrival()}>{d.busy?'Confirmando…':'YA LLEGUÉ'}</Button></div>}
+   {s.estado==='llegado'&&!amountReady&&<div className="provider-simple-status" role="status"><strong>{t('screen.active.16')}</strong><span>{t('screen.active.17')}</span><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></div>}
+   {s.estado==='llegado'&&amountReady&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>{t('screen.active.18')}</strong><span>{t('screen.active.19')}</span></div>}
    {s.estado==='llegado'&&amountReady&&paymentReady&&(evidence.initial?<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_progreso')}>{d.busy?'Procesando…':'EMPEZAR TRABAJO'}</Button>:<ProviderEvidencePanel service={s} compact forceKind="antes" actionLabel="EMPEZAR TRABAJO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.advance('en_progreso')}/>)}
    {s.estado==='en_progreso'&&!evidence.final&&<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel="TRABAJO LISTO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.completeService()}/>} 
    {s.estado==='en_progreso'&&evidence.final&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</Button>}
-   {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">Documentá el resultado y marcá “TRABAJO LISTO”. Primero confirma el cliente; el pago en efectivo viene después.</p>}
-   {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Trabajo enviado al cliente</strong><span>{d.cashSelected?'Primero el cliente confirma el trabajo. Después UGO le muestra cuánto pagarte y, cuando confirme el pago, el servicio se cierra.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>ABRIR DISPUTA</Button></div>}
-   {s.estado==='disputado'&&<div className="provider-simple-done" role="status"><strong>⚖ Servicio en disputa</strong><span>UGO pausó el cierre normal mientras revisa el caso.</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>VER DISPUTA</Button></div>}
-   {!['esperando_aprobacion','disputado','completado'].includes(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide provider-dispute-entry" onClick={()=>flow.actions.openDispute(s.id)}>AYUDA / DISPUTA</Button>}
-   {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>Cancelar este pedido</Button>}
+   {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">{t('screen.active.20')}</p>}
+   {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>{t('screen.active.21')}</strong><span>{d.cashSelected?'Primero el cliente confirma el trabajo. Después UGO le muestra cuánto pagarte y, cuando confirme el pago, el servicio se cierra.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>{t('screen.active.22')}</Button></div>}
+   {s.estado==='disputado'&&<div className="provider-simple-done" role="status"><strong>{t('screen.active.23')}</strong><span>{t('screen.active.24')}</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>{t('screen.active.25')}</Button></div>}
+   {!['esperando_aprobacion','disputado','completado'].includes(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide provider-dispute-entry" onClick={()=>flow.actions.openDispute(s.id)}>{t('screen.active.26')}</Button>}
+   {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>{t('screen.active.27')}</Button>}
   </Card>
 
-  <Card className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></Card>
-  {s.estado==='en_progreso'&&<details className="provider-exception"><summary>Cambió el trabajo o el precio</summary><p>Usalo sólo si apareció algo nuevo que el cliente tiene que aprobar.</p><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></details>}
+  <Card className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>{t('screen.active.28')}</small><strong>{t('screen.active.29')}</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></Card>
+  {s.estado==='en_progreso'&&<details className="provider-exception"><summary>{t('screen.active.30')}</summary><p>{t('screen.active.31')}</p><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></details>}
   <div className="provider-sticky-step" role="status" aria-live="polite">
    <div className="provider-sticky-step-copy"><small>AHORA · {stateLabel}</small><strong>{nextAction}</strong></div>
-   <button type="button" onClick={()=>{const control=document.getElementById('provider-primary-control');control?.scrollIntoView({behavior:'smooth',block:'center'});control?.focus({preventScroll:true})}}>Ir a la acción</button>
+   <button type="button" onClick={()=>{const control=document.getElementById('provider-primary-control');control?.scrollIntoView({behavior:'smooth',block:'center'});control?.focus({preventScroll:true})}}>{t('screen.active.32')}</button>
   </div>
  {dialog}
  </section>
