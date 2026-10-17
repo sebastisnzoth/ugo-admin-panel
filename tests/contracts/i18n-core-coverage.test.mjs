@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import ts from 'typescript'
 
-const catalogPaths = ['src/i18n/translations/coreBase.ts', 'src/i18n/translations/recovery.ts', 'src/i18n/translations/opportunities.ts', 'src/i18n/translations/payout.ts', 'src/i18n/translations/earnings.ts']
+const catalogPaths = ['src/i18n/translations/coreBase.ts', 'src/i18n/translations/recovery.ts', 'src/i18n/translations/opportunities.ts', 'src/i18n/translations/payout.ts', 'src/i18n/translations/earnings.ts', 'src/i18n/translations/followup.ts']
 const localePath = 'src/i18n/locale.tsx'
 const supported = ['pt-BR', 'es', 'en']
 const catalogs = catalogPaths.map(file => ({file, text: fs.readFileSync(file, 'utf8')}))
