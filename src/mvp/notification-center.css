@@ -27,3 +27,9 @@
 .ugo-notification-live:focus-visible{outline:3px solid #05836a;outline-offset:3px}
 @media(max-width:520px){.ugo-notification-live,.ugo-notification-live.is-provider-call{left:10px;right:10px;top:72px;transform:none;width:auto;padding:13px 43px 13px 12px;border-radius:18px}}
 @media(prefers-reduced-motion:reduce){.ugo-notification-live{animation:none!important;transition:none!important}}
+
+
+/* Notification control gets its own slot to the left of language. */
+.ugo-notification-center{top:23px;right:116px;z-index:12020}
+.ugo-notification-trigger{width:44px;height:44px}
+@media(max-width:520px){.ugo-notification-center{top:22px;right:104px}.ugo-notification-trigger{height:40px;width:40px}}
