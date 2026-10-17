@@ -12,7 +12,7 @@ test('provider active job exposes a single clear next-action brief',async()=>{
  assert.match(source,/paymentLabel/)
  assert.match(source,/locationLabel/)
  assert.match(source,/provider-primary-control/)
- assert.match(source,/Abrir mapa/)
+ assert.match(source,/t\('screen\.active\.(4|8)'\)/)
 })
 
 test('provider active job keeps the canonical state actions intact',async()=>{
