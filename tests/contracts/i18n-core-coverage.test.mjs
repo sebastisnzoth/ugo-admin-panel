@@ -42,12 +42,24 @@ test('active role entry screens only reference keys present in all core catalogs
     'src/mvp/ProviderOnboardingGate.tsx',
     'src/mvp/AdminGate.tsx',
     'src/mvp/AdminPhase2.tsx',
-    'src/mvp/UgoLanding.tsx'
+    'src/mvp/UgoLanding.tsx',
+    'src/features/client/request/ClientPostConfirmFlow.tsx',
+    'src/features/client/order/ClientServiceDetail.tsx',
+    'src/features/client/order/ClientEvidenceGallery.tsx',
+    'src/features/client/payments/ClientPaymentChoice.tsx',
+    'src/features/client/profile/ClientProfilePanel.tsx',
+    'src/mvp/provider/ProviderAgenda.tsx',
+    'src/mvp/provider/ProviderActiveJob.tsx',
+    'src/mvp/provider/ProviderEvidencePanel.tsx',
+    'src/features/client/rating/ClientRatingPrompt.tsx'
+    ,'src/features/client/request/ClientRequestEvidence.tsx'
+    ,'src/features/client/request/ClientLocationScreen.tsx'
+    ,'src/features/client/order/ClientActiveMap.tsx'
   ]
   const catalogs = localeCatalogs()
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8')
-    for (const [, key] of text.matchAll(/t\(['"]((?:clientHome|clientOnboarding|providerHome|providerOnboarding|adminAuth|adminShell|landing)\.[^'"]+)['"]/g)) {
+    for (const [, key] of text.matchAll(/t\(['"]((?:clientHome|clientOnboarding|providerHome|providerOnboarding|adminAuth|adminShell|landing|clientMatch|clientOrder|clientEvidence|clientLocation|clientMap|clientRating|clientPayment|clientProfile|providerAgenda|providerJob|providerEvidence)\.[^'"]+)['"]/g)) {
       for (const locale of supported) assert.ok(catalogs.get(locale).has(key), `${file} uses missing ${locale} key ${key}`)
     }
   }
