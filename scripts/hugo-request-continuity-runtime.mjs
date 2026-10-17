@@ -19,7 +19,7 @@ try{
  const install=async()=>{await page.evaluate(()=>{window.__ugoToolResponses=[];window.UGOVoiceBridge={isAvailable:()=>true,startListening:()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})}
  const call=async(name,args={})=>{const id='rt-'+Math.random().toString(36).slice(2);await page.evaluate(({id,name,args})=>window.dispatchEvent(new CustomEvent('ugo:native-voice-tool-call',{detail:{id,name,args}})),{id,name,args});await page.waitForFunction(id=>Array.isArray(window.__ugoToolResponses)&&window.__ugoToolResponses.some(item=>item.id===id),id,{timeout:20000});return await page.evaluate(id=>window.__ugoToolResponses.find(item=>item.id===id)?.response,id)}
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
  await page.getByRole('button',{name:'Hablar con Hugo'}).waitFor({state:'visible',timeout:20000})
  await page.waitForTimeout(300);await install()
  assert.equal((await call('set_request_category',{category:'plomero'})).ok,true)
@@ -30,7 +30,7 @@ try{
  const before=await call('get_request_draft')
  assert.equal(before.ok,true);assert.equal(before.data.exists,true);assert.equal(before.data.readyForConfirmation,true);assert.equal(before.data.missing,null);assert.equal(before.data.description,'La canilla de la cocina pierde agua');assert.equal(before.data.address,'Rua UGO TEST 100');assert.equal(before.data.addressLabel,fixtureLabel);assert.equal(before.data.paymentMethod,'pix');assert.ok(before.data.category?.id);assert.ok(before.data.requestDraftId)
  await page.reload({waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
  await page.getByRole('button',{name:'Hablar con Hugo'}).waitFor({state:'visible',timeout:20000})
  await page.waitForTimeout(300);await install()
  const after=await call('get_request_draft')

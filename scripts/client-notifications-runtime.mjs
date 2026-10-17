@@ -94,7 +94,7 @@ const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:390,height:844}})
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
-await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},login.session)
 const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
@@ -184,7 +184,7 @@ try{
  // the separate AuthScreen lifecycle while keeping the user/session real.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  try{
-  await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:30000})
+  await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:30000})
  }catch(error){
   const diagnostic=await page.evaluate(()=>({
    href:window.location.href,

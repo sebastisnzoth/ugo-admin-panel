@@ -151,12 +151,12 @@ const reopenClientMenu=async page=>{
 async function testClient(viewport,name){
  const {page,errors}=await openRole('client',viewport)
  try{
-   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
    await assertResponsive(page,'client '+name+' home')
    const menuItems=['Inicio','Pedir servicio','Servicios y categorías','Actividad y pedidos','Direcciones','Formas de pago','Hugo / Asistente IA','Ayuda y soporte','Configuración']
    for(const item of menuItems){
      await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-     await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+     await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
      await reopenClientMenu(page)
      const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
      await drawer.waitFor({state:'visible'})

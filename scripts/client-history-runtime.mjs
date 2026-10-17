@@ -52,11 +52,11 @@ const context=await browser.newContext({viewport:{width:390,height:844}})
 const page=await context.newPage()
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
-await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},login.session)
 
 try{
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
  const activity=page.getByRole('button',{name:/Actividad/}).first()
  await activity.waitFor({state:'visible',timeout:15000})
  await activity.click()

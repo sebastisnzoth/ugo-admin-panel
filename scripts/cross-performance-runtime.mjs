@@ -127,7 +127,7 @@ try{
 
   const client=await openRole('client')
   try{
-    await visible(client.page.getByRole('main',{name:'Inicio UGO Cliente'}),20000)
+    await visible(client.page.getByRole('main',{name:'Inicio'}),20000)
     await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
     await timed('client_request_navigation_ms',async()=>{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
