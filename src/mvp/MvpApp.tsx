@@ -18,6 +18,7 @@ import'./ugo-dark-premium.css'
 import'./ugo-visual-refresh.css'
 import'./ugo-auth-redesign.css'
 import'./browser-role-shell.css'
+import'./ugo-pr9-review.css'
 import{LocaleProvider}from'../i18n/locale'
 import'../i18n/locale.css'
 
@@ -70,4 +71,4 @@ function RecoveryGate({role,children}:{role:'client'|'provider';children:React.R
 }
 
 
-export function MvpApp(){return <LocaleProvider><MvpAppRoutes/></LocaleProvider>}
+export function MvpApp(){useEffect(()=>{const active=new URLSearchParams(window.location.search).get('uxReview')==='pr9';document.documentElement.classList.toggle('ugo-pr9-review',active);return()=>document.documentElement.classList.remove('ugo-pr9-review')},[]);return <LocaleProvider><MvpAppRoutes/></LocaleProvider>}

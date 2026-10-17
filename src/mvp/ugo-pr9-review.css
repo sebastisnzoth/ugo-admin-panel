@@ -1,0 +1,61 @@
+/* Review-only visual bridge. Active exclusively with ?uxReview=pr9.
+   All operational handlers, Supabase requests, GPS and authorization are unchanged.
+   The exact PR #9 Client source lives in sebastisnzoth/ugo-platform and is NOT recreated here. */
+html.ugo-pr9-review{
+ --ugo-preview-ink:#202b25;
+ --ugo-preview-green:#183e30;
+ --ugo-preview-accent:#9ebb6f;
+ --ugo-preview-surface:#f8f7f4;
+ --ugo-preview-line:#e6e8df;
+ --ugo-preview-radius:16px;
+}
+html.ugo-pr9-review :is(.ugo-provider-root,.ugo-admin2){
+ font-family:'DM Sans',system-ui,-apple-system,sans-serif!important;
+ background:var(--ugo-preview-surface)!important;
+ color:var(--ugo-preview-ink)!important;
+}
+html.ugo-pr9-review :is(.ugo-provider-root,.ugo-admin2) :is(h1,h2,h3,.provider-client-topbar-copy strong){
+ font-family:Manrope,system-ui,sans-serif!important;
+ letter-spacing:-.035em;
+}
+html.ugo-pr9-review .ugo-provider-root :is(.provider-client-topbar,.provider-card,.provider-home-overview .provider-card,.provider-quick-card){
+ border-radius:var(--ugo-preview-radius)!important;
+}
+html.ugo-pr9-review .ugo-provider-root :is(.provider-client-topbar,.provider-quick-card,.provider-card){
+ background-color:#fff;
+ border-color:var(--ugo-preview-line)!important;
+}
+html.ugo-pr9-review .ugo-provider-root .provider-hero{
+ background:linear-gradient(130deg,#e7efe1,#f4f7ed)!important;
+ border:1px solid #c8dbc0!important;
+}
+html.ugo-pr9-review .ugo-provider-root :is(.provider-primary,.provider-main-action){
+ background:var(--ugo-preview-green)!important;
+ color:white!important;
+ border-radius:10px!important;
+}
+html.ugo-pr9-review .ugo-provider-root :is(.provider-quick-card,.provider-bottom-nav button){
+ transition:transform .15s ease,background-color .15s ease,border-color .15s ease;
+}
+@media (hover:hover){
+ html.ugo-pr9-review .ugo-provider-root .provider-quick-card:hover{transform:translateY(-2px);border-color:#a7c495!important}
+}
+html.ugo-pr9-review .ugo-provider-root :is(.provider-client-online.is-online,.provider-operational-chip.is-online){
+ background:#e4f0dc!important;
+ color:#205c39!important;
+}
+html.ugo-pr9-review .ugo-provider-root :is(.provider-client-topbar,.provider-bottom-nav){
+ box-shadow:0 3px 24px rgba(32,43,37,.07)!important;
+}
+html.ugo-pr9-review .ugo-admin2 :is(button,input,select,textarea){font-family:inherit}
+html.ugo-pr9-review .ugo-admin2 :is(button,article,section){border-radius:12px}
+html.ugo-pr9-review .ugo-admin2 :is(input,select,textarea){
+ background-color:#fff!important;color:var(--ugo-preview-ink)!important;
+ border-color:var(--ugo-preview-line)!important
+}
+html.ugo-pr9-review :is(.ugo-provider-root,.ugo-admin2) :is(button,a,input,select,textarea):focus-visible{
+ outline:3px solid var(--ugo-preview-accent)!important;outline-offset:3px
+}
+@media(prefers-reduced-motion:reduce){
+ html.ugo-pr9-review *{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
