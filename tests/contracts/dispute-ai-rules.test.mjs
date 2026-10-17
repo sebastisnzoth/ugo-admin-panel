@@ -35,7 +35,7 @@ test('AI dispute analysis is admin-only decision support and can inspect images'
  assert.match(panel,/service-evidence/)
  assert.match(panel,/dispute-evidence/)
  assert.match(panel,/Antes\/Durante\/Después/)
- assert.match(panel,/Usar como borrador del fundamento/)
+ assert.match(panel,/t\('screen\.admin_dispute\.12'\)/)
  assert.match(policy,/toda resolución final la confirma Admin/i)
  const matrix=await read('supabase/migrations/20260920153000_dispute_resolution_policy_matrix.sql')
  assert.match(matrix,/criterio_resolucion/)
