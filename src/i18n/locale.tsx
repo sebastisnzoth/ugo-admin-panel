@@ -39,7 +39,7 @@ Object.assign(messages["es"],{"admin.dashboard.title":"Monitoreo en tiempo real 
 Object.assign(messages["en"],{"admin.dashboard.title":"UGO real-time monitoring","admin.dashboard.eyebrow":"OPERATIONS CONTROL CENTER","admin.dashboard.sync":"Syncing live data…","admin.dashboard.live":"Live","admin.dashboard.connecting":"Connecting…","admin.dashboard.resync":"Resyncing","admin.dashboard.operation":"View operations","admin.dashboard.kpis":"Operational indicators","admin.dashboard.active":"Active services now","admin.dashboard.providers":"Providers online","admin.dashboard.users":"Active users","admin.dashboard.completed":"Completed today","admin.dashboard.pending":"Needs attention","admin.dashboard.decision":"DECISION CENTER","admin.dashboard.immediate":"Immediate attention","admin.dashboard.map":"Live map","admin.dashboard.state":"Service status"})
 function translate(locale:UgoLocale,key:string,params?:Record<string,string|number>):string{
  const template=messages[locale][key]??messages['pt-BR'][key]??key
- return template.replace(/\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}/g,(match,name:string)=>{
+ return template.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g,(match,name:string)=>{
   const value=params?.[name]
   return value===undefined?match:typeof value==='number'?new Intl.NumberFormat(locale).format(value):value
  })
