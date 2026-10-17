@@ -1,3 +1,4 @@
+import{ProviderCustomerCard}from'./ProviderCustomerCard'
 import React,{useState}from'react'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
 import{ServiceChat}from'../ServiceChat'
@@ -49,6 +50,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    <div className="provider-mission-brief-chips"><span>{paymentLabel}</span><span>{locationLabel}</span><span>#{s.numero??String(s.id).slice(0,8)}</span></div>
    <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">📍 Abrir mapa</a>}<span className="provider-mission-brief-hint">La acción del paso actual queda siempre a la vista abajo.</span></div>
   </Card>
+  <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
   <Card className="provider-card provider-job-summary">
    <div className="provider-job-problem"><small>QUÉ HAY QUE RESOLVER</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h2><p>{s.descripcion}</p></div>
    <div className="provider-job-facts">
