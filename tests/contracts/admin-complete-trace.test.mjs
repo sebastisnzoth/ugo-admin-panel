@@ -34,7 +34,7 @@ test('admin user rows open complete history with services documents and ratings'
   read('src/mvp/AdminUserTracePanel.tsx'),
  ])
  assert.match(users,/AdminUserTracePanel/)
- assert.match(users,/Ver historial/)
+ assert.match(users,/t\('screen\.admin_users\.25'\)/)
  assert.match(trace,/from\('servicios'\)/)
  assert.match(trace,/from\('documentos'\)/)
  assert.match(trace,/from\('resenas'\)/)
