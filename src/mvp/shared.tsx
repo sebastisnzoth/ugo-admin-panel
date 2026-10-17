@@ -22,6 +22,14 @@ export const money=(value:number|null|undefined,currency='BRL')=>new Intl.Number
 export function timeAgo(value:string){const m=Math.max(0,Math.round((Date.now()-new Date(value).getTime())/60000));if(m<1)return'ahora';if(m<60)return`hace ${m} min`;const h=Math.round(m/60);return h<24?`hace ${h} h`:new Date(value).toLocaleDateString('es-AR')}
 export function go(app:'client'|'provider'|'admin'|'home'){window.location.href=app==='home'?window.location.pathname:`${window.location.pathname}?app=${app}`}
 const OAUTH_ROLE_KEY='ugo-oauth-intended-role'
+function sharedSignInError(error:unknown,t:(key:string)=>string){
+ const value=error as {code?:unknown;message?:unknown}|null
+ const code=typeof value?.code==='string'?value.code:''
+ const message=typeof value?.message==='string'?value.message:''
+ return code==='invalid_credentials'||code==='invalid_grant'||/invalid login credentials/i.test(message)
+  ?t('sharedUi.invalidCredentials')
+  :t('sharedUi.retryAccess')
+}
 
 /** Shared UGO Design System primitives. Keep screen composition in feature modules. */
 const joinClasses=(...classes:Array<string|false|undefined>)=>classes.filter(Boolean).join(' ')
@@ -109,7 +117,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
     :{eyebrow:t('sharedUi.providerEyebrow'),title:t('sharedUi.providerHeadline'),text:t('sharedUi.providerText'),items:[t('sharedUi.providerFlexible'),t('sharedUi.providerAgenda'),t('sharedUi.providerIncome')]}
   function changeMode(next:'login'|'register'|'recovery'){onError('');setNotice('');setPassword('');setShowPassword(false);setMode(next)}
   async function signInWithGoogle(){onError('');setNotice('');setBusy(true);try{window.localStorage.setItem(OAUTH_ROLE_KEY,role==='client'?'cliente':'proveedor');const{error:x}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:authRedirectTo}});if(x)throw x}catch{window.localStorage.removeItem(OAUTH_ROLE_KEY);onError(t('sharedUi.retryAccess'));setBusy(false)}}
-  async function submit(e:FormEvent){e.preventDefault();onError('');setNotice('');setBusy(true);try{if(mode==='recovery'){const{error:x}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:authRedirectTo});if(x)throw x;setNotice(t('sharedUi.recoverySent'));return}if(mode==='login'){const{error:x}=await supabase.auth.signInWithPassword({email,password});if(x)throw x}else{if(!name.trim())throw new Error(t('sharedUi.nameRequired'));const{data,error:x}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirectTo,data:{nombre:name.trim(),tipo:role==='client'?'cliente':'proveedor'}}});if(x)throw x;if(!data.session)setNotice(t('sharedUi.accountCreated'))}}catch{onError(t('sharedUi.retryAccess'))}finally{setBusy(false)}}
+  async function submit(e:FormEvent){e.preventDefault();onError('');setNotice('');setBusy(true);try{if(mode==='recovery'){const{error:x}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:authRedirectTo});if(x)throw x;setNotice(t('sharedUi.recoverySent'));return}if(mode==='login'){const{error:x}=await supabase.auth.signInWithPassword({email,password});if(x)throw x}else{if(!name.trim())throw new Error(t('sharedUi.nameRequired'));const{data,error:x}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirectTo,data:{nombre:name.trim(),tipo:role==='client'?'cliente':'proveedor'}}});if(x)throw x;if(!data.session)setNotice(t('sharedUi.accountCreated'))}}catch(error){onError(mode==='login'?sharedSignInError(error,t):t('sharedUi.retryAccess'))}finally{setBusy(false)}}
   return <div className={`mvp-auth-page role-${role}`}>
     <button type="button" className="mvp-back" onClick={()=>go('home')} aria-label={t('sharedUi.return')}><LocalizedText id="screen.need.8"/></button>
     <div className="mvp-auth-shell">
@@ -147,7 +155,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
           <label><span><LocalizedText id="screen.admin_users.13"/></span><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder={t('sharedUi.emailExample')} required/></label>
           {mode!=='recovery'&&<label><span>{t('sharedUi.password')}</span><div className="mvp-password-field"><Input type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} autoComplete={mode==='login'?'current-password':'new-password'} minLength={6} placeholder={t('sharedUi.passwordMinimum')} required/><button type="button" onClick={()=>setShowPassword(value=>!value)} aria-label={t(showPassword?'sharedUi.hidePassword':'sharedUi.showPassword')}>{showPassword?t('sharedUi.hidePassword'):t('sharedUi.showPassword')}</button></div></label>}
           {mode==='login'&&<button type="button" className="mvp-auth-text-action" onClick={()=>changeMode('recovery')}>{t('sharedUi.forgotPassword')}</button>}
-          {(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'} role={error?'alert':'status'} aria-live="polite">{error?`${error} ${t('sharedUi.retryAccess')}`:notice}</div>}{error&&onResetAccess&&<button type="button" className="mvp-auth-text-action" onClick={()=>void onResetAccess()}>{t('sharedUi.sessionRetry')}</button>}
+          {(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'} role={error?'alert':'status'} aria-live="polite">{error?`${error} ${t('sharedUi.errorTryAgain')}`:notice}</div>}{error&&onResetAccess&&<button type="button" className="mvp-auth-text-action" onClick={()=>void onResetAccess()}>{t('sharedUi.sessionRetry')}</button>}
           <Button className="mvp-primary" loading={busy}>{mode==='login'?t('sharedUi.signIn'):mode==='register'?t('sharedUi.createAccount'):t('sharedUi.sendLink')}</Button>
           {mode==='recovery'&&<button type="button" className="mvp-auth-recovery-back" onClick={()=>changeMode('login')}>{t('sharedUi.backToSignIn')}</button>}
         </form>

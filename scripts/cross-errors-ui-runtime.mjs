@@ -23,7 +23,7 @@ try{
  const message=(await alert.textContent()||'').trim()
  assert.match(message,/credenciales|invalid/i,'UI must communicate cause')
  assert.match(message,/volvé a intentar|volver a intentar|reintentar/i,'UI must communicate next step')
- assert.match(message,/olvidaste tu contraseña/i,'UI must offer recovery path')
+ await page.getByRole('button',{name:'¿Olvidaste tu contraseña?'}).waitFor({state:'visible',timeout:2000})
  result.status='PASS'
  result.fault='AUTH_INVALID_CREDENTIALS'
  result.message=message
