@@ -9,6 +9,7 @@ import{retryOwnedClientMatching}from'../services/clientActionService'
 import{SkeletonCard}from'../../../shared/ux'
 import{UserProfileAvatar}from'../../../mvp/UserProfileAvatar'
 import{ClientActiveMap}from'../order/ClientActiveMap'
+import{AssignedProviderCard}from'../order/AssignedProviderCard'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const MAP_STYLE:maplibregl.StyleSpecification={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
@@ -19,7 +20,7 @@ const STATE_LABEL:Record<string,string>={buscando:'Buscando profesional',ofrecid
 const ORDER_STAGES=[['asignado','Asignado'],['en_camino','En camino'],['en_progreso','En curso'],['esperando_aprobacion','Cierre']] as const
 /** Pasos completados del pedido activo, para que el cliente vea dónde está sin abrir el detalle. */
 const orderStage=(estado:string)=>estado==='esperando_aprobacion'?4:estado==='en_progreso'?3:['en_camino','llegado'].includes(estado)?2:estado==='asignado'?1:0
-type ActiveOrder={id:string;numero:number|null;estado:string;created_at:string|null;matching_expires_at:string|null;programado_para:string|null;proveedor_id:string|null;proveedor:{nombre?:string|null}|null;categoria:{nombre?:string|null;emoji?:string|null}|null}
+type ActiveOrder={id:string;numero:number|null;estado:string;created_at:string|null;matching_expires_at:string|null;programado_para:string|null;proveedor_id:string|null;proveedor:{nombre?:string|null;karma?:number|null;servicios_completados?:number|null;foto_url?:string|null}|null;categoria:{nombre?:string|null;emoji?:string|null}|null}
 type LastService={id:string;descripcion:string|null;categoria:{nombre?:string|null;emoji?:string|null;slug?:string|null}|null}
 const formatCountdown=(ms:number)=>{const total=Math.max(0,Math.ceil(ms/1000)),minutes=Math.floor(total/60),seconds=total%60;return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
 type ClientPlace={barrio?:string|null;ciudad?:string|null}
@@ -33,7 +34,7 @@ export function ClientHomeScreen({onOpenService}:Props){
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),userMarkerRef=useRef<maplibregl.Marker|null>(null),providerMarkersRef=useRef<maplibregl.Marker[]>([])
  const[mapReady,setMapReady]=useState(false)
 
- const loadOrders=useCallback(async()=>{if(!session){setOrders([]);setOrdersLoading(false);return}try{const{data}=await supabase.from('servicios').select('id,numero,estado,created_at,matching_expires_at,programado_para,proveedor_id,proveedor:usuarios!servicios_proveedor_id_fkey(nombre),categoria:categorias(nombre,emoji)').eq('cliente_id',session.user.id).in('estado',ACTIVE_STATES).order('created_at',{ascending:false}).limit(3);const next=(data||[])as unknown as ActiveOrder[];setOrders(next)}finally{setOrdersLoading(false)}},[session,supabase])
+ const loadOrders=useCallback(async()=>{if(!session){setOrders([]);setOrdersLoading(false);return}try{const{data}=await supabase.from('servicios').select('id,numero,estado,created_at,matching_expires_at,programado_para,proveedor_id,proveedor:usuarios!servicios_proveedor_id_fkey(nombre,karma,servicios_completados,foto_url),categoria:categorias(nombre,emoji)').eq('cliente_id',session.user.id).in('estado',ACTIVE_STATES).order('created_at',{ascending:false}).limit(3);const next=(data||[])as unknown as ActiveOrder[];setOrders(next)}finally{setOrdersLoading(false)}},[session,supabase])
  useEffect(()=>{if(!session)return;let alive=true;void Promise.all([supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre'),supabase.from('perfiles_cliente').select('barrio,ciudad').eq('usuario_id',session.user.id).maybeSingle()]).then(([cats,client])=>{if(!alive)return;setCategories((cats.data||[])as Category[]);const p=(client.data||null)as ClientPlace|null;const next=[p?.barrio,p?.ciudad].filter(Boolean).join(' · ');if(next)setPlace(next)}).finally(()=>{if(alive)setCategoriesLoading(false)});return()=>{alive=false}},[session,supabase,homeEpoch])
  useEffect(()=>{const showCategories=()=>{setShowAll(true);document.getElementById('ugo-client-services')?.scrollIntoView({behavior:'smooth',block:'start'})};window.addEventListener(UGO_UI_EVENTS.clientShowCategories,showCategories);return()=>{window.removeEventListener(UGO_UI_EVENTS.clientShowCategories,showCategories)}},[])
  useEffect(()=>{
@@ -93,6 +94,7 @@ export function ClientHomeScreen({onOpenService}:Props){
 
    <aside className="ugo-home-map-card" aria-label="Mapa de profesionales cerca">
     <header><div><span className="ugo-home-live-dot"/><strong>{trackedOrder?'Seguimiento de tu profesional':'Mapa en vivo'}</strong><small>{trackedOrder?`Pedido #${trackedOrder.numero??trackedOrder.id.slice(0,8)} · ${trackedOrder.estado==='en_camino'?'En camino':'Asignado'}`:'Profesionales cerca de tu zona'}</small></div><b>{trackedOrder?'Pedido activo':`${onlineProviders.length} conectados`}</b></header>
+    {trackedOrder&&<AssignedProviderCard compact provider={trackedOrder.proveedor} category={trackedOrder.categoria?.nombre} onOpen={()=>openOrder(trackedOrder.id)}/>}
     {trackedOrder&&<div className="ugo-home-route-banner"><strong>{trackedOrder.proveedor?.nombre||'Tu profesional'}</strong><span>{trackedOrder.estado==='en_camino'?'Viene hacia tu dirección · seguimiento en vivo':'Profesional asignado · esperando inicio del viaje'}</span><button type="button" onClick={()=>openOrder(trackedOrder.id)}>Abrir pedido →</button></div>}
     {trackedOrder?<div className="ugo-home-route-view"><ClientActiveMap key={trackedOrder.id} supabase={supabase} serviceId={trackedOrder.id} phase={trackedOrder.estado==='en_camino'?'en_camino':'assigned'}/></div>:<div className="ugo-home-map">
      <div ref={mapEl}/>
