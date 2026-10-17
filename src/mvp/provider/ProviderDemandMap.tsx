@@ -1,3 +1,4 @@
+import{useLocale}from'../../i18n/locale'
 import React,{useEffect,useMemo,useRef,useState}from'react'
 import type * as maplibregl from'maplibre-gl'
 import{loadMaplibre}from'../../lib/maplibreLoader'
@@ -22,6 +23,7 @@ function asGeojson(signals:Located[]){
  return{type:'FeatureCollection' as const,features:signals.map(s=>({type:'Feature' as const,geometry:{type:'Point' as const,coordinates:[s.longitude,s.latitude]},properties:{id:s.id,zone:s.zone,weight:weight(s.demandLevel)}}))}
 }
 export function ProviderDemandMap({signals,online,selectedZone,onSelectZone,providerPosition}:Props){
+ const{t}=useLocale();
  const el=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([])
  const[mapReady,setMapReady]=useState(false),[error,setError]=useState('')
  const located=useMemo(()=>signals.filter(valid),[signals])
@@ -66,10 +68,10 @@ export function ProviderDemandMap({signals,online,selectedZone,onSelectZone,prov
  const status=!online?'Radar visível · fique Online para receber ofertas':located.length?`${located.length} sinal${located.length===1?'':'is'} de demanda geolocalizado${located.length===1?'':'s'}`:signals.length?'Demanda sem coordenadas públicas':'Sem demanda compatível agora'
  return <div className="provider-demand-map">
   <div ref={el} className="provider-demand-map-canvas" aria-label="Mapa de calor de demanda real UGO"/>
-  {!mapReady&&!error&&<div className="provider-demand-map-loading" role="status">Carregando mapa…</div>}
+  {!mapReady&&!error&&<div className="provider-demand-map-loading" role="status">{t('screen.provider_demandmap.1')}</div>}
   {error&&<div className="provider-demand-map-loading" role="alert">{error}</div>}
   <div className="provider-map-label">{status}</div>
-  <div className="provider-demand-legend" aria-label="Intensidade da demanda"><span>Baixa</span><i/><span>Alta</span></div>
+  <div className="provider-demand-legend" aria-label="Intensidade da demanda"><span>{t('screen.provider_demandmap.2')}</span><i/><span>{t('screen.provider_demandmap.3')}</span></div>
   {signals.length>located.length&&<div className="provider-demand-map-note">{signals.length-located.length} sinal(is) sem coordenadas não exibido(s).</div>}
  </div>
 }
