@@ -2,6 +2,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
+import{useLocale,LocalizedText}from'../i18n/locale'
 import'./development-dashboard.css'
 
 type ChecklistStatus='pending'|'in_progress'|'implemented'|'validated'|'blocked'|'failed'|'approved'
@@ -10,20 +11,21 @@ type ChecklistItem={id:string;code:string;area:string;title:string;description:s
 type ChecklistEvent={id:number;checklist_id:string;code:string;old_status:ChecklistStatus|null;new_status:ChecklistStatus;changed_at:string}
 type SentinelIncident={id:string;severity:Priority;source_role:string;event_type:string;status:'open'|'acknowledged'|'resolved';route:string|null;action:string|null;checklist_code:string|null;message:string;occurrences:number;first_seen_at:string;last_seen_at:string;runtime_revision:string|null}
 
-const STATUS_LABEL:Record<ChecklistStatus,string>={pending:'Pendiente',in_progress:'En progreso',implemented:'Implementado · falta validar',validated:'Validado técnicamente',blocked:'Bloqueado',failed:'Falló la prueba',approved:'Aceptado con evidencia'}
 const STATUS_ORDER:ChecklistStatus[]=['failed','in_progress','implemented','validated','blocked','pending','approved']
-const FILTERS:[string,string][]=[['all','Todo'],['P0','P0'],['failed','Falló'],['blocked','Bloqueado'],['implemented','Implementado'],['validated','Validado'],['approved','Aceptado']]
+const FILTERS:string[]=['all','P0','failed','blocked','implemented','validated','approved']
 const BUILT_STATUSES=new Set<ChecklistStatus>(['implemented','validated','approved'])
 const TECHNICAL_STATUSES=new Set<ChecklistStatus>(['validated','approved'])
 const RUNTIME_REVISION=String(import.meta.env.VITE_APP_REVISION||'local').slice(0,80)
 
 function pct(value:number,total:number){return total?Math.round(value*100/total):0}
-function formatWhen(value:string|null){if(!value)return'—';return new Intl.DateTimeFormat('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}
+function formatWhen(value:string|null,locale:string){if(!value)return'—';return new Intl.DateTimeFormat(locale==='pt-BR'?'pt-BR':locale==='es'?'es-AR':'en-US',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}
 function statusRank(status:ChecklistStatus){const i=STATUS_ORDER.indexOf(status);return i<0?99:i}
 function isCurrentRevision(incident:SentinelIncident){return Boolean(incident.runtime_revision)&&incident.runtime_revision===RUNTIME_REVISION}
 function weighted(rows:ChecklistItem[]){return rows.reduce((sum,item)=>sum+Number(item.weight||1),0)}
 
 export function DevelopmentDashboard(){
+ const{t,locale}=useLocale()
+ const statusLabel=(status:ChecklistStatus)=>t('development.status.'+status)
  const[items,setItems]=useState<ChecklistItem[]>([]),[events,setEvents]=useState<ChecklistEvent[]>([]),[incidents,setIncidents]=useState<SentinelIncident[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[live,setLive]=useState(false),[filter,setFilter]=useState('all')
 
  const load=useCallback(async()=>{
@@ -33,18 +35,18 @@ export function DevelopmentDashboard(){
    client.from('development_checklist_events_public').select('id,checklist_id,code,old_status,new_status,changed_at').order('changed_at',{ascending:false}).limit(40),
    client.from('development_incidents_public').select('id,severity,source_role,event_type,status,route,action,checklist_code,message,occurrences,first_seen_at,last_seen_at,runtime_revision').order('last_seen_at',{ascending:false}).limit(30),
   ])
-  if(itemError||eventError||incidentError){setError(itemError?.message||eventError?.message||incidentError?.message||'No pudimos cargar el panel.');setLoading(false);return}
+  if(itemError||eventError||incidentError){setError(itemError?.message||eventError?.message||incidentError?.message||t('development.error'));setLoading(false);return}
   setItems((itemData||[])as ChecklistItem[]);setEvents((eventData||[])as ChecklistEvent[]);setIncidents((incidentData||[])as SentinelIncident[]);setError('');setLoading(false)
- },[])
+ },[t])
 
  const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{
-  document.title='UGO · Desarrollo'
+  document.title='UGO · '+t('development.title')
   load()
   const interval=window.setInterval(load,15000)
   const channel=(supabase as any).channel('ugo-development-public-signal').on('postgres_changes',{event:'UPDATE',schema:'public',table:'development_dashboard_signal',filter:'id=eq.1'},()=>load());const dispose=subscribeRealtimeChannel(channel,supabase,{onSync:load,onStatus:(s)=>setLive(s==='SUBSCRIBED'),onReconnect:()=>setChannelEpoch(v=>v+1)})
   return()=>{window.clearInterval(interval);dispose()}
- },[load,channelEpoch])
+ },[load,channelEpoch,t])
 
  const stats=useMemo(()=>{
   const totalWeight=weighted(items)
@@ -67,7 +69,7 @@ export function DevelopmentDashboard(){
  },[incidents,items])
 
  const releaseReady=!error&&items.length>0&&stats.p0Open===0&&stats.p1Open===0&&stats.sentinelP0===0&&stats.sentinelP1===0
- const releaseLabel=releaseReady?'READY':'NOT READY'
+ const releaseLabel=releaseReady?t('development.releaseReady'):t('development.releaseNotReady')
  const areas=useMemo(()=>Array.from(new Set(items.map(item=>item.area))).map(area=>{
   const rows=items.filter(item=>item.area===area),totalWeight=weighted(rows),builtWeight=weighted(rows.filter(item=>BUILT_STATUSES.has(item.status))),technicalWeight=weighted(rows.filter(item=>TECHNICAL_STATUSES.has(item.status))),approvedWeight=weighted(rows.filter(item=>item.status==='approved'))
   return{area,total:rows.length,approved:rows.filter(item=>item.status==='approved').length,built:pct(builtWeight,totalWeight),technical:pct(technicalWeight,totalWeight),readiness:pct(approvedWeight,totalWeight)}
@@ -75,44 +77,44 @@ export function DevelopmentDashboard(){
  const nextP0=useMemo(()=>items.filter(item=>item.priority==='P0'&&item.status!=='approved').sort((a,b)=>statusRank(a.status)-statusRank(b.status)||a.position-b.position)[0]||null,[items])
  const visible=useMemo(()=>items.filter(item=>filter==='all'||item.priority===filter||item.status===filter),[items,filter])
 
- if(loading)return <main className="devdash devdash-center" aria-live="polite"><div className="devdash-loader"/><p>Cargando estado verificable de UGO…</p></main>
+ if(loading)return <main className="devdash devdash-center" aria-live="polite"><div className="devdash-loader"/><p>{t('development.loading')}</p></main>
 
  return <main className="devdash">
   <header className="devdash-topbar">
-   <a className="devdash-brand" href="/">UGO <span>Desarrollo</span></a>
-   <div className="devdash-top-actions"><span className={`devdash-live ${live?'on':''}`}><i/>{live?'En vivo':'Actualizando'}</span><a href="/landing/">Ver landing</a><a href="/?app=admin">Admin</a></div>
+   <a className="devdash-brand" href="/"><LocalizedText id="ugoWebRemaining.brand"/> <span>{t('development.title')}</span></a>
+   <div className="devdash-top-actions"><span className={`devdash-live ${live?'on':''}`}><i/>{live?t('development.live'):t('development.refreshing')}</span><a href="/landing/">{t('development.landing')}</a><a href="/?app=admin">{t('development.admin')}</a></div>
   </header>
 
   <section className="devdash-hero">
-   <div className="devdash-hero-copy"><p className="devdash-kicker">PILOTO CIUDAD · {releaseLabel} · FUENTE ÚNICA: CHECKLIST TEST</p><h1>{releaseReady?'UGO listo para piloto':'Piloto ciudad: todavía NO-GO'}</h1><p>{releaseReady?'Todos los P0/P1 exigidos y el runtime del build actual están aceptados con evidencia.':'El readiness final no es lo mismo que el trabajo construido. Este panel separa código integrado, validación técnica y aceptación runtime para que un porcentaje bajo no esconda el avance real ni infle el estado de producción.'}</p><div className="devdash-hero-badges"><span>{stats.built}% construido</span><span>{stats.technical}% validado técnicamente</span><span>{stats.verified}% aceptado para piloto</span><span>{stats.p0Open} P0 pendientes de aceptación</span><span>{stats.p0Blocked} P0 bloqueados</span><span>build {RUNTIME_REVISION.slice(0,8)}</span></div></div>
-   <div className="devdash-progress-card"><div className="devdash-ring" style={{'--progress':`${stats.verified*3.6}deg`} as React.CSSProperties}><div><b>{stats.verified}%</b><span>readiness piloto</span></div></div><p><strong>{stats.approvedWeight}</strong> de {stats.totalWeight} puntos aceptados con evidencia</p></div>
+   <div className="devdash-hero-copy"><p className="devdash-kicker">{t('development.cityPilot')} {releaseLabel} {t('development.source')}</p><h1>{releaseReady?t('development.readyTitle'):t('development.notReadyTitle')}</h1><p>{releaseReady?t('development.readyCopy'):t('development.notReadyCopy')}</p><div className="devdash-hero-badges"><span>{stats.built}{t('development.built')}</span><span>{stats.technical}{t('development.technical')}</span><span>{stats.verified}{t('development.readiness')}</span><span>{stats.p0Open} {t('development.p0Accept')}</span><span>{stats.p0Blocked} {t('development.p0Blocked')}</span><span>{t('development.build')} {RUNTIME_REVISION.slice(0,8)}</span></div></div>
+   <div className="devdash-progress-card"><div className="devdash-ring" style={{'--progress':`${stats.verified*3.6}deg`} as React.CSSProperties}><div><b>{stats.verified}%</b><span>{t('development.readinessLabel')}</span></div></div><p><strong>{stats.approvedWeight}</strong> <LocalizedText id="development.of"/> {stats.totalWeight} {t('development.acceptedPoints')}</p></div>
   </section>
 
   {error&&<div className="devdash-alert" role="alert">{error}</div>}
 
-  <section className="devdash-metrics" aria-label="Madurez y cierre del piloto">
-   <article className="tone-green"><span>Software construido</span><strong>{stats.built}%</strong><small>{stats.builtWeight}/{stats.totalWeight} pts · implementado o superior</small></article>
-   <article className="tone-blue"><span>Validación técnica</span><strong>{stats.technical}%</strong><small>{stats.technicalWeight}/{stats.totalWeight} pts · {stats.validated} ítems validados + aceptados</small></article>
-   <article className="tone-orange"><span>Readiness piloto</span><strong>{stats.verified}%</strong><small>{stats.approvedWeight}/{stats.totalWeight} pts · sólo aceptación con evidencia</small></article>
-   <article className="tone-red"><span>P0 por cerrar</span><strong>{stats.p0Open}</strong><small>{stats.p0Blocked} bloqueados · el resto espera evidencia/runtime</small></article>
-   <article className="tone-orange"><span>P1 por cerrar</span><strong>{stats.p1Open}</strong><small>no se mezclan con P0 ni con progreso técnico</small></article>
-   <article className="tone-blue"><span>Sentinela · build actual</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} P0 · {stats.sentinelP1} P1 · {stats.historicalOpen} históricos</small></article>
+  <section className="devdash-metrics" aria-label={t('development.readinessAria')}>
+   <article className="tone-green"><span>{t('development.softwareBuilt')}</span><strong>{stats.built}%</strong><small>{stats.builtWeight}/{stats.totalWeight} {t('development.implementedPts')}</small></article>
+   <article className="tone-blue"><span>{t('development.technicalValidation')}</span><strong>{stats.technical}%</strong><small>{stats.technicalWeight}/{stats.totalWeight} {t('development.validatedPts')} {stats.validated} {t('development.itemsValidated')}</small></article>
+   <article className="tone-orange"><span>{t('development.pilotReadiness')}</span><strong>{stats.verified}%</strong><small>{stats.approvedWeight}/{stats.totalWeight} {t('development.evidenceOnly')}</small></article>
+   <article className="tone-red"><span>{t('development.p0Close')}</span><strong>{stats.p0Open}</strong><small>{stats.p0Blocked} {t('development.blockedWait')}</small></article>
+   <article className="tone-orange"><span>{t('development.p1Close')}</span><strong>{stats.p1Open}</strong><small>{t('development.noMix')}</small></article>
+   <article className="tone-blue"><span>{t('development.sentinelBuild')}</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} <LocalizedText id="development.filter.P0"/> {stats.sentinelP1} P1 · {stats.historicalOpen} {t('development.historical')}</small></article>
   </section>
 
-  {nextP0&&<section className="devdash-next"><div className="devdash-next-icon">!</div><div className="devdash-next-copy"><span>CAMINO CRÍTICO · PRÓXIMO P0</span><h2>{nextP0.title}</h2><p>{nextP0.description}</p></div><div className={`devdash-pill status-${nextP0.status}`}>{STATUS_LABEL[nextP0.status]}</div></section>}
+  {nextP0&&<section className="devdash-next"><div className="devdash-next-icon">!</div><div className="devdash-next-copy"><span>{t('development.criticalPath')}</span><h2>{nextP0.title}</h2><p>{nextP0.description}</p></div><div className={`devdash-pill status-${nextP0.status}`}>{statusLabel(nextP0.status)}</div></section>}
 
   <section className="devdash-layout">
    <div className="devdash-main">
-    <div className="devdash-section-head"><div><p className="devdash-kicker">CHECKLIST MAESTRO</p><h2>Qué falta para aprobar el piloto</h2><p className="devdash-section-copy">Una sola escala: Implementado = existe en main. Validado = pasó gates técnicos aplicables. Aceptado = criterio runtime/aceptación demostrado. Sólo Aceptado suma al readiness final.</p></div><div className="devdash-filters">{FILTERS.map(([value,label])=><button key={value} type="button" className={filter===value?'active':''} onClick={()=>setFilter(value)}>{label}</button>)}</div></div>
+    <div className="devdash-section-head"><div><p className="devdash-kicker">{t('development.masterChecklist')}</p><h2>{t('development.whatMissing')}</h2><p className="devdash-section-copy">{t('development.scale')}</p></div><div className="devdash-filters">{FILTERS.map(value=><button key={value} type="button" className={filter===value?'active':''} onClick={()=>setFilter(value)}>{t('development.filter.'+value)}</button>)}</div></div>
     <div className="devdash-list">{visible.map(item=><article key={item.id} className={`devdash-task status-${item.status}`}>
-     <div className="devdash-task-main"><div className="devdash-task-meta"><span className={`priority ${item.priority.toLowerCase()}`}>{item.priority}</span><span>{item.area}</span><code>{item.code}</code></div><div className="devdash-task-title-row"><h3>{item.title}</h3><span className={`devdash-pill status-${item.status}`}>{STATUS_LABEL[item.status]}</span></div><p>{item.description}</p><div className="devdash-task-state"><span>Actualizado {formatWhen(item.updated_at)}</span><span>{item.has_evidence?'Evidencia registrada':'Sin evidencia pública'}</span>{item.completed_at&&<span>Aceptado {formatWhen(item.completed_at)}</span>}</div></div>
+     <div className="devdash-task-main"><div className="devdash-task-meta"><span className={`priority ${item.priority.toLowerCase()}`}>{item.priority}</span><span>{item.area}</span><code>{item.code}</code></div><div className="devdash-task-title-row"><h3>{item.title}</h3><span className={`devdash-pill status-${item.status}`}>{statusLabel(item.status)}</span></div><p>{item.description}</p><div className="devdash-task-state"><span>{t('development.updated')} {formatWhen(item.updated_at,locale)}</span><span>{item.has_evidence?t('development.publicEvidence'):t('development.noPublicEvidence')}</span>{item.completed_at&&<span>{t('development.accepted')} {formatWhen(item.completed_at,locale)}</span>}</div></div>
     </article>)}</div>
    </div>
 
    <aside className="devdash-side">
-    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">POR ÁREA</p><h2>Madurez del ecosistema</h2></div></div><div className="devdash-area-list">{areas.map(row=><div className="devdash-area" key={row.area}><div><strong>{row.area}</strong><span>{row.approved}/{row.total} aceptadas</span></div><div className="devdash-bar"><i style={{width:`${row.built}%`}}/></div><small>{row.built}% construido · {row.technical}% técnico · {row.readiness}% aceptado</small></div>)}</div></section>
-    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">SENTINELA</p><h2>Incidentes recientes</h2></div></div><div className="devdash-incidents">{incidents.length===0?<p className="devdash-empty">Sin incidentes capturados.</p>:incidents.slice(0,8).map(incident=>{const current=isCurrentRevision(incident);return <article key={incident.id} className={`devdash-incident severity-${incident.severity.toLowerCase()} status-${incident.status}`}><div><span className={`priority ${incident.severity.toLowerCase()}`}>{incident.severity}</span><strong>{incident.event_type}</strong>{incident.occurrences>1&&<b>×{incident.occurrences}</b>}</div><p>{incident.message}</p><small>{incident.source_role}{incident.action?` · ${incident.action}`:''}{incident.checklist_code?` · ${incident.checklist_code}`:''}</small><small>{formatWhen(incident.last_seen_at)} · {current?'BUILD ACTUAL':`histórico · build ${incident.runtime_revision?incident.runtime_revision.slice(0,8):'sin versión'}`}</small></article>})}</div></section>
-    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">ACTIVIDAD</p><h2>Últimos cambios</h2></div></div><div className="devdash-events">{events.length===0?<p className="devdash-empty">Todavía no hay movimientos registrados.</p>:events.slice(0,10).map(event=><div key={event.id}><span className={`event-dot status-${event.new_status}`}/><div><strong>{items.find(item=>item.code===event.code)?.title||event.code}</strong><p>{event.old_status?`${STATUS_LABEL[event.old_status]} → `:''}{STATUS_LABEL[event.new_status]}</p><small>{formatWhen(event.changed_at)}</small></div></div>)}</div></section>
+    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">{t('development.byArea')}</p><h2>{t('development.ecosystem')}</h2></div></div><div className="devdash-area-list">{areas.map(row=><div className="devdash-area" key={row.area}><div><strong>{row.area}</strong><span>{row.approved}/{row.total} {t('development.acceptedPlural')}</span></div><div className="devdash-bar"><i style={{width:`${row.built}%`}}/></div><small>{row.built}{t('development.builtShort')} {row.technical}{t('development.technicalShort')} {row.readiness}{t('development.acceptedShort')}</small></div>)}</div></section>
+    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">{t('development.sentinel')}</p><h2>{t('development.recentIncidents')}</h2></div></div><div className="devdash-incidents">{incidents.length===0?<p className="devdash-empty">{t('development.noIncidents')}</p>:incidents.slice(0,8).map(incident=>{const current=isCurrentRevision(incident);return <article key={incident.id} className={`devdash-incident severity-${incident.severity.toLowerCase()} status-${incident.status}`}><div><span className={`priority ${incident.severity.toLowerCase()}`}>{incident.severity}</span><strong>{incident.event_type}</strong>{incident.occurrences>1&&<b>×{incident.occurrences}</b>}</div><p>{incident.message}</p><small>{incident.source_role}{incident.action?` · ${incident.action}`:''}{incident.checklist_code?` · ${incident.checklist_code}`:''}</small><small>{formatWhen(incident.last_seen_at,locale)} · {current?t('development.buildCurrent'):t('development.historicalBuild',{revision:incident.runtime_revision?incident.runtime_revision.slice(0,8):t('development.noRevision')})}</small></article>})}</div></section>
+    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">{t('development.activity')}</p><h2>{t('development.latestChanges')}</h2></div></div><div className="devdash-events">{events.length===0?<p className="devdash-empty">{t('development.noChanges')}</p>:events.slice(0,10).map(event=><div key={event.id}><span className={`event-dot status-${event.new_status}`}/><div><strong>{items.find(item=>item.code===event.code)?.title||event.code}</strong><p>{event.old_status?`${statusLabel(event.old_status)} → `:''}{statusLabel(event.new_status)}</p><small>{formatWhen(event.changed_at,locale)}</small></div></div>)}</div></section>
    </aside>
   </section>
  </main>

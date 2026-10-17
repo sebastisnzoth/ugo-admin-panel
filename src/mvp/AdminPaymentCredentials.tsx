@@ -1,3 +1,4 @@
+import{useLocale,LocalizedText}from'../i18n/locale'
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{useDialog}from'./dialogs'
@@ -20,6 +21,7 @@ const labels={appId:'AppID',accessToken:'Access Token',clientId:'Client ID',clie
 const emptyDraft:Draft={environment:'sandbox',enabled:false,appId:'',accessToken:'',clientId:'',clientSecret:''}
 
 export function AdminPaymentCredentials(){
+ const{t}=useLocale();
  const[statuses,setStatuses]=useState<CredentialStatus[]>([])
  const[drafts,setDrafts]=useState<Record<ProviderId,Draft>>({openpix:{...emptyDraft},mercadopago_br:{...emptyDraft,environment:'production'},mercadopago_ar:{...emptyDraft,environment:'sandbox'}})
  const[loading,setLoading]=useState(true),[saving,setSaving]=useState<ProviderId|null>(null),[message,setMessage]=useState<string|null>(null)
@@ -42,19 +44,19 @@ export function AdminPaymentCredentials(){
   setSaving(null)
  }
  const clear=async(provider:ProviderId)=>{if(!await confirm({title:'Eliminar credenciales',message:`¿Eliminar las credenciales guardadas de ${meta[provider].title}?`,danger:true}))return;setSaving(provider);const{error}=await rpcClient.rpc('admin_clear_payment_credentials',{p_provider:provider});setMessage(error?error.message||'No se pudo eliminar la credencial.':'Credenciales eliminadas.');await load();setSaving(null)}
- if(loading)return <div className="ugo-paycred-state">Cargando credenciales de pago…</div>
+ if(loading)return <div className="ugo-paycred-state">{t('screen.admin_credentials.1')}</div>
  return <div className="ugo-paycred-panel">
-  <section className="ugo-paycred-hero"><div><small>CREDENCIALES DE PAGO</small><h3>Procesadores por país</h3><p>Los secretos se guardan en almacenamiento privado y nunca se vuelven a mostrar en el navegador. Esta pantalla solo indica si están configurados.</p></div><button onClick={()=>void load()}>↻ Actualizar</button></section>
+  <section className="ugo-paycred-hero"><div><small>{t('screen.admin_credentials.2')}</small><h3>{t('screen.admin_credentials.3')}</h3><p><LocalizedText id="adminPayment.secretsInfo"/></p></div><button onClick={()=>void load()}>{t('screen.admin_credentials.4')}</button></section>
   {message&&<div className="ugo-paycred-message">{message}</div>}
   <div className="ugo-paycred-grid">{(Object.keys(meta) as ProviderId[]).map(provider=>{const m=meta[provider],s=statusMap[provider],d=drafts[provider];return <article className="ugo-paycred-card" key={provider}>
    <header><div><small>{m.country}</small><h4>{m.title}</h4><p>{m.subtitle}</p></div><span className={s?.configured?'configured':'pending'}>{s?.configured?'Configurado':'Sin credencial'}</span></header>
-   <div className="ugo-paycred-meta"><span>Entorno guardado: <b>{s?.environment||'—'}</b></span><span>Activo: <b>{s?.enabled?'Sí':'No'}</b></span>{s?.updated_at&&<span>Actualizado: <b>{new Date(s.updated_at).toLocaleString('es-AR')}</b></span>}</div>
-   <label><span>Entorno</span><select value={d.environment} onChange={e=>setDraft(provider,{environment:e.target.value as Draft['environment']})}><option value="sandbox">Sandbox</option><option value="production">Producción</option></select></label>
+   <div className="ugo-paycred-meta"><span><LocalizedText id="screen.admin_credentials.5"/> <b>{s?.environment||'—'}</b></span><span><LocalizedText id="screen.admin_credentials.6"/> <b>{s?.enabled?'Sí':'No'}</b></span>{s?.updated_at&&<span><LocalizedText id="screen.admin_credentials.7"/> <b>{new Date(s.updated_at).toLocaleString('es-AR')}</b></span>}</div>
+   <label><span>{t('screen.admin_credentials.8')}</span><select value={d.environment} onChange={e=>setDraft(provider,{environment:e.target.value as Draft['environment']})}><option value="sandbox">{t('screen.admin_credentials.9')}</option><option value="production">{t('screen.admin_credentials.10')}</option></select></label>
    {m.fields.map(field=><label key={field}><span>{labels[field]}</span><input type="password" autoComplete="new-password" value={d[field]} placeholder={s?.configured?'•••••••• (reemplazar)':'Ingresar credencial'} onChange={e=>setDraft(provider,{[field]:e.target.value} as Partial<Draft>)}/></label>)}
-   <label className="ugo-paycred-toggle"><input type="checkbox" checked={d.enabled} onChange={e=>setDraft(provider,{enabled:e.target.checked})}/><span>Dejar procesador habilitado al guardar</span></label>
-   <footer><button className="primary" disabled={saving===provider} onClick={()=>void save(provider)}>{saving===provider?'Guardando…':'Guardar credencial'}</button><button className="danger" disabled={!s?.configured||saving===provider} onClick={()=>void clear(provider)}>Eliminar</button></footer>
+   <label className="ugo-paycred-toggle"><input type="checkbox" checked={d.enabled} onChange={e=>setDraft(provider,{enabled:e.target.checked})}/><span>{t('screen.admin_credentials.11')}</span></label>
+   <footer><button className="primary" disabled={saving===provider} onClick={()=>void save(provider)}>{saving===provider?'Guardando…':'Guardar credencial'}</button><button className="danger" disabled={!s?.configured||saving===provider} onClick={()=>void clear(provider)}>{t('screen.admin_credentials.12')}</button></footer>
   </article>})}</div>
-  <section className="ugo-paycred-note"><strong>Activación segura</strong><span>Guardar una credencial no cambia automáticamente el procesador productivo. OpenPix y Argentina siguen sujetos a sus feature flags y a la etapa de validación correspondiente.</span></section>
+  <section className="ugo-paycred-note"><strong>{t('screen.admin_credentials.13')}</strong><span><LocalizedText id="adminPayment.credentialSaveInfo"/></span></section>
  {dialog}
  </div>
 }

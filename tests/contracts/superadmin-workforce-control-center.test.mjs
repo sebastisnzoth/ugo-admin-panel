@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
@@ -21,5 +22,5 @@ test('detail exposes persisted jobs decisions evidence configuration and audit',
  assert.match(ui,/selectedDecisions/)
  assert.match(ui,/selectedEvidence/)
  assert.match(ui,/selectedFindings/)
- assert.match(ui,/no se crea evidencia falsa/i)
+ assert.match(ui,/adminWorkforce\.auditDescription/)
 })

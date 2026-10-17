@@ -1,3 +1,4 @@
+import{LocalizedText,useLocale}from'../../i18n/locale'
 import { useEffect, useReducer, type Dispatch, type ReactNode } from 'react'
 import { Avatar, MapBackground, Phone, Stars } from '../client/design-preview/ClientDesignPreview'
 import { Icon, UgoMark } from '../client/design-preview/icons'
@@ -166,6 +167,7 @@ function useFlow() {
 
 /* ---------- Cliente ---------- */
 function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
+  const{t}=useLocale()
   const p = previewProvider
   const payLabel = paymentOptions.find((o) => o.id === s.payment)?.label
 
@@ -174,21 +176,21 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
       <Phone label="Cliente · inicio" caption="Cliente · ¿Qué necesitás?">
         <MapBackground pins />
         <div className="ugo-dp-topbar">
-          <button type="button" className="ugo-dp-round" aria-label="Menú"><Icon name="menu" size={22} /></button>
-          <div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><Icon name="pin" size={18} /><strong>Mi ubicación</strong></span><span className="ugo-dp-loc-sub">Centro · Florianópolis</span></div>
-          <button type="button" className="ugo-dp-round" aria-label="Notificaciones"><Icon name="bell" size={22} /></button>
+          <button type="button" className="ugo-dp-round" aria-label={t('preview.menu')}><Icon name="menu" size={22} /></button>
+          <div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><Icon name="pin" size={18} /><strong><LocalizedText id="clientQuantum.location"/></strong></span><span className="ugo-dp-loc-sub">Centro · Florianópolis</span></div>
+          <button type="button" className="ugo-dp-round" aria-label={t('preview.notifications')}><Icon name="bell" size={22} /></button>
         </div>
         <div className="ugo-dp-sheet ugo-dp-sheet--home">
           <div className="ugo-dp-handle" />
-          <div className="ugo-dp-search"><Icon name="search" size={20} /><span>¿Qué necesitás? Escribí o tocá una categoría</span></div>
+          <div className="ugo-dp-search"><Icon name="search" size={20} /><span><LocalizedText id="preview.clientQuestion"/></span></div>
           <div className="ugo-dp-cats">
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'electricista' })}><i><Icon name="plug" size={26} /></i>Electricista</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'plomeria' })}><i><Icon name="droplet" size={26} /></i>Plomería</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'limpieza' })}><i><Icon name="sparkle" size={26} /></i>Limpieza</button>
-            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'montaje' })}><i><Icon name="wrench" size={26} /></i>Montaje</button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'electricista' })}><i><Icon name="plug" size={26} /></i><LocalizedText id="preview.electrician"/></button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'plomeria' })}><i><Icon name="droplet" size={26} /></i><LocalizedText id="preview.plumbing"/></button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'limpieza' })}><i><Icon name="sparkle" size={26} /></i><LocalizedText id="preview.cleaning"/></button>
+            <button type="button" className="ugo-dp-cat" onClick={() => d({ type: 'PICK', category: 'montaje' })}><i><Icon name="wrench" size={26} /></i><LocalizedText id="preview.assembly"/></button>
           </div>
         </div>
-        <nav className="ugo-dp-tabbar"><span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} />Inicio</span><span className="ugo-dp-tab"><Icon name="list" size={22} />Mis servicios</span><span className="ugo-dp-tab"><Icon name="message" size={22} />Mensajes</span><span className="ugo-dp-tab"><Icon name="user" size={22} />Perfil</span></nav>
+        <nav className="ugo-dp-tabbar"><span className="ugo-dp-tab ugo-dp-tab--on"><Icon name="home" size={22} /><LocalizedText id="screen.client_history.1"/></span><span className="ugo-dp-tab"><Icon name="list" size={22} /><LocalizedText id="preview.myServices"/></span><span className="ugo-dp-tab"><Icon name="message" size={22} /><LocalizedText id="preview.messages"/></span><span className="ugo-dp-tab"><Icon name="user" size={22} /><LocalizedText id="providerProfile.title"/></span></nav>
       </Phone>
     )
   }
@@ -197,19 +199,19 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     return (
       <Phone label="Cliente · confirmar solicitud" caption="Cliente · Revisá lo que entendí">
         <div className="ugo-dp-plain">
-          <div className="ugo-dp-page-head"><button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label="Volver" onClick={() => d({ type: 'EDIT' })}><Icon name="back" size={20} /></button><div className="ugo-dp-name ugo-dp-name--sm">Revisá tu solicitud</div></div>
+          <div className="ugo-dp-page-head"><button type="button" className="ugo-dp-round ugo-dp-round--sm" aria-label={t('preview.back')} onClick={() => d({ type: 'EDIT' })}><Icon name="back" size={20} /></button><div className="ugo-dp-name ugo-dp-name--sm"><LocalizedText id="preview.reviewRequest"/></div></div>
           <div className="ugo-dp-review-list">
-            <div><span>Servicio</span><b>{categories[s.category].label}</b></div>
-            <div><span>Problema</span><b>{categories[s.category].problem}</b></div>
-            <div><span>Lugar</span><b>Centro, Florianópolis</b></div>
-            <div><span>Cuándo</span><b>Ahora</b></div>
-            <div><span>Evidencia</span><b>{categories[s.category].initialRequired ? 'Foto inicial requerida' : 'Sin foto inicial'}</b></div>
+            <div><span><LocalizedText id="screen.admin_decision.19"/></span><b>{categories[s.category].label}</b></div>
+            <div><span><LocalizedText id="preview.problem"/></span><b>{categories[s.category].problem}</b></div>
+            <div><span><LocalizedText id="preview.place"/></span><b><LocalizedText id="preview.placeCenter"/></b></div>
+            <div><span><LocalizedText id="screen.summary.5"/></span><b><LocalizedText id="screen.active.3"/></b></div>
+            <div><span><LocalizedText id="preview.evidence"/></span><b>{categories[s.category].initialRequired ? 'Foto inicial requerida' : 'Sin foto inicial'}</b></div>
           </div>
         </div>
         <div className="ugo-dp-plain-footer">
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'EDIT' })}>Editar</button>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'EDIT' })}><LocalizedText id="screen.client_profile.30"/></button>
           <div style={{ height: 10 }} />
-          <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'CONFIRM' })}>Confirmar solicitud</button>
+          <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'CONFIRM' })}><LocalizedText id="preview.confirmRequest"/></button>
         </div>
       </Phone>
     )
@@ -220,11 +222,11 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
       <Phone label="Cliente · buscando" caption="Cliente · Buscando profesional">
         <MapBackground pins={false} />
         <div className="ugo-dp-pulse" aria-hidden="true"><i /></div>
-        <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>Buscando profesionales</strong></span><span className="ugo-dp-loc-sub">{s.providerOnline ? 'Revisamos profesionales cerca' : 'Sin profesionales disponibles ahora'}</span></div></div>
+        <div className="ugo-dp-topbar"><div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong><LocalizedText id="preview.findProfessionals"/></strong></span><span className="ugo-dp-loc-sub">{s.providerOnline ? 'Revisamos profesionales cerca' : 'Sin profesionales disponibles ahora'}</span></div></div>
         <div className="ugo-dp-sheet ugo-dp-sheet--route">
           <div className="ugo-dp-handle" />
-          <p className="ugo-dp-desc">Tu solicitud está activa. Te avisamos apenas un profesional acepte.</p>
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'CANCEL' })}>Cancelar solicitud</button>
+          <p className="ugo-dp-desc"><LocalizedText id="preview.requestActive"/></p>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'CANCEL' })}><LocalizedText id="preview.cancelRequest"/></button>
         </div>
       </Phone>
     )
@@ -243,8 +245,8 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
               <div className="ugo-dp-rating"><Stars value={p.rating} /> <strong>{p.rating}</strong> · {p.service}</div>
             </div>
           </div>
-          <h3 className="ugo-dp-section-title">¿Cómo querés pagar?</h3>
-          <div role="radiogroup" aria-label="Forma de pago" className="ugo-dp-pay-list">
+          <h3 className="ugo-dp-section-title"><LocalizedText id="preview.paymentQuestion"/></h3>
+          <div role="radiogroup" aria-label={t('preview.paymentMethod')} className="ugo-dp-pay-list">
             {paymentOptions.map((o) => (
               <label key={o.id} className={`ugo-dp-pay${s.payment === o.id ? ' is-on' : ''}`}>
                 <input type="radio" name="pay" checked={s.payment === o.id} onChange={() => d({ type: 'PAYMENT', payment: o.id })} />
@@ -273,7 +275,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
             <div className="ugo-dp-car" style={{ left: `${265 - ((8 - s.eta) / 8) * 170}px`, top: `${150 + ((8 - s.eta) / 8) * 150}px` }}>
               <Icon name="car" size={24} />
             </div>
-            <div className="ugo-dp-bubble" style={{ left: '50%', top: '22%' }}><span>Llegando en</span><b>{s.eta} min</b></div>
+            <div className="ugo-dp-bubble" style={{ left: '50%', top: '22%' }}><span><LocalizedText id="preview.arrivingIn"/></span><b>{s.eta} <LocalizedText id="screen.admin_tariffs.19"/></b></div>
           </>
         )}
         <div className="ugo-dp-sheet ugo-dp-sheet--route">
@@ -286,7 +288,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
             </div>
           </div>
           <div className="ugo-dp-banner"><Icon name={isArrived ? 'check' : 'walk'} size={22} /><div><b>{s.phase === 'enroute' ? 'Tu proveedor está en camino' : s.phase === 'arrived' ? 'Llegada registrada' : 'El trabajo está en curso'}</b><small>{s.phase === 'enroute' ? 'Te avisamos cuando llegue.' : s.phase === 'arrived' ? 'El profesional empieza en breve.' : 'Te avisamos cuando lo marque terminado.'}</small></div></div>
-          <p className="ugo-dp-small">Pago: {payLabel}</p>
+          <p className="ugo-dp-small"><LocalizedText id="screen.admin_trace.9"/> {payLabel}</p>
         </div>
       </Phone>
     )
@@ -295,8 +297,8 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
   if (s.phase === 'cancelled') {
     return (
       <Phone label="Cliente · cancelado" caption="Cliente · Servicio cancelado">
-        <div className="ugo-dp-plain"><div className="ugo-dp-banner"><Icon name="check" size={22} /><div><b>Cancelaste el servicio</b><br />No se cobra nada en esta demo.</div></div></div>
-        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}>Pedir otro servicio</button></div>
+        <div className="ugo-dp-plain"><div className="ugo-dp-banner"><Icon name="check" size={22} /><div><b><LocalizedText id="preview.cancelledService"/></b><br /><LocalizedText id="preview.demoNoCharge"/></div></div></div>
+        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}><LocalizedText id="preview.requestAgain"/></button></div>
       </Phone>
     )
   }
@@ -306,9 +308,9 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
         <MapBackground pins={false} />
         <div className="ugo-dp-sheet ugo-dp-sheet--route">
           <div className="ugo-dp-handle" />
-          <h3 className="ugo-dp-section-title">Trabajo terminado</h3>
-          <p className="ugo-dp-desc">{p.name} marcó el trabajo como listo. Te pedimos revisión cuando llegue.</p>
-          <p className="ugo-dp-small">Pago: {payLabel}</p>
+          <h3 className="ugo-dp-section-title"><LocalizedText id="preview.workFinished"/></h3>
+          <p className="ugo-dp-desc"><LocalizedText id="preview.markedReady" params={{name:p.name}}/></p>
+          <p className="ugo-dp-small"><LocalizedText id="screen.admin_trace.9"/> {payLabel}</p>
         </div>
       </Phone>
     )
@@ -318,22 +320,22 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     return (
       <Phone label="Cliente · revisar y aprobar" caption="Cliente · Revisar y aprobar">
         <div className="ugo-dp-plain">
-          <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm">Revisá el trabajo</div></div>
-          <p className="ugo-dp-small">Evidencia final de {p.name}</p>
+          <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm"><LocalizedText id="preview.reviewWork"/></div></div>
+          <p className="ugo-dp-small"><LocalizedText id="preview.finalEvidenceBy" params={{name:p.name}}/></p>
           <div className="ugo-dp-photo-grid">
-            <img src={work1} alt="Evidencia final 1" className="ugo-dp-photo-tile" />
-            <img src={work2} alt="Evidencia final 2" className="ugo-dp-photo-tile" />
+            <img src={work1} alt={t('preview.finalPhoto1')} className="ugo-dp-photo-tile" />
+            <img src={work2} alt={t('preview.finalPhoto2')} className="ugo-dp-photo-tile" />
           </div>
           <div className="ugo-dp-review-list">
-            <div><span>Servicio</span><b>{categories[s.category].label}</b></div>
-            <div><span>Total</span><b>$ {formatArs(DEMO_PRICE)}</b></div>
-            <div><span>Pago</span><b>{payLabel}</b></div>
+            <div><span><LocalizedText id="screen.admin_decision.19"/></span><b>{categories[s.category].label}</b></div>
+            <div><span><LocalizedText id="screen.provider_history.19"/></span><b>$ {formatArs(DEMO_PRICE)}</b></div>
+            <div><span><LocalizedText id="screen.admin_trace.9"/></span><b>{payLabel}</b></div>
           </div>
         </div>
         <div className="ugo-dp-plain-footer">
-          <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'APPROVE' })}>Aprobar y cerrar</button>
+          <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'APPROVE' })}><LocalizedText id="preview.approveClose"/></button>
           <div style={{ height: 10 }} />
-          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'DISPUTE' })}>Tengo un problema</button>
+          <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'DISPUTE' })}><LocalizedText id="preview.haveProblem"/></button>
         </div>
       </Phone>
     )
@@ -343,10 +345,10 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     return (
       <Phone label="Cliente · disputa" caption="Cliente · Disputa abierta">
         <div className="ugo-dp-plain">
-          <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm">Disputa abierta</div></div>
-          <div className="ugo-dp-banner"><Icon name="info" size={22} /><div><b>UGO revisa el caso con la evidencia</b><small>Te avisamos cuando haya una decisión.</small></div></div>
+          <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm"><LocalizedText id="preview.disputeOpen"/></div></div>
+          <div className="ugo-dp-banner"><Icon name="info" size={22} /><div><b><LocalizedText id="preview.reviewEvidence"/></b><small><LocalizedText id="preview.decisionNotice"/></small></div></div>
         </div>
-        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'RESET' })}>Volver al inicio</button></div>
+        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'RESET' })}><LocalizedText id="screen.support.2"/></button></div>
       </Phone>
     )
   }
@@ -355,10 +357,10 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
   return (
     <Phone label="Cliente · calificar" caption="Cliente · Calificar y cerrar">
       <div className="ugo-dp-plain">
-        <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm">Servicio completado</div></div>
+        <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm"><LocalizedText id="screen.client_tracking.8"/></div></div>
         <div className="ugo-dp-center-text">
           <div className="ugo-dp-name ugo-dp-name--sm">{p.name}</div>
-          <div className="ugo-dp-stars-pick" role="radiogroup" aria-label="Calificación">
+          <div className="ugo-dp-stars-pick" role="radiogroup" aria-label={t('preview.rating')}>
             {[1, 2, 3, 4, 5].map((n) => (
               <button key={n} type="button" role="radio" aria-checked={s.stars === n} aria-label={`${n} estrellas`} onClick={() => d({ type: 'RATE', stars: n })} className={n <= s.stars ? 'is-on' : ''}>★</button>
             ))}
@@ -366,7 +368,7 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
         </div>
       </div>
       <div className="ugo-dp-plain-footer">
-        <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}>Pedir otro servicio</button>
+        <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}><LocalizedText id="preview.requestAgain"/></button>
       </div>
     </Phone>
   )
@@ -374,9 +376,10 @@ function ClientPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
 
 /* ---------- Proveedor ---------- */
 function ProviderHeader({ s, d }: { s: State; d: Dispatch<Action> }) {
+  const{t}=useLocale()
   return (
     <div className="ugo-dp-topbar">
-      <div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>{s.providerOnline ? 'Disponible' : 'Desconectado'}</strong></span><span className="ugo-dp-loc-sub">Centro · Florianópolis</span></div>
+      <div className="ugo-dp-pill ugo-dp-loc"><span className="ugo-dp-loc-main"><strong>{s.providerOnline?t('preview.available'):t('preview.disconnected')}</strong></span><span className="ugo-dp-loc-sub">Centro · Florianópolis</span></div>
       <button type="button" className="ugo-dp-switch" aria-pressed={s.providerOnline} onClick={() => d({ type: 'TOGGLE_ONLINE' })}><i style={{ background: s.providerOnline ? '#006948' : '#9AA3AD' }} />{s.providerOnline ? 'En línea' : 'Conectarme'}</button>
     </div>
   )
@@ -400,6 +403,7 @@ function Job({ title, sub, children }: { title: string; sub: string; children?: 
 
 
 function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
+  const{t}=useLocale()
   if (s.phase === 'offer') {
     return (
       <Phone label="Proveedor · oportunidad" caption="Proveedor · Oportunidad">
@@ -407,13 +411,13 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
         <ProviderHeader s={s} d={d} />
         <div className="ugo-dp-sheet ugo-dp-sheet--offers">
           <div className="ugo-dp-handle" />
-          <h3 className="ugo-dp-section-title">Nueva oportunidad</h3>
+          <h3 className="ugo-dp-section-title"><LocalizedText id="preview.newOpportunity"/></h3>
           <div className="ugo-dp-offer">
             <div className="ugo-dp-name ugo-dp-name--sm">{offer.problem}</div>
-            <div className="ugo-dp-small">{offer.client} · {offer.distanceKm.toString().replace('.', ',')} km · ganancia <b>$ {formatArs(offer.earnings)}</b></div>
+            <div className="ugo-dp-small">{offer.client} · {offer.distanceKm.toString().replace('.', ',')} <LocalizedText id="preview.kmEarnings"/> <b>$ {formatArs(offer.earnings)}</b></div>
             <div className="ugo-dp-btnrow ugo-dp-btnrow--tight" style={{ marginTop: 12 }}>
-              <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'DECLINE' })}>NO PUEDO TOMARLO</button>
-              <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'ACCEPT' })}>ACEPTAR</button>
+              <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'DECLINE' })}><LocalizedText id="screen.opportunities.25"/></button>
+              <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'ACCEPT' })}><LocalizedText id="preview.accept"/></button>
             </div>
           </div>
         </div>
@@ -423,11 +427,11 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
 
   if (s.phase === 'assigned') {
     return (
-      <Job title="Misión" sub="Aceptado · esperando forma de pago">
-        <div className="ugo-dp-address"><Icon name="pin" size={16} /> Centro, Florianópolis</div>
+      <Job title={t('preview.mission')} sub="Aceptado · esperando forma de pago">
+        <div className="ugo-dp-address"><Icon name="pin" size={16} /> <LocalizedText id="preview.placeCenter"/></div>
         <p className="ugo-dp-small">{s.payment ? 'El cliente eligió cómo pagar.' : 'El cliente todavía no eligió forma de pago.'}</p>
         <div className="ugo-dp-footer-stack">
-          <button type="button" className="ugo-dp-btn" disabled={!s.payment} onClick={() => d({ type: 'ON_WAY' })}>ESTOY YENDO</button>
+          <button type="button" className="ugo-dp-btn" disabled={!s.payment} onClick={() => d({ type: 'ON_WAY' })}><LocalizedText id="screen.active.12"/></button>
         </div>
       </Job>
     )
@@ -435,9 +439,9 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
 
   if (s.phase === 'enroute') {
     return (
-      <Job title="En camino" sub={`Llegás en ${s.eta} min`}>
-        <p className="ugo-dp-small">La llegada se valida sola cuando estés a 200 m. Si no se detecta, usá el respaldo.</p>
-        <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'ARRIVED_MANUAL' })}>YA LLEGUÉ</button>
+      <Job title={t('preview.onTheWay')} sub={`Llegás en ${s.eta} min`}>
+        <p className="ugo-dp-small"><LocalizedText id="preview.arrivalAuto"/></p>
+        <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'ARRIVED_MANUAL' })}><LocalizedText id="preview.arrived"/></button>
       </Job>
     )
   }
@@ -445,24 +449,24 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
   if (s.phase === 'arrived') {
     const needsEvidence = s.initialRequired && !s.initialDone
     return (
-      <Job title="Llegada" sub="Llegaste a la ubicación">
+      <Job title={t('preview.arrival')} sub={t('preview.arrivedShort')}>
         {needsEvidence ? (
           <>
-            <p className="ugo-dp-small">Esta categoría pide una foto del estado inicial antes de empezar.</p>
-            <img src={work1} alt="Foto inicial" className="ugo-dp-thumb" />
-            <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'UPLOAD_INITIAL' })}>Subir foto inicial</button>
+            <p className="ugo-dp-small"><LocalizedText id="preview.initialPhotoRequired"/></p>
+            <img src={work1} alt={t('preview.initialPhotoTitle')} className="ugo-dp-thumb" />
+            <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'UPLOAD_INITIAL' })}><LocalizedText id="preview.uploadInitial"/></button>
           </>
         ) : null}
-        <button type="button" className="ugo-dp-btn" disabled={needsEvidence} onClick={() => d({ type: 'START' })}>EMPEZAR TRABAJO</button>
+        <button type="button" className="ugo-dp-btn" disabled={needsEvidence} onClick={() => d({ type: 'START' })}><LocalizedText id="preview.startWork"/></button>
       </Job>
     )
   }
 
   if (s.phase === 'working') {
     return (
-      <Job title="Trabajo" sub="Trabajo en curso">
-        <p className="ugo-dp-small">Cuando termines, marcá LISTO para pedir la revisión del cliente.</p>
-        <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'DONE' })}>LISTO</button>
+      <Job title={t('preview.work')} sub={t('preview.workProgress')}>
+        <p className="ugo-dp-small"><LocalizedText id="preview.markReady"/></p>
+        <button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'DONE' })}><LocalizedText id="clientMatch.ready"/></button>
       </Job>
     )
   }
@@ -470,32 +474,32 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
   if (s.phase === 'completion') {
     const needsFinal = s.finalRequired && !s.finalDone
     return (
-      <Job title="Cierre" sub="Trabajo terminado">
+      <Job title={t('preview.closing')} sub={t('preview.workFinished')}>
         {needsFinal ? (
           <>
-            <p className="ugo-dp-small">Subí una foto final del trabajo para pedir la revisión.</p>
-            <img src={work2} alt="Foto final" className="ugo-dp-thumb" />
-            <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'UPLOAD_FINAL' })}>Subir foto final</button>
+            <p className="ugo-dp-small"><LocalizedText id="preview.finalPhotoNeeded"/></p>
+            <img src={work2} alt={t('preview.finalPhotoTitle')} className="ugo-dp-thumb" />
+            <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'UPLOAD_FINAL' })}><LocalizedText id="providerEvidencePanel.finalPhoto"/></button>
           </>
         ) : null}
-        <button type="button" className="ugo-dp-btn" disabled={needsFinal} onClick={() => d({ type: 'REQUEST_REVIEW' })}>SOLICITAR REVISIÓN</button>
+        <button type="button" className="ugo-dp-btn" disabled={needsFinal} onClick={() => d({ type: 'REQUEST_REVIEW' })}><LocalizedText id="preview.requestReview"/></button>
       </Job>
     )
   }
 
   if (s.phase === 'review') {
     return (
-      <Job title="Esperando aprobación" sub="El cliente está revisando">
-        <p className="ugo-dp-small">Te avisamos cuando el cliente apruebe.</p>
+      <Job title={t('preview.awaitingApproval')} sub={t('preview.clientApprovalNotice')}>
+        <p className="ugo-dp-small"><LocalizedText id="preview.clientApprovalNotice"/></p>
       </Job>
     )
   }
 
   if (s.phase === 'disputed') {
     return (
-      <Job title="Disputa" sub="Caso en revisión de UGO">
-        <p className="ugo-dp-small">El caso está en revisión. No necesitás hacer nada más por ahora.</p>
-        <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'RESET' })}>Volver a disponible</button>
+      <Job title={t('preview.dispute')} sub={t('preview.caseReview')}>
+        <p className="ugo-dp-small"><LocalizedText id="preview.caseReview"/></p>
+        <button type="button" className="ugo-dp-btn ugo-dp-btn--ghost" onClick={() => d({ type: 'RESET' })}><LocalizedText id="preview.backAvailable"/></button>
       </Job>
     )
   }
@@ -503,8 +507,8 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
   if (s.phase === 'cancelled') {
     return (
       <Phone label="Proveedor · cancelado" caption="Proveedor · Servicio cancelado">
-        <div className="ugo-dp-plain"><div className="ugo-dp-banner"><Icon name="check" size={22} /><div><b>El cliente canceló</b><br />Volvés a estar disponible.</div></div></div>
-        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}>Reiniciar demo</button></div>
+        <div className="ugo-dp-plain"><div className="ugo-dp-banner"><Icon name="check" size={22} /><div><b><LocalizedText id="preview.clientCancelled"/></b><br /><LocalizedText id="preview.availableAgain"/></div></div></div>
+        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}><LocalizedText id="preview.restartDemo"/></button></div>
       </Phone>
     )
   }
@@ -512,10 +516,10 @@ function ProviderPhone({ s, d }: { s: State; d: Dispatch<Action> }) {
     return (
       <Phone label="Proveedor · completado" caption="Proveedor · Completado">
         <div className="ugo-dp-plain">
-          <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm">Trabajo completado</div></div>
-          <div className="ugo-dp-summary"><span>Ganado en esta demo</span><b>$ {formatArs(s.earned)}</b><small>Suma de esta demo</small></div>
+          <div className="ugo-dp-page-head"><div className="ugo-dp-name ugo-dp-name--sm"><LocalizedText id="preview.completedWork"/></div></div>
+          <div className="ugo-dp-summary"><span><LocalizedText id="preview.demoEarned"/></span><b>$ {formatArs(s.earned)}</b><small><LocalizedText id="preview.demoTotal"/></small></div>
         </div>
-        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}>Volver a disponible</button></div>
+        <div className="ugo-dp-plain-footer"><button type="button" className="ugo-dp-btn" onClick={() => d({ type: 'RESET' })}><LocalizedText id="preview.backAvailable"/></button></div>
       </Phone>
     )
   }
@@ -544,11 +548,11 @@ export function RealFlowDemo() {
         <ProviderPhone s={s} d={d} />
       </div>
       <div className="ugo-rf-controls">
-        <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => d({ type: 'RESET' })}>Reiniciar demo</button>
-        {DB_STATE[s.phase] && <span className="ugo-dp-small"><b>Estado en base:</b> <code>{DB_STATE[s.phase]}</code></span>}
-        {(s.phase === 'assigned' || s.phase === 'enroute' || s.phase === 'arrived') && <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => d({ type: 'CANCEL_SERVICE' })}>Cancelar servicio</button>}
-        {s.phase === 'need' && <span className="ugo-dp-small">Empezá tocando una categoría en el celular del cliente.</span>}
-        {s.phase === 'searching' && <span className="ugo-dp-small">Esperando un profesional… (llega en unos segundos)</span>}
+        <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => d({ type: 'RESET' })}><LocalizedText id="preview.restartDemo"/></button>
+        {DB_STATE[s.phase] && <span className="ugo-dp-small"><b><LocalizedText id="preview.databaseState"/></b> <code>{DB_STATE[s.phase]}</code></span>}
+        {(s.phase === 'assigned' || s.phase === 'enroute' || s.phase === 'arrived') && <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => d({ type: 'CANCEL_SERVICE' })}><LocalizedText id="ugoWeb.cancelService"/></button>}
+        {s.phase === 'need' && <span className="ugo-dp-small"><LocalizedText id="preview.startByCategory"/></span>}
+        {s.phase === 'searching' && <span className="ugo-dp-small"><LocalizedText id="preview.waitingProfessional"/></span>}
       </div>
     </div>
   )

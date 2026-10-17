@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -25,8 +26,8 @@ test('admin dashboard metrics stay live and truthfully show degraded realtime',a
  assert.match(src,/table:'usuarios'/)
  assert.match(src,/table:'pagos'/)
  assert.match(src,/table:'deudas_ugo_proveedor'/)
- assert.match(src,/Sistema en vivo/)
- assert.match(src,/Realtime degradado/)
+ assert.match(src,/t\('adminPhase2\.live'\)/)
+ assert.match(src,/t\('adminPhase2\.degraded'\)/)
  assert.match(src,/setInterval/)
  assert.match(src,/scheduleReconcile\(250\)/)
  assert.match(src,/scheduleReconcile\(1000\)/)
@@ -41,8 +42,8 @@ test('service 360 sheet refreshes trace chat payments disputes and evidence live
   read('src/mvp/AdminServiceTracePanel.tsx'),
   read('src/mvp/AdminServiceExtendedTrace.tsx'),
  ])
- assert.match(services,/Ficha 360°/)
- assert.match(services,/Control integral del servicio/)
+ assert.match(services,/t\('screen\.admin_services\.14'\)/)
+ assert.match(services,/t\('screen\.admin_services\.15'\)/)
  assert.match(services,/services\.find\(\(row:any\)=>row\.id===editingId\)/)
  for(const table of ['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']){
   assert.match(trace,new RegExp("'"+table+"'"))

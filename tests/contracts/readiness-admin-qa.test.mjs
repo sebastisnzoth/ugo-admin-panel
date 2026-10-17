@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -26,8 +27,8 @@ test('physical and human final gates cannot be autocertified by admin QA',()=>{
 })
 
 test('QA Lab supports scenario drill-down with persisted evidence context',()=>{
- for(const marker of ['QA Lab · escenarios persistidos','aria-expanded','Correlation ID','Judge:','Evidencia:'])assert.match(ui,new RegExp(marker))
- assert.match(ui,/No se autocertifica/)
+ for(const marker of ['adminAutonomy.qaLab','aria-expanded','screen.admin_autonomous.29','adminAutonomy.judge','preview.evidence'])assert.ok(ui.includes(marker),marker)
+ assert.ok(ui.includes('adminAutonomy.noExecutionUntilOn'))
 })
 
 

@@ -8,28 +8,29 @@ assert.equal(url,TEST_URL,'UGO_TEST_ONLY');assert.ok(anon&&serviceRole&&email&&p
 const client=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}}),admin=createClient(url,serviceRole,{auth:{persistSession:false,autoRefreshToken:false}})
 const{data:login,error:loginError}=await client.auth.signInWithPassword({email,password});assert.ifError(loginError);assert.ok(login.session&&login.user?.id)
 const userId=login.user.id
-const fixture=await admin.from('direcciones_cliente').insert({usuario_id:userId,etiqueta:'Casa',direccion:'Rua UGO TEST 100',barrio:'Centro',ciudad:'Florianópolis',latitud:-27.5949,longitud:-48.5482,es_predeterminada:false}).select('id').single();assert.ifError(fixture.error);assert.ok(fixture.data?.id)
+const fixtureLabel=`Casa UGO ${process.env.GITHUB_RUN_ID||sha.slice(0,12)}-${process.env.GITHUB_RUN_ATTEMPT||'1'}`
+const fixture=await admin.from('direcciones_cliente').insert({usuario_id:userId,etiqueta:fixtureLabel,direccion:'Rua UGO TEST 100',barrio:'Centro',ciudad:'Florianópolis',latitud:-27.5949,longitud:-48.5482,es_predeterminada:false}).select('id').single();assert.ifError(fixture.error);assert.ok(fixture.data?.id)
 const browser=await chromium.launch({headless:true})
 let page
 try{
  const context=await browser.newContext({viewport:{width:390,height:844}})
  page=await context.newPage()
- await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+ await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem(`ugo.locale.client.${session.user.id}`,'es')},login.session)
  const install=async()=>{await page.evaluate(()=>{window.__ugoToolResponses=[];window.UGOVoiceBridge={isAvailable:()=>true,startListening:()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})}
  const call=async(name,args={})=>{const id='rt-'+Math.random().toString(36).slice(2);await page.evaluate(({id,name,args})=>window.dispatchEvent(new CustomEvent('ugo:native-voice-tool-call',{detail:{id,name,args}})),{id,name,args});await page.waitForFunction(id=>Array.isArray(window.__ugoToolResponses)&&window.__ugoToolResponses.some(item=>item.id===id),id,{timeout:20000});return await page.evaluate(id=>window.__ugoToolResponses.find(item=>item.id===id)?.response,id)}
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
  await page.getByRole('button',{name:'Hablar con Hugo'}).waitFor({state:'visible',timeout:20000})
  await page.waitForTimeout(300);await install()
  assert.equal((await call('set_request_category',{category:'plomero'})).ok,true)
  assert.equal((await call('set_request_description',{description:'La canilla de la cocina pierde agua'})).ok,true)
- assert.equal((await call('use_saved_place',{label:'Casa'})).ok,true)
+ assert.equal((await call('use_saved_place',{label:fixtureLabel})).ok,true)
  assert.equal((await call('set_schedule',{when:'mañana a las 10'})).ok,true)
  assert.equal((await call('set_payment_method',{method:'pix'})).ok,true)
  const before=await call('get_request_draft')
- assert.equal(before.ok,true);assert.equal(before.data.exists,true);assert.equal(before.data.readyForConfirmation,true);assert.equal(before.data.missing,null);assert.equal(before.data.description,'La canilla de la cocina pierde agua');assert.equal(before.data.address,'Rua UGO TEST 100');assert.equal(before.data.addressLabel,'Casa');assert.equal(before.data.paymentMethod,'pix');assert.ok(before.data.category?.id);assert.ok(before.data.requestDraftId)
+ assert.equal(before.ok,true);assert.equal(before.data.exists,true);assert.equal(before.data.readyForConfirmation,true);assert.equal(before.data.missing,null);assert.equal(before.data.description,'La canilla de la cocina pierde agua');assert.equal(before.data.address,'Rua UGO TEST 100');assert.equal(before.data.addressLabel,fixtureLabel);assert.equal(before.data.paymentMethod,'pix');assert.ok(before.data.category?.id);assert.ok(before.data.requestDraftId)
  await page.reload({waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
  await page.getByRole('button',{name:'Hablar con Hugo'}).waitFor({state:'visible',timeout:20000})
  await page.waitForTimeout(300);await install()
  const after=await call('get_request_draft')

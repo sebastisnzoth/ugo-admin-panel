@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -18,7 +19,7 @@ test('client can start a request without configuring payment on Home',async()=>{
  assert.match(payment,/useState<Method>\('cash'\)/)
  assert.match(payment,/Predeterminado · pagás al profesional/)
  assert.match(payment,/set_preorder_payment_preference/)
- assert.match(payment,/[Ll]a forma de pago nunca bloquea que empieces el pedido/)
+ assert.match(payment,/t\('clientPayment\.guarantee'\)|t\('clientPayment\.optional[^']*'\)/)
  assert.match(summary,/d\.paymentMethod==='pix'\?'PIX · se confirma con el profesional asignado':'Efectivo · pagás al finalizar'/)
  assert.match(profile,/Forma de pago/)
  assert.match(profile,/Efectivo/)
@@ -55,7 +56,7 @@ test('assigned client sees payment choice before secondary operational surfaces'
  assert.ok(paymentIndex>=0,'payment choice must be mounted in the order detail')
  assert.ok(trackingIndex<0||paymentIndex<trackingIndex,'payment choice must appear before tracking')
  assert.ok(chatIndex<0||paymentIndex<chatIndex,'payment choice must appear before chat')
- assert.match(provider,/El cliente tiene que elegir cómo pagar/)
+ assert.match(provider,/t\('screen\.active\.13'\)/)
  assert.match(provider,/No tenés que elegirlo vos/)
 })
 

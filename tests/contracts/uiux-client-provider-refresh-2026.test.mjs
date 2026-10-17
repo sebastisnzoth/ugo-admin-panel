@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -74,7 +75,7 @@ test('provider opportunity keeps deadline visible in list and detail',async()=>{
   read('src/mvp/provider/ProviderOpportunities.tsx'),
   read('src/mvp/provider/provider-ux-2026.css')
  ])
- assert.match(list,/Expira en \{formatCountdown\(left\)\}/)
+ assert.match(list,/t\('providerOpportunity\.expiresIn',\{time:formatCountdown\(left\)\}\)/)
  assert.match(list,/provider-offer-timer/)
  assert.match(list,/provider-decision-reasons/)
  assert.match(css,/\.ugo-provider-root \.provider-offer-timer\{/)

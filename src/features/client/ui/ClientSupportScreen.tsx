@@ -1,17 +1,19 @@
+import{useLocale}from'../../../i18n/locale'
 import{useClientFlow}from'../flow/clientFlow'
 import'./clientSupportScreen.css'
 
 export function ClientSupportScreen(){
+ const{t}=useLocale()
  const flow=useClientFlow()
- return <main className="ugo-client-support-screen" aria-label="Ayuda y soporte">
-  <header><button type="button" onClick={()=>flow.navigate('home')} aria-label="Volver al inicio">←</button><div><small>UGO · CLIENTE</small><h1>Ayuda y soporte</h1></div></header>
+ return <main className="ugo-client-support-screen" aria-label={t('screen.support.1')}>
+  <header><button type="button" onClick={()=>flow.navigate('home')} aria-label={t('screen.support.2')}>←</button><div><small>{t('screen.support.3')}</small><h1>{t('screen.support.1')}</h1></div></header>
   <section>
-   <div className="ugo-client-support-intro"><span>?</span><div><h2>¿Con qué necesitás ayuda?</h2><p>Para un problema con un trabajo, abrí el pedido exacto desde Actividad. Para cuenta, direcciones, pago o contraseña, entrá a tu Perfil.</p></div></div>
+   <div className="ugo-client-support-intro"><span>?</span><div><h2>{t('screen.support.4')}</h2><p>{t('screen.support.5')}</p></div></div>
    <div className="ugo-client-support-actions">
-    <button type="button" onClick={()=>flow.navigate('history')}><span>◷</span><div><b>Actividad y pedidos</b><small>Seguimiento, evidencias, chat, pagos y disputas del servicio.</small></div><i>→</i></button>
-    <button type="button" onClick={()=>flow.navigate('profile')}><span>◉</span><div><b>Cuenta y configuración</b><small>Perfil, lugares guardados, forma de pago y seguridad.</small></div><i>→</i></button>
+    <button type="button" onClick={()=>flow.navigate('history')}><span>◷</span><div><b>{t('screen.support.6')}</b><small>{t('screen.support.7')}</small></div><i>→</i></button>
+    <button type="button" onClick={()=>flow.navigate('profile')}><span>◉</span><div><b>{t('screen.support.8')}</b><small>{t('screen.support.9')}</small></div><i>→</i></button>
    </div>
-   <aside><b>¿Es una urgencia?</b><p>UGO conecta servicios profesionales, pero no reemplaza a policía, bomberos, emergencias médicas ni servicios públicos de emergencia.</p></aside>
+   <aside><b>{t('screen.support.10')}</b><p>{t('screen.support.11')}</p></aside>
   </section>
  </main>
 }

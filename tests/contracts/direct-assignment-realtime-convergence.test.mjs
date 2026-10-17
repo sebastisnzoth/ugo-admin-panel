@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -24,5 +25,5 @@ test('direct assignment notifies both client and externally assigned provider',a
 
 test('client home never labels a row with provider id as searching',async()=>{
  const home=await read('src/features/client/home/ClientHomeScreen.tsx')
- assert.match(home,/order\.proveedor_id\?'Profesional asignado'/)
+ assert.match(home,/order\.proveedor_id\?t\('status\.asignado'\)/)
 })

@@ -26,10 +26,11 @@ test('client payment choice reacts immediately while backend persistence complet
  assert.match(src,/if\(persisted===false\)setOptimisticMethod\(''\)/)
 })
 
-test('provider Hugo visual surface stays detached from provider root',async()=>{
+test('provider Hugo visual surface stays detached and its copy uses locale keys',async()=>{
  const[root,bridge]=await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/provider/ProviderHugoBridge.tsx')])
  assert.doesNotMatch(root,/ProviderHugoBridge/)
  assert.doesNotMatch(root,/ConversationalOrb/)
+ assert.match(bridge,/t\('voice\.providerTool\./)
  assert.match(bridge,/PROVIDER_VOICE_CONNECT_TIMEOUT_MS=16_000/)
 })
 

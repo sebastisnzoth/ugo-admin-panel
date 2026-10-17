@@ -1,3 +1,4 @@
+import{LocalizedText,useLocale}from'../i18n/locale'
 import React, { useState, useEffect } from 'react';
 import { useDialog } from '../mvp/dialogs';
 import {
@@ -47,6 +48,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 // ── ZONAS ────────────────────────────────────────────────────
 export function SecZonas() {
+  const{t}=useLocale()
   const { zonas, upsert, toggle } = useZonas();
   const [modal, setModal] = useState<any>(null);
   const empty = { nombre:'', lat:'-27.5954', lng:'-48.5480', radio_km:'5', min_proveedores:'1', activa:true, hora_inicio:'07:00', hora_fin:'22:00' };
@@ -55,7 +57,7 @@ export function SecZonas() {
 
   return (
     <div style={S.wrap}>
-      <div style={S.title}>Zonas de cobertura <button style={S.btn()} onClick={() => { setForm(empty); setModal('new'); }}>+ Nueva zona</button></div>
+      <div style={S.title}><LocalizedText id="adminAdvanced.coverageAreas"/> <button style={S.btn()} onClick={() => { setForm(empty); setModal('new'); }}><LocalizedText id="adminAdvanced.newArea"/></button></div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:'9px'}}>
         {zonas.map(z => (
           <div key={z.id} style={{...S.card,opacity:z.activa?1:.5}}>
@@ -63,10 +65,10 @@ export function SecZonas() {
               <div style={{fontWeight:700,fontSize:'13px'}}>{z.nombre}</div>
               <span style={S.pill(z.activa?'g':'r')}>{z.activa?'activa':'inactiva'}</span>
             </div>
-            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'6px'}}>📍 {z.ciudad} · {z.radio_km}km radio</div>
-            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'8px'}}>⏰ {z.hora_inicio}–{z.hora_fin} · min {z.min_proveedores} proveedor(es)</div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'6px'}}>📍 {z.ciudad} · {z.radio_km} <LocalizedText id="adminAdvanced.radiusSuffix"/></div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'8px'}}>⏰ {z.hora_inicio}–{z.hora_fin} <LocalizedText id="screen.admin_tariffs.19"/> {z.min_proveedores} <LocalizedText id="adminAdvanced.providers"/></div>
             <div style={{display:'flex',gap:'5px'}}>
-              <button style={S.btn('s')} onClick={() => { setForm({...z, lat:String(z.lat), lng:String(z.lng), radio_km:String(z.radio_km), min_proveedores:String(z.min_proveedores)}); setModal(z.id); }}>Editar</button>
+              <button style={S.btn('s')} onClick={() => { setForm({...z, lat:String(z.lat), lng:String(z.lng), radio_km:String(z.radio_km), min_proveedores:String(z.min_proveedores)}); setModal(z.id); }}><LocalizedText id="screen.client_profile.30"/></button>
               <button style={S.btn(z.activa?'d':'p')} onClick={() => toggle(z.id, !z.activa)}>{z.activa?'Desactivar':'Activar'}</button>
             </div>
           </div>
@@ -75,21 +77,21 @@ export function SecZonas() {
       {modal && (
         <Modal title={modal==='new'?'Nueva zona':'Editar zona'} onClose={() => setModal(null)}>
           <div style={S.grid2}>
-            <div><div style={S.label}>Nombre</div><input style={S.input} value={form.nombre} onChange={f('nombre')} placeholder="Centro, Lagoa..."/></div>
-            <div><div style={S.label}>Radio (km)</div><input style={S.input} type="number" value={form.radio_km} onChange={f('radio_km')}/></div>
-            <div><div style={S.label}>Latitud</div><input style={S.input} value={form.lat} onChange={f('lat')}/></div>
-            <div><div style={S.label}>Longitud</div><input style={S.input} value={form.lng} onChange={f('lng')}/></div>
-            <div><div style={S.label}>Horario inicio</div><input style={S.input} type="time" value={form.hora_inicio} onChange={f('hora_inicio')}/></div>
-            <div><div style={S.label}>Horario fin</div><input style={S.input} type="time" value={form.hora_fin} onChange={f('hora_fin')}/></div>
-            <div><div style={S.label}>Min. proveedores</div><input style={S.input} type="number" value={form.min_proveedores} onChange={f('min_proveedores')}/></div>
+            <div><div style={S.label}><LocalizedText id="screen.admin_users.11"/></div><input style={S.input} value={form.nombre} onChange={f('nombre')} placeholder={t('adminAdvanced.storeAddressExample')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.radius"/></div><input style={S.input} type="number" value={form.radio_km} onChange={f('radio_km')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminSurface.latitude"/></div><input style={S.input} value={form.lat} onChange={f('lat')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminSurface.longitude"/></div><input style={S.input} value={form.lng} onChange={f('lng')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.startTime"/></div><input style={S.input} type="time" value={form.hora_inicio} onChange={f('hora_inicio')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.endTime"/></div><input style={S.input} type="time" value={form.hora_fin} onChange={f('hora_fin')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.minimumProviders"/></div><input style={S.input} type="number" value={form.min_proveedores} onChange={f('min_proveedores')}/></div>
             <div style={{display:'flex',alignItems:'center',gap:'8px',paddingTop:'18px'}}>
               <input type="checkbox" checked={form.activa} onChange={e=>setForm(p=>({...p,activa:e.target.checked}))} id="zona-activa"/>
-              <label htmlFor="zona-activa" style={{fontSize:'11px'}}>Zona activa</label>
+              <label htmlFor="zona-activa" style={{fontSize:'11px'}}><LocalizedText id="adminAdvanced.activeZone"/></label>
             </div>
           </div>
           <div style={{display:'flex',gap:'7px',marginTop:'12px'}}>
-            <button style={S.btn()} onClick={async()=>{ await upsert(modal==='new'?form:{...form,id:modal}); setModal(null); }}>Guardar</button>
-            <button style={S.btn('s')} onClick={()=>setModal(null)}>Cancelar</button>
+            <button style={S.btn()} onClick={async()=>{ await upsert(modal==='new'?form:{...form,id:modal}); setModal(null); }}><LocalizedText id="adminAdvanced.save"/></button>
+            <button style={S.btn('s')} onClick={()=>setModal(null)}><LocalizedText id="screen.admin_services.27"/></button>
           </div>
         </Modal>
       )}
@@ -99,6 +101,7 @@ export function SecZonas() {
 
 // ── PROMOS ───────────────────────────────────────────────────
 export function SecPromos() {
+  const{t}=useLocale()
   const { promos, upsert, toggle } = usePromos();
   const { categorias } = useCategorias();
   const [modal, setModal] = useState<any>(null);
@@ -108,10 +111,10 @@ export function SecPromos() {
 
   return (
     <div style={S.wrap}>
-      <div style={S.title}>Códigos promocionales <button style={S.btn()} onClick={() => { setForm(empty); setModal('new'); }}>+ Nuevo código</button></div>
+      <div style={S.title}><LocalizedText id="adminAdvanced.promoCodes"/> <button style={S.btn()} onClick={() => { setForm(empty); setModal('new'); }}><LocalizedText id="adminAdvanced.newCode"/></button></div>
       <div style={{background:'#FFFFFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'12px',overflow:'hidden'}}>
         <div style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'8px 12px',background:'rgba(0,0,0,.04)',borderBottom:'1px solid rgba(0,0,0,.1)',fontSize:'8px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.5)'}}>
-          <span>Código</span><span>Tipo</span><span>Valor</span><span>Usos</span><span>Expira</span><span>Estado</span><span>Acciones</span>
+          <span><LocalizedText id="adminAdvanced.code"/></span><span><LocalizedText id="adminSurface.type"/></span><span><LocalizedText id="screen.admin_settings.6"/></span><span><LocalizedText id="adminAdvanced.uses"/></span><span><LocalizedText id="adminAdvanced.expires"/></span><span><LocalizedText id="screen.admin_services.19"/></span><span><LocalizedText id="screen.admin_tariffs.22"/></span>
         </div>
         {promos.map(p => (
           <div key={p.id} style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'9px 12px',borderBottom:'1px solid rgba(0,0,0,.08)',alignItems:'center',fontSize:'11px'}}>
@@ -122,30 +125,30 @@ export function SecPromos() {
             <span style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{p.expira_at?new Date(p.expira_at).toLocaleDateString('pt-BR'):'—'}</span>
             <span style={S.pill(p.activo?'g':'r')}>{p.activo?'activo':'inactivo'}</span>
             <div style={{display:'flex',gap:'4px'}}>
-              <button style={S.btn('s')} onClick={() => { setForm({...p,valor:String(p.valor),usos_max:p.usos_max||'',expira_at:p.expira_at?p.expira_at.split('T')[0]:'',categoria_id:p.categoria_id||''}); setModal(p.id); }}>Editar</button>
+              <button style={S.btn('s')} onClick={() => { setForm({...p,valor:String(p.valor),usos_max:p.usos_max||'',expira_at:p.expira_at?p.expira_at.split('T')[0]:'',categoria_id:p.categoria_id||''}); setModal(p.id); }}><LocalizedText id="screen.client_profile.30"/></button>
               <button style={S.btn(p.activo?'d':'p')} onClick={() => toggle(p.id, !p.activo)}>{p.activo?'Desact.':'Activar'}</button>
             </div>
           </div>
         ))}
-        {!promos.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin códigos promocionales</div>}
+        {!promos.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}><LocalizedText id="adminAdvanced.noPromoCodes"/></div>}
       </div>
       {modal && (
         <Modal title={modal==='new'?'Nuevo código promo':'Editar código'} onClose={() => setModal(null)}>
           <div style={S.grid2}>
-            <div><div style={S.label}>Código</div><input style={{...S.input,textTransform:'uppercase'}} value={form.codigo} onChange={f('codigo')} placeholder="DESCUENTO20"/></div>
-            <div><div style={S.label}>Tipo</div><select style={S.select} value={form.tipo} onChange={f('tipo')}><option value="porcentaje">Porcentaje (%)</option><option value="fijo">Monto fijo (R$)</option></select></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.code"/></div><input style={{...S.input,textTransform:'uppercase'}} value={form.codigo} onChange={f('codigo')} placeholder="DESCUENTO20"/></div>
+            <div><div style={S.label}><LocalizedText id="adminSurface.type"/></div><select style={S.select} value={form.tipo} onChange={f('tipo')}><option value="porcentaje"><LocalizedText id="adminAdvanced.percentage"/></option><option value="fijo"><LocalizedText id="adminAdvanced.fixedAmount"/></option></select></div>
             <div><div style={S.label}>{form.tipo==='porcentaje'?'Descuento (%)':'Monto (R$)'}</div><input style={S.input} type="number" value={form.valor} onChange={f('valor')}/></div>
-            <div><div style={S.label}>Máx. usos</div><input style={S.input} type="number" value={form.usos_max} onChange={f('usos_max')} placeholder="Ilimitado"/></div>
-            <div><div style={S.label}>Expira el</div><input style={S.input} type="date" value={form.expira_at} onChange={f('expira_at')}/></div>
-            <div><div style={S.label}>Categoría (opcional)</div><select style={S.select} value={form.categoria_id} onChange={f('categoria_id')}><option value="">Todas</option>{categorias.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}</select></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.maxUses"/></div><input style={S.input} type="number" value={form.usos_max} onChange={f('usos_max')} placeholder={t('adminAdvanced.unlimited')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.expiresOn"/></div><input style={S.input} type="date" value={form.expira_at} onChange={f('expira_at')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.optionalCategory"/></div><select style={S.select} value={form.categoria_id} onChange={f('categoria_id')}><option value=""><LocalizedText id="screen.demand.9"/></option>{categorias.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}</select></div>
             <div style={S.grid2}>
-              <div style={{display:'flex',alignItems:'center',gap:'6px'}}><input type="checkbox" id="prim" checked={form.solo_primer_servicio} onChange={f('solo_primer_servicio')}/><label htmlFor="prim" style={{fontSize:'10px'}}>Solo primer servicio</label></div>
-              <div style={{display:'flex',alignItems:'center',gap:'6px'}}><input type="checkbox" id="pact" checked={form.activo} onChange={f('activo')}/><label htmlFor="pact" style={{fontSize:'10px'}}>Activo</label></div>
+              <div style={{display:'flex',alignItems:'center',gap:'6px'}}><input type="checkbox" id="prim" checked={form.solo_primer_servicio} onChange={f('solo_primer_servicio')}/><label htmlFor="prim" style={{fontSize:'10px'}}><LocalizedText id="adminForms.firstServiceOnly"/></label></div>
+              <div style={{display:'flex',alignItems:'center',gap:'6px'}}><input type="checkbox" id="pact" checked={form.activo} onChange={f('activo')}/><label htmlFor="pact" style={{fontSize:'10px'}}><LocalizedText id="screen.admin_settings.14"/></label></div>
             </div>
           </div>
           <div style={{display:'flex',gap:'7px',marginTop:'12px'}}>
-            <button style={S.btn()} onClick={async()=>{ await upsert(modal==='new'?form:{...form,id:modal}); setModal(null); }}>Guardar</button>
-            <button style={S.btn('s')} onClick={()=>setModal(null)}>Cancelar</button>
+            <button style={S.btn()} onClick={async()=>{ await upsert(modal==='new'?form:{...form,id:modal}); setModal(null); }}><LocalizedText id="adminAdvanced.save"/></button>
+            <button style={S.btn('s')} onClick={()=>setModal(null)}><LocalizedText id="screen.admin_services.27"/></button>
           </div>
         </Modal>
       )}
@@ -167,7 +170,7 @@ export function SecRatings() {
 
   return (
     <div style={S.wrap}>
-      <div style={S.title}>Gestión de ratings</div>
+      <div style={S.title}><LocalizedText id="adminForms.ratingManagement"/></div>
       <div style={S.tabRow}>
         {(['todos','bajos','sospechosos'] as const).map(t => (
           <button key={t} style={S.tab(filter===t)} onClick={()=>setFilter(t)}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>
@@ -175,7 +178,7 @@ export function SecRatings() {
       </div>
       <div style={{background:'#FFFFFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'12px',overflow:'hidden'}}>
         <div style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 0.8fr 0.8fr 1fr',padding:'8px 12px',background:'rgba(0,0,0,.04)',borderBottom:'1px solid rgba(0,0,0,.1)',fontSize:'8px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.5)'}}>
-          <span>Servicio</span><span>Cliente</span><span>Proveedor</span><span>Rating prov</span><span>Rating cli</span><span>Acciones</span>
+          <span><LocalizedText id="screen.admin_decision.19"/></span><span><LocalizedText id="screen.admin_users.15"/></span><span><LocalizedText id="screen.admin_services.20"/></span><span><LocalizedText id="adminAdvanced.providerRating"/></span><span><LocalizedText id="adminAdvanced.clientRating"/></span><span><LocalizedText id="screen.admin_tariffs.22"/></span>
         </div>
         {filtered.slice(0,30).map((r,i) => (
           <div key={r.id||i} style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 0.8fr 0.8fr 1fr',padding:'8px 12px',borderBottom:'1px solid rgba(0,0,0,.08)',alignItems:'center',fontSize:'10px'}}>
@@ -185,12 +188,12 @@ export function SecRatings() {
             <span style={{color:r.rating_proveedor<=2?'#E11900':r.rating_proveedor>=5?'#06C167':'#F4F4F4'}}>{stars(r.rating_proveedor)}</span>
             <span style={{color:r.rating_cliente<=2?'#E11900':r.rating_cliente>=5?'#06C167':'#F4F4F4'}}>{stars(r.rating_cliente)}</span>
             <div style={{display:'flex',gap:'4px'}}>
-              <button style={S.btn('d')} onClick={()=>removeRating(r.id,'rating_proveedor')}>✕ prov</button>
-              <button style={S.btn('s')} onClick={()=>flag(r.id,'proveedor','Revisión manual')}>⚑ Flag</button>
+              <button style={S.btn('d')} onClick={()=>removeRating(r.id,'rating_proveedor')}><LocalizedText id="adminAdvanced.removeProviderRating"/></button>
+              <button style={S.btn('s')} onClick={()=>flag(r.id,'proveedor','Revisión manual')}><LocalizedText id="adminAdvanced.flagProvider"/></button>
             </div>
           </div>
         ))}
-        {!filtered.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin ratings</div>}
+        {!filtered.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}><LocalizedText id="adminForms.noRatings"/></div>}
       </div>
     </div>
   );
@@ -200,6 +203,7 @@ export function SecRatings() {
 type AdvTab = 'surge'|'horarios'|'onboarding'|'roles'|'hugo'|'integraciones'|'fraude'|'templates'|'referidos';
 
 function TabSurge() {
+  const{t}=useLocale()
   const { rules, upsert, toggle } = useSurge();
   const empty = { nombre:'', multiplicador:'1.5', hora_inicio:'', hora_fin:'', dias:['lun','mar','mie','jue','vie'], zona:'global', activo:true };
   const [modal, setModal] = useState<any>(null);
@@ -209,32 +213,32 @@ function TabSurge() {
   return (
     <>
       <div style={{display:'flex',justifyContent:'space-between',marginBottom:'10px'}}>
-        <span style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}>Multiplicadores de precio dinámico por hora/zona</span>
-        <button style={S.btn()} onClick={()=>{ setForm(empty); setModal('new'); }}>+ Nueva regla</button>
+        <span style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}><LocalizedText id="adminForms.dynamicPricing"/></span>
+        <button style={S.btn()} onClick={()=>{ setForm(empty); setModal('new'); }}><LocalizedText id="adminAdvanced.newRule"/></button>
       </div>
       {rules.map(r => (
         <div key={r.id} style={{...S.card,display:'flex',alignItems:'center',gap:'10px',marginBottom:'7px'}}>
           <div style={{flex:1}}>
             <div style={{fontWeight:700,marginBottom:'3px'}}>{r.nombre}</div>
-            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{r.hora_inicio||'00:00'}–{r.hora_fin||'24:00'} · {r.dias?.join(', ')} · zona: {r.zona}</div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{r.hora_inicio||'00:00'}–{r.hora_fin||'24:00'} · {r.dias?.join(', ')} <LocalizedText id="screen.admin_tariffs.8"/> {r.zona}</div>
           </div>
           <div style={{fontSize:'20px',fontWeight:800,color:'#FFC043'}}>×{r.multiplicador}</div>
           <div style={{display:'flex',gap:'5px'}}>
-            <button style={S.btn('s')} onClick={()=>{ setForm({...r,multiplicador:String(r.multiplicador),dias:r.dias||[]}); setModal(r.id); }}>Editar</button>
+            <button style={S.btn('s')} onClick={()=>{ setForm({...r,multiplicador:String(r.multiplicador),dias:r.dias||[]}); setModal(r.id); }}><LocalizedText id="screen.client_profile.30"/></button>
             <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?'Desact.':'Activar'}</button>
           </div>
         </div>
       ))}
       {modal && (
-        <Modal title="Regla de surge" onClose={()=>setModal(null)}>
+        <Modal title={t('adminAdvanced.newRule')} onClose={()=>setModal(null)}>
           <div style={S.grid2}>
-            <div style={{gridColumn:'1/-1'}}><div style={S.label}>Nombre</div><input style={S.input} value={form.nombre} onChange={f('nombre')} placeholder="Ej: Hora pico tarde"/></div>
-            <div><div style={S.label}>Multiplicador</div><input style={S.input} type="number" step="0.1" value={form.multiplicador} onChange={f('multiplicador')}/></div>
-            <div><div style={S.label}>Zona</div><input style={S.input} value={form.zona} onChange={f('zona')} placeholder="global"/></div>
-            <div><div style={S.label}>Hora inicio</div><input style={S.input} type="time" value={form.hora_inicio} onChange={f('hora_inicio')}/></div>
-            <div><div style={S.label}>Hora fin</div><input style={S.input} type="time" value={form.hora_fin} onChange={f('hora_fin')}/></div>
+            <div style={{gridColumn:'1/-1'}}><div style={S.label}><LocalizedText id="screen.admin_users.11"/></div><input style={S.input} value={form.nombre} onChange={f('nombre')} placeholder={t('adminAdvanced.surgeExample')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.multiplier"/></div><input style={S.input} type="number" step="0.1" value={form.multiplicador} onChange={f('multiplicador')}/></div>
+            <div><div style={S.label}><LocalizedText id="screen.admin_tariffs.8"/></div><input style={S.input} value={form.zona} onChange={f('zona')} placeholder={t('adminAdvanced.globalZone')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.startHour"/></div><input style={S.input} type="time" value={form.hora_inicio} onChange={f('hora_inicio')}/></div>
+            <div><div style={S.label}><LocalizedText id="adminAdvanced.endHour"/></div><input style={S.input} type="time" value={form.hora_fin} onChange={f('hora_fin')}/></div>
             <div style={{gridColumn:'1/-1'}}>
-              <div style={S.label}>Días activos</div>
+              <div style={S.label}><LocalizedText id="adminAdvanced.activeDays"/></div>
               <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'4px'}}>
                 {DIAS.map(d => (
                   <label key={d} style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'10px',cursor:'pointer'}}>
@@ -246,8 +250,8 @@ function TabSurge() {
             </div>
           </div>
           <div style={{display:'flex',gap:'7px',marginTop:'12px'}}>
-            <button style={S.btn()} onClick={async()=>{ await upsert(modal==='new'?form:{...form,id:modal}); setModal(null); }}>Guardar</button>
-            <button style={S.btn('s')} onClick={()=>setModal(null)}>Cancelar</button>
+            <button style={S.btn()} onClick={async()=>{ await upsert(modal==='new'?form:{...form,id:modal}); setModal(null); }}><LocalizedText id="adminAdvanced.save"/></button>
+            <button style={S.btn('s')} onClick={()=>setModal(null)}><LocalizedText id="screen.admin_services.27"/></button>
           </div>
         </Modal>
       )}
@@ -260,7 +264,7 @@ function TabHorarios() {
   const [editing, setEditing] = useState<Record<string,any>>({});
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Horario de operación por día de la semana</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminAdvanced.operatingHours"/></div>
       {DIAS.map(dia => {
         const h = horarios.find(x => x.dia === dia);
         const ed = editing[dia] || {};
@@ -272,12 +276,12 @@ function TabHorarios() {
             <input type="time" style={{...S.input,width:'100px'}} defaultValue={h?.cierre||'22:00'} onChange={e=>setEditing(p=>({...p,[dia]:{...p[dia],cierre:e.target.value}}))}/>
             <label style={{display:'flex',alignItems:'center',gap:'5px',fontSize:'10px',cursor:'pointer'}}>
               <input type="checkbox" defaultChecked={h?.activo!==false} onChange={e=>setEditing(p=>({...p,[dia]:{...p[dia],activo:e.target.checked}}))}/>
-              Activo
+              <LocalizedText id="screen.admin_settings.14"/>
             </label>
             <button style={S.btn()} onClick={()=>{
               const vals = { apertura: ed.apertura||h?.apertura||'07:00', cierre: ed.cierre||h?.cierre||'22:00', activo: ed.activo!==undefined?ed.activo:h?.activo!==false };
               update(dia, vals.apertura, vals.cierre, vals.activo);
-            }}>Guardar</button>
+            }}><LocalizedText id="adminAdvanced.save"/></button>
           </div>
         );
       })}
@@ -286,6 +290,7 @@ function TabHorarios() {
 }
 
 function TabOnboarding() {
+  const{t}=useLocale()
   const { docs, upsert, remove } = useOnboarding();
   const { categorias } = useCategorias();
   const [sel, setSel] = useState('');
@@ -295,23 +300,23 @@ function TabOnboarding() {
 
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Documentos requeridos por categoría de servicio</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminAdvanced.requiredDocuments"/></div>
       <div style={{marginBottom:'10px'}}>
-        <div style={S.label}>Categoría</div>
+        <div style={S.label}><LocalizedText id="screen.admin_tariffs.6"/></div>
         <select style={{...S.select,maxWidth:'300px'}} value={sel} onChange={e=>setSel(e.target.value)}>
-          <option value="">Seleccionar categoría...</option>
+          <option value=""><LocalizedText id="adminForms.selectCategory"/></option>
           {categorias.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}
         </select>
       </div>
       {sel && (
         <>
           <div style={{...S.card,marginBottom:'10px'}}>
-            <div style={S.label}>Agregar documento requerido</div>
+            <div style={S.label}><LocalizedText id="adminAdvanced.addRequiredDocument"/></div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 80px 60px auto',gap:'8px',alignItems:'end',marginTop:'6px'}}>
-              <input style={S.input} value={form.tipo_doc} onChange={f('tipo_doc')} placeholder="Tipo (ej: CPF, CNH, Antecedentes)"/>
-              <input style={S.input} value={form.descripcion} onChange={f('descripcion')} placeholder="Descripción"/>
-              <input style={S.input} type="number" value={form.orden} onChange={f('orden')} placeholder="Orden"/>
-              <label style={{display:'flex',alignItems:'center',gap:'5px',fontSize:'10px'}}><input type="checkbox" checked={form.obligatorio} onChange={f('obligatorio')}/>Oblig.</label>
+              <input style={S.input} value={form.tipo_doc} onChange={f('tipo_doc')} placeholder={t('adminAdvanced.documentTypeExample')}/>
+              <input style={S.input} value={form.descripcion} onChange={f('descripcion')} placeholder={t('adminAdvanced.description')}/>
+              <input style={S.input} type="number" value={form.orden} onChange={f('orden')} placeholder={t('adminAdvanced.order')}/>
+              <label style={{display:'flex',alignItems:'center',gap:'5px',fontSize:'10px'}}><input type="checkbox" checked={form.obligatorio} onChange={f('obligatorio')}/><LocalizedText id="adminAdvanced.required"/></label>
               <button style={S.btn()} onClick={async()=>{ await upsert(sel,form.tipo_doc,form.descripcion,form.obligatorio,Number(form.orden)); setForm({tipo_doc:'',descripcion:'',obligatorio:true,orden:'0'}); }}>+</button>
             </div>
           </div>
@@ -324,7 +329,7 @@ function TabOnboarding() {
               <button style={S.btn('d')} onClick={()=>remove(d.id)}>✕</button>
             </div>
           ))}
-          {!catDocs.length && <div style={{padding:'16px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin documentos configurados para esta categoría</div>}
+          {!catDocs.length && <div style={{padding:'16px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}><LocalizedText id="adminAdvanced.noDocuments"/></div>}
         </>
       )}
     </>
@@ -332,14 +337,15 @@ function TabOnboarding() {
 }
 
 function TabRoles() {
+  const{t}=useLocale()
   const { roles, upsert, toggle } = useAdminRoles();
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({ email:'', nombre:'', permisos: [] as string[] });
   return (
     <>
       <div style={{display:'flex',justifyContent:'space-between',marginBottom:'10px'}}>
-        <span style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}>Sub-admins con permisos limitados</span>
-        <button style={S.btn()} onClick={()=>{ setForm({email:'',nombre:'',permisos:[]}); setModal(true); }}>+ Agregar admin</button>
+        <span style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}><LocalizedText id="adminAdvanced.limitedSubadmins"/></span>
+        <button style={S.btn()} onClick={()=>{ setForm({email:'',nombre:'',permisos:[]}); setModal(true); }}><LocalizedText id="adminAdvanced.addAdmin"/></button>
       </div>
       {roles.map(r => (
         <div key={r.id} style={{...S.card,display:'flex',alignItems:'center',gap:'10px',marginBottom:'7px'}}>
@@ -353,12 +359,12 @@ function TabRoles() {
           <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?'Revocar':'Activar'}</button>
         </div>
       ))}
-      {!roles.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin sub-admins configurados</div>}
+      {!roles.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}><LocalizedText id="adminAdvanced.noSubadmins"/></div>}
       {modal && (
-        <Modal title="Nuevo sub-admin" onClose={()=>setModal(false)}>
-          <div style={{marginBottom:'9px'}}><div style={S.label}>Email</div><input style={S.input} value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="email@ejemplo.com"/></div>
-          <div style={{marginBottom:'9px'}}><div style={S.label}>Nombre</div><input style={S.input} value={form.nombre} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))} placeholder="Nombre del admin"/></div>
-          <div style={S.label}>Permisos</div>
+        <Modal title={t('adminAdvanced.newSubadmin')} onClose={()=>setModal(false)}>
+          <div style={{marginBottom:'9px'}}><div style={S.label}><LocalizedText id="screen.admin_users.13"/></div><input style={S.input} value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder={t('sharedUi.emailExample')}/></div>
+          <div style={{marginBottom:'9px'}}><div style={S.label}><LocalizedText id="screen.admin_users.11"/></div><input style={S.input} value={form.nombre} onChange={e=>setForm(p=>({...p,nombre:e.target.value}))} placeholder={t('sharedUi.name')}/></div>
+          <div style={S.label}><LocalizedText id="adminAdvanced.permissions"/></div>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'5px',marginBottom:'12px'}}>
             {PERMISOS_OPTS.map(p=>(
               <label key={p} style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'10px',cursor:'pointer',padding:'4px 8px',background:'rgba(0,0,0,.04)',borderRadius:'20px'}}>
@@ -368,8 +374,8 @@ function TabRoles() {
             ))}
           </div>
           <div style={{display:'flex',gap:'7px'}}>
-            <button style={S.btn()} onClick={async()=>{ await upsert(form.email,form.nombre,form.permisos); setModal(false); }}>Crear</button>
-            <button style={S.btn('s')} onClick={()=>setModal(false)}>Cancelar</button>
+            <button style={S.btn()} onClick={async()=>{ await upsert(form.email,form.nombre,form.permisos); setModal(false); }}><LocalizedText id="adminSurface.create"/></button>
+            <button style={S.btn('s')} onClick={()=>setModal(false)}><LocalizedText id="screen.admin_services.27"/></button>
           </div>
         </Modal>
       )}
@@ -384,7 +390,7 @@ function TabHugo() {
   useEffect(() => { getAll().then(setFull); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Editar los system prompts de Hugo por rol. Los cambios aplican en el próximo mensaje.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminAdvanced.editHugoPrompts"/></div>
       {full.map(item => (
         <div key={item.clave} style={{...S.card,marginBottom:'10px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
@@ -397,7 +403,7 @@ function TabHugo() {
             onChange={e=>setEditing(p=>({...p,[item.clave]:e.target.value}))}
           />
           <div style={{marginTop:'7px'}}>
-            <button style={S.btn()} onClick={()=>update(item.clave, editing[item.clave]||item.valor)}>Guardar prompt</button>
+            <button style={S.btn()} onClick={()=>update(item.clave, editing[item.clave]||item.valor)}><LocalizedText id="adminAdvanced.savePrompt"/></button>
           </div>
         </div>
       ))}
@@ -406,13 +412,14 @@ function TabHugo() {
 }
 
 function TabIntegraciones() {
+  const{t}=useLocale()
   const { update, getAll } = useAdvancedConfig('integration_');
   const [full, setFull] = useState<any[]>([]);
   const [vals, setVals] = useState<Record<string,string>>({});
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Credenciales de servicios externos. Los valores se guardan cifrados.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminAdvanced.externalCredentials"/></div>
       {full.map(item => (
         <div key={item.clave} style={{...S.row}}>
           <div style={{flex:1}}>
@@ -423,10 +430,10 @@ function TabIntegraciones() {
             style={{...S.input,width:'260px',fontFamily:'monospace'}}
             type="password"
             value={vals[item.clave]||''}
-            placeholder="Pegar clave aquí..."
+            placeholder={t('adminAdvanced.pasteKey')}
             onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}
           />
-          <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar</button>
+          <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}><LocalizedText id="adminAdvanced.save"/></button>
         </div>
       ))}
     </>
@@ -440,7 +447,7 @@ function TabFraude() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Reglas automáticas de detección de fraude. Hugo monitorea estas condiciones en tiempo real.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminForms.fraudRules"/></div>
       {full.map(item => (
         <div key={item.clave} style={{...S.row}}>
           <div style={{flex:2}}>
@@ -448,7 +455,7 @@ function TabFraude() {
             <div style={{fontSize:'9px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{item.clave}</div>
           </div>
           <input style={{...S.input,width:'80px',textAlign:'center'}} value={vals[item.clave]||''} onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}/>
-          <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar</button>
+          <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}><LocalizedText id="adminAdvanced.save"/></button>
         </div>
       ))}
     </>
@@ -462,7 +469,7 @@ function TabTemplates() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Templates de mensajes. Variables disponibles: {'{{nombre}}'}, {'{{categoria}}'}, {'{{proveedor}}'}, {'{{eta}}'}, {'{{numero}}'}.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminForms.messageTemplates"/> {'{{nombre}}'}, {'{{categoria}}'}, {'{{proveedor}}'}, {'{{eta}}'}, {'{{numero}}'}.</div>
       {full.map(item => (
         <div key={item.clave} style={{...S.card,marginBottom:'10px'}}>
           <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
@@ -470,7 +477,7 @@ function TabTemplates() {
             <span style={{fontSize:'9px',color:'rgba(0,0,0,.35)'}}>{item.clave}</span>
           </div>
           <textarea style={{...S.input,minHeight:'60px',resize:'vertical',fontFamily:'monospace',fontSize:'10px'}} value={vals[item.clave]||''} onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}/>
-          <div style={{marginTop:'6px'}}><button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar template</button></div>
+          <div style={{marginTop:'6px'}}><button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}><LocalizedText id="adminForms.saveTemplate"/></button></div>
         </div>
       ))}
     </>
@@ -484,7 +491,7 @@ function TabReferidos() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Configuración del programa de referidos. Los bonos se acreditan automáticamente via escrow.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}><LocalizedText id="adminForms.referralProgram"/></div>
       {full.map(item => (
         <div key={item.clave} style={{...S.row}}>
           <div style={{flex:2}}>
@@ -502,7 +509,7 @@ function TabReferidos() {
                 <span style={{color:'rgba(0,0,0,.45)',fontSize:'11px'}}>R$</span>
                 <input style={{...S.input,width:'80px',textAlign:'center'}} value={vals[item.clave]||''} onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}/>
               </div>
-              <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar</button>
+              <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}><LocalizedText id="adminAdvanced.save"/></button>
             </>
           )}
         </div>
@@ -537,7 +544,7 @@ export function SecValidacionPaises() {
 
   return (
     <div className="pad">
-      <div className="st">🌎 Validación KYC por País</div>{kycError&&<div role="alert" style={{marginBottom:8,color:"#b00020",fontSize:11}}>{kycError}</div>}
+      <div className="st"><LocalizedText id="adminAdvanced.kycByCountry"/></div>{kycError&&<div role="alert" style={{marginBottom:8,color:"#b00020",fontSize:11}}>{kycError}</div>}
       <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:'12px',height:'calc(100% - 60px)'}}>
         {/* Lista de países */}
         <div className="tw" style={{height:'fit-content'}}>
@@ -564,14 +571,14 @@ export function SecValidacionPaises() {
               <span style={{fontSize:'28px'}}>{{'BR':'🇧🇷','AR':'🇦🇷','CL':'🇨🇱','CO':'🇨🇴','MX':'🇲🇽','UY':'🇺🇾'}[sel.codigo_iso]||'🌐'}</span>
               <div>
                 <div style={{fontWeight:800,fontSize:'16px'}}>{sel.pais}</div>
-                <div style={{fontSize:'11px',color:'var(--muted)'}}>ISO: {sel.codigo_iso} · Docs: {sel.docs_requeridos?.join(', ')}</div>
+                <div style={{fontSize:'11px',color:'var(--muted)'}}><LocalizedText id="adminAdvanced.iso"/>: {sel.codigo_iso} <LocalizedText id="verification.docs"/> {sel.docs_requeridos?.join(', ')}</div>
               </div>
             </div>
             {Object.entries((sel.reglas_ocr?.docs||{})).map(([tipo, cfg]: any) => (
               <div key={tipo} style={{background:'var(--bg)',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
                 <div style={{fontWeight:700,fontSize:'12px',marginBottom:'3px'}}>{tipo} — {cfg.nombre_completo}</div>
-                {cfg.formato_regex && <div style={{fontSize:'10px',color:'var(--muted)',fontFamily:'monospace',marginBottom:'5px'}}>Regex: {cfg.formato_regex}</div>}
-                {cfg.digitos && <div style={{fontSize:'10px',color:'var(--muted)',marginBottom:'5px'}}>Dígitos: {cfg.digitos}</div>}
+                {cfg.formato_regex && <div style={{fontSize:'10px',color:'var(--muted)',fontFamily:'monospace',marginBottom:'5px'}}><LocalizedText id="adminAdvanced.regex"/>: {cfg.formato_regex}</div>}
+                {cfg.digitos && <div style={{fontSize:'10px',color:'var(--muted)',marginBottom:'5px'}}><LocalizedText id="adminAdvanced.digits"/>: {cfg.digitos}</div>}
                 <div style={{fontSize:'11px',color:'#444',lineHeight:1.5,background:'#FFF',borderRadius:'8px',padding:'8px'}}>{cfg.prompt_gemini}</div>
               </div>
             ))}
@@ -579,7 +586,7 @@ export function SecValidacionPaises() {
           </div>
         ) : (
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',color:'var(--muted)',fontSize:'13px'}}>
-            Seleccioná un país para ver la configuración de validación
+            <LocalizedText id="adminAdvanced.validationCountryHelp"/>
           </div>
         )}
       </div>
@@ -602,7 +609,7 @@ export function SecAvanzado() {
   ];
   return (
     <div style={S.wrap}>
-      <div style={S.title}>Configuración avanzada</div>
+      <div style={S.title}><LocalizedText id="adminAdvanced.advancedSettings"/></div>
       <div style={{...S.tabRow,flexWrap:'wrap',gap:'0'}}>
         {TABS.map(t => <button key={t.id} style={S.tab(tab===t.id)} onClick={()=>setTab(t.id)}>{t.label}</button>)}
       </div>
@@ -706,6 +713,7 @@ const TEMPLATE_CSV = `id,nombre,categoria,direccion,ciudad,pais,telefono,email,w
 `;
 
 export function SecImportProviders() {
+  const{t}=useLocale()
   const [rows, setRows]       = React.useState<Record<string,string>[]>([]);
   const [status, setStatus]   = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
@@ -909,17 +917,17 @@ const toggleAll = () => {
 
   return (
     <div className="pad" style={{overflowY:'auto',height:'calc(100% - 40px)'}}>
-      <div className="st">📥 Importar Proveedores</div>
+      <div className="st"><LocalizedText id="adminAdvanced.importProviders"/></div>
       <p style={{fontSize:'12px',color:'var(--muted)',marginBottom:'14px',lineHeight:1.6}}>
-        Importación CSV segura con detección automática de columnas. Compatible con el formato de exportación del Scout Radar.
+        <LocalizedText id="adminAdvanced.csvImportHelp"/>
       </p>
 
       <div style={{display:'flex',gap:'10px',marginBottom:'14px',flexWrap:'wrap',alignItems:'center'}}>
         <button onClick={downloadTemplate} style={{padding:'7px 14px',background:'rgba(0,0,0,.06)',border:'1px solid #ddd',borderRadius:'8px',fontSize:'11px',cursor:'pointer',fontFamily:'inherit'}}>
-          ⬇ Descargar template CSV
+          <LocalizedText id="adminForms.downloadCsvTemplate"/>
         </button>
         <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
-          <span style={{fontSize:'11px',color:'#666'}}>Destino:</span>
+          <span style={{fontSize:'11px',color:'#666'}}><LocalizedText id="adminAdvanced.destination"/></span>
           {(['prospectos','usuarios'] as const).map(d => (
             <button key={d} onClick={()=>setDestino(d)}
               style={{padding:'5px 12px',border:'1.5px solid',borderColor:destino===d?'#159366':'#ddd',borderRadius:'20px',fontSize:'10px',fontWeight:700,cursor:'pointer',background:destino===d?'rgba(21,147,102,.08)':'#fff',color:destino===d?'#159366':'#666',fontFamily:'inherit'}}>
@@ -937,8 +945,8 @@ const toggleAll = () => {
         onClick={()=>document.getElementById('imp-file')?.click()}
         style={{border:`2.5px dashed ${dragging?'#159366':'#ddd'}`,borderRadius:'16px',padding:'28px',textAlign:'center',cursor:'pointer',marginBottom:'14px',background:dragging?'rgba(21,147,102,.04)':'#fafafa',transition:'all .2s'}}>
         <div style={{fontSize:'36px',marginBottom:'8px'}}>{dragging?'🎯':'📊'}</div>
-        <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}>Arrastrá tu archivo CSV aquí</div>
-        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.csv UTF-8 — o clic para seleccionar</div>
+        <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}><LocalizedText id="adminAdvanced.dropCsv"/></div>
+        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}><LocalizedText id="adminAdvanced.fileFormat"/></div>
         <input id="imp-file" type="file" accept=".csv,text/csv" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)processFile(f);}}/>
       </div>
 
@@ -960,7 +968,7 @@ const toggleAll = () => {
           </div>
           {result.errList.length > 0 && (
             <div style={{background:'#fef2f2',border:'1px solid #fecaca',borderRadius:'10px',padding:'10px 12px',marginBottom:'10px',fontSize:'11px',color:'#dc2626',lineHeight:1.6}}>
-              <strong>Detalle de errores:</strong>
+              <strong><LocalizedText id="adminAdvanced.errorDetails"/></strong>
               {result.errList.map((e,i) => <div key={i}>• {e}</div>)}
             </div>
           )}
@@ -972,9 +980,9 @@ const toggleAll = () => {
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px',gap:'10px',flexWrap:'wrap'}}>
             <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
               <input type="checkbox" checked={selected.size===rows.length} onChange={toggleAll} style={{width:'15px',height:'15px',cursor:'pointer'}}/>
-              <div style={{fontWeight:700,fontSize:'13px'}}>{rows.length} proveedores — {selected.size} seleccionados</div>
+              <div style={{fontWeight:700,fontSize:'13px'}}>{rows.length} <LocalizedText id="screen.admin_reports.31"/> {selected.size} <LocalizedText id="adminAdvanced.selected"/></div>
             </div>
-            <div style={{fontSize:'11px',color:'#888'}}>Vista previa de 6</div>
+            <div style={{fontSize:'11px',color:'#888'}}><LocalizedText id="adminAdvanced.previewOf"/></div>
           </div>
 
           <div style={{overflowX:'auto',marginBottom:'14px',borderRadius:'12px',border:'1px solid #e5e5e5'}}>
@@ -1008,7 +1016,7 @@ const toggleAll = () => {
                 ))}
               </tbody>
             </table>
-            {rows.length > 6 && <div style={{padding:'8px 10px',fontSize:'11px',color:'#888',textAlign:'center'}}>... y {rows.length-6} más</div>}
+            {rows.length > 6 && <div style={{padding:'8px 10px',fontSize:'11px',color:'#888',textAlign:'center'}}><LocalizedText id="adminAdvanced.andMore"/> {rows.length-6}</div>}
           </div>
 
           <button onClick={doImport} disabled={loading||selected.size===0}
@@ -1041,6 +1049,7 @@ const BLANK_TIENDA = {
 };
 
 export function SecTiendasInsumos() {
+  const{t}=useLocale()
   const { confirm, alert, node: dialog } = useDialog();
   const { tiendas, loading, crear, actualizar, eliminar } = useTiendas();
   const [form,    setForm]    = React.useState<any>(BLANK_TIENDA);
@@ -1093,15 +1102,14 @@ export function SecTiendasInsumos() {
     <div className="pad" style={{overflowY:'auto',height:'calc(100vh - 110px)'}}>
       {/* Header */}
       <div className="st">
-        🛒 Tiendas & Insumos
-        <span style={{fontSize:10,fontWeight:400,color:'var(--muted)',marginLeft:8}}>{tiendas.length} tiendas · {tiendas.filter(t=>t.activa).length} activas</span>
-        <button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={openNew}>+ Nueva tienda</button>
+        <LocalizedText id="adminAdvanced.storesSupplies"/>
+        <span style={{fontSize:10,fontWeight:400,color:'var(--muted)',marginLeft:8}}>{tiendas.length} <LocalizedText id="adminForms.storesCount"/> {tiendas.filter(t=>t.activa).length} <LocalizedText id="admin.services.active"/></span>
+        <button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={openNew}><LocalizedText id="adminAdvanced.newStore"/></button>
       </div>
 
       {/* Info ML */}
       <div style={{background:'rgba(255,165,0,.08)',border:'1px solid rgba(255,165,0,.2)',borderRadius:10,padding:'10px 14px',marginBottom:14,fontSize:11,color:'#996000'}}>
-        <b>🛒 Integración Mercado Libre:</b> Los proveedores buscan insumos desde la app. U.GO usa la API pública de ML para mostrar resultados.
-        Cuando configures una cuenta afiliado, los links generan comisión automáticamente — sin cambios de código.
+        <b><LocalizedText id="adminForms.mercadoLibre"/></b> <LocalizedText id="adminAdvanced.mercadoLibreHelp"/>
       </div>
 
       {/* Filtros por categoría */}
@@ -1121,51 +1129,51 @@ export function SecTiendasInsumos() {
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:16,marginBottom:16}}>
           <div style={{fontWeight:700,fontSize:13,marginBottom:12}}>{editing?'✏️ Editar tienda':'➕ Nueva tienda'}</div>
           <div className="fgrid">
-            <div className="fg"><label className="flabel">Nombre *</label><input style={inp} value={form.nombre} onChange={e=>setForm((p:any)=>({...p,nombre:e.target.value}))} placeholder="Ferretería Silva"/></div>
-            <div className="fg"><label className="flabel">Categoría de insumos</label>
+            <div className="fg"><label className="flabel"><LocalizedText id="screen.admin_users.11"/></label><input style={inp} value={form.nombre} onChange={e=>setForm((p:any)=>({...p,nombre:e.target.value}))} placeholder={t('adminAdvanced.storeNameExample')}/></div>
+            <div className="fg"><label className="flabel"><LocalizedText id="adminAdvanced.suppliesCategory"/></label>
               <select style={{...inp,cursor:'pointer'}} value={form.categoria_slug} onChange={e=>setForm((p:any)=>({...p,categoria_slug:e.target.value}))}>
                 {INSUMO_CATS.map(c=><option key={c.slug} value={c.slug}>{c.emoji} {c.label}</option>)}
               </select>
             </div>
-            <div className="fg"><label className="flabel">Teléfono</label><input style={inp} value={form.telefono} onChange={e=>setForm((p:any)=>({...p,telefono:e.target.value}))} placeholder="+55 48 9 9999-0000"/></div>
-            <div className="fg"><label className="flabel">Email</label><input style={inp} value={form.email} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder="tienda@email.com"/></div>
-            <div className="fg full"><label className="flabel">Dirección → geocodificar</label>
+            <div className="fg"><label className="flabel"><LocalizedText id="screen.client_profile.5"/></label><input style={inp} value={form.telefono} onChange={e=>setForm((p:any)=>({...p,telefono:e.target.value}))} placeholder={t('adminAdvanced.storePhoneExample')}/></div>
+            <div className="fg"><label className="flabel"><LocalizedText id="screen.admin_users.13"/></label><input style={inp} value={form.email} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder={t('adminAdvanced.storeEmailExample')}/></div>
+            <div className="fg full"><label className="flabel"><LocalizedText id="adminAdvanced.geocodeAddress"/></label>
               <div style={{display:'flex',gap:6}}>
-                <input style={{...inp,flex:1}} value={geoInput} onChange={e=>setGeoInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&geocode()} placeholder="Rua das Flores 123, Florianópolis"/>
+                <input style={{...inp,flex:1}} value={geoInput} onChange={e=>setGeoInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&geocode()} placeholder={t('adminAdvanced.storeAddressExample')}/>
                 <button className="btn btn-s btn-sm" onClick={geocode} disabled={!geoInput.trim()}>🔍</button>
               </div>
             </div>
-            <div className="fg"><label className="flabel">Lat</label><input style={{...inp,fontFamily:'monospace',fontSize:11}} value={form.lat} onChange={e=>setForm((p:any)=>({...p,lat:e.target.value}))} placeholder="-27.5954"/></div>
-            <div className="fg"><label className="flabel">Lng</label><input style={{...inp,fontFamily:'monospace',fontSize:11}} value={form.lng} onChange={e=>setForm((p:any)=>({...p,lng:e.target.value}))} placeholder="-48.5480"/></div>
-            <div className="fg"><label className="flabel">País</label>
+            <div className="fg"><label className="flabel"><LocalizedText id="adminSurface.latitude"/></label><input style={{...inp,fontFamily:'monospace',fontSize:11}} value={form.lat} onChange={e=>setForm((p:any)=>({...p,lat:e.target.value}))} placeholder="-27.5954"/></div>
+            <div className="fg"><label className="flabel"><LocalizedText id="adminSurface.longitude"/></label><input style={{...inp,fontFamily:'monospace',fontSize:11}} value={form.lng} onChange={e=>setForm((p:any)=>({...p,lng:e.target.value}))} placeholder="-48.5480"/></div>
+            <div className="fg"><label className="flabel"><LocalizedText id="adminSurface.country"/></label>
               <select style={{...inp,cursor:'pointer'}} value={form.pais} onChange={e=>setForm((p:any)=>({...p,pais:e.target.value}))}>
-                <option value="BR">Brasil 🇧🇷</option><option value="AR">Argentina 🇦🇷</option>
+                <option value="BR"><LocalizedText id="adminSurface.brazil"/></option><option value="AR"><LocalizedText id="adminSurface.argentina"/></option>
               </select>
             </div>
-            <div className="fg"><label className="flabel">Comisión %</label><input style={inp} type="number" value={form.comision_pct} onChange={e=>setForm((p:any)=>({...p,comision_pct:e.target.value}))} placeholder="10"/></div>
-            <div className="fg full"><label className="flabel">Link tienda ML (opcional)</label><input style={inp} value={form.ml_store_url} onChange={e=>setForm((p:any)=>({...p,ml_store_url:e.target.value}))} placeholder="https://www.mercadolibre.com.br/perfil/VENDEDOR"/></div>
-            <div className="fg full"><label className="flabel">Notas internas</label><input style={inp} value={form.notas} onChange={e=>setForm((p:any)=>({...p,notas:e.target.value}))} placeholder="Contacto: João · Descuento 5% para proveedores U.GO"/></div>
+            <div className="fg"><label className="flabel"><LocalizedText id="screen.earnings.23"/></label><input style={inp} type="number" value={form.comision_pct} onChange={e=>setForm((p:any)=>({...p,comision_pct:e.target.value}))} placeholder={t('adminAdvanced.storeLimitExample')}/></div>
+            <div className="fg full"><label className="flabel"><LocalizedText id="adminAdvanced.storeLink"/></label><input style={inp} value={form.ml_store_url} onChange={e=>setForm((p:any)=>({...p,ml_store_url:e.target.value}))} placeholder={t('adminAdvanced.mercadoLibreSellerUrl')}/></div>
+            <div className="fg full"><label className="flabel"><LocalizedText id="adminAdvanced.internalNotes"/></label><input style={inp} value={form.notas} onChange={e=>setForm((p:any)=>({...p,notas:e.target.value}))} placeholder={t('adminAdvanced.storeContactDiscount')}/></div>
             <div className="fg" style={{display:'flex',gap:12,alignItems:'center'}}>
               <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
-                <input type="checkbox" checked={form.activa} onChange={e=>setForm((p:any)=>({...p,activa:e.target.checked}))} style={{accentColor:'#159366'}}/> Activa
+                <input type="checkbox" checked={form.activa} onChange={e=>setForm((p:any)=>({...p,activa:e.target.checked}))} style={{accentColor:'#159366'}}/> <LocalizedText id="adminAdvanced.active"/>
               </label>
               <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
-                <input type="checkbox" checked={form.verificada} onChange={e=>setForm((p:any)=>({...p,verificada:e.target.checked}))} style={{accentColor:'#276EF1'}}/> Verificada
+                <input type="checkbox" checked={form.verificada} onChange={e=>setForm((p:any)=>({...p,verificada:e.target.checked}))} style={{accentColor:'#276EF1'}}/> <LocalizedText id="adminAdvanced.verified"/>
               </label>
             </div>
           </div>
           <div style={{display:'flex',gap:8,marginTop:12}}>
-            <button className="btn btn-p" onClick={save} disabled={!form.nombre.trim()}>💾 Guardar</button>
-            <button className="btn btn-s" onClick={()=>setShowForm(false)}>Cancelar</button>
+            <button className="btn btn-p" onClick={save} disabled={!form.nombre.trim()}><LocalizedText id="adminAdvanced.save"/></button>
+            <button className="btn btn-s" onClick={()=>setShowForm(false)}><LocalizedText id="screen.admin_services.27"/></button>
           </div>
         </div>
       )}
 
       {/* Lista de tiendas */}
-      {loading ? <div style={{padding:20,textAlign:'center',color:'var(--muted)'}}>Cargando...</div> : (
+      {loading ? <div style={{padding:20,textAlign:'center',color:'var(--muted)'}}><LocalizedText id="screen.admin_decision.34"/></div> : (
         <>
           {filtered.length===0&&<div style={{padding:20,textAlign:'center',color:'var(--muted)',fontSize:12}}>
-            Sin tiendas registradas. Agregá la primera con "+ Nueva tienda".
+            <LocalizedText id="adminAdvanced.noStores"/>
           </div>}
           {filtered.map(t=>(
             <div key={t.id} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:'12px 14px',marginBottom:8,display:'flex',alignItems:'center',gap:12,opacity:t.activa?1:.6}}>
@@ -1175,14 +1183,14 @@ export function SecTiendasInsumos() {
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
                   <span style={{fontWeight:700,fontSize:13}}>{t.nombre}</span>
-                  {t.verificada&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:10,background:'rgba(39,110,241,.1)',color:'#276EF1',border:'1px solid rgba(39,110,241,.2)',fontWeight:700}}>✓ Verificada</span>}
-                  {!t.activa&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:10,background:'rgba(225,25,0,.1)',color:'var(--red)',fontWeight:700}}>Inactiva</span>}
+                  {t.verificada&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:10,background:'rgba(39,110,241,.1)',color:'#276EF1',border:'1px solid rgba(39,110,241,.2)',fontWeight:700}}><LocalizedText id="adminAdvanced.verified"/></span>}
+                  {!t.activa&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:10,background:'rgba(225,25,0,.1)',color:'var(--red)',fontWeight:700}}><LocalizedText id="adminAdvanced.deactivate"/></span>}
                 </div>
                 <div style={{fontSize:10,color:'var(--muted)',display:'flex',gap:8,flexWrap:'wrap'}}>
                   <span>{catEmoji(t.categoria_slug)} {catLabel(t.categoria_slug)}</span>
                   {t.zona&&<span>📍 {t.zona}</span>}
                   {t.telefono&&<span>📱 {t.telefono}</span>}
-                  <span style={{color:'#159366',fontWeight:600}}>Comisión: {t.comision_pct}%</span>
+                  <span style={{color:'#159366',fontWeight:600}}><LocalizedText id="screen.earnings.23"/> {t.comision_pct}%</span>
                   {t.ml_store_url&&<a href={t.ml_store_url} target="_blank" rel="noreferrer" style={{color:'#FFE600',fontWeight:600,textDecoration:'none'}}>🛒 ML</a>}
                 </div>
               </div>
@@ -1197,10 +1205,10 @@ export function SecTiendasInsumos() {
 
       {/* Test de búsqueda ML */}
       <div style={{marginTop:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:16}}>
-        <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>🔍 Test — Búsqueda Mercado Libre</div>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:10}}><LocalizedText id="adminAdvanced.testMercadoLibre"/></div>
         <div style={{display:'flex',gap:8,marginBottom:12}}>
           <input style={{...inp,flex:1}} value={mlQuery} onChange={e=>setMlQuery(e.target.value)}
-            onKeyDown={e=>e.key==='Enter'&&searchML()} placeholder="Ej: cabo elétrico 2.5mm, tornillo, pincel..."/>
+            onKeyDown={e=>e.key==='Enter'&&searchML()} placeholder={t('adminAdvanced.searchItemsExample')}/>
           <select style={{...inp,width:'auto',cursor:'pointer'}} value={form.pais} onChange={e=>setForm((p:any)=>({...p,pais:e.target.value}))}>
             <option value="BR">🇧🇷 MLB</option><option value="AR">🇦🇷 MLA</option>
           </select>
@@ -1223,7 +1231,7 @@ export function SecTiendasInsumos() {
             ))}
           </div>
         )}
-        {mlRes.length===0&&!mlLoading&&mlQuery&&<div style={{fontSize:11,color:'var(--muted)',textAlign:'center',padding:10}}>Sin resultados. Probá con otro término.</div>}
+        {mlRes.length===0&&!mlLoading&&mlQuery&&<div style={{fontSize:11,color:'var(--muted)',textAlign:'center',padding:10}}><LocalizedText id="adminAdvanced.noResults"/></div>}
       </div>
     {dialog}
     </div>

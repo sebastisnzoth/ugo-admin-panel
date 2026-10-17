@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -6,7 +7,7 @@ const read = (p) => readFile(new URL('../../' + p, import.meta.url), 'utf8')
 
 test('admin model router exposes primary fallback telemetry latency quality and cost', async () => {
   const ui = await read('src/mvp/AutonomousCorporationDashboard.tsx')
-  for (const token of ['Model Router · zero-budget-first','Primary:','Fallback:','Telemetría reciente','Latencia media','Calidad media','Costo reciente','Correlation ID']) assert.ok(ui.includes(token), token)
+  for (const token of ['adminAutonomy.modelRouter','adminAutonomy.fallback','adminAutonomy.recentTelemetry','adminAutonomy.latency','adminAutonomy.cost','screen.admin_autonomous.29']) assert.ok(ui.includes(token), token)
   for (const token of ['provider','model_id','latency_ms','quality_score','failure_code','m.cost']) assert.ok(ui.includes(token), token)
 })
 

@@ -47,7 +47,7 @@ page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
 await page.route('https://photon.komoot.io/**',async route=>{
   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({features:[{geometry:{coordinates:[expected.longitude,expected.latitude]},properties:{street:'Rua das Flores',housenumber:'321',district:'Canasvieiras',city:'Florianópolis'}}]})})
 })
-await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},login.session)
 let serviceId=''
 let requestDraftId=''
 let backendRow=null
@@ -55,7 +55,7 @@ let cleanup={attempted:false,ok:false,error:null}
 
 try{
   await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-  await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+  await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
 
   const showAll=page.getByRole('button',{name:/Ver todas/}).first()
   await showAll.waitFor({state:'visible',timeout:15000})

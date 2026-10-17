@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocale } from '../i18n/locale'
 import type { StyleSpecification } from 'maplibre-gl'
 import { loadMaplibre } from '../lib/maplibreLoader'
 
@@ -8,6 +9,7 @@ type Props = {
 }
 
 export function ProviderActiveMap({ userPos }: Props) {
+  const { t } = useLocale()
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<import('maplibre-gl').Map | null>(null)
   const markerRef = useRef<import('maplibre-gl').Marker | null>(null)
@@ -93,7 +95,7 @@ export function ProviderActiveMap({ userPos }: Props) {
   if (!userPos) {
     return (
       <div ref={mapContainerRef} className="ugo-provider-active-map">
-        <div className="placeholder">Ubicación pendiente</div>
+        <div className="placeholder">{t('providerMap.locationPending')}</div>
       </div>
     )
   }

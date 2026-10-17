@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -15,8 +16,8 @@ test('client payment never hides a failed state load without recovery',async()=>
 
 test('provider active-job empty state keeps one simple exit and arrival has automatic plus manual recovery',async()=>{
  const src=await read('src/mvp/provider/ProviderActiveJob.tsx')
- assert.match(src,/Ver pedidos/)
- assert.match(src,/UGO intenta detectar tu llegada automáticamente/)
+ assert.match(src,/t\('screen\.active\.1'\)/)
+ assert.match(src,/t\('screen\.active\.15'\)/)
  assert.match(src,/YA LLEGUÉ/)
  assert.doesNotMatch(src,/Confirmar llegada/)
 })

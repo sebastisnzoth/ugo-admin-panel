@@ -15,6 +15,7 @@ test('cross-performance workflow validates the exact PR head SHA',()=>{
 test('client performance navigation uses a genuinely pointer-reachable action',()=>{
   assert.match(runtime,/clickFirstPointerReachable/)
   assert.match(runtime,/document\.elementFromPoint/)
-  assert.match(runtime,/filter\(\{hasText:\/Pedir servicio\/i\}\)/)
+  assert.match(runtime,/getByRole\('button',\{name:'Categorías'\}\)/)
+  assert.match(runtime,/\.ugo-home-all-results button:visible/)
   assert.doesNotMatch(runtime,/force:\s*true/)
 })

@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -20,6 +21,6 @@ test('client completed history keeps authorized evidence gallery',async()=>{
  const source=await read('src/mvp/ServiceHistoryPanel.tsx')
  assert.match(source,/ClientEvidenceGallery/)
  assert.match(source,/r\.estado==='completado'/)
- assert.match(source,/Ver fotos/)
+ assert.match(source,/history\.viewPhotos/)
  assert.match(source,/ClientEvidenceGallery serviceId=\{r\.id\} compact hideWhenEmpty/)
 })

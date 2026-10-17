@@ -1,3 +1,4 @@
+import{useLocale}from'../../../i18n/locale'
 import React,{useCallback,useEffect,useRef,useState}from'react'
 import{reportSentinelIncident}from'../../../lib/sentinel'
 import{useRoleSession}from'../../../mvp/shared'
@@ -10,6 +11,7 @@ type Props={serviceId?:string|null;embedded?:boolean}
 const shouldEscalate=()=>document.visibilityState==='visible'&&navigator.onLine
 
 export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
+ const{t}=useLocale();
  const{session,supabase}=useRoleSession('client'),userId=session?.user.id||null
  const[target,setTarget]=useState<RatingTarget|null>(null)
  const[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
@@ -87,16 +89,16 @@ export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
 
  if(!target||target.service.id===dismissed)return null
  const number=target.service.numero??target.service.id.slice(0,8)
- return <aside className={`ugo-client-rating ${embedded?'is-embedded':''}`} aria-label={`Calificar pedido ${number}`}>
-  <button type="button" className="ugo-client-rating-close" onClick={()=>setDismissed(target.service.id)} aria-label="Calificar más tarde">×</button>
-  <small>SERVICIO FINALIZADO · PEDIDO #{number}</small>
-  <h2>¿Cómo te fue con {target.providerName}?</h2>
-  <p>Tu experiencia ayuda a mantener la calidad de UGO.</p>
+ return <aside className={`ugo-client-rating ${embedded?'is-embedded':''}`} aria-label={t('clientRating.howWas',{name:target.providerName})}>
+  <button type="button" className="ugo-client-rating-close" onClick={()=>setDismissed(target.service.id)} aria-label={t('clientRating.later')}>×</button>
+  <small>{t('clientRating.completedOrder')} {number}</small>
+  <h2>{t('clientRating.howWas',{name:target.providerName})}</h2>
+  <p>{t('screen.client_rating.1')}</p>
   <form onSubmit={submit}>
-   <div className="ugo-client-rating-stars" role="radiogroup" aria-label="Puntuación de 1 a 5 estrellas">{[1,2,3,4,5].map(value=><button key={value} type="button" role="radio" aria-checked={score===value} aria-label={`${value} estrella${value===1?'':'s'}`} className={value<=score?'is-active':''} onClick={()=>setScore(value)}>★</button>)}</div>
-   <label>Comentario <span>opcional</span><textarea value={comment} onChange={event=>setComment(event.target.value)} maxLength={500} rows={2} placeholder="Contanos brevemente cómo salió el trabajo"/></label>
+   <div className="ugo-client-rating-stars" role="radiogroup" aria-label={t('clientRating.ratingScale')}>{[1,2,3,4,5].map(value=><button key={value} type="button" role="radio" aria-checked={score===value} aria-label={`${value} estrella${value===1?'':'s'}`} className={value<=score?'is-active':''} onClick={()=>setScore(value)}>★</button>)}</div>
+   <label>{t('screen.client_rating.2')} <span>{t('screen.client_rating.3')}</span><textarea value={comment} onChange={event=>setComment(event.target.value)} maxLength={500} rows={2} placeholder={t('clientRating.commentPlaceholder')}/></label>
    {message&&<p className="ugo-client-rating-message" role="status">{message}</p>}
-   <div className="ugo-client-rating-actions"><button type="submit" disabled={busy||score===0}>{busy?'Guardando…':'Enviar calificación'}</button><button type="button" onClick={()=>setDismissed(target.service.id)}>Ahora no</button></div>
+   <div className="ugo-client-rating-actions"><button type="submit" disabled={busy||score===0}>{busy?t('clientRating.saving'):t('clientRating.submit')}</button><button type="button" onClick={()=>setDismissed(target.service.id)}>{t('screen.client_rating.4')}</button></div>
   </form>
  </aside>
 }

@@ -4,8 +4,6 @@ import{MvpApp}from'./mvp/MvpApp'
 import{installApiRuntimeBase}from'./lib/apiRuntime'
 import{installSentinel}from'./lib/sentinel'
 import{installAccessibilityRuntime}from'./lib/accessibilityRuntime'
-import{AppErrorBoundary}from'./app/AppErrorBoundary'
-import{EnvironmentBadge}from'./app/EnvironmentBadge'
 import'./lib/browserVoiceBridge'
 import'./styles/tokens.css'
 import'./styles/globals.css'
@@ -20,6 +18,6 @@ installAccessibilityRuntime()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
-  <AppErrorBoundary><EnvironmentBadge/><MvpApp/></AppErrorBoundary>
+ <MvpApp/>
  </React.StrictMode>,
 )

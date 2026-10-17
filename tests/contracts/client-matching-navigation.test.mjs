@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -8,7 +9,7 @@ test('client matching can continue in background without trapping or blocking an
  const source=await read('src/features/client/request/ClientPostConfirmFlow.tsx')
  assert.match(source,/const continueBackground=\(\)=>\{if\(service\)clearDraft\(\);onExit\(\)\}/)
  assert.match(source,/onClick=\{continueBackground\}>Seguir usando UGO/)
- assert.match(source,/Reintentar pedido/)
+ assert.match(source,/t\('clientMatch\.searchNow'\)/)
  assert.match(source,/Cancelar pedido/)
  assert.match(source,/flow\.actions\.cancelService\(service\.id\)/)
  assert.doesNotMatch(source,/hasActive/)

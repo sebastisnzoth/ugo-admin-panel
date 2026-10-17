@@ -1,4 +1,5 @@
 import React,{useEffect,useMemo,useRef,useState}from'react'
+import{useLocale}from'../i18n/locale'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../lib/roleSupabase'
@@ -52,6 +53,9 @@ function distanceMeters(a:[number,number],b:[number,number]){
 }
 
 export function ProviderLocationTracker({service,onAutoArrival}:Props){
+ const{t}=useLocale()
+ const translateRef=useRef(t)
+ translateRef.current=t
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[available,setAvailable]=useState(false)
  const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
@@ -104,8 +108,8 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
 
  useEffect(()=>{
   if(!available&&!enRoute)return
-  if(!window.isSecureContext){setLocationError('La ubicación requiere HTTPS. Abrí UGO desde GitHub Pages y reintentá.');return}
-  if(!navigator.geolocation){setLocationError('El navegador no ofrece ubicación. Habilitá los servicios de ubicación del sistema y usá Chrome o Safari actualizado.');return}
+  if(!window.isSecureContext){setLocationError(translateRef.current('providerGps.https'));return}
+  if(!navigator.geolocation){setLocationError(translateRef.current('providerGps.unavailable'));return}
   let alive=true,watchId:number|null=null,restartTimer:number|undefined
   let lastWrite=0,lastPoint:[number,number]|null=null,writing=false,heartbeatBusy=false,latestPosition:GeolocationPosition|null=null
   const rpc=supabase as unknown as LocationRpcClient
@@ -113,18 +117,18 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
 
   const setGeoError=(error:GeolocationPositionError)=>{
    if(!alive)return
-   if(error.code===1){setLocationError(serviceId?'UGO necesita permiso de ubicación precisa para seguir el servicio.':'UGO necesita permiso de ubicación para mantenerte Online y enviarte pedidos.');return}
+   if(error.code===1){setLocationError(serviceId?translateRef.current('providerGps.permissionRoute'):translateRef.current('providerGps.permissionOnline'));return}
    if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
-   setLocationError(error.code===2?'El navegador no pudo determinar tu ubicación. UGO sigue intentando recuperar el GPS.':'El GPS del navegador tardó demasiado en responder. UGO lo está reiniciando automáticamente.')
+   setLocationError(error.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
   }
 
   const publish=async(pos:GeolocationPosition,force=false)=>{
    if(!alive)return
    const point:[number,number]=[Number(pos.coords.latitude),Number(pos.coords.longitude)]
    const accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
-   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001)){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError('El navegador devolvió una ubicación inválida. UGO sigue buscando una posición real.');return}
-   if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError('La señal de ubicación todavía no es suficientemente precisa. UGO sigue buscando una posición mejor.');return}
-   if(age>MAX_POSITION_AGE_MS){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError('La ubicación del navegador quedó antigua. UGO está solicitando una posición nueva.');return}
+   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001)){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.invalid'));return}
+   if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.inaccurate'));return}
+   if(age>MAX_POSITION_AGE_MS){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.stale'));return}
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M,heartbeatDue=lastWrite===0||now-lastWrite>=10_000
    if(writing||now-lastWrite<MIN_WRITE_MS||(!force&&!moved&&!heartbeatDue))return
    writing=true
@@ -134,7 +138,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
      :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
     if(!alive)return
-    if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos publicar tu ubicación en tiempo real. UGO va a reintentar.');return}
+    if(error){setLocationError(translateRef.current('providerGps.publishFailed'));return}
     lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy});setLocationError('')
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
@@ -174,7 +178,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     if(!alive)return
     const geoError=error as GeolocationPositionError
     if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
-    setLocationError(geoError.code===1?'UGO perdió el permiso de ubicación precisa. Permití la ubicación para seguir Online y recibir pedidos.':geoError.code===2?'El navegador no pudo determinar tu ubicación. UGO sigue intentando recuperar el GPS.':'El GPS tardó demasiado en responder. Reintentando automáticamente.')
+    setLocationError(geoError.code===1?translateRef.current('providerGps.lostPermission'):geoError.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
    }finally{heartbeatBusy=false}
   }
   const refresh=()=>{if(document.visibilityState==='hidden')return;if(enRoute){const age=latestPosition?Date.now()-Number(latestPosition.timestamp||0):Infinity;if(latestPosition&&age<=MAX_POSITION_AGE_MS)void publish(latestPosition,true);void acquire(true);return}void publishHeartbeat()}
@@ -192,16 +196,16 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
 
  const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
  const freshnessLimit=enRoute?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS
- const freshness=lastFix?`${fixAgeMs!=null&&fixAgeMs<=freshnessLimit?'GPS reciente':'GPS desactualizado'} · hace ${Math.floor((fixAgeMs||0)/1_000)} s · precisión ±${Math.round(lastFix.accuracy)} m`:'Esperando primera ubicación reciente…'
+ const freshness=lastFix?`${fixAgeMs!=null&&fixAgeMs<=freshnessLimit?t('providerGps.recent'):t('providerGps.outdated')} · ${t('providerGps.age',{seconds:Math.floor((fixAgeMs||0)/1_000)})} · ${t('providerGps.accuracy',{meters:Math.round(lastFix.accuracy)})}`:t('providerGps.waiting')
  const idleGpsStale=available&&(!lastFix||fixAgeMs==null||fixAgeMs>MATCHING_POSITION_AGE_MS)
  if(service?.estado!=='en_camino'){
   if(!available)return null
-  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>Online sin GPS válido</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
-  if(idleGpsStale)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>Online, pero fuera del matching</strong><span>📍 UGO necesita renovar tu GPS para poder enviarte nuevos pedidos.</span><span className="provider-location-freshness">{freshness}</span></div>
+  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.onlineNoGps')}</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
+  if(idleGpsStale)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.outsideMatching')}</strong><span>{t('providerGps.refreshForMatching')}</span><span className="provider-location-freshness">{freshness}</span></div>
   return null
  }
- if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>GPS necesita atención</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
- if(distanceToClient==null)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>GPS activo</strong><span>Buscando tu distancia exacta al cliente…</span><span className="provider-location-freshness">{freshness}</span></div>
- if(distanceToClient>ARRIVAL_RADIUS_M)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{Math.round(distanceToClient)} m para llegar</strong><span>UGO sigue publicando tu ubicación. “YA LLEGUÉ” se valida contra el geofence de {ARRIVAL_RADIUS_M} m.</span><span className="provider-location-freshness">{freshness}</span></div>
- return <div className="provider-arrival-toast provider-location-ok" role="status"><strong>Llegada detectada</strong><span>📍 Estás a {Math.round(distanceToClient)} m · UGO está confirmando automáticamente.</span><span className="provider-location-freshness">{freshness}</span></div>
+ if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.attention')}</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
+ if(distanceToClient==null)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{t('providerGps.active')}</strong><span>{t('providerGps.searchingDistance')}</span><span className="provider-location-freshness">{freshness}</span></div>
+ if(distanceToClient>ARRIVAL_RADIUS_M)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{t('providerGps.distance',{distance:Math.round(distanceToClient)})}</strong><span>{t('providerGps.distanceHelp',{radius:ARRIVAL_RADIUS_M})}</span><span className="provider-location-freshness">{freshness}</span></div>
+ return <div className="provider-arrival-toast provider-location-ok" role="status"><strong>{t('providerGps.arrivalDetected')}</strong><span>{t('providerGps.arrivalConfirm',{distance:Math.round(distanceToClient)})}</span><span className="provider-location-freshness">{freshness}</span></div>
 }

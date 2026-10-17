@@ -31,7 +31,7 @@ const pageErrors=[]
 const consoleErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
 page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text())})
-await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},login.session)
 
 let draftId=''
 let row=null
@@ -40,7 +40,7 @@ let cleanup={attempted:false,row_deleted:false,storage_deleted:false}
 
 try{
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
  const showAll=page.getByRole('button',{name:/Ver todas/}).first()
  await showAll.click()
  const categoryButton=page.locator('.ugo-home-all-results button').filter({hasText:String(category.nombre)}).first()

@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -38,7 +39,7 @@ test('department view distinguishes active jobs from historical jobs and shows l
 
 
 test('department jobs UX supports filters history freshness and divergence alerts',()=>{
- for(const text of ['Filtrar departamento','Filtrar estado de job','Ver historial','Historial del departamento','Frescura','actualizado hace','ALERTA · inconsistencia UI/backend detectada'])assert.ok(dashboard.includes(text),text)
+ for(const text of ['adminAutonomy.filterDepartment','adminAutonomy.filterJobStatus','adminAutonomy.departmentHistory','adminAutonomy.departmentHistory','adminAutonomy.freshness','adminAutonomy.freshness','adminAutonomy.divergenceAlert'])assert.ok(dashboard.includes(text),text)
  assert.match(command,/recent_jobs/)
  assert.match(command,/recent_evidence/)
  assert.match(command,/loaded_at/)

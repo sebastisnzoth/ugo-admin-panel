@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
@@ -29,7 +30,7 @@ test('provider agenda is scoped to the authenticated provider and includes immed
  assert.match(agenda,/todayRows=rows\.filter/)
  assert.match(agenda,/upcomingRows=rows\.filter/)
  assert.match(agenda,/filter:`proveedor_id=eq\.\$\{id\}`/)
- assert.match(agenda,/Gestionar pedido/)
+ assert.match(agenda,/t\('agenda\.manage'\)/)
 })
 
 test('provider navigation exposes agenda without replacing the active-job journey',async()=>{

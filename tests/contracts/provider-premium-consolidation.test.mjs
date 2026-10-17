@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -13,7 +14,7 @@ test('provider derives visual aliases from UGO and preserves future work',async(
  assert.match(css,/--pro-cyan:var\(--ugo-color-secondary-container\)/)
  assert.match(css,/--pro-danger:var\(--ugo-color-error\)/)
  assert.doesNotMatch(css,/--pro-green:#|--pro-cyan:#|--pro-danger:#/)
- assert.match(home,/d\.service&&d\.opportunities\.length>0/)
- assert.match(home,/Podés aceptar otro/)
+ assert.match(home,/const next=d\.service/)
+ assert.match(home,/providerHome\.upcomingJobs/)
  assert.match(home,/flow\.actions\.openAgenda/)
 })

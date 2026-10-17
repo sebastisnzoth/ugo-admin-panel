@@ -46,7 +46,7 @@ test('client help route always renders a useful support surface',async()=>{
  ])
  assert.match(surfaces,/ClientSupportScreen/)
  assert.match(surfaces,/DisputeDock role="client" openRequest/)
- assert.match(support,/Ayuda y soporte/)
+ assert.match(support,/t\('screen\.support\.1'\)/)
  assert.match(support,/flow\.navigate\('history'\)/)
  assert.match(support,/flow\.navigate\('profile'\)/)
 })

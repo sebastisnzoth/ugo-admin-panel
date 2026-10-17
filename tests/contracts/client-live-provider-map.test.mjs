@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -21,6 +22,6 @@ test('assigned provider already renders the map and en_camino upgrades to route 
  assert.match(map,/phase==='assigned'/)
  assert.match(map,/Listo para salir/)
  assert.match(map,/phase!=='en_camino'/)
- assert.match(map,/Llegando en/)
+ assert.match(map,/t\('clientMap\.arrivingIn'/)
  assert.match(map,/10_000/)
 })

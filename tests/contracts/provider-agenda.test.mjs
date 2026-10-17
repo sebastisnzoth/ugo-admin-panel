@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -40,14 +41,14 @@ test('provider order detail exposes lifecycle evidence chat audit and cancellati
 test('provider agenda exposes immediate, today and upcoming work without hiding unscheduled assignments',async()=>{
  const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
  assert.match(agenda,/programado_para:string\|null/)
- assert.match(agenda,/if\(!value\)return'Atención inmediata'/)
+ assert.match(agenda,/t\('providerAgenda\.immediate'/)
  assert.match(agenda,/immediateRows=rows\.filter\(row=>!row\.programado_para/)
  assert.match(agenda,/todayRows=rows\.filter/)
  assert.match(agenda,/upcomingRows=rows\.filter/)
- assert.match(agenda,/>AHORA</)
- assert.match(agenda,/>HOY</)
- assert.match(agenda,/>PRÓXIMOS</)
- assert.match(agenda,/Mis trabajos/)
+ assert.match(agenda,/t\('agenda\.now'\)/)
+ assert.match(agenda,/t\('agenda\.today'\)/)
+ assert.match(agenda,/t\('agenda\.upcoming'\)/)
+ assert.match(agenda,/t\('agenda\.title'\)/)
 })
 
 test('provider agenda resyncs from realtime and reports operational failures to Sentinel',async()=>{

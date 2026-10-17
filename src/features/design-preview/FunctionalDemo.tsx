@@ -1,3 +1,4 @@
+import{LocalizedText,useLocale}from'../../i18n/locale'
 import { useState } from 'react'
 import { UgoMark } from '../client/design-preview/icons'
 import { adminDisputes } from './roles-data'
@@ -11,6 +12,7 @@ import { adminDisputes } from './roles-data'
 
 // ---------- ADMIN ----------
 export function AdminDemo() {
+  const{t}=useLocale()
   const [items, setItems] = useState(adminDisputes.map((d) => ({ ...d, resolved: null as null | 'cliente' | 'proveedor' })))
   const open = items.filter((i) => i.resolved === null).length
 
@@ -19,17 +21,17 @@ export function AdminDemo() {
 
   return (
     <figure className="ugo-rp-figure">
-      <div className="ugo-rp-window" role="region" aria-label="Demo funcional de disputas">
+      <div className="ugo-rp-window" role="region" aria-label={t('preview.functionalDisputes')}>
         <div className="ugo-rp-chrome"><i /><i /><i /></div>
         <div className="ugo-rp-body">
           <aside className="ugo-rp-sidebar">
-            <div className="ugo-rp-brand"><UgoMark size={26} /> UGO</div>
-            <span className="ugo-rp-nav is-active">Disputas</span>
-            <span className="ugo-rp-nav">Servicios</span>
+            <div className="ugo-rp-brand"><UgoMark size={26} /> <LocalizedText id="ugoWebRemaining.brand"/></div>
+            <span className="ugo-rp-nav is-active"><LocalizedText id="screen.admin_reports.19"/></span>
+            <span className="ugo-rp-nav"><LocalizedText id="screen.admin_native.6"/></span>
           </aside>
           <main className="ugo-rp-main ugo-rp-main--split">
             <section className="ugo-rp-list">
-              <h2 className="ugo-rp-title">Disputas abiertas: {open}</h2>
+              <h2 className="ugo-rp-title"><LocalizedText id="adminSurface.openDisputes"/> {open}</h2>
               {items.map((x) => (
                 <div key={x.id} className="ugo-rp-dispute">
                   <div className="ugo-rp-dispute-head">
@@ -40,18 +42,18 @@ export function AdminDemo() {
                   <p>{x.reason}</p>
                   {!x.resolved && (
                     <div className="ugo-rp-actions">
-                      <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => resolve(x.id, 'cliente')}>A favor del cliente</button>
-                      <button type="button" className="ugo-rp-btn" onClick={() => resolve(x.id, 'proveedor')}>A favor del proveedor</button>
+                      <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => resolve(x.id, 'cliente')}><LocalizedText id="screen.admin_decision.46"/></button>
+                      <button type="button" className="ugo-rp-btn" onClick={() => resolve(x.id, 'proveedor')}><LocalizedText id="screen.admin_decision.47"/></button>
                     </div>
                   )}
                 </div>
               ))}
-              {open === 0 && <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => setItems(adminDisputes.map((d) => ({ ...d, resolved: null })))}>Reiniciar demo</button>}
+              {open === 0 && <button type="button" className="ugo-rp-btn ugo-rp-btn--ghost" onClick={() => setItems(adminDisputes.map((d) => ({ ...d, resolved: null })))}><LocalizedText id="preview.restartDemo"/></button>}
             </section>
           </main>
         </div>
       </div>
-      <figcaption className="ugo-dp-caption">Demo · Admin (resolvé las disputas)</figcaption>
+      <figcaption className="ugo-dp-caption"><LocalizedText id="preview.adminDemo"/></figcaption>
     </figure>
   )
 }

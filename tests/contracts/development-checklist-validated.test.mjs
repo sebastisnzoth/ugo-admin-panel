@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -8,8 +9,8 @@ const migration=fs.readFileSync('supabase/migrations/20260915113000_development_
 test('checklist supports validated between implemented and approved',()=>{
  assert.match(migration,/implemented','validated','blocked'/)
  assert.match(dashboard,/type ChecklistStatus=.*'implemented'\|'validated'.*'approved'/)
- assert.match(dashboard,/validated:'Validado técnicamente'/)
- assert.match(dashboard,/\['validated','Validado'\]/)
+ assert.match(dashboard,/development\.status\.'\+status/)
+ assert.match(dashboard,/development\.filter\.'\+value/)
 })
 
 test('validated does not inflate launch readiness',()=>{

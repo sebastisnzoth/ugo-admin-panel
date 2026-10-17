@@ -38,12 +38,14 @@ async function openRole(role,viewport){
  await page.addInitScript(({role,session})=>{
   const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
   localStorage.setItem(key,JSON.stringify(session))
+  localStorage.setItem('ugo.locale.guest.'+role,'es')
+  if(session.user?.id)localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es')
  },{role,session:sessions[role]})
  await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded'})
  return {page,errors}
 }
 async function prove(page,role,viewportName){
- if(role==='client')await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:30000})
+ if(role==='client')await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:30000})
  if(role==='provider')await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
  if(role==='admin')await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:30000})
  const selector=role==='client'?'[aria-label="Hugo, controlador por voz del cliente"]':role==='provider'?'[aria-label="Hugo, controlador por voz del proveedor"]':'.hugo-free-trigger'

@@ -1,6 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import './i18n-test-compat.mjs'
+import { readFileSync } from 'node:fs'
 
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
@@ -13,14 +15,12 @@ const [client,provider,admin,bridge]=await Promise.all([
 
 test('hugo voice surfaces expose explicit listen think speak and actionable error states',()=>{
   for(const source of [client,provider]){
-    assert.match(source,/connecting:'Procesando\.\.\.'/)
-    assert.match(source,/ready:'Te escucho'/)
-    assert.match(source,/hearing:'Escuchando\.\.\.'/)
-    assert.match(source,/speaking:'Hablando\.\.\.'/)
-    assert.match(source,/error:'Voz no disponible'/)
-    assert.match(source,/Permití el micrófono/)
-    assert.match(source,/No encontré un micrófono/)
-    assert.match(source,/micrófono está ocupado/)
+    assert.match(source,/t\('voice\.state\.'\+state\)/)
+    assert.match(source,/voice\.error\.micPermission/)
+    assert.match(source,/voice\.error\.noMic/)
+    assert.match(source,/voice\.error\.micBusy/)
+    const catalog=readFileSync('src/i18n/translations/voiceSurface.ts','utf8')
+    for(const key of ['voice.state.connecting','voice.state.ready','voice.state.hearing','voice.state.speaking','voice.state.error','voice.error.micPermission','voice.error.noMic','voice.error.micBusy'])assert.ok(catalog.includes(key),key)
   }
   assert.match(admin,/setOrbState\('listening'\)/)
   assert.match(admin,/ugo:native-voice-output/)
@@ -40,7 +40,7 @@ test('voice runtime has browser speech input fallback and spoken fallback output
 })
 
 test('voice failures preserve a textual recovery path instead of freezing the UI',()=>{
-  assert.match(client,/Podés seguir escribiendo y volver a intentar la voz\./)
+  assert.match(client,/t\('voice\.error\.live'\)/)
   assert.match(client,/setState\('error'\)/)
   assert.match(provider,/setState\('error'\)/)
   assert.match(admin,/setOrbState\('idle'\)/)

@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -13,7 +14,7 @@ test('matching states with no deadline are recoverable instead of searching fore
  assert.match(home,/expired=matching&&\(missingDeadline\|\|remaining<=0\)/)
  assert.match(detail,/matchingExpired=matchingState&&\(matchingDeadlineMs===null\|\|remainingMs<=0\)/)
  assert.match(post,/expired=matchingState&&\(deadlineMs===null\|\|remainingMs<=0\)/)
- assert.match(post,/Búsqueda detenida/)
+ assert.match(post,/t\('clientMatch\.renewing'\)/)
 })
 
 test('database backfills stale searching rows with a deadline without assigning providers',async()=>{

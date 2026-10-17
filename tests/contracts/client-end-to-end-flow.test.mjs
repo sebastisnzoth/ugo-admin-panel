@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -19,11 +20,11 @@ const [need,location,when,payment,summary,post,detail,completion,rating,evidence
 ])
 
 test('canonical client request covers need, optional evidence, location, when, payment and summary',()=>{
- assert.match(need,/¿Qué hay que hacer\?/)
+ assert.match(need,/t\('screen\.need\.2'\)/)
  assert.match(need,/ClientRequestEvidence/)
- assert.match(need,/Podés continuar sin fotos/)
+ assert.match(need,/t\('clientNeed\.continueWithoutPhotos'\)/)
  assert.match(evidence,/request-evidence/)
- assert.match(location,/Tus lugares/)
+ assert.match(location,/t\('screen\.location\.5'\)/)
  assert.match(location,/Usar mi ubicación/)
  assert.match(location,/pickupSource/)
  assert.match(when,/¿Cuándo lo necesitás\?/)
@@ -43,17 +44,17 @@ test('confirm is idempotent per draft, allows bounded concurrent immediate order
  assert.match(post,/if\(!row&&!draft\.scheduleAt\)/)
  assert.match(post,/\.is\('programado_para',null\)/)
  assert.match(post,/hasta 3 pedidos inmediatos activos/)
- assert.match(post,/programá otro servicio para más adelante/)
+ assert.match(post,/t\('clientMatch\.maxRequests'\)/)
  assert.match(post,/clearDraft\(\);await load\(row\.id\);setNow\(Date\.now\(\)\)/)
 })
 
 test('matching remains visible, can run in background and can be retried after draft cleanup',()=>{
  assert.match(post,/Seguir usando UGO/)
- assert.match(post,/Reintentar pedido/)
+ assert.match(post,/t\('clientMatch\.searchNow'\)/)
  assert.match(post,/dispatchContext/)
  assert.match(post,/startDispatch\(service\.id,context\)/)
  assert.doesNotMatch(post,/clearDraft\(\);onExit\(\)\}catch/)
- assert.match(detail,/Reintentar pedido/)
+ assert.match(detail,/t\('clientOrder\.retryOrder'\)/)
  assert.match(detail,/retryOwnedClientMatching\(supabase,user\.id,service\.id\)/)
 })
 
@@ -63,7 +64,7 @@ test('payment and closure remain service-scoped from assignment through rating',
  assert.match(completion,/confirmApprovedCashClientService/)
  assert.match(actions,/rpc\('aprobar_servicio'/)
  assert.match(actions,/rpc\('confirmar_pago_efectivo_cliente'/)
- assert.match(completion,/Primero confirmá que el trabajo quedó bien/)
+ assert.match(completion,/t\('clientReview\.confirmWork'\)/)
  assert.match(completion,/YA PAGUÉ/)
  assert.match(rating,/submitServiceRating/)
  assert.match(ratingService,/autor_tipo:authorType\(role\)/)

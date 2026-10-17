@@ -81,6 +81,8 @@ try{
     await page.addInitScript(({role,session})=>{
       const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
       localStorage.setItem(key,JSON.stringify(session))
+      localStorage.setItem('ugo.locale.guest.'+role,'es')
+      if(session.user?.id)localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es')
     },{role,session})
     const started=performance.now()
     await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded',timeout:20000})
@@ -125,18 +127,20 @@ try{
 
   const client=await openRole('client')
   try{
-    await visible(client.page.getByRole('main',{name:'Inicio UGO Cliente'}),20000)
+    await visible(client.page.getByRole('main',{name:'Inicio'}),20000)
     await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
     await timed('client_request_navigation_ms',async()=>{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
       const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
       await visible(drawer,5000)
-      const requestButtons=drawer.locator('button:visible').filter({hasText:/Pedir servicio/i})
-      const requestButton=requestButtons.first()
-      await visible(requestButton,5000)
-      await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
+      const categoriesButton=drawer.getByRole('button',{name:'Categorías'})
+      await visible(categoriesButton,5000)
+      await clickFirstPointerReachable(categoriesButton,'CLIENT_CATEGORIES_BUTTON')
       await drawer.waitFor({state:'hidden',timeout:5000})
-      await visible(client.page.getByRole('textbox',{name:'Buscar servicio'}),5000)
+      const categoryButton=client.page.locator('.ugo-home-all-results button:visible').first()
+      await visible(categoryButton,5000)
+      await clickFirstPointerReachable(categoryButton,'CLIENT_CATEGORY_BUTTON')
+      await visible(client.page.getByRole('textbox',{name:'Descripción del trabajo'}),5000)
     })
   } finally { await client.context.close() }
 

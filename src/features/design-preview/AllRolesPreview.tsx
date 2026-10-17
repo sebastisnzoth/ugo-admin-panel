@@ -1,3 +1,4 @@
+import{useLocale}from'../../i18n/locale'
 import { useState, type ReactNode } from 'react'
 import '../client/design-preview/design-preview.css'
 import './roles.css'
@@ -61,10 +62,11 @@ const screens: Record<Role, ReactNode[]> = {
 
 /** Galería de todos los roles con selector de rol. Preview aislado, no conectado a rutas de producción. */
 export default function AllRolesPreview() {
+  const{t}=useLocale()
   const [role, setRole] = useState<Role>('cliente')
   return (
     <div>
-      <nav className="ugo-rp-role-tabs" aria-label="Rol">
+      <nav className="ugo-rp-role-tabs" aria-label={t('preview.role')}>
         {roles.map((r) => (
           <button
             key={r.id}

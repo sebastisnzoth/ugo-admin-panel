@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
@@ -31,8 +32,8 @@ test('cash is not counted as withdrawable provider wallet balance',()=>{
  assert.match(providerData,/p\.estado==='liberado'&&p\.metodo!=='efectivo'/)
  assert.match(providerData,/cashReceived=payments\.filter\(p=>p\.estado==='liberado'&&p\.metodo==='efectivo'\)/)
  assert.match(providerData,/ugoDebt=debts\.filter/)
- assert.match(earnings,/COBRADO EN EFECTIVO/)
- assert.match(earnings,/DEBÉS A UGO/)
+ assert.match(earnings,/t\('screen\.earnings\.7'\)/)
+ assert.match(earnings,/t\('screen\.earnings\.9'\)/)
  assert.match(receipt,/EFECTIVO REGISTRADO/)
  assert.match(receipt,/Ese dinero ya lo recibiste directamente/)
 })

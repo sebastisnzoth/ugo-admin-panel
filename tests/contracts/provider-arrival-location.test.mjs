@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
@@ -91,9 +92,9 @@ test('provider tracker surfaces precise GPS failures and never auto-arrives from
  assert.match(tracker,/error\.code!==1/)
  assert.match(tracker,/lastValidFixAtRef\.current/)
  assert.match(tracker,/Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS/)
- assert.match(tracker,/UGO necesita permiso de ubicación precisa/)
- assert.match(tracker,/El navegador no pudo determinar tu ubicación/)
- assert.match(tracker,/El GPS del navegador tardó demasiado en responder/)
+ assert.match(tracker,/providerGps\.permissionRoute/)
+ assert.match(tracker,/providerGps\.noPosition/)
+ assert.match(tracker,/providerGps\.timeout/)
  const startWatchIndex=tracker.indexOf('const startWatch=')
  const runtimeWatchIndex=tracker.indexOf('watchPosition(',startWatchIndex)
  const errorHandler=tracker.slice(runtimeWatchIndex,tracker.indexOf('const refresh=',runtimeWatchIndex))

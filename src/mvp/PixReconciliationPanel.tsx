@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{useLocale}from'../i18n/locale'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{useDialog}from'./dialogs'
@@ -13,6 +14,7 @@ const money=(value:number,currency='BRL')=>{try{return new Intl.NumberFormat('pt
 const when=(value?:string|null)=>value?new Date(value).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—'
 
 export function PixReconciliationPanel({embedded=true}:Props){
+ const{t}=useLocale()
  const[rows,setRows]=useState<PixRow[]>([]),[recent,setRecent]=useState<PixRow[]>([]),[services,setServices]=useState<Record<string,ServiceRow>>({}),[users,setUsers]=useState<Record<string,UserRow>>({}),[refs,setRefs]=useState<Record<string,string>>({}),[notes,setNotes]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[loading,setLoading]=useState(true)
  const{confirm,node:dialog}=useDialog()
  const load=useCallback(async()=>{
@@ -59,18 +61,18 @@ La acción queda auditada.`,danger:!approve}))return
  setRefs(v=>({...v,[row.id]:''}));setNotes(v=>({...v,[row.id]:''}));await load()
  }catch(e){setMessage(e instanceof Error?e.message:'No se pudo conciliar Pix.')}finally{setBusy('')}
  }
- return <section className={`ugo-pix-admin ${embedded?'embedded':'standalone'}`}>
-  <header className="ugo-pix-admin-head"><div><small>FINANZAS · PIX REAL</small><h3>Conciliación PIX directo</h3><p>Controlá sólo pagos reales informados. Cada aprobación exige referencia bancaria y queda auditada.</p></div><button type="button" onClick={()=>void load()} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></header>
-  <div className="ugo-pix-admin-kpis"><article><small>PIX pendientes</small><strong>{count}</strong><span>{money(total)}</span></article><article><small>Conciliados hoy</small><strong>{reconciledToday.length}</strong><span>{money(reconciledTotal)}</span></article><article><small>Último reporte</small><strong>{recent[0]?when(recent[0].pix_informado_at):'—'}</strong><span>{recent[0]?.estado||'Sin movimientos'}</span></article></div>
-  {loadError&&<div role="alert" className="ugo-pix-admin-error">No se pudo actualizar PIX: {loadError}<button type="button" onClick={()=>void load()}>Reintentar</button></div>}
+  return <section className={`ugo-pix-admin ${embedded?'embedded':'standalone'}`}>
+  <header className="ugo-pix-admin-head"><div><small>{t('pix.heading')}</small><h3>{t('pix.title')}</h3><p>{t('pix.description')}</p></div><button type="button" onClick={()=>void load()} disabled={loading}>{loading?'Actualizando…':t('pix.refresh')}</button></header>
+  <div className="ugo-pix-admin-kpis"><article><small>{t('pix.pending')}</small><strong>{count}</strong><span>{money(total)}</span></article><article><small>{t('pix.today')}</small><strong>{reconciledToday.length}</strong><span>{money(reconciledTotal)}</span></article><article><small>{t('pix.lastReport')}</small><strong>{recent[0]?when(recent[0].pix_informado_at):'—'}</strong><span>{recent[0]?.estado||'Sin movimientos'}</span></article></div>
+  {loadError&&<div role="alert" className="ugo-pix-admin-error">{t('pix.updateFailed')} {loadError}<button type="button" onClick={()=>void load()}>{t('pix.retry')}</button></div>}
   {message&&<div role="status" className="ugo-pix-admin-message">{message}</div>}
-  {!loading&&!loadError&&rows.length===0?<div className="ugo-pix-admin-empty"><div>✓</div><strong>No hay PIX pendientes de conciliación</strong><p>Cuando un cliente informe un PIX directo real, aparecerá acá con servicio, partes y monto.</p><button type="button" onClick={()=>void load()}>↻ Actualizar</button></div>:<div className="ugo-pix-admin-list">{rows.map(row=>{const svc=services[row.servicio_id],client=users[row.cliente_id],provider=users[row.proveedor_id];return <article key={row.id}>
-   <div className="ugo-pix-admin-rowhead"><div><small>SERVICIO #{svc?.numero??row.servicio_id.slice(0,8)}</small><strong>{money(row.monto_bruto,row.moneda||'BRL')}</strong><p>{svc?.descripcion||'Servicio UGO'}</p></div><span>AGUARDANDO</span></div>
-   <div className="ugo-pix-admin-meta"><span>Cliente <b>{client?.nombre||row.cliente_id.slice(0,8)}</b></span><span>Proveedor <b>{provider?.nombre||row.proveedor_id.slice(0,8)}</b></span><span>TXID <b>{row.pix_txid||'—'}</b></span><span>Informado <b>{when(row.pix_informado_at)}</b></span></div>
-   <div className="ugo-pix-admin-fields"><label>Referencia / E2E bancaria real<input value={refs[row.id]||''} onChange={e=>setRefs(v=>({...v,[row.id]:e.target.value}))} placeholder="E2E o ID de la transacción"/></label><label>Nota / motivo de rechazo<input value={notes[row.id]||''} onChange={e=>setNotes(v=>({...v,[row.id]:e.target.value}))} placeholder="Obligatorio para rechazar"/></label></div>
-   <div className="ugo-pix-admin-actions"><button type="button" className="approve" disabled={Boolean(busy)} onClick={()=>void reconcile(row,true)}>{busy===row.id?'Procesando…':'Conciliar PIX'}</button><button type="button" className="reject" disabled={Boolean(busy)} onClick={()=>void reconcile(row,false)}>{busy===row.id?'Procesando…':'Rechazar'}</button></div>
+  {!loading&&!loadError&&rows.length===0?<div className="ugo-pix-admin-empty"><div>✓</div><strong>{t('pix.emptyTitle')}</strong><p>{t('pix.empty')}</p><button type="button" onClick={()=>void load()}>{t('pix.refresh')}</button></div>:<div className="ugo-pix-admin-list">{rows.map(row=>{const svc=services[row.servicio_id],client=users[row.cliente_id],provider=users[row.proveedor_id];return <article key={row.id}>
+   <div className="ugo-pix-admin-rowhead"><div><small>{t('pix.service')}{svc?.numero??row.servicio_id.slice(0,8)}</small><strong>{money(row.monto_bruto,row.moneda||'BRL')}</strong><p>{svc?.descripcion||'Servicio UGO'}</p></div><span>{t('pix.waiting')}</span></div>
+   <div className="ugo-pix-admin-meta"><span>{t('pix.client')} <b>{client?.nombre||row.cliente_id.slice(0,8)}</b></span><span>{t('pix.provider')} <b>{provider?.nombre||row.proveedor_id.slice(0,8)}</b></span><span>{t('pix.txid')} <b>{row.pix_txid||'—'}</b></span><span>{t('pix.reported')} <b>{when(row.pix_informado_at)}</b></span></div>
+   <div className="ugo-pix-admin-fields"><label>{t('pix.reference')}<input value={refs[row.id]||''} onChange={e=>setRefs(v=>({...v,[row.id]:e.target.value}))} placeholder={t('pix.referencePlaceholder')}/></label><label>{t('pix.rejectNote')}<input value={notes[row.id]||''} onChange={e=>setNotes(v=>({...v,[row.id]:e.target.value}))} placeholder={t('pix.rejectPlaceholder')}/></label></div>
+   <div className="ugo-pix-admin-actions"><button type="button" className="approve" disabled={Boolean(busy)} onClick={()=>void reconcile(row,true)}>{busy===row.id?'Procesando…':t('pix.approve')}</button><button type="button" className="reject" disabled={Boolean(busy)} onClick={()=>void reconcile(row,false)}>{busy===row.id?'Procesando…':t('pix.reject')}</button></div>
   </article>})}</div>}
-  <footer>La conciliación no mueve dinero por sí sola: valida el ingreso real y actualiza el estado financiero protegido del servicio.</footer>
+  <footer>{t('pix.reconcileNote')}</footer>
   {dialog}
  </section>
 }

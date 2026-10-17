@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
@@ -33,7 +34,7 @@ test('regular admin does not see superadmin navigation as a dead destination',()
 
 test('home dashboard uses operational focus instead of deferred Hugo copilot',()=>{
   assert.match(home,/FOCO OPERATIVO/)
-  assert.match(home,/Prioridades por resolver/)
+  assert.match(home,/t\('admin\.home\.focusPendingTitle'\)/)
   assert.doesNotMatch(home,/HUGO COPILOT/)
 })
 
@@ -42,7 +43,7 @@ test('superadmin surfaces autonomy mode and gates before deep navigation',()=>{
   assert.match(superadmin,/EMPRESA AUTÓNOMA/)
   assert.match(superadmin,/AUTONOMY GATE/)
   assert.match(superadmin,/CUSTOMER #1/)
-  assert.match(superadmin,/aria-label="Navegación Super Admin"/)
+  assert.match(superadmin,/aria-label=\{t\('admin\.nav'\)\}/)
   assert.match(finalCss,/Super Admin control hierarchy 2026-10-03/)
 })
 

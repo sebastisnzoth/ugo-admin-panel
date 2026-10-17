@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
@@ -36,10 +37,10 @@ test('Admin finance can create edit activate and deactivate tariffs',()=>{
 
 test('client location requests and displays a zone tariff quote',()=>{
  assert.match(location,/cotizar_tarifa_servicio/)
- assert.match(location,/TARIFA UGO/)
- assert.match(location,/Sin tarifa UGO para esta zona/)
+ assert.match(location,/t\('clientLocation\.quoteTitle'|t\('clientLocation\.tariffLabel'/)
+ assert.match(location,/t\('screen\.location\.10'\)/)
  assert.match(location,/tariffQuote/)
- assert.match(summary,/Tarifa UGO/)
+ assert.match(summary,/t\('clientSummary\.rateTitle'/)
  assert.match(post,/pricing_zone/)
  assert.match(post,/tariff_quote/)
  assert.match(post,/zona:draft\.zone/)

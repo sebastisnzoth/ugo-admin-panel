@@ -1,3 +1,4 @@
+import './i18n-test-compat.mjs'
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
@@ -21,14 +22,14 @@ test('en-route trusted GPS RPC failures are surfaced instead of silently swallow
  assert.ok(rpcError>arrivalRpc)
  const tail=s.slice(rpcError,rpcError+500)
  assert.match(tail,/setLocationError/)
- assert.match(tail,/No pudimos publicar tu ubicación en tiempo real/)
+ assert.match(tail,/providerGps\.publishFailed/)
 })
 
 test('provider en-route UI exposes GPS freshness and precision without trusting stale fixes',async()=>{
  const s=await read('src/mvp/ProviderLocationTracker.tsx')
  assert.match(s,/provider-location-freshness/)
- assert.match(s,/GPS reciente/)
- assert.match(s,/GPS desactualizado/)
+ assert.match(s,/t\('providerGps\.recent'\)/)
+ assert.match(s,/t\('providerGps\.outdated'\)/)
  assert.match(s,/precisión ±/)
  assert.match(s,/setLastFix\(\{capturedAt:capturedAtMs,accuracy\}\)/)
  assert.match(s,/freshnessLimit=enRoute\?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS/)
@@ -62,7 +63,7 @@ test('provider online requests browser geolocation without signing out or silent
  const data=await read('src/mvp/provider/providerData.tsx')
  const service=await read('src/mvp/provider/providerService.ts')
  assert.match(data,/navigator\.geolocation\.getCurrentPosition/)
- assert.match(data,/tu sesión de UGO seguirá abierta/)
+ assert.match(data,/t\('providerRuntime\.locationUnavailable'\)/)
  assert.match(data,/if\(providerOnline&&providerAvailable\)/)
  assert.doesNotMatch(data,/auth\.signOut\(\).*geolocation/s)
  assert.match(service,/if\(online\)\{/)

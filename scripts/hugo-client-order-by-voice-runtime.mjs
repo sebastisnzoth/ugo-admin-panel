@@ -16,11 +16,12 @@ try{
  const place=await admin.from('direcciones_cliente').insert({usuario_id:userId,etiqueta:'Casa',direccion:'Rua UGO VOZ 100',barrio:'Centro',ciudad:'Florianópolis',latitud:-27.5949,longitud:-48.5482,es_predeterminada:false}).select('id').single();if(place.error)throw place.error;placeId=place.data.id
  const adminLogin=await adminUser.auth.signInWithPassword({email:adminEmail,password:adminPassword});assert.ifError(adminLogin.error);assert.ok(adminLogin.data.session)
  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844}});page=await context.newPage()
+ await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+userId,'es')},userId)
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  await page.getByPlaceholder('tu@email.com').fill(email)
  await page.getByPlaceholder('Mínimo 6 caracteres').fill(password)
  await page.getByRole('button',{name:'Ingresar a UGO'}).click()
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:30000});await page.getByRole('button',{name:'Hablar con Hugo'}).waitFor({state:'visible',timeout:20000})
+ await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:30000});await page.getByRole('button',{name:'Hablar con Hugo'}).waitFor({state:'visible',timeout:20000})
  await page.evaluate(()=>{window.__ugoToolResponses=[];window.__ugoPhotoStep=0;window.addEventListener('ugo:client:request-photo',()=>{window.__ugoPhotoStep++});window.UGOVoiceBridge={isAvailable:()=>true,startListening:()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})
  const call=async(name,args={})=>{const id='voice-'+Math.random().toString(36).slice(2);await page.evaluate(({id,name,args})=>window.dispatchEvent(new CustomEvent('ugo:native-voice-tool-call',{detail:{id,name,args}})),{id,name,args});await page.waitForFunction(id=>window.__ugoToolResponses?.some(x=>x.id===id),id,{timeout:25000});return await page.evaluate(id=>window.__ugoToolResponses.find(x=>x.id===id)?.response,id)}
  assert.equal((await call('set_request_category',{category:'plomero'})).ok,true)
