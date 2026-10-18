@@ -1,6 +1,16 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.logout": "Sair",
+    "ugoUserEdit.edit": "Editar",
+    "ugoUserEdit.editUser": "Editar usuário",
+    "ugoUserEdit.name": "Nome",
+    "ugoUserEdit.surname": "Sobrenome",
+    "ugoUserEdit.country": "País",
+    "ugoUserEdit.zone": "Região",
+    "ugoUserEdit.cancel": "Cancelar",
+    "ugoUserEdit.saving": "Salvando…",
+    "ugoUserEdit.save": "Salvar alterações",
     "screen.need.1": "Conte o que você precisa",
     "screen.need.2": "O que precisa ser feito?",
     "screen.need.3": "Descrição do serviço",
@@ -1010,6 +1020,16 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.logout": "Cerrar sesión",
+    "ugoUserEdit.edit": "Editar",
+    "ugoUserEdit.editUser": "Editar usuario",
+    "ugoUserEdit.name": "Nombre",
+    "ugoUserEdit.surname": "Apellido",
+    "ugoUserEdit.country": "País",
+    "ugoUserEdit.zone": "Zona",
+    "ugoUserEdit.cancel": "Cancelar",
+    "ugoUserEdit.saving": "Guardando…",
+    "ugoUserEdit.save": "Guardar cambios",
     "screen.need.1": "Contanos qué necesitás",
     "screen.need.2": "¿Qué hay que hacer?",
     "screen.need.3": "Descripción del trabajo",
@@ -2019,6 +2039,16 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.logout": "Sign out",
+    "ugoUserEdit.edit": "Edit",
+    "ugoUserEdit.editUser": "Edit user",
+    "ugoUserEdit.name": "First name",
+    "ugoUserEdit.surname": "Last name",
+    "ugoUserEdit.country": "Country",
+    "ugoUserEdit.zone": "Area",
+    "ugoUserEdit.cancel": "Cancel",
+    "ugoUserEdit.saving": "Saving…",
+    "ugoUserEdit.save": "Save changes",
     "screen.need.1": "Tell us what you need",
     "screen.need.2": "What needs to be done?",
     "screen.need.3": "Job description",
