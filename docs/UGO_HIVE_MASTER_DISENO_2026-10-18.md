@@ -308,4 +308,107 @@ Un Super Admin escribe una tarea inocua en UGO TEST, conversa y cambia el plan, 
 
 **Decisión arquitectónica:** priorizar el Chat de Dirección antes de escalar a los 118 agentes; es la interfaz de control y autorización de la colmena, no un segundo agente con acceso irrestricto.
 
+
+## 14. Revisión triple y evolución a UGO Hive 2.0 — 18/10/2026
+
+**Naturaleza:** auditoría y plan propuesto. No se afirma que Hive 2.0 ya funcione. No habilita despliegues, gastos, modelos pagos o bypass de gates.
+
+### Triple contraste efectuado
+
+**1. Arquitectura, gobernanza y skills.** Se inspeccionaron las skills `ugo-agent-governance`, `ugo-job-execution`, `ugo-github-ops`, `ugo-agent-factory` y `ugo-evidence-judge`, así como el plan maestro previo. Ya hay scheduler, conceptos de lease, evidencia, Judge y Sentinel. La existencia de contratos no demuestra la ejecución real de todos los especialistas.
+
+**2. Estado en Supabase UGO TEST.** Snapshot leído el 18/10: 13 departamentos, 118 agentes registrados (117 `IDLE`, 1 `DISABLED`), `autonomous_company_state.mode=OFF` (actualizado a las 19:35:57 UTC), gate `AUTONOMY_ON=READY` (evaluado a las 19:35:41 UTC) y `CUSTOMER_1=BLOCKED` (evaluado a las 19:37:44 UTC; bloqueos `QA_COVERAGE_INCOMPLETE` y `CUSTOMER_ACCEPTANCE_NOT_APPROVED`). Son observaciones fechadas, no estados garantizados para el futuro; jamás cambiar a ON a partir de un snapshot.
+
+**3. Código real GitHub y proveedor de modelos.** Inspeccionados `scripts/autonomous-worker-cycle.mjs`, `scripts/connect-autonomous-agents-openrouter.mjs`, `scripts/openrouter-autonomy-probe.mjs`, `server/hugo/modelRouter.ts` y `docs/UGO_SCHEDULER_POLICY.json`. El worker actual ejecuta una RPC determinista y no acredita edición/revisión autónoma de código. El conector contempla `gemini` y `openrouter`, prioriza Gemini en su selector y puede asignar un modelo común a muchos agentes: **no cumple por sí solo la política Hive OpenRouter-only/free-only**. El probe considera modelos con pricing prompt/completion cero, pero el diseño definitivo debe verificar todos los campos de cobro relevantes y rechazar precios ambiguos, cuota agotada y rutas inesperadas. No confundir catalogado, conectado, ejecutado y verificado.
+
+### Modelo de colonia: la reina distribuye, las obreras colaboran
+
+La Reina / UGO Maestro recibe una instrucción humana y consulta estado actual, restricciones y evidencia. La convierte en **misión versionada**, con un grafo dirigido acíclico de subtareas (DAG), criterios de aceptación, riesgos, dependencias y capacidad necesaria. No asigna automáticamente trabajo a los 118 agentes: sólo a los especialistas requeridos; los demás permanecen disponibles.
+
+```text
+Super Admin / Chat de Dirección
+  → Reina: misión, plan_version, DAG, permisos, costo y criterios
+  → autorización humana al plan_hash exacto
+  → Hive Scheduler: prioridad, capability match, dependencias, lease, lock
+  → Message Bus persistente / memoria de misión en Supabase
+     ↔ D2 Operaciones / D8 Tecnología / D9 QA / D14 Auditoría
+     ↔ otros departamentos, sólo cuando se requieran
+  → worker de herramientas permitido (GitHub/TEST/sandbox)
+  → evidencia persistida + Judge independiente + Sentinel
+  → resultados trazables en el mismo chat
+```
+
+Los **118 agentes son especialidades disponibles**, no 118 llamadas LLM ni 118 procesos. Propuesta de inicio: hasta **3 workers concurrentes** tras reconciliar `max_parallel_tasks=5` y las capacidades actuales `openrouter=1`, `ugo-test-worker=1` de `docs/UGO_SCHEDULER_POLICY.json`. No aumentar esas capacidades sin demostrar ausencia de conflicto y cuotas.
+
+### Protocolo de comunicación entre agentes
+
+No permitir chats libres ilimitados: usar mensajes estructurados, persistentes, encolados, auditables, autorizados por el scheduler y limitados por presupuesto de contexto.
+
+```json
+{
+  "mission_id": "uuid",
+  "job_id": "uuid",
+  "message_id": "uuid",
+  "correlation_id": "uuid",
+  "sender_agent_id": "uuid",
+  "recipient_agent_id": "uuid",
+  "kind": "REQUEST_EVIDENCE",
+  "payload_schema": "ugo.hive.message.v1",
+  "payload": {"request": "referencias a logs GPS"},
+  "evidence_refs": [],
+  "reply_to": null,
+  "deadline_at": "ISO8601",
+  "max_hops": 4,
+  "source_sha": "git-sha"
+}
+```
+
+Tipos de mensajes propuestos: `REQUEST_EVIDENCE`, `FINDING`, `TASK_HANDOFF`, `BLOCKED`, `REVIEW_REQUEST`, `REVIEW_RESULT`, `ESCALATION`. Autorización entre departamentos por tipo, alcance y datos; rechazo de mensajes huérfanos, replays, loops y delegación de permisos. Idempotencia `mission/job/message`, TTL, límites de hops, tamaño, rate y respuestas. Para conflictos, preferir evidencia reproducible; escalar desacuerdos no resueltos a un juez independiente o a Super Admin. La “memoria colectiva” no debe convertir texto de PR, logs o agentes en instrucciones privilegiadas.
+
+### GitHub Worker: acción efectiva, no sólo conversación
+
+Primero buscar las capacidades ya existentes en D8 (`devops-agent`, `software-engineering-agent`, `technology-security-agent`) y `ugo-github-ops`; no añadir otro agente nominal sin una carencia probada. La pieza nueva necesaria es el **ejecutor de herramientas sandboxed** con contratos y permisos.
+
+`mission_id/job_id → rama aislada desde SHA fijado → inspección y diff acotado → tests locales → PR → CI same-SHA → Judge → Sentinel → resultado`.
+
+- GitHub App/GITHUB_TOKEN de mínimo privilegio y vigencia limitada; secretos sólo servidor/runner.
+- No ejecutar shell libre ni comandos provenientes sin validación de modelos. Lista de herramientas y acciones acotadas; filesystem efímero; sin credenciales de producción.
+- Detectar PR abierto, leases vigentes y edición concurrente antes de crear rama o modificar archivos.
+- No fusionar PR ni publicar producción sin gates, política explícita y autorización correspondiente.
+- No declarar success por commit, PR abierto, snapshot, contrato textual o test ejecutado con SHA distinto.
+
+### Model Router OpenRouter-only y presupuesto cero
+
+Regla **HIVE_ONLY_OPENROUTER_FREE**: limitar toda llamada de la colmena (incluyendo Chat de Dirección, planeación y revisión) a OpenRouter con modelos de costo cero comprobado antes de usar. Las integraciones históricas de Hugo/Gemini no autorizan un fallback de Hive hacia Gemini u otro proveedor. Si ningún modelo gratuito apto está disponible, mantener misión en `WAITING_MODEL` o estado compatible con las máquinas actuales; no gastar ni inventar resultados.
+
+- Cachear hechos con procedencia; usar pruebas deterministas antes de inferencia.
+- Cuota por misión, worker y departamento, más rate limiter común; estimar demanda sin prometer 24/7 ni cuota infinita. Verificar límites externos el día de ejecución.
+- Reintentos acotados, backoff, circuit breaker y dead-letter. Costo no modelado o precio desconocido = fail-closed.
+- Redactar secretos y datos personales en prompts, contexto, logs y memoria.
+
+### Orden de implementación y aceptación
+
+**Fase A — Conectar el mando**: Chat de Dirección autenticado, contexto real permitido, planificación validada por esquema, revisión humana y aprobación de `plan_hash` exacto. No ejecutar un mensaje libre.
+
+**Fase B — Primera colaboración**: misión inocua UGO TEST, 2 agentes intercambiando mensajes estructurados y evidencia; scheduler verifica dependencias y leases; no se duplican jobs.
+
+**Fase C — GitHub Worker real**: worker de D8 modifica de forma reversible una rama aislada, ejecuta tests, abre PR y correlaciona run/SHA/resultado; D9 inspecciona y D14 verifica.
+
+**Fase D — Colmena mínima**: hasta 3 workers en recursos no conflictivos, memoria compartida, recuperación tras caída, límites de API y observabilidad en Super Admin.
+
+**Fase E — Expansión gradual**: habilitar capacidades del resto de departamentos una por una sólo después de pruebas representativas. No activar 118 ejecutores de golpe.
+
+**Prueba E2E obligatoria:** Super Admin pide corregir un defecto menor de i18n en TEST → Reina crea plan versionado → humano aprueba → dos o tres agentes se comunican → worker cambia una rama → tests y PR → Judge/Sentinel con evidencia exact-SHA → chat muestra resultado real y costo OpenRouter cero. Pruebas negativas de fuga de permisos, replay, doble asignación, caída de worker, falta de modelo gratuito, cambios de plan tras aprobación y llamadas a producción.
+
+### Brechas que deben seguir visibles
+
+- Chat real conectado al planner, mensaje interagente persistido y worker GitHub ejecutor: **no verificados**.
+- Rate limits/catálogo de modelos gratis: variables externas, validar contra API actual al implementar.
+- `AUTONOMY_ON=READY` no equivale a Hive operativo; snapshot `OFF` no debe alterarse por esta documentación.
+- `CUSTOMER_1=BLOCKED` no se resuelve por construir Hive; quedan QA y aprobación humana.
+- No prometer colmena plenamente funcional hoy: el objetivo inicial es una misión real end-to-end en TEST, sujeta a pruebas y recursos disponibles.
+- Preservar trabajo concurrente: PRs abiertos, fixtures compartidos, permisos y CI actual deben reconciliarse antes de escribir.
+
+**Decisión:** reutilizar el catálogo de 118 agentes, construir tres capacidades nuevas (planificador de misiones, bus de mensajes interagente y ejecutor de herramientas GitHub aislado) y demostrar primero una misión completa. Esta sección no autoriza implementar, activar ON ni modificar producción.
+
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
