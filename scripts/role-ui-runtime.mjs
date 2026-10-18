@@ -276,6 +276,32 @@ async function testAdminAuthBoundary(viewport,name){
  }
 }
 
+async function testAdministrativeSession(viewport,name,key){
+ const identity=fixtures.identities[key]
+ const superRole=key==='admin'
+ const page=await browser.newPage({viewport})
+ try{
+  await page.goto(base+'/?app='+(superRole?'superadmin':'admin'),{waitUntil:'domcontentloaded'})
+  await page.getByTestId('language-selector').selectOption('es')
+  await page.locator('form input[type="text"]').fill(identity.email)
+  await page.locator('form input[type="password"]').fill(identity.password)
+  await page.locator('form input[type="password"]').press('Enter')
+  const navigation=page.getByRole('navigation',{name:'Navegación Admin'})
+  await navigation.waitFor({state:'visible',timeout:30000})
+  if(!superRole)assert.equal(await navigation.getByRole('button',{name:/Super Admin/}).count(),0,'ADMIN_MUST_NOT_EXPOSE_SUPERADMIN')
+  await page.reload({waitUntil:'domcontentloaded'})
+  await navigation.waitFor({state:'visible',timeout:20000})
+  await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click()
+  await page.waitForURL(url=>url.searchParams.get('auth')==='1',{timeout:10000})
+  await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
+  assert.equal(await page.evaluate(()=>localStorage.getItem('ugo-test-admin-auth')),null,'LOGOUT_LEFT_ADMIN_SESSION')
+  await page.reload({waitUntil:'domcontentloaded'})
+  await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
+  assert.equal(await navigation.count(),0,'LOGOUT_RESTORED_PROTECTED_UI')
+  results.push({role:superRole?'superadmin-session':'admin-session',viewport:name,status:'PASS',ui_login:true,reload:true,logout:true})
+ }finally{await page.close()}
+}
+
 async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
@@ -353,6 +379,8 @@ try{
    await freshRoleSession('client')
    await freshRoleSession('admin')
    await testAdminAuthBoundary(viewport,name)
+   await testAdministrativeSession(viewport,name,'operator')
+   await testAdministrativeSession(viewport,name,'admin')
    await testAdmin(viewport,name)
    await testClient(viewport,name)
    await freshRoleSession('provider')

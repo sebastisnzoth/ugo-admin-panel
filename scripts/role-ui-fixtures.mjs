@@ -18,7 +18,7 @@ export async function createRoleUiFixtures(db,sha){
   assert.deepEqual(failures,[],'ROLE_UI_FIXTURE_CLEANUP_FAILED')
  }
  try{
-  for(const [key,role] of [['client','cliente'],['provider','proveedor'],['admin','superadmin']]){
+  for(const [key,role] of [['client','cliente'],['provider','proveedor'],['admin','superadmin'],['operator','admin']]){
    const email=`role-ui-${sha.slice(0,8)}-${key}-${randomUUID().slice(0,8)}@example.com`,password='TestAa1!'+randomUUID()
    const created=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{tipo:role}})
    assert.ifError(created.error)
