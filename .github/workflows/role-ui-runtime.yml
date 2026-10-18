@@ -7,6 +7,9 @@ on:
       - "scripts/role-ui-runtime.mjs"
       - "scripts/admin-user-persistence-runtime.mjs"
       - "scripts/role-ui-fixtures.mjs"
+      - "scripts/admin-api-runtime-server.mjs"
+      - "api/operations.ts"
+      - "api/admin/integrations-status.ts"
       - ".github/workflows/role-ui-runtime.yml"
       - "src/features/client/**"
       - "src/mvp/**"
@@ -19,6 +22,9 @@ on:
       - "scripts/role-ui-runtime.mjs"
       - "scripts/admin-user-persistence-runtime.mjs"
       - "scripts/role-ui-fixtures.mjs"
+      - "scripts/admin-api-runtime-server.mjs"
+      - "api/operations.ts"
+      - "api/admin/integrations-status.ts"
       - "src/features/client/**"
       - "src/mvp/**"
       - "src/components/**"
@@ -64,6 +70,7 @@ jobs:
       - name: Build exact SHA
         env:
           VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          VITE_API_BASE_URL: http://127.0.0.1:4174
         run: npm run build
       - name: Install Chromium
         run: |
@@ -76,9 +83,11 @@ jobs:
           export UGO_RUNTIME_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
           export VITE_APP_REVISION="${{ github.event.pull_request.head.sha || github.sha }}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          node scripts/admin-api-runtime-server.mjs > /tmp/ugo-role-api.log 2>&1 &
+          api_pid=$!
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/ugo-role-ui-vite.log 2>&1 &
           vite_pid=$!
-          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          trap 'kill "$vite_pid" "$api_pid" 2>/dev/null || true' EXIT
           ready=0
           for attempt in $(seq 1 60); do
             if curl -fsS --max-time 2 "$UGO_UI_BASE_URL/?app=client" >/dev/null; then ready=1; break; fi
@@ -94,6 +103,7 @@ jobs:
             cat /tmp/ugo-role-ui-vite.log || true
             exit 1
           fi
+          curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:4174/__health
           node scripts/i18n-login-runtime.mjs
           node scripts/role-ui-runtime.mjs
       - name: Upload UI runtime evidence

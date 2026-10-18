@@ -110,3 +110,7 @@ No promover por contratos, persistencia aislada, CI o compilación.
 No disparar Vercel para documentación, para generar APK ni para sustituir QA Android. Publicar sólo cuando exista necesidad funcional de release y registrar revisión exacta + smoke + rollback/mitigación.
 
 **UGO se valida por evidencia. Supabase PROD permanece fuera de alcance.**
+
+### Admin/Super Admin · prueba API/UI exacta (18/10/2026)
+
+`role-ui-runtime.yml` usa identidades efímeras por ejecución y API local en loopback a partir de `api/operations.ts` e `api/admin/integrations-status.ts` del mismo checkout, sin mock de Supabase ni secretos escritos a archivos. El frontend TEST usa `VITE_API_BASE_URL=http://127.0.0.1:4174`. Casos: login/reload/logout Admin y Super Admin; edición Cliente/Proveedor y categorías con lector DB independiente; creación con auditoría, contraseña verificada por otro cliente Auth, activación/desactivación, rechazo de privilegios y cero filas; SHADOW→OFF sin ejecutar ON. El probe de respuesta cero filas es controlado en HTTP y se distingue del RLS real. Cleanup verifica Auth/perfil; diagnósticos acotados al fixture. Pages fija base API canónica y conserva callback query/hash en su entrada raíz. Un PASS de este harness no sustituye Customer #1, GPS físico ni prueba de finanzas con dinero real.

@@ -645,3 +645,5 @@ Corrección del enfoque de QA: la corrida queue:max también resultó cancelada.
 Edición integral Admin ampliada a contacto/domicilio, foto por URL, bio/experiencia y categorías del proveedor, con verificación de persistencia por tabla y mensajes en tres idiomas. Pendiente UI/DB same-SHA de los cambios; no certificado por la presencia del formulario.
 
 Se alinea la autoridad backend con la UI de cuentas privilegiadas: Admin no puede modificar perfiles de otros administradores/Super Admin/árbitros directamente por `usuarios`. Migración sólo TEST y probes transaccionales positivos/negativos; falta runtime PostgREST del SHA integrado antes del cierre.
+
+API/Admin en Pages: base canónica explícita, CORS preflight de integraciones y aliases TEST consistentes. Se amplía el runtime a APIs reales del mismo SHA sin deploy, creación auditada/reset de contraseña y SHADOW→OFF restaurado. La publicación Vercel sigue sujeta a cuota externa; no se generan deploys de prueba.

@@ -1,15 +1,34 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
+import {createClient} from '@supabase/supabase-js'
 
 // A disposable TEST client avoids editing shared users or their service history.
-export async function verifyAdminUserPersistence({page,db,client,sha}) {
+export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
  const marker='AdminPersist-'+randomUUID().slice(0,8)
  const email=marker.toLowerCase()+'@example.com'
- const {data:created,error:createError}=await db.auth.admin.createUser({email,password:'TestAa1!'+randomUUID(),email_confirm:true})
- assert.ifError(createError)
- const id=created.user.id
+ const initialPassword='TestAa1!'+randomUUID()
+ const createdResponse=await fetch('http://127.0.0.1:4174/api/operations?op=admin-create-user',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({email,password:initialPassword,nombre:marker,apellido:'Before',role:'cliente',demo:true})})
+ assert.equal(createdResponse.status,201,'ADMIN_CREATE_API_FAILED')
+ const created=await createdResponse.json()
+ const id=created.id
+ assert.ok(id,'ADMIN_CREATE_RETURNED_NO_ID')
  let cleanupError=null
  try {
+  const authRecord=await db.auth.admin.getUserById(id)
+  assert.ifError(authRecord.error)
+  assert.equal(authRecord.data.user.email,email,'ADMIN_CREATE_AUTH_MISMATCH')
+  const createdAudit=await db.from('audit_log').select('id').eq('entidad_id',id).eq('evento','admin_usuario_creado')
+  assert.ifError(createdAudit.error)
+  assert.equal(createdAudit.data.length,1,'ADMIN_CREATE_AUDIT_MISSING')
+  const resetPassword='ResetAa1!'+randomUUID()
+  const reset=await fetch('http://127.0.0.1:4174/api/operations?op=admin-reset-password',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({userId:id,password:resetPassword})})
+  assert.equal(reset.status,200,'ADMIN_PASSWORD_RESET_FAILED')
+  const resetReader=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+  const resetCheck=await resetReader.auth.signInWithPassword({email,password:resetPassword})
+  assert.ifError(resetCheck.error)
+  assert.equal(resetCheck.data.user.id,id,'ADMIN_PASSWORD_RESET_NOT_PERSISTED')
+  // The root client must remain service-role only for independent persistence checks.
+  await resetReader.auth.signOut({scope:'local'})
   const {error:profileError}=await db.from('usuarios').upsert({id,email,nombre:marker,apellido:'Before',tipo:'cliente',activo:true,pais:'BR',zona:'TEST',es_demo:true})
   assert.ifError(profileError)
   const clientProfile=await db.from('perfiles_cliente').upsert({usuario_id:id})
@@ -96,8 +115,8 @@ export async function verifyAdminUserPersistence({page,db,client,sha}) {
    assert.ifError(state.error)
    assert.equal(state.data.activo,active,'ADMIN_ACTIVATION_NOT_PERSISTED')
   }
-  return {status:'PASS',persisted_edit:true,client_contact:true,provider_details:true,categories:true,activation:true,non_admin_denied:true,zero_row_feedback:true,fixture_id:id}
- }catch(error){await page.screenshot({path:'artifacts/role-ui-admin-user-failure.png',fullPage:true}).catch(()=>{});console.error('ADMIN_PROFILE_RUNTIME_FAILURE',(await page.locator('body').innerText().catch(()=>'' )).slice(-3500));throw error}finally{
+  return {status:'PASS',create_api:true,password_reset:true,persisted_edit:true,client_contact:true,provider_details:true,categories:true,activation:true,non_admin_denied:true,zero_row_feedback:true,fixture_id:id}
+ }catch(error){await page.getByRole('dialog',{name:'Editar usuario',exact:true}).screenshot({path:'artifacts/role-ui-admin-user-failure.png'}).catch(()=>{});console.error('ADMIN_PROFILE_RUNTIME_FAILURE',String(error?.message||error));throw error}finally{
   const removed=await db.from('usuarios').delete().eq('id',id)
   cleanupError=removed.error
   const authRemoved=await db.auth.admin.deleteUser(id)

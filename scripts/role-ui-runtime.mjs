@@ -310,7 +310,35 @@ async function testAdministrativeSession(viewport,name,key){
   await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
   assert.equal(await navigation.count(),0,'LOGOUT_RESTORED_PROTECTED_UI')
   results.push({role:superRole?'superadmin-session':'admin-session',viewport:name,status:'PASS',ui_login:true,reload:true,logout:true})
- }catch(error){await page.screenshot({path:'artifacts/role-ui-session-failure-'+key+'-'+name+'.png',fullPage:true}).catch(()=>{});console.error('ADMIN_SESSION_FAILURE',key,name,(await page.locator('body').innerText().catch(()=>'' )).slice(0,2200));throw error}finally{await page.close()}
+ }catch(error){console.error('ADMIN_SESSION_FAILURE',key,name,JSON.stringify({lang:await page.locator('html').getAttribute('lang'),adminShell:await page.locator('.ugo-admin2').count(),loginForm:await page.locator('form input[type=password]').count()}));throw error}finally{await page.close()}
+}
+
+async function testAutonomyControl(page,name){
+ const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+ assert.ifError(before.error)
+ assert.equal(before.data?.mode,'OFF','AUTONOMY_TEST_REQUIRES_IDLE_OFF_STATE')
+ const actor=sessions.admin.user.id
+ try{
+  await page.getByRole('radio',{name:/SHADOW/}).click()
+  await page.waitForFunction(()=>document.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.includes('SHADOW'),null,{timeout:20000})
+  const shadow=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+  assert.ifError(shadow.error)
+  assert.equal(shadow.data.mode,'SHADOW')
+  assert.equal(shadow.data.updated_by,actor)
+  await page.getByRole('radio',{name:/OFF/}).click()
+  await page.waitForFunction(()=>document.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.includes('OFF'),null,{timeout:20000})
+  const off=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
+  assert.ifError(off.error)
+  assert.equal(off.data.mode,'OFF')
+  results.push({role:'superadmin-autonomy-control',viewport:name,status:'PASS',api:'exact-source local TEST',shadow_persisted:true,off_restored:true})
+ }finally{
+  const current=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+  assert.ifError(current.error)
+  if(current.data?.mode==='SHADOW'&&current.data.updated_by===actor){
+   const response=await fetch('http://127.0.0.1:4174/api/operations?op=autonomy-mode',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sessions.admin.access_token},body:JSON.stringify({mode:'OFF',reason:'Restore transient TEST UI probe'})})
+   assert.equal(response.ok,true,'AUTONOMY_TEST_RESTORE_FAILED')
+  }
+ }
 }
 
 async function testAdmin(viewport,name){
@@ -337,7 +365,7 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByRole('group',{name:'Personas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin people '+item)
      await assertResponsive(page,'admin '+name+' people '+item)
    }
-   results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha}))})
+   results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha,session:sessions.admin}))})
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
@@ -355,6 +383,7 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByTestId('autonomy-view-'+item),'autonomous '+item)
      await assertResponsive(page,'admin '+name+' autonomous '+item)
    }
+   if(name==='desktop')await testAutonomyControl(page,name)
    await page.screenshot({path:'artifacts/role-ui-admin-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'admin page errors: '+errors.join(' | '))
    results.push({role:'admin',viewport:name,status:'PASS',main_items:mainItems.length,autonomous_items:12})
