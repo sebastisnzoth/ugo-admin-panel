@@ -1,0 +1,48 @@
+{
+  "task_id": "admin-superadmin-repair",
+  "job_id": "UGO-ADMIN-SUPERADMIN-20261018",
+  "objective": "Verify user editing and autonomy error recovery; recover cancelled cross-role runtime validation",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "Codex",
+  "skills": [
+    "ugo-code-engineering",
+    "ugo-github-ops",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "resources": [
+    "admin-users",
+    "super-admin-ui",
+    "autonomy-state"
+  ],
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-18T03:08:00Z",
+  "heartbeat_at": "2026-10-18T04:22:17.888910Z",
+  "lease_expires_at": "2026-10-18T05:07:17.888910Z",
+  "source_sha": "6ab7d84fc635cc046623e49485a73f4eb4ad170f",
+  "pull_requests": [
+    503,
+    504
+  ],
+  "acceptance_criteria": [
+    "Real TEST UI edit persists and is independently read",
+    "Non-admin cannot modify fixture",
+    "Zero-row response never announces saved data",
+    "Autonomy rejection survives refresh; stop modes remain available",
+    "Applicable same-SHA CI and browser runtime pass"
+  ],
+  "production_touched": false,
+  "judge": "SOURCE_REVIEW_PASS",
+  "sentinel": "PENDING",
+  "title": "Repair Admin/Super Admin editing, sessions, autonomy feedback and publication entry",
+  "owner": "Codex",
+  "started_sha": "6ab7d84fc635cc046623e49485a73f4eb4ad170f",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "correlation_id": "ugo-admin-superadmin-repair-20261018",
+  "current_step": "RUNTIME_VALIDATION",
+  "attempt": 5,
+  "runtime_candidate": "4df3695041f8bedbeaa8443d441b99202bb25ec5"
+}

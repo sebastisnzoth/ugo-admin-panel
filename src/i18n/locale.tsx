@@ -85,7 +85,7 @@ export function LocaleProvider({children}:{children:React.ReactNode}){
    const remoteTime=Number(session.user.user_metadata?.preferred_language_updated_at)||0
    let localTime=0
    try{localTime=Number(window.localStorage.getItem(key+'.updatedAt'))||0}catch{}
-   const chosen=isLocale(metadata)&&remoteTime>=localTime?metadata:isLocale(local)?local:isLocale(metadata)?metadata:'pt-BR'
+   const chosen=isLocale(metadata)&&remoteTime>=localTime?metadata:isLocale(local)?local:isLocale(metadata)?metadata:initialLocale()
    if(role==='client'&&!isLocale(local)&&!isLocale(metadata)){
     const selectionRevision=revision.current
     // Defer REST access until outside Supabase's synchronous auth callback.

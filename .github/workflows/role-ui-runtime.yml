@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - "scripts/role-ui-runtime.mjs"
+      - "scripts/admin-user-persistence-runtime.mjs"
+      - "scripts/role-ui-fixtures.mjs"
+      - "scripts/admin-api-runtime-server.mjs"
+      - "api/operations.ts"
+      - "api/admin/integrations-status.ts"
       - ".github/workflows/role-ui-runtime.yml"
       - "src/features/client/**"
       - "src/mvp/**"
@@ -15,6 +20,11 @@ on:
     branches: [main]
     paths:
       - "scripts/role-ui-runtime.mjs"
+      - "scripts/admin-user-persistence-runtime.mjs"
+      - "scripts/role-ui-fixtures.mjs"
+      - "scripts/admin-api-runtime-server.mjs"
+      - "api/operations.ts"
+      - "api/admin/integrations-status.ts"
       - "src/features/client/**"
       - "src/mvp/**"
       - "src/components/**"
@@ -28,19 +38,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-test-scheduled-worker-proof-autonomy-state
   cancel-in-progress: false
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
-  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
-  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
-  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
-  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
-  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
-  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
 
 jobs:
   runtime-proof:
@@ -61,14 +65,12 @@ jobs:
           set -euo pipefail
           test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
-          test -n "$UGO_TEST_CLIENT_PASSWORD"
-          test -n "$UGO_TEST_PROVIDER_PASSWORD"
-          test -n "$UGO_TEST_ADMIN_PASSWORD"
       - run: npm ci --include=dev
       - run: npm run verify:test-env
       - name: Build exact SHA
         env:
           VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          VITE_API_BASE_URL: http://127.0.0.1:4174
         run: npm run build
       - name: Install Chromium
         run: |
@@ -81,9 +83,11 @@ jobs:
           export UGO_RUNTIME_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
           export VITE_APP_REVISION="${{ github.event.pull_request.head.sha || github.sha }}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          node scripts/admin-api-runtime-server.mjs > /tmp/ugo-role-api.log 2>&1 &
+          api_pid=$!
           npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/ugo-role-ui-vite.log 2>&1 &
           vite_pid=$!
-          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          trap 'kill "$vite_pid" "$api_pid" 2>/dev/null || true' EXIT
           ready=0
           for attempt in $(seq 1 60); do
             if curl -fsS --max-time 2 "$UGO_UI_BASE_URL/?app=client" >/dev/null; then ready=1; break; fi
@@ -99,6 +103,7 @@ jobs:
             cat /tmp/ugo-role-ui-vite.log || true
             exit 1
           fi
+          curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:4174/__health
           node scripts/i18n-login-runtime.mjs
           node scripts/role-ui-runtime.mjs
       - name: Upload UI runtime evidence

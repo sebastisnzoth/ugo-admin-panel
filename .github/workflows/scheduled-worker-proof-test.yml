@@ -6,15 +6,15 @@ on:
     workflows: ["UGO Core CI"]
     types: [completed]
   schedule:
-    - cron: '23 * * * *'
+    # Readiness expires after 45 minutes; refresh every 15 with scheduling margin.
+    - cron: '7,22,37,52 * * * *'
 
 permissions:
   contents: read
 
 concurrency:
-  # This proof touches only autonomous-company/job ledgers; it does not mutate the shared provider fixture.
-  # Keep its own queue so provider/RLS workflow_run cascades cannot evict the autonomy proof.
-  group: ugo-test-scheduled-worker-proof-${{ github.event.workflow_run.head_sha || github.sha }}
+  # Serialize global autonomy-state probes with the cross-role UI workflow.
+  group: ugo-test-scheduled-worker-proof-autonomy-state
   cancel-in-progress: false
 
 jobs:

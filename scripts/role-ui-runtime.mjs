@@ -2,22 +2,18 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {createRoleUiFixtures} from './role-ui-fixtures.mjs'
+import {verifyAdminUserPersistence} from './admin-user-persistence-runtime.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
-const clientEmail=process.env.UGO_TEST_CLIENT_EMAIL||''
-const clientPassword=process.env.UGO_TEST_CLIENT_PASSWORD||''
-const providerEmail=process.env.UGO_TEST_PROVIDER_EMAIL||''
-const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD||''
-const adminEmail=process.env.UGO_TEST_ADMIN_EMAIL||''
-const adminPassword=process.env.UGO_TEST_ADMIN_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
-assert.ok(anon&&serviceKey&&clientEmail&&clientPassword&&providerEmail&&providerPassword&&adminEmail&&adminPassword&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
+assert.ok(anon&&serviceKey&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
 
 async function login(email,password){
  const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
@@ -34,6 +30,11 @@ async function login(email,password){
  throw lastError
 }
 const privileged=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
+const fixtures=await createRoleUiFixtures(privileged,sha)
+try{
+const {email:clientEmail,password:clientPassword}=fixtures.identities.client
+const {email:providerEmail,password:providerPassword}=fixtures.identities.provider
+const {email:adminEmail,password:adminPassword}=fixtures.identities.admin
 const client=await login(clientEmail,clientPassword)
 const provider=await login(providerEmail,providerPassword)
 const admin=await login(adminEmail,adminPassword)
@@ -183,7 +184,7 @@ async function testClient(viewport,name){
    await page.screenshot({path:'artifacts/role-ui-client-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'client page errors: '+errors.join(' | '))
    results.push({role:'client',viewport:name,status:'PASS',menu_items:menuItems.length})
- } finally {await page.close()}
+ }catch(error){await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true}).catch(()=>{});console.error('ROLE_UI_CLIENT_FAILURE',name,(await page.locator('body').innerText().catch(()=>'' )).slice(0,1600));throw error}finally{await page.close()}
 }
 
 async function testProvider(viewport,name){
@@ -275,6 +276,80 @@ async function testAdminAuthBoundary(viewport,name){
  }
 }
 
+async function testAdministrativeSession(viewport,name,key){
+ const identity=fixtures.identities[key]
+ const superRole=key==='admin'
+ const persistedRole=await privileged.from('usuarios').select('tipo,activo').eq('id',identity.id).single()
+ assert.ifError(persistedRole.error)
+ assert.equal(persistedRole.data.tipo,superRole?'superadmin':'admin')
+ assert.equal(persistedRole.data.activo,true)
+ if(!superRole){
+  const ordinary=await login(identity.email,identity.password)
+  try{
+   const denied=await ordinary.sb.from('usuarios').update({nombre:'Unauthorized QA edit'}).eq('id',fixtures.identities.admin.id).select('id')
+   assert.ok(denied.error||!denied.data?.length,'ADMIN_COULD_EDIT_PRIVILEGED_ACCOUNT_DIRECTLY')
+  }finally{await ordinary.sb.auth.signOut({scope:'local'})}
+ }
+ const page=await browser.newPage({viewport})
+ try{
+  await page.goto(base+'/?app='+(superRole?'superadmin':'admin'),{waitUntil:'domcontentloaded'})
+  await page.getByTestId('language-selector').selectOption('es')
+  await page.locator('form input[type="text"]').fill(identity.email)
+  await page.locator('form input[type="password"]').fill(identity.password)
+  const storedPreference=await privileged.auth.admin.getUserById(identity.id)
+  assert.ifError(storedPreference.error)
+  const restoredLocale=storedPreference.data.user.user_metadata?.preferred_language
+  await page.locator('form input[type="password"]').press('Enter')
+  await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:30000})
+  if(restoredLocale)await page.waitForFunction(value=>document.documentElement.lang===value,restoredLocale)
+  // The prior desktop translation case legitimately persisted this account's English choice.
+  // Select Spanish inside the authenticated UI before using Spanish accessible names.
+  await page.getByTestId('language-selector').first().selectOption('es')
+  await page.waitForFunction(()=>document.documentElement.lang==='es')
+  const navigation=page.getByRole('navigation',{name:'Navegación Admin'})
+  await navigation.waitFor({state:'visible',timeout:30000})
+  if(!superRole)assert.equal(await navigation.getByRole('button',{name:/Super Admin/}).count(),0,'ADMIN_MUST_NOT_EXPOSE_SUPERADMIN')
+  await page.reload({waitUntil:'domcontentloaded'})
+  await navigation.waitFor({state:'visible',timeout:20000})
+  await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click()
+  await page.waitForURL(url=>url.searchParams.get('auth')==='1',{timeout:10000})
+  await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
+  assert.equal(await page.evaluate(()=>localStorage.getItem('ugo-test-admin-auth')),null,'LOGOUT_LEFT_ADMIN_SESSION')
+  await page.reload({waitUntil:'domcontentloaded'})
+  await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
+  assert.equal(await navigation.count(),0,'LOGOUT_RESTORED_PROTECTED_UI')
+  results.push({role:superRole?'superadmin-session':'admin-session',viewport:name,status:'PASS',ui_login:true,reload:true,logout:true})
+ }catch(error){console.error('ADMIN_SESSION_FAILURE',key,name,JSON.stringify({lang:await page.locator('html').getAttribute('lang'),adminShell:await page.locator('.ugo-admin2').count(),loginForm:await page.locator('form input[type=password]').count()}));throw error}finally{await page.close()}
+}
+
+async function testAutonomyControl(page,name){
+ const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+ assert.ifError(before.error)
+ assert.equal(before.data?.mode,'OFF','AUTONOMY_TEST_REQUIRES_IDLE_OFF_STATE')
+ const actor=sessions.admin.user.id
+ try{
+  await page.getByRole('radio',{name:/SHADOW/}).click()
+  await page.waitForFunction(()=>document.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.includes('SHADOW'),null,{timeout:20000})
+  const shadow=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+  assert.ifError(shadow.error)
+  assert.equal(shadow.data.mode,'SHADOW')
+  assert.equal(shadow.data.updated_by,actor)
+  await page.getByRole('radio',{name:/OFF/}).click()
+  await page.waitForFunction(()=>document.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.includes('OFF'),null,{timeout:20000})
+  const off=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
+  assert.ifError(off.error)
+  assert.equal(off.data.mode,'OFF')
+  results.push({role:'superadmin-autonomy-control',viewport:name,status:'PASS',api:'exact-source local TEST',shadow_persisted:true,off_restored:true})
+ }finally{
+  const current=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+  assert.ifError(current.error)
+  if(current.data?.mode==='SHADOW'&&current.data.updated_by===actor){
+   const response=await fetch('http://127.0.0.1:4174/api/operations?op=autonomy-mode',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sessions.admin.access_token},body:JSON.stringify({mode:'OFF',reason:'Restore transient TEST UI probe'})})
+   assert.equal(response.ok,true,'AUTONOMY_TEST_RESTORE_FAILED')
+  }
+ }
+}
+
 async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
@@ -299,6 +374,7 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByRole('group',{name:'Personas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin people '+item)
      await assertResponsive(page,'admin '+name+' people '+item)
    }
+   results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha,session:sessions.admin}))})
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
@@ -316,6 +392,7 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByTestId('autonomy-view-'+item),'autonomous '+item)
      await assertResponsive(page,'admin '+name+' autonomous '+item)
    }
+   if(name==='desktop')await testAutonomyControl(page,name)
    await page.screenshot({path:'artifacts/role-ui-admin-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'admin page errors: '+errors.join(' | '))
    results.push({role:'admin',viewport:name,status:'PASS',main_items:mainItems.length,autonomous_items:12})
@@ -349,12 +426,14 @@ try{
  const viewports=[['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]
  for(const [name,viewport] of viewports){
    await freshRoleSession('client')
+   await freshRoleSession('admin')
+   await testAdminAuthBoundary(viewport,name)
+   await testAdministrativeSession(viewport,name,'operator')
+   await testAdministrativeSession(viewport,name,'admin')
+   await testAdmin(viewport,name)
    await testClient(viewport,name)
    await freshRoleSession('provider')
    await testProvider(viewport,name)
-   await freshRoleSession('admin')
-   await testAdminAuthBoundary(viewport,name)
-   await testAdmin(viewport,name)
    for(const role of ['client','provider','admin','superadmin'])await testTranslations(role,viewport,name)
  }
  await fs.writeFile('artifacts/role-ui-runtime.json',JSON.stringify({task:'role-ui-runtime',sha,environment:'UGO TEST',results,page_errors:0,completed_at:new Date().toISOString()},null,2)+'\n')
@@ -363,3 +442,4 @@ try{
  await browser.close()
  await Promise.allSettled([client.sb.auth.signOut(),provider.sb.auth.signOut(),admin.sb.auth.signOut()])
 }
+}finally{await fixtures.cleanup()}

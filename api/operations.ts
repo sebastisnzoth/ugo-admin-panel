@@ -7,7 +7,7 @@ import { UGO_SUPABASE_URL } from '../src/lib/supabaseProject.js'
 // el fallback es el single source of truth compartido con el cliente (src/lib/supabaseProject.ts).
 const SUPABASE_URL = process.env.SUPABASE_URL || UGO_SUPABASE_URL
 const SUPABASE_ANON_KEY = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
-const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
+const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY || process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
 const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
 const USER_ROLES = new Set(['cliente', 'proveedor', 'admin', 'superadmin', 'arbitro'])
 const PRIVILEGED_USER_ROLES = new Set(['admin', 'superadmin', 'arbitro'])
@@ -577,7 +577,7 @@ async function persistHugoAudit(req: VercelRequest, res: VercelResponse) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin || ''
-  const allowedOrigin = origin === 'https://sebastisnzoth.github.io' || origin === 'https://ugo-admin-panel.vercel.app' || origin === 'http://localhost:5173' ? origin : ''
+  const allowedOrigin = origin === 'https://sebastisnzoth.github.io' || origin === 'https://ugo-admin-panel.vercel.app' || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:4173' ? origin : ''
   if (allowedOrigin) {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin)
     res.setHeader('Vary', 'Origin')

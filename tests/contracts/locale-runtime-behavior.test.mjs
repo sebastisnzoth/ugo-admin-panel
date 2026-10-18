@@ -51,3 +51,14 @@ test('legacy client profile preference is restored when Auth metadata is absent'
  await settle();assert.equal(app.value.locale,'es')
  assert.equal(app.writes.length,0,'restoring a language must not update the auth session')
 })
+
+test('first Admin and Provider login retains the language selected on the login screen',async()=>{
+ for(const role of ['admin','provider']){
+  const app=mount({role,stored:{['ugo.locale.guest.'+role]:'es'}})
+  await settle()
+  app.event('SIGNED_IN',{user:{id:'new-account',user_metadata:{}}})
+  await settle()
+  assert.equal(app.value.locale,'es',role)
+  assert.equal(app.storage.get('ugo.locale.'+role+'.new-account'),'es',role)
+ }
+})

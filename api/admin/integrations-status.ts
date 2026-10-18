@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
+import { UGO_SUPABASE_URL, UGO_ENVIRONMENT } from '../../src/lib/supabaseProject.js'
 
-const SUPABASE_URL=process.env.SUPABASE_URL
-const SUPABASE_SERVICE_KEY=process.env.SUPABASE_SERVICE_KEY
+const SUPABASE_URL=process.env.SUPABASE_URL||UGO_SUPABASE_URL
+const SUPABASE_SERVICE_KEY=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||process.env.UGO_TEST_SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SERVICE_KEY
 const UBER_API_BASE=(process.env.UBER_DIRECT_API_BASE_URL||'https://api.uber.com/v1').replace(/\/$/,'')
 
 type Provider='uber'|'ifood'|'rappi'
@@ -145,6 +146,14 @@ async function testRappi(){
 }
 
 export default async function handler(req:VercelRequest,res:VercelResponse){
+ const origin=String(req.headers.origin||'')
+ if(['https://sebastisnzoth.github.io','https://ugo-admin-panel.vercel.app','http://localhost:5173','http://127.0.0.1:4173'].includes(origin)){
+  res.setHeader('Access-Control-Allow-Origin',origin)
+  res.setHeader('Vary','Origin')
+  res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type')
+  res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS')
+ }
+ if(req.method==='OPTIONS')return res.status(204).end()
  try{
   await requireAdmin(req)
   if(req.method==='POST'){
@@ -177,7 +186,7 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
   const rappiConfigured=Boolean((process.env.RAPPI_ACCESS_TOKEN||process.env.RAPPI_API_KEY)&&process.env.RAPPI_TEST_URL)
 
   const integrations:Integration[]=[
-   {id:'supabase',label:'Supabase',category:'core',configured:true,enabled:true,environment:'production',runtimeSource:'server env',note:'Auth, PostgreSQL, Realtime y Storage del proyecto UGO.'},
+   {id:'supabase',label:'Supabase',category:'core',configured:true,enabled:true,environment:SUPABASE_URL===UGO_SUPABASE_URL?UGO_ENVIRONMENT:'custom',runtimeSource:'server env',note:'Auth, PostgreSQL, Realtime y Storage del proyecto UGO.'},
    {id:'mercadopago_br',label:'Mercado Pago Brasil',category:'payments',configured:mpBrConfigured,enabled:mpBrConfigured,environment:'production',runtimeSource:'MERCADO_PAGO_ACCESS_TOKEN',note:'Runtime actual de Pix y checkout electrónico BR.'},
    {id:'pix_direto',label:'Pix direto UGO',category:'payments',configured:pixDirectConfigured,enabled:pixDirectConfigured,environment:'production',runtimeSource:'UGO_PIX_KEY',note:'Generación EMV propia; requiere conciliación antes de considerar pago protegido.'},
    {id:'openpix',label:'OpenPix / Woovi',category:'payments',configured:openPixConfigured,enabled:openPixEnabled,environment:'sandbox',runtimeSource:'OPENPIX_SANDBOX_APP_ID + PAYMENTS_OPENPIX_ENABLED',note:'Sandbox solamente; el webhook no libera fondos reales.'},
