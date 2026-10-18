@@ -1,6 +1,12 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.relatedFailed": "Não foi possível carregar os dados relacionados.",
+    "ugoUserEdit.relatedLoading": "Carregando dados relacionados...",
+    "ugoUserEdit.addresses": "Endereços",
+    "ugoUserEdit.zones": "Zonas atendidas",
+    "ugoUserEdit.references": "Referências profissionais",
+    "ugoUserEdit.contactAuthorized": "Contato autorizado",
     "ugoUserEdit.emailAction": "Alterar e-mail",
     "ugoUserEdit.emailTitle": "Alterar e-mail da conta",
     "ugoUserEdit.emailMessage": "Informe o novo e-mail da conta.",
@@ -1113,6 +1119,12 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.relatedFailed": "No se pudieron cargar los datos relacionados.",
+    "ugoUserEdit.relatedLoading": "Cargando datos relacionados...",
+    "ugoUserEdit.addresses": "Direcciones",
+    "ugoUserEdit.zones": "Zonas de servicio",
+    "ugoUserEdit.references": "Referencias laborales",
+    "ugoUserEdit.contactAuthorized": "Contacto autorizado",
     "ugoUserEdit.emailAction": "Cambiar correo",
     "ugoUserEdit.emailTitle": "Cambiar correo de la cuenta",
     "ugoUserEdit.emailMessage": "Ingresá el nuevo correo de la cuenta.",
@@ -2225,6 +2237,12 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.relatedFailed": "Could not load related profile details.",
+    "ugoUserEdit.relatedLoading": "Loading related profile details...",
+    "ugoUserEdit.addresses": "Addresses",
+    "ugoUserEdit.zones": "Service zones",
+    "ugoUserEdit.references": "Work references",
+    "ugoUserEdit.contactAuthorized": "Contact authorized",
     "ugoUserEdit.emailAction": "Change email",
     "ugoUserEdit.emailTitle": "Change account email",
     "ugoUserEdit.emailMessage": "Enter the new account email.",
