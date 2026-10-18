@@ -311,8 +311,8 @@ async function testAdmin(viewport,name){
    await safeClick(page,mainNav.getByRole('button',{name:/Super Admin/i}),'admin Super Admin')
    await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).waitFor({state:'visible',timeout:10000})
    await safeClick(page,page.getByRole('button',{name:'Empresa Autónoma',exact:true}),'admin Empresa Autónoma')
-   for(const item of ['Centro de mando','Operación en vivo','Departamentos','Agentes IA','Inbox ejecutivo','Ledgers','Riesgo & Auditoría','QA Lab','Model Router','Launch Gate','UGO Empresas','Kill Switch']){
-     await safeClick(page,page.getByRole('button',{name:item,exact:true}),'autonomous '+item)
+   for(const item of ['overview','live','departments','agents','inbox','ledgers','audit','qa','models','launch','empresas','controls']){
+     await safeClick(page,page.getByTestId('autonomy-view-'+item),'autonomous '+item)
      await assertResponsive(page,'admin '+name+' autonomous '+item)
    }
    await page.screenshot({path:'artifacts/role-ui-admin-'+name+'.png',fullPage:true})
