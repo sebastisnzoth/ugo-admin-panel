@@ -16,10 +16,10 @@ const emptyEditDetails:EditDetails={phone:'',address:'',neighborhood:'',city:'',
 type Row=UserRow&{clientProfile?:ClientProfile;providerProfile?:ProviderProfile;email:string|null;email_confirmed:boolean;last_sign_in_at:string|null;telefono:string|null;ubicacion:string|null;verification:string|null;online:boolean;foto_perfil_path?:string|null;profilePhotoRole?:'client'|'provider';categoria?:{nombre:string;emoji:string}|null}
 type CreateRole='cliente'|'proveedor'|'admin'|'superadmin'|'arbitro'
 type CreateForm={nombre:string;apellido:string;email:string;password:string;confirmPassword:string;role:CreateRole;demo:boolean;providerVerified:boolean}
-type Props={initialFilter?:'todos'|'cliente'|'proveedor'|'admin';embedded?:boolean;canCreateOperator?:boolean}
+type Props={initialFilter?:'todos'|'cliente'|'proveedor'|'admin';embedded?:boolean;canCreateOperator?:boolean;initialEditUserId?:string}
 const emptyCreate:CreateForm={nombre:'',apellido:'',email:'',password:'',confirmPassword:'',role:'cliente',demo:false,providerVerified:false}
 
-export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateOperator=false}:Props){
+export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateOperator=false,initialEditUserId}:Props){
  const{t}=useLocale();
  const[editDetails,setEditDetails]=useState<EditDetails>(emptyEditDetails),[editCategories,setEditCategories]=useState<{id:string;nombre:string;activa:boolean}[]>([])
  const[related,setRelated]=useState<{addresses:{id:string;label:string;address:string;complement:string|null;neighborhood:string|null;city:string|null;default:boolean}[];zones:{zone:string;primary:boolean}[];references:{name:string;relation:string;contactAuthorized:boolean}[]}|null>(null),[relatedError,setRelatedError]=useState('');const[editTab,setEditTab]=useState<'profile'|'account'|'additional'>('profile'),[editOriginal,setEditOriginal]=useState('');const[page,setPage]=useState(0),[totalCount,setTotalCount]=useState(0);const[editing,setEditing]=useState<Row|null>(null),[editName,setEditName]=useState(''),[editSurname,setEditSurname]=useState(''),[editCountry,setEditCountry]=useState(''),[editZone,setEditZone]=useState('');const[open,setOpen]=useState(true),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'>(initialFilter),[activeFilter,setActiveFilter]=useState<'all'|'active'|'inactive'>('all'),[verificationFilter,setVerificationFilter]=useState<'all'|'registrado'|'pendiente'|'verificado'|'rechazado'|'suspendido'>('all'),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[createOpen,setCreateOpen]=useState(false),[form,setForm]=useState<CreateForm>(emptyCreate),[traceUser,setTraceUser]=useState<Row|null>(null)
@@ -31,6 +31,7 @@ export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateO
   if(verificationFilter!=='all')usersQuery=usersQuery.eq('perfiles_proveedor.estado_verificacion',verificationFilter)
   if(filter==='admin')usersQuery=usersQuery.in('tipo',['admin','superadmin'])
   else if(filter!=='todos')usersQuery=usersQuery.eq('tipo',filter)
+  if(initialEditUserId)usersQuery=usersQuery.eq('id',initialEditUserId)
   if(activeFilter!=='all')usersQuery=usersQuery.eq('activo',activeFilter==='active')
   if(search)usersQuery=usersQuery.or(['nombre','apellido','email','telefono'].map(key=>key+'.ilike.%'+search+'%').join(','))
   const {data:users,error:ue,count}=await usersQuery.range(page*50,page*50+49)
@@ -45,7 +46,7 @@ export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateO
   ]);if(ae)throw ae;if(ce)throw ce;if(pe)throw pe;if(categoryError)throw categoryError;setEditCategories(categoryRows||[])
   const am=new Map<string,AuthRow>((auth||[]).map((x:AuthRow)=>[x.id,x])),cm=new Map<string,ClientProfile>((clients||[]).map((x:ClientProfile)=>[x.usuario_id,x])),pm=new Map<string,ProviderProfile>((providers||[]).map((x:ProviderProfile)=>[x.usuario_id,x]))
   setRows(((users||[]) as UserRow[]).map(u=>{const a=am.get(u.id),c=cm.get(u.id),p=pm.get(u.id);return{...u,clientProfile:c,providerProfile:p,email:a?.email||u.email||null,email_confirmed:Boolean(a?.email_confirmed),last_sign_in_at:a?.last_sign_in_at||null,telefono:p?.telefono_profesional||c?.telefono||u.telefono||null,ubicacion:p?.ciudad_base||[c?.direccion,c?.barrio,c?.ciudad].filter(Boolean).join(', ')||u.zona||null,verification:p?.estado_verificacion||null,online:Boolean(p?.online),foto_perfil_path:p?.foto_perfil_path||c?.foto_perfil_path||null,profilePhotoRole:p?.foto_perfil_path?'provider':'client',categoria:p?.categoria||null}}))
- },[page,filter,query,activeFilter,verificationFilter])
+ },[page,filter,query,activeFilter,verificationFilter,initialEditUserId])
  const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{if(!open)return;load().catch(e=>setMessage(e.message));const ch=supabase.channel('admin-users-modern').on('postgres_changes',{event:'*',schema:'public',table:'usuarios'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_cliente'},()=>load());const dispose=subscribeRealtimeChannel(ch,supabase,{onSync:()=>load(),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[open,load,channelEpoch])
  const visible=useMemo(()=>rows,[rows])
@@ -119,6 +120,12 @@ export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateO
  const inputStyle:React.CSSProperties={width:'100%',padding:9,border:'1px solid #dce4dd',borderRadius:10,fontSize:12}
  const fieldLabel:React.CSSProperties={display:'grid',gap:4,fontSize:11,fontWeight:800,color:'#2f3d34'}
  const panelStyle:React.CSSProperties=embedded?{position:'relative',width:'100%',maxHeight:'none',overflow:'visible',background:'#fff',border:0,borderRadius:18,padding:4,color:'#111'}:{position:'fixed',left:18,bottom:168,zIndex:14015,width:'min(760px,calc(100vw - 36px))',maxHeight:'min(760px,calc(100vh - 190px))',overflow:'auto',background:'#fff',border:'1px solid #ddd',borderRadius:22,boxShadow:'0 18px 60px rgba(0,0,0,.3)',padding:16,color:'#111'}
+ const[initialEditorOpened,setInitialEditorOpened]=useState(false)
+ useEffect(()=>{
+  if(!initialEditUserId||initialEditorOpened||!rows.length)return
+  const matched=rows.find(row=>row.id===initialEditUserId)
+  if(matched){setInitialEditorOpened(true);startEdit(matched)}
+ },[initialEditUserId,initialEditorOpened,rows])
  const canMutate=(r:Row)=>canCreateOperator||!['admin','superadmin','arbitro'].includes(r.tipo)
  return <>
   {!embedded&&<button type="button" onClick={()=>setOpen(v=>!v)} style={{position:'fixed',left:18,bottom:118,zIndex:14016,border:0,borderRadius:999,padding:'11px 15px',fontWeight:900,background:'#fff',color:'#111',boxShadow:'0 8px 28px rgba(0,0,0,.22)',cursor:'pointer'}}>{t('screen.admin_users.1')}</button>}
