@@ -10,3 +10,13 @@ test('admin edit checks the affected row and reads persisted state before confir
  assert.match(source,/Object\.keys\(updates\)\.some/)
  assert.match(source,/await load\(\);setEditing\(null\)/)
 })
+
+test('admin account activation verifies persisted status before reporting success',async()=>{
+ const source=await readFile(new URL('../../src/mvp/AdminUsersPanel.tsx',import.meta.url),'utf8')
+ const action=source.split('async function setActive(')[1]?.split('async function resetPassword(')[0]
+ assert.ok(action,'account activation handler is present')
+ assert.match(action,/rpc\('admin_set_usuario_activo'/)
+ assert.match(action,/\.select\('id,activo'\)\.eq\('id',r\.id\)\.maybeSingle\(\)/)
+ assert.match(action,/verified\.activo!==next/)
+ assert.match(action,/finally\{setBusy\(''\)\}/)
+})
