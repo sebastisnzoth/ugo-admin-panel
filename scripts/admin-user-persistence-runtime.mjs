@@ -119,9 +119,18 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
   assert.ifError(membership.error)
   assert.ok(membership.data.categorias_ids.includes(category.data.id),'PROVIDER_CATEGORY_NOT_PERSISTED')
   for(const [action,active] of [['Desactivar',false],['Reactivar',true]]){
-   await card.getByRole('button',{name:action,exact:true}).click()
+   const actionButton=card.getByRole('button',{name:action,exact:true})
+   if(!await actionButton.isVisible().catch(()=>false)) await card.locator('button[aria-expanded="false"]').first().click()
+   await actionButton.click()
    await page.getByRole('dialog').getByRole('button',{name:'Confirmar',exact:true}).click()
-   await card.getByRole('button',{name:active?'Desactivar':'Reactivar',exact:true}).waitFor({state:'visible',timeout:20000})
+   // Realtime can replace the entire card; reopen the menu by its stable expanded state.
+   await card.waitFor({state:'visible',timeout:20000})
+   const nextAction=card.getByRole('button',{name:active?'Desactivar':'Reactivar',exact:true})
+   if(!await nextAction.isVisible().catch(()=>false)){
+    const collapsedMenu=card.locator('button[aria-expanded="false"]')
+    if(await collapsedMenu.count()) await collapsedMenu.first().click()
+   }
+   await nextAction.waitFor({state:'visible',timeout:20000})
    const state=await db.from('usuarios').select('activo').eq('id',id).single()
    assert.ifError(state.error)
    assert.equal(state.data.activo,active,'ADMIN_ACTIVATION_NOT_PERSISTED')
