@@ -10,6 +10,7 @@ permissions:
 concurrency:
   group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
+  queue: max
 
 jobs:
   gps-runtime:

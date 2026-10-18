@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/role-ui-runtime.mjs"
+      - "scripts/admin-user-persistence-runtime.mjs"
       - ".github/workflows/role-ui-runtime.yml"
       - "src/features/client/**"
       - "src/mvp/**"
@@ -15,6 +16,7 @@ on:
     branches: [main]
     paths:
       - "scripts/role-ui-runtime.mjs"
+      - "scripts/admin-user-persistence-runtime.mjs"
       - "src/features/client/**"
       - "src/mvp/**"
       - "src/components/**"
@@ -30,6 +32,7 @@ permissions:
 concurrency:
   group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
+  queue: max
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co

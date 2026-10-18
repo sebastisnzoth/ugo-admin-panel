@@ -6,6 +6,7 @@ on:
 concurrency:
   group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
+  queue: max
 jobs:
   provider-ui:
     runs-on: ubuntu-latest

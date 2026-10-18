@@ -14,6 +14,7 @@ permissions:
 concurrency:
   group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
+  queue: max
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl

@@ -15,6 +15,7 @@ concurrency:
   # Serialize them across workflow boundaries to avoid false P0 conflicts.
   group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
+  queue: max
 
 env:
   # UGO TEST is the only allowed remote integration target. These are

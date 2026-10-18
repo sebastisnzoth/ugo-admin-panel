@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {verifyAdminUserPersistence} from './admin-user-persistence-runtime.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -299,6 +300,7 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByRole('group',{name:'Personas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin people '+item)
      await assertResponsive(page,'admin '+name+' people '+item)
    }
+   if(name==='desktop')results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha}))})
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
