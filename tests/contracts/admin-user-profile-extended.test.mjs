@@ -72,3 +72,13 @@ test('email changes use protected backend Auth API and confirmation',()=>{
  assert.match(ui,/void changeEmail\(r\)/)
  assert.match(ui,/await confirm\(/)
 })
+
+test('related profile reader is bounded by real admin authorization',()=>{
+ const sql=readFileSync(new URL('../../supabase/migrations/20261018064000_admin_user_related_details.sql',import.meta.url),'utf8')
+ assert.match(sql,/actor\.activo is not true/)
+ assert.match(sql,/SUPERADMIN_REQUIRED/)
+ for(const table of ['direcciones_cliente','proveedor_zonas_activas','proveedor_referencias_laborales']) assert.ok(sql.includes(table))
+ assert.doesNotMatch(sql,/l\.contacto[,)]/)
+ assert.match(ui,/admin_user_related_details/)
+ assert.match(ui,/setRelated\(data\)/)
+})
