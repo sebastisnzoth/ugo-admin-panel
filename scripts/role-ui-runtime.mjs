@@ -267,7 +267,7 @@ async function testAdminAuthBoundary(viewport,name){
      await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
      await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
      assert.equal(await page.getByRole('navigation',{name:'Navegación Admin'}).count(),0,item.actor+' must not receive Admin navigation')
-     if(item.expectsError)await page.getByRole('alert').filter({hasText:/Acceso denegado/}).waitFor({state:'visible',timeout:10000})
+     if(item.expectsError)await page.getByRole('alert').filter({hasText:/Acceso denegado|Access denied|Acesso negado/i}).waitFor({state:'visible',timeout:10000})
      await assertResponsive(page,'admin auth denied '+item.actor+' '+name)
      results.push({role:'admin-auth',actor:item.actor,viewport:name,status:'PASS',access:'DENIED'})
    } finally {await page.close()}
