@@ -184,7 +184,7 @@ async function testClient(viewport,name){
    await page.screenshot({path:'artifacts/role-ui-client-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'client page errors: '+errors.join(' | '))
    results.push({role:'client',viewport:name,status:'PASS',menu_items:menuItems.length})
- } finally {await page.close()}
+ }catch(error){await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true}).catch(()=>{});console.error('ROLE_UI_CLIENT_FAILURE',name,(await page.locator('body').innerText().catch(()=>'' )).slice(0,1600));throw error}finally{await page.close()}
 }
 
 async function testProvider(viewport,name){
@@ -300,7 +300,7 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByRole('group',{name:'Personas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin people '+item)
      await assertResponsive(page,'admin '+name+' people '+item)
    }
-   if(name==='desktop')results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha}))})
+   results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha}))})
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
@@ -351,12 +351,12 @@ try{
  const viewports=[['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]
  for(const [name,viewport] of viewports){
    await freshRoleSession('client')
-   await testClient(viewport,name)
-   await freshRoleSession('provider')
-   await testProvider(viewport,name)
    await freshRoleSession('admin')
    await testAdminAuthBoundary(viewport,name)
    await testAdmin(viewport,name)
+   await testClient(viewport,name)
+   await freshRoleSession('provider')
+   await testProvider(viewport,name)
    for(const role of ['client','provider','admin','superadmin'])await testTranslations(role,viewport,name)
  }
  await fs.writeFile('artifacts/role-ui-runtime.json',JSON.stringify({task:'role-ui-runtime',sha,environment:'UGO TEST',results,page_errors:0,completed_at:new Date().toISOString()},null,2)+'\n')

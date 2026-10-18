@@ -27,7 +27,7 @@ export async function createRoleUiFixtures(db,sha){
    const profile=await db.from('usuarios').upsert({id,email,nombre:'QA '+key,apellido:'UI',tipo:role,activo:true,es_demo:true,pais:'BR',zona:'UGO TEST'})
    assert.ifError(profile.error)
    if(key==='client'){
-    const result=await db.from('perfiles_cliente').upsert({usuario_id:id,ciudad:'Florianópolis',idioma_preferido:'es',onboarding_completo_at:new Date().toISOString()})
+    const result=await db.from('perfiles_cliente').upsert({usuario_id:id,ciudad:'Florianópolis',telefono:'48999999999',direccion:'Rua QA TEST',barrio:'TEST',termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',idioma_preferido:'es',onboarding_completo_at:new Date().toISOString()})
     assert.ifError(result.error)
    }
    if(key==='provider'){
