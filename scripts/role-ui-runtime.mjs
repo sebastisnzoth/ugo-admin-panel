@@ -105,6 +105,7 @@ async function assertResponsive(page,label){
 }
 
 async function openRole(role,viewport){
+ const session=await freshRoleSession(role)
  const page=await browser.newPage({viewport})
  const errors=[]
  const trace={step:role+' load'}
@@ -115,7 +116,7 @@ async function openRole(role,viewport){
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
    if(!localStorage.getItem('ugo.locale.guest.'+role))localStorage.setItem('ugo.locale.guest.'+role,'es')
    if(session.user?.id&&!localStorage.getItem('ugo.locale.'+role+'.'+session.user.id)){localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es');localStorage.setItem('ugo.locale.'+role+'.'+session.user.id+'.updatedAt',String(Date.now()))}
- },{role,session:sessions[role]})
+ },{role,session})
  await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded'})
  return {page,errors}
 }
