@@ -912,3 +912,166 @@ Estados de reporte (no necesariamente estados SQL): `DONE`, `PENDING`, `FAILED`,
 No introducir otra plataforma central de orquestación salvo demostración de que el scheduler existente no puede satisfacer el contrato. **Primero un flujo vertical completo y real, después robustez y escalado.** La eficacia de la colonia se mide por resultados empresariales verificados, no por el número de hormigas, mensajes, tokens o PRs.
 
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
+
+
+---
+
+## 19. Actualización 18/10/2026 — FreeLLMAPI, Render y ejecución autónoma por checklist
+
+**Estado:** DISEÑO Y PLAN DE IMPLEMENTACIÓN; NO DESPLEGADO NI VERIFICADO. **Destino de este cambio:** rama del PR #515, nunca `main` directamente. Esta sección prevalece sobre menciones anteriores a OpenRouter como proveedor único, sin derogar las restricciones de gasto cero, privacidad, gates y producción. Referencia de avance de implementación: [PR #515](https://github.com/sebastisnzoth/ugo-admin-panel/pull/515).
+
+### 19.1 Decisión arquitectónica y límites de la decisión
+
+- **Hugo / UGO Maestro:** conversación, definición y supervisión de misiones; no es un ejecutor privilegiado.
+- **Hive (la colmena):** scheduler, agentes catalogados, mensajes tipados, leases, herramientas autorizadas, Judge, Sentinel y evidencias en Supabase TEST; **no crear una segunda colmena**.
+- **`ugo-hive-model-router` (PR #515):** punto de autorización backend de inferencia; se transforma en adaptador agnóstico de proveedor con política `deny-by-default`, pero **permanece con inferencia deshabilitada hasta satisfacer gates**.
+- **FreeLLMAPI:** agregador de proveedores gratuitos **preferido**, alojado como servicio privado separado; selección de modelo/endpoint y recuperación ante fallos sólo entre rutas permitidas y verificadas.
+- **OpenRouter:** respaldo opcional, exclusivamente modelos realmente gratuitos, sin fallback pago ni recargas; la clave existente en Supabase jamás llega a navegador, logs, prompts o terceros que no la requieran.
+- **Render Free:** candidato de hospedaje de FreeLLMAPI, *no despliegue confirmado*. Exige verificar disponibilidad sin tarjeta, configuración persistente y términos/cuotas vigentes. La suspensión por inactividad es aceptable, con cold start y timeout de cliente controlados. No se recomienda mantenerlo despierto con pings artificiales como dependencia de operación.
+- **Persistencia:** SQLite local en Render Free no se considera durable. Evaluar primero si FreeLLMAPI admite oficialmente un backend durable externo. Si no, proponer adaptador externo seguro con transacciones, restauración, cifrado, rotación y pruebas de recuperación; **no asumir que un backup SQLite ocasional alcanza**. Las credenciales deben mantenerse en un secret store backend, preferentemente por servicio, y sin exportación en claro.
+- **Trabajos reales, no ficticios:** análisis y correcciones reales del repositorio UGO en ramas TEST/sandbox, con tests sobre contratos reales y evidencias same-SHA; **no exportar datos personales reales o secretos a endpoints gratuitos** sin base legítima, minimización, permiso y evaluación de términos/retención.
+- **Costo cero:** no tarjeta, no plan pago, no consumo facturable autorizado. Si algún proveedor, recurso o licencia no permite verificar el cumplimiento, su ruta queda **BLOCKED_EXTERNAL**; nunca sustituir con servicio pago de manera automática.
+- **Enjambre efectivo:** mantener el catálogo de 118 identidades y comenzar con uno y luego hasta tres workers autorizados, no 118 sesiones LLM continuas. Router devuelve respuesta/modelo y metadatos; no decide permisos de herramientas ni modifica jobs directamente.
+
+```text
+Super Admin / Hugo ─► Mission API (TEST, auth, plan_hash, policy)
+                         │
+                  Hive Scheduler existente
+                         │
+                  Model Gateway TEST (PR #515)
+                      ┌──┴──────────────────────┐
+                      │                         │
+               FreeLLMAPI privado          OpenRouter FREE
+                 Render Free                respaldo opcional
+                      │
+           Proveedores gratis permitidos
+                      │
+              Respuesta no confiable
+                      ▼
+    Worker sandbox/allowlist → evidencia → Judge → Sentinel → gate humano
+                      │
+             Supabase TEST (estado/auditoría)
+```
+
+**Nota de versión:** reemplazar conceptualmente en secciones 1, 6, 13 y 15 las frases `OpenRouter como único proveedor`, `HIVE_MODEL_PROVIDER_ALLOWLIST=["openrouter"]` y `sin fallback a otros proveedores` por la política **`provider_order=[freellmapi,openrouter]` con únicamente endpoints aprobados y costo facturable cero**. Las demás protecciones anteriores permanecen intactas. No editar configuraciones de runtime sólo por cambiar esta documentación.
+
+### 19.2 Fotografía verificada y bloqueos actuales
+
+- PR #515: `OPEN / DRAFT / NO MERGED`; rama `codex/hive-openrouter-test-router-20261018`; incluye función Supabase `ugo-hive-model-router` y pruebas contractuales; reconoce `HIVE_INFERENCE_NOT_ENABLED`. **No ejecuta todavía inferencia, Reina, workers ni pruebas integradas.**
+- El limitador local `Map` del PR #515 **no es cuota durable, global ni atómica**. El código de pruebas es estático; no acredita autenticación real, llamada a modelos ni costo facturado cero.
+- Render: auditoría previa de solo lectura informó un workspace accesible, cero PostgreSQL y cero Key Value; la respuesta de listado de servicios web no permitió concluir que no existieran. **No se ha creado servidor ni comprobado persistencia.**
+- No atribuir éxito a la existencia del documento, al estado de una API key, a CI superficial o a un modelo etiquetado `free`. Revalidar estado exacto de GitHub, cuentas, plan gratuito, términos y claves durante ejecución.
+
+### 19.3 Política de agentes autónomos y mínima interrupción humana
+
+**Autorizado sin consultar nuevamente, dentro del alcance de esta actualización documental y de lectura:** inspeccionar repos, contratos, código, PR, documentación y recursos en modo solo lectura; ejecutar comprobaciones locales no destructivas; redactar plan, matriz de riesgos, pruebas y evidencias; informar hallazgos; continuar al siguiente paso técnicamente seguro.
+
+**Requiere permisos específicos nuevos y por acción:** crear/cambiar servicios Render, secretos o recursos externos; alterar bases de datos/esquemas/políticas Supabase; desplegar Edge Functions; invocar modelos con datos reales sujetos a revisión de privacidad; habilitar inferencia y gastos; escribir código fuera de una rama ya autorizada; fusionar PR; cambiar producción; activar Empresa Autónoma ON o hacer pagos. Una autorización a documentar **no es autorización a desplegar**.
+
+**Escalada mínima:** interrumpir al fundador únicamente por bloqueo real de conexión/permiso, decisión de costo/privacidad, acción irreversible, cambio de alcance o aprobación humana exigida por gate. Agrupar solicitudes relacionadas en una única aprobación acotada indicando acción, recurso, riesgo, rollback y alcance; no pedir permiso para lectura o verificación ya autorizada. Si falta permiso, registrar `WAITING_APPROVAL` y continuar tareas independientes seguras; no simular autorizaciones ni implementar bypass.
+
+**Autonomía operativa:** la ejecución continua **requiere** scheduler/runner real, persistente o reactivable, presupuesto de cómputo y permisos concedidos. Un documento o una conversación de ChatGPT no constituyen ejecución en background. Scheduler puede trabajar por eventos o cron con límites y detención segura; si no hay infraestructura, informar `NOT_DEPLOYED`.
+
+### 19.4 Plan de implementación secuencial, con checklist y salidas verificables
+
+Cada ítem comienza `[ ] PENDING`; cambiarlo a `[x] VERIFIED` **sólo** con enlace a commit exact-SHA, resultado de prueba y evidencia reproducible, no por autodeclaración del agente. Registrar `owner_agent, task_id, status, started_at, finished_at, environment, source_sha, evidence_refs, blocker_code, next_action`.
+
+**Fase 0 — Inventario, compatibilidad y no regresión (sin escrituras funcionales)**
+- [ ] F0.1 Releer `main`, PR #515, migraciones, contratos y gates; conservar todos los cambios ajenos y registrar SHAs.
+- [ ] F0.2 Localizar dependencias reales de `ugo-hive-model-router`, permisos Super Admin, Reina, scheduler, workers y capacidades.
+- [ ] F0.3 Auditoría de licencias/términos de FreeLLMAPI y de cada proveedor; clasificar `TEST_ALLOWED / COMMERCIAL_ALLOWED / UNVERIFIED / DENIED`.
+- [ ] F0.4 Inventariar datos que saldrían a terceros y definir minimización, cifrado, retención, consentimiento/base legal cuando corresponda; bloquear rutas no aprobadas.
+- **Gate G0:** matriz de integración, riesgos y contratos exact-SHA completa; ninguna escritura de producción.
+
+**Fase 1 — Alojamiento gratuito y persistencia segura (propuesta → aprobación → ensayo)**
+- [ ] F1.1 Auditar solo lectura disponibilidad de Render Free, región, runtime, horas, suspensión, salida de red, límites y costos/tarjeta con evidencia vigente.
+- [ ] F1.2 Revisar requisitos reales de instalación FreeLLMAPI (Docker/Node, SQLite, runtime, puertos, variables, cifrado, almacenamiento); NO suponer compatibilidad sin build.
+- [ ] F1.3 Seleccionar almacén durable gratuito existente si permite aislamiento, cifrado, integridad, copia y recuperación; validar que una pérdida del filesystem de Render no pierda credenciales ni configuración.
+- [ ] F1.4 Diseñar creación de secretos (Render/Supabase) sin mostrarlos y autenticación entre servicios, egress allowlist y rotación.
+- [ ] F1.5 Preparar despliegue reproducible, rollback y tests de arranque; **solicitar aprobación explícita antes de crear cualquier servicio**.
+- [ ] F1.6 Tras aprobación, ejecutar prueba real de restart/redeploy, concurrencia y restauración; medir cold start y verificar autenticación.
+- **Gate G1:** evidencia de persistencia ante reinicio, costos y no tarjeta confirmados, claves protegidas; si falla, `BLOCKED_EXTERNAL`, no continuar con conexiones reales.
+
+**Fase 2 — Modelo de costos y gateway (sobre PR #515)**
+- [ ] F2.1 Refactorizar el gateway en la rama autorizada, preservando auth y alcance TEST; `providers=[freellmapi,openrouter]` definidos por servidor y allowlist de endpoints.
+- [ ] F2.2 Introducir cuotas globales persistentes y transaccionales por usuario, misión, proveedor y día; reserva atómica, límites de tokens, tamaño, concurrency, expiry, cancelación y rechazo 429; prohibido usar `Map` como control global.
+- [ ] F2.3 Catalogar proveedor/modelo con capacidad, precio en todas las dimensiones facturables, términos, estado y TTL; ante precio desconocido, pago posible, o catálogos inconsistentes, rechazar.
+- [ ] F2.4 Fallos 429/timeout: backoff acotado, `Retry-After`, circuit breaker, idempotencia y `WAITING_MODEL`; fallback solamente a proveedores gratuitos aprobados, nunca pago.
+- [ ] F2.5 Mantener `HIVE_INFERENCE_NOT_ENABLED` hasta que G1 y G2 se satisfagan; no enviar API keys al frontend ni logs.
+- [ ] F2.6 Agregar pruebas unitarias/de integración sobre autenticación, deny-by-default, concurrencia, restart, límites, phishing/prompt injection, variantes de precio, egress y cero cargos.
+- **Gate G2:** tests de cuotas y política reproducibles; evidencias de cuenta/facturación con costo cero y autorización de uso para TEST; sin esto no habilitar ninguna llamada real.
+
+**Fase 3 — Prueba de IA real en TEST**
+- [ ] F3.1 Con aprobación de prueba y G1–G2, realizar una llamada mínima auténtica a modelo gratuito a través de FreeLLMAPI desde backend, con contenido no sensible derivado del repositorio real y tokens acotados.
+- [ ] F3.2 Comprobar modelo realmente servido, estado/capacidad, latencia, errores y costo facturado (distinguir costo estimado).
+- [ ] F3.3 Simular **fallos técnicos de infraestructura** en entorno de ensayo (no datos de negocio ficticios): proveedor caído, cuota agotada y respuesta inválida; confirmar paso a OpenRouter FREE o bloqueo sin gasto.
+- [ ] F3.4 Registrar trazabilidad `mission → request → provider → model → output → judge` sin registrar credenciales ni PII.
+- **Gate G3:** solicitud real y respuesta válida, costo cero verificado, sin fuga de credenciales; no confundir conectividad con trabajo empresarial verificado.
+
+**Fase 4 — Conectar Hugo/Reina y un worker real**
+- [ ] F4.1 Crear borrador tipado desde Super Admin con `plan_hash`, scope, entorno y reglas del documento; no ejecutar herramientas por mensaje de chat.
+- [ ] F4.2 Autorización explícita y versionada de misión TEST; scheduler existente realiza claims y protege idempotencia/leases/fencing.
+- [ ] F4.3 Ejecutar misión REAL de repo UGO en rama aislada: diagnóstico y arreglo de alcance acotado; tests y PR, sin modificar `main`.
+- [ ] F4.4 Judge y Sentinel independientes comprueban efecto exact-SHA y seguridad; si falta evidencia, `UNVERIFIED`, no `VERIFIED`.
+- [ ] F4.5 Renderizar resultados, bloqueo, cuota y consumo en Super Admin. Pausa/reanudación/cancelación deben consultar estado persistido.
+- **Gate G4:** flujo real `orden → plan → aprobación → worker → diff/tests → evidencia → Judge/Sentinel → panel`, sin cambios a producción.
+
+**Fase 5 — Enjambre gradual**
+- [ ] F5.1 Habilitar hasta tres workers reales sólo tras pruebas de concurrencia, dependencia, locks, backpressure y presupuesto.
+- [ ] F5.2 Enviar handoffs A→B persistidos con TTL, ACL, máximo de saltos y no delegación de permisos; probar no duplicación.
+- [ ] F5.3 Reintentos acotados, DLQ, recuperaciones, observabilidad y killswitch; ensayos de caída, replay y revocación.
+- [ ] F5.4 Medir `verified_missions/attempts`, tiempo de ciclo, consumo por proveedor, fallos, calidad y tareas que requieren intervención.
+- **Gate G5:** recuperación y seguridad probadas, sin jobs duplicados, cargos o permisos ampliados; escala basada en resultados, no en número de agentes.
+
+**Fase 6 — Cierre y decisión de producción (no implícita)**
+- [ ] F6.1 Comparar criterios contra resultados reales y entregar resumen con todos los links de evidencia y bloqueos.
+- [ ] F6.2 Validar licencias y usos comerciales por proveedor **antes** de cualquier operación empresarial comercial.
+- [ ] F6.3 Presentar propuesta de habilitación limitada para producción y rollback; **requerir aprobación humana nueva y gate READY real**.
+- [ ] F6.4 No fusionar PR #515 automáticamente ni modificar `main` por el solo hecho de pasar G0–G5.
+- **Gate G6:** cierre verificable; si falta un requisito, sistema desactivado o solo SHADOW, con lista precisa de pendientes.
+
+### 19.5 Política máquina-legible propuesta (NO aplicada)
+
+```yaml
+hive_llm:
+  environment: UGO_TEST
+  mode: SHADOW
+  inference_enabled: false
+  provider_order: [freellmapi, openrouter]
+  provider_allowlist_enabled: true
+  allow_paid_models: false
+  allow_unknown_pricing: false
+  max_billable_usd: 0
+  auto_topup: false
+  require_terms_and_privacy_review: true
+  fail_closed: true
+  daily_quota_store: durable_atomic_backend_required
+  max_workers: 3
+  default_model_unavailable_action: WAITING_MODEL
+  production_writes_enabled: false
+  auto_merge_enabled: false
+  autonomy_on_enabled: false
+  human_approval_required_for: [new_services, secrets, deployments, database_migrations, production, payments, scope_change]
+```
+
+### 19.6 Matriz final de aceptación y evidencia requerida
+
+| Control | Evidencia requerida | Estado inicial |
+|---|---|---|
+| PR #515 identificado | PR/commit/head/base verificables | IDENTIFIED, NOT IMPLEMENTED END-TO-END |
+| Hospedaje Render Free | Service URL privado, plan/consumo, sin tarjeta | PENDING |
+| Persistencia/recuperación | restart/redeploy con checksum y secrets preservados | PENDING |
+| Proveedor FreeLLMAPI real | /models y completions autenticadas, modelo real | PENDING |
+| OpenRouter fallback gratuito | error primario + conmutación real + facturación cero | PENDING |
+| Cuota durable atómica | stress concurrente y reinicio sin saltar límite | PENDING |
+| Seguridad | superadmin/roles, RLS, egress, redacción, logs | PENDING |
+| Autonomía | scheduler + worker + job real same-SHA | PENDING |
+| Calidad | Judge y Sentinel independientes + CI | PENDING |
+| Operación sin Mac | reactivación automática desde entorno alojado | PENDING |
+| Costo cero | recursos y consumos facturados verificados | PENDING |
+| Producción intacta | comparación de estado antes/después | PENDING |
+
+### 19.7 Orden operativa para futuras sesiones de ChatGPT/UGO Maestro
+
+Retomar desde la **primera casilla pendiente cuya ejecución esté autorizada**, verificar el estado actual en las fuentes reales, realizar acciones independientes sin interrupciones, documentar evidencias y avanzar mientras existan pasos seguros y permisos suficientes. **Nunca** asumir que una sesión anterior terminó o que el documento es prueba de despliegue. Si se necesita una aprobación, describir una sola vez la acción y el riesgo concretos; no insistir ante denegación, y continuar la parte de solo lectura. No detenerse en un diagnóstico si aún quedan verificaciones o documentación realizables. Las herramientas deben estar realmente conectadas y el contexto de tarea habilitar la acción. No declarar ejecución automática futura si no existe tarea programada o worker activo.
+
