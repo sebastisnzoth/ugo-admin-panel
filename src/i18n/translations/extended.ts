@@ -1,6 +1,10 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.editorSections": "Seções do editor",
+    "ugoUserEdit.tab.profile": "Editar perfil",
+    "ugoUserEdit.tab.account": "Conta e atividade",
+    "ugoUserEdit.tab.additional": "Dados adicionais",
     "ugoUserEdit.language": "Idioma preferido",
     "ugoUserEdit.contactMethod": "Contato preferido",
     "ugoUserEdit.preferredHours": "Horários preferidos",
@@ -1057,6 +1061,10 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.editorSections": "Secciones del editor",
+    "ugoUserEdit.tab.profile": "Editar perfil",
+    "ugoUserEdit.tab.account": "Cuenta y actividad",
+    "ugoUserEdit.tab.additional": "Datos adicionales",
     "ugoUserEdit.language": "Idioma preferido",
     "ugoUserEdit.contactMethod": "Contacto preferido",
     "ugoUserEdit.preferredHours": "Horarios preferidos",
@@ -2113,6 +2121,10 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.editorSections": "Editor sections",
+    "ugoUserEdit.tab.profile": "Edit profile",
+    "ugoUserEdit.tab.account": "Account and activity",
+    "ugoUserEdit.tab.additional": "Additional details",
     "ugoUserEdit.language": "Preferred language",
     "ugoUserEdit.contactMethod": "Preferred contact",
     "ugoUserEdit.preferredHours": "Preferred hours",
