@@ -97,18 +97,18 @@
   },
   {
     "TASK_ID": "PUBLISH-PRS",
-    "STATUS": "BLOCKED_HUMAN",
+    "STATUS": "VERIFIED",
     "REPO": "both",
-    "BRANCH": "local-only",
+    "BRANCH": "PR515/PR1 existing branches",
     "SOURCE_SHA": "original PR heads",
-    "RESULT_SHA": "local commits",
-    "TESTS": "see evidence manifest",
+    "RESULT_SHA": "UGO:f69b429c1dc64ff78fc10cf3707f69ebc3913725;FreeAPI:d097ca1dcee6c5e87618a6e6e37b1617b1260895",
+    "TESTS": "Remote ref update succeeded; complete tree hashes match verified local trees",
     "RUN_ID": "local-HIVE-20261018",
-    "EVIDENCE": "docs/ugo-hive/evidence",
+    "EVIDENCE": "GitHub commits/PR refs and tree equality",
     "JUDGE": "INDEPENDENT_CODE_REVIEW_ONLY;RUNTIME_NOT_RUN",
     "SENTINEL": "READ_ONLY_QUERY;RUNTIME_NOT_DEPLOYED",
     "COST": "NO_CREATED_RESOURCES;NO_REAL_MODEL_CALLS;BILLING_NOT_AUDITED",
-    "BLOCKER": "VERCEL_NETLIFY_AUTO_PREVIEWS",
-    "NEXT_TASK": "AUTHORIZE_PREVIEW_OR_PROVABLY_SUPPRESS_BEFORE_PUSH"
+    "BLOCKER": "NONE_FOR_CODE_PUBLICATION;REMOTE_CI_AND_RUNTIME_GATES_SEPARATE",
+    "NEXT_TASK": "CHECK_EXACT_HEAD_CI;DO_NOT_MERGE_OR_ENABLE_INFERENCE"
   }
 ]
