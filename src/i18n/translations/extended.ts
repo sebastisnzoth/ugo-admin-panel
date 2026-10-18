@@ -1,6 +1,8 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.discardTitle": "Descartar alterações?",
+    "ugoUserEdit.discardMessage": "Existem alterações não salvas. Deseja fechar sem salvar?",
     "ugoUserEdit.accountFilter": "Estado da conta",
     "ugoUserEdit.allStates": "Todos",
     "ugoUserEdit.active": "Ativa",
@@ -1069,6 +1071,8 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.discardTitle": "¿Descartar cambios?",
+    "ugoUserEdit.discardMessage": "Hay cambios sin guardar. ¿Querés cerrar sin guardarlos?",
     "ugoUserEdit.accountFilter": "Estado de cuenta",
     "ugoUserEdit.allStates": "Todos",
     "ugoUserEdit.active": "Activa",
@@ -2137,6 +2141,8 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.discardTitle": "Discard changes?",
+    "ugoUserEdit.discardMessage": "You have unsaved changes. Close without saving?",
     "ugoUserEdit.accountFilter": "Account status",
     "ugoUserEdit.allStates": "All",
     "ugoUserEdit.active": "Active",
