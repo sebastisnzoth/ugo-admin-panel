@@ -100,7 +100,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
  const sectionStart=new Set<string>()
  if(showSections){let prev='';for(const row of visible){const section=sectionOf(row);if(section!==prev){sectionStart.add(row.id);prev=section}}}
  const sectionCount:Record<string,number>={current:currentCount,upcoming:upcomingCount,final:finalCount}
- const title=role==='client'?'Actividad':role==='provider'?'Mis trabajos':'Historial global'
+ const title=role==='client'?t('history.launch.client'):role==='provider'?t('history.launch.provider'):t('history.launch.admin')
  const panel=<section className={`ugo-history-panel${embedded?' embedded':''}${role==='client'?' ugo-client-history':''}${role==='provider'?' ugo-provider-history':''}`} onClick={e=>e.stopPropagation()}>
    <header><div><small>{role==='admin'?t("uiCopy.expression209"):role==='provider'?t("screen.admin_trace.5"):t("screen.admin_trace.4")}</small><h2>{title}</h2><p>{role==='admin'?t("uiCopy.expression210"):role==='provider'?t("uiCopy.expression211"):t("uiCopy.expression212")}</p></div>{role==='client'&&<span className="ugo-client-history-total" aria-label={`${rows.length} pedidos`}>{rows.length}</span>}{!embedded&&<button type="button" onClick={()=>setOpen(false)} aria-label={t('history.close')}>×</button>}</header>
    {role==='client'&&<div className="ugo-client-activity-summary" aria-label={t('history.title')}>
