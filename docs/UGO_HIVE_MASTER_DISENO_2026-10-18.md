@@ -1075,3 +1075,76 @@ hive_llm:
 
 Retomar desde la **primera casilla pendiente cuya ejecución esté autorizada**, verificar el estado actual en las fuentes reales, realizar acciones independientes sin interrupciones, documentar evidencias y avanzar mientras existan pasos seguros y permisos suficientes. **Nunca** asumir que una sesión anterior terminó o que el documento es prueba de despliegue. Si se necesita una aprobación, describir una sola vez la acción y el riesgo concretos; no insistir ante denegación, y continuar la parte de solo lectura. No detenerse en un diagnóstico si aún quedan verificaciones o documentación realizables. Las herramientas deben estar realmente conectadas y el contexto de tarea habilitar la acción. No declarar ejecución automática futura si no existe tarea programada o worker activo.
 
+
+
+## 20. Plan maestro unificado — PR #515 + FreeLLMAPI + Render (18/10/2026)
+
+**Estado: DOCUMENTACIÓN CONSOLIDADA; NO DESPLEGADO, NO OPERATIVO.** Esta sección complementa la sección 19 y **prevalece** como secuencia de ejecución sobre las instrucciones históricas OpenRouter-only de las secciones 1–18. Conserva autenticación, cuotas atómicas, presupuesto facturable cero, autorización explícita de despliegues, evidencia real y prohibición de cambios en producción. No implica fusión del PR ni activación de Empresa Autónoma.
+
+### 20.1 Un solo producto, dos repositorios y un único plan
+
+| Componente y referencia | Responsabilidad | Estado verificado mediante inspección documental | Trabajo pendiente |
+|---|---|---|---|
+| [UGO PR #515](https://github.com/sebastisnzoth/ugo-admin-panel/pull/515), Edge Function `ugo-hive-model-router` | Límite de seguridad y cuotas, autorización Super Admin, decisión de proveedor y conexión con Reina/Hive | Scaffold TEST fail-closed, `HIVE_INFERENCE_NOT_ENABLED` | Cuota durable, política multi-proveedor, integración real y QA |
+| [FreeLLMAPI PR #1](https://github.com/sebastisnzoth/freellmapi/pull/1), [runbook de Render](https://github.com/sebastisnzoth/freellmapi/blob/docs/ugo-render-free-deployment-plan-20261018/docs/UGO_RENDER_FREE_IMPLEMENTACION.md) | Servidor enrutador hacia proveedores gratuitos, estado local y backup cifrado | Plan documental, sin servicio desplegado | Receptor durable, restore y pruebas reales |
+| Render workspace autorizado | Compute Free que se reactiva sin mantener Mac encendida | Cuenta conectada y lectura de workspace; **conectar GitHub no es desplegar** | Confirmar visibilidad del repo, plan, costos y parámetros |
+| Supabase TEST | Jobs, permisos, sesiones, auditoría, memoria y eventual receptor privado del backup | Entorno de diseño existente; infraestructura de respaldo no configurada | Evaluar Storage/RLS/cuotas y migraciones mínimas autorizadas |
+| OpenRouter FREE | Fallback opcional | Scaffolding para consultar clave, sin inferencia habilitada | Evitar límites nativos, no eludir cuota con identidades ni usar modelos pagos |
+
+**Separación no negociable:** el *router de seguridad de UGO* toma las decisiones de autorización/costo y controla las cuotas globales; *FreeLLMAPI* selecciona únicamente endpoints permitidos de su catálogo. No transferir al gateway público la autoridad de crear jobs, aprobar misiones o decidir si se pueden pagar solicitudes. Las APIs gratuitas de otros proveedores son cuotas separadas legítimas, no una forma de eliminar el límite de OpenRouter.
+
+### 20.2 Bloqueo crítico y mejora descubierta
+
+El repositorio FreeLLMAPI ya documenta el soporte `FREEAPI_DB_BACKUP_URL`, `FREEAPI_DB_BACKUP_TOKEN`, `FREEAPI_DB_BACKUP_KEY`, `FREEAPI_DB_BACKUP_INTERVAL_MS`, `ENCRYPTION_KEY` y `FREEAPI_CONFIG_JSON`: por tanto **no construir inmediatamente un backend SQL nuevo ni un sincronizador SQLite artesanal**. Inspeccionar su implementación real de backup/restore y definir un receptor HTTPS privado con un almacén durable gratuito y comprobado. Render Free no aporta disco persistente; un reinicio sin respaldo seguro puede perder claves/configuración. Los backups periódicos no prometen RPO cero. Las cuotas globales Hive no deben almacenarse en SQLite efímero o susceptible a rollback.
+
+### 20.3 Orden obligatorio para ejecutar, de manera autónoma y sin interrupciones triviales
+
+**HU0 — Reconciliación y capacidad (sólo lectura).** Owner D8 tecnología + D14 auditoría.
+- [ ] HU0.1 Releer SHAs de `main` y ramas de PR #515 y FreeLLMAPI #1, revisar conflictos/locks y adjuntar rutas exactas.
+- [ ] HU0.2 Inspeccionar implementación (no sólo README) de HTTP backup/restore, boot, configuración y contratos de seguridad.
+- [ ] HU0.3 Verificar Render conectado a GitHub, acceso al fork, requisitos de Docker/Node, cuotas del workspace, cero tarjeta y límites de egress.
+- [ ] HU0.4 Auditar TOS/privacidad de proveedores y clasificación de datos (reales pero no sensibles) enviados a modelos.
+- **GATE HU0:** informe con fuentes, SHA, riesgos, tareas sin resolver, y NO modificaciones en las cuentas.
+
+**HU1 — Persistencia durable y aislamiento (diseño; despliegue bajo autorización).** Owner D8 + D14.
+- [ ] HU1.1 Evaluar Storage privado de Supabase TEST si ya existe y su cuota permite uso sin tarjeta. Si no, documentar alternativa gratuita verificable o bloqueo.
+- [ ] HU1.2 Definir receptor autenticado HTTPS para backup cifrado y restore, con token exclusivo, retención, versionado, hash, atomicidad y control de replay; confirmar semántica HTTP del cliente real.
+- [ ] HU1.3 Especificar separación de `ENCRYPTION_KEY`, `FREEAPI_DB_BACKUP_KEY` y token; nunca guardar secretos en GitHub ni navegador, ni dar `service_role` al contenedor Render.
+- [ ] HU1.4 Probar backup/restauración real en sandbox autorizado: pérdida de disco, snapshot corrupto, cambios en ventana entre backups, caducidad, revocación, concurrentes y claves equivocadas.
+- **GATE HU1:** persistencia autenticada probada, RPO/RTO medidos, costo cero. Sin esto el deploy con credenciales reales está bloqueado.
+
+**HU2 — Render Free (primero propuesta, después aprobación).** Owner D8 DevOps + D14.
+- [ ] HU2.1 Preparar manifest de despliegue Docker/web service `Free`, `PORT`, healthcheck, secretos y cero addons/disco pago; fijar commit reproducible, evitar auto-deploy no validado.
+- [ ] HU2.2 Confirmar explícitamente plan, facturación y límites antes de crear servicios; presentar una única petición de aprobación para recursos y acciones nuevas.
+- [ ] HU2.3 Tras aprobación, crear entorno TEST y comprobar startup y endpoint autenticado. Repetir prueba de cold start, suspensión/reinicio y restore. Guardar run IDs y evidencia, no credenciales.
+- **GATE HU2:** servicio real accesible sólo por mecanismos autorizados, funciona con Mac apagada, 0 costos verificados; no basta un HTTP 200 en healthcheck.
+
+**HU3 — Gateway UGO PR #515 y política multi-proveedor (requiere permiso para cambios funcionales TEST).** Owner D8 + seguridad.
+- [ ] HU3.1 Preservar auth Super Admin y separación TEST; no habilitar inferencia por editar una flag sin gates.
+- [ ] HU3.2 Sustituir cuota local `Map` por presupuesto atómico transaccional en backend; limitar por misión/actor/proveedor/día, transiciones idempotentes y concurrencia.
+- [ ] HU3.3 Añadir adapter `FreeLLMAPI` y fallback OpenRouter **FREE ONLY** con URLs permitidas, precios verificables, límites de tokens/calls, reintentos/circuit-breaker y deny-by-default.
+- [ ] HU3.4 Desactivar en el gateway rutas `auto` no auditables, proveedores pagos, modelos de precio desconocido, top-ups y fuga de metadatos o tokens.
+- [ ] HU3.5 Automatizar tests de no-superadmin, 429, reboot, precio ambiguo, proveedor caído, request size, secuencias simultáneas y riesgo de cobro.
+- **GATE HU3:** pruebas completas exact-SHA, Judge y Sentinel independientes; inferencia continúa OFF si falta evidencia de costo/verificación.
+
+**HU4 — Primera llamada y misión reales en TEST.** Owner D1 Reina + D8 ejecución + D9 QA + D14 auditoría.
+- [ ] HU4.1 Con permiso para invocación real, enviar texto real público y no sensible del repositorio UGO por gateway y FreeLLMAPI; cotejar modelo, proveedor, tokens y **costo facturado**, sin inventar valores.
+- [ ] HU4.2 Probar fallback a OpenRouter FREE o rechazo limpio ante cuotas/fallo de FreeLLMAPI, sin bypass de la política.
+- [ ] HU4.3 Planner propone misión/versionado; el humano aprueba alcance `plan_hash`; worker autorizado genera cambio reversible a rama separada, tests y PR real.
+- [ ] HU4.4 D9/D14 Judge/Sentinel reproducen efectos exact-SHA; persistir evidencia y mostrar estado real en panel, sin marcar VERIFIED por PR abierto o respuesta LLM.
+- **GATE HU4:** flujo end-to-end real en UGO TEST, 0 cobros y sin tocar producción. 
+
+**HU5 — Operación gradual y cierre.** Owner D1 + D8 + D9 + D14.
+- [ ] HU5.1 Probar recuperación de caída Render y receptor, reintento de trabajo sin efecto duplicado, mensajes entre agentes con permisos y cuotas.
+- [ ] HU5.2 Escalar de un worker a máximo tres sólo si los locks y cuotas reales permiten, con jobs y evidencias propios, no 118 LLM concurrentes.
+- [ ] HU5.3 Monitorizar estados, backups, salud, presupuesto, fallos, RPO/RTO y bloqueo del proveedor en Super Admin.
+- [ ] HU5.4 Reconciliar documentación y checkpoints entre ambos repositorios y entregar reporte de tareas y bloqueo humano; producción y merge exigen autorización y gates independientes.
+- **GATE HU5:** continuidad segura probada y evidencia completa; no confundir piloto Hive con Empresa Autónoma ON o CUSTOMER_1 READY.
+
+### 20.4 Disciplina de ejecución, checkpoints y preguntas al fundador
+
+Para cada HUx.y: comprobar permiso y dependencias → registrar `TASK_ID / REPO / BRANCH / SOURCE_SHA / RUN_ID / CHANGES / TESTS / EVIDENCE / COST / JUDGE / SENTINEL / STATUS / NEXT` → seguir la próxima tarea segura. `PENDING` es el estado inicial de todos los ítems nuevos. La apertura de PR documental **no equivale** a realización técnica. Ningún agente puede marcarse VERIFIED a sí mismo.
+
+**Interrupción humana únicamente por** creación de servicio/bucket, cambios de secretos/credenciales, despliegue, cambios de Supabase, prueba con servicios externos si no autorizada, costos, fusión, producción, seguridad o ampliación de permisos. Agrupar las autorizaciones necesarias por lote; continuar con lectura, documentación y tests seguros cuando haya otro bloqueo. Los agentes sólo trabajan continuamente cuando existe un ejecutor/scheduler real; este documento no crea un proceso en segundo plano.
+
+**Links canónicos:** [documento detallado de implementación Render](https://github.com/sebastisnzoth/freellmapi/blob/docs/ugo-render-free-deployment-plan-20261018/docs/UGO_RENDER_FREE_IMPLEMENTACION.md), [PR #1 FreeLLMAPI](https://github.com/sebastisnzoth/freellmapi/pull/1), [PR #515 UGO Hive](https://github.com/sebastisnzoth/ugo-admin-panel/pull/515). **Estado actual:** NO DEPLOY, NO REAL INFERENCE, NO CUSTOMER QA, NO HIVE MVP VERIFIED.
