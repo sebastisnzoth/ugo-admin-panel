@@ -46,7 +46,7 @@ const CATEGORY_NAMES:Record<string,[string,string,string]>={
 }
 const categoryName=(name:string|undefined|null,locale:string)=>{
  if(!name)return null
- const normalized=name.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim()
+ const normalized=name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()
  const translation=CATEGORY_NAMES[normalized]
  return translation?translation[locale.startsWith('pt')?0:locale.startsWith('es')?1:2]:name
 }
