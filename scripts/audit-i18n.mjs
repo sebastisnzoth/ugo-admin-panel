@@ -12,6 +12,7 @@ function exclusionReason(file,text){
  if(/^(?:\d+(?:[.,]\d+)?\s?(?:km|min|m)|⌁?\s?\d+(?:[.,]\d+)?\s?km|&lt;\s?\d+\s?km|,\d+\s?km · ETA|ETA\s+\d+\s+min|\d+[–-]\d+\s+min|Desde R\$\s?\d|R\$\s?\d|· R\$)/i.test(text))return 'numeric demo value, measurement, ETA, or currency amount'
  if(/^(?:Centro · Florianópolis|UGO · Florianópolis, SC|· Florianópolis, SC|Florianópolis, SC|Av\. Beira-Mar Norte, 540|Mariana Costa ·|Mariana · 14:31|Floripa|Canasvieiras, Floripa|João P\.|Rafael Oliveira ·|Rafael Oliveira|Lucía Barros|Roberto Silva|Mariana Costa|mariana@email\.com|rafael@pix\.com)$/i.test(text))return 'fictional/sample person, contact, or place data'
  if(/^(?:— D|— D\d+|— D\d+ ·|— D\d+ · .+)$/i.test(text))return 'department identifier rendered with a numeric value'
+ if(/^(?:<supabase_session_token>|\{\{?(?:nombre|categoria|proveedor|eta|numero|zona|invite_url)\}\}?|CUSTOMER_1)$/.test(text))return 'template variable or persisted readiness identifier'
  if(/^AUTONOMY_ON ·$/.test(text))return 'persisted autonomy state enum'
  if(/^\d+ slots ·$/.test(text))return 'demo capacity count with a technical marketplace unit'
  if(/^DESCUENTO\d+$/.test(text))return 'sample discount code'
@@ -37,6 +38,14 @@ function walk(dir){
   }
   const visit=node=>{
    if(ts.isJsxText(node))add(node,node.getText(ast))
+   if(ts.isJsxExpression(node)&&node.expression&&node.parent.kind!==ts.SyntaxKind.JsxAttribute){
+    const inspect=value=>{
+     if(ts.isStringLiteralLike(value))add(value,value.text)
+     else if(ts.isConditionalExpression(value)){inspect(value.whenTrue);inspect(value.whenFalse)}
+     else if(ts.isBinaryExpression(value)&&[ts.SyntaxKind.BarBarToken,ts.SyntaxKind.QuestionQuestionToken].includes(value.operatorToken.kind))inspect(value.right)
+    }
+    inspect(node.expression)
+   }
    if(ts.isJsxAttribute(node)&&node.initializer&&ts.isStringLiteral(node.initializer)&&['aria-label','placeholder','title','alt'].includes(node.name.text))add(node,node.initializer.text)
    ts.forEachChild(node,visit)
   }

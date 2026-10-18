@@ -142,9 +142,10 @@ function Panel({kicker,title,action,onAction,children}:{kicker:React.ReactNode;t
 }
 
 function ProviderCard({pro,onPick,compact=false,rank}:{pro:Pro;onPick:()=>void;compact?:boolean;rank?:number}){
+ const{t}=useLocale()
  return <article className={`ucw-provider-card${compact?' compact':''}`}>
   <div className="ucw-result-avatar">{pro.avatar}</div>
   <div className="ucw-provider-main"><small>#{rank}</small><strong>{pro.name}</strong><span>{pro.role}</span><div className="ucw-provider-meta"><b>{pro.rating}</b><em>{pro.jobs} <LocalizedText id="screen.earnings.2"/></em><small>{pro.status}</small></div></div>
-  <div className="ucw-provider-side"><strong>{pro.price}</strong><span>{pro.eta}</span><button type="button" className="ucw-primary" onClick={onPick}>{compact?'Seleccionado':'Elegir'}</button></div>
+  <div className="ucw-provider-side"><strong>{pro.price}</strong><span>{pro.eta}</span><button type="button" className="ucw-primary" onClick={onPick}>{compact?t("uiCopy.short50"):t("uiCopy.short51")}</button></div>
  </article>
 }

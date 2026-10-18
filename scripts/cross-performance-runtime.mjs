@@ -82,7 +82,10 @@ try{
       const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
       localStorage.setItem(key,JSON.stringify(session))
       localStorage.setItem('ugo.locale.guest.'+role,'es')
-      if(session.user?.id)localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es')
+      if(session.user?.id){
+        localStorage.setItem('ugo.locale.'+role+'.'+session.user.id,'es')
+        localStorage.setItem('ugo.locale.'+role+'.'+session.user.id+'.updatedAt',String(Date.now()))
+      }
     },{role,session})
     const started=performance.now()
     await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded',timeout:20000})

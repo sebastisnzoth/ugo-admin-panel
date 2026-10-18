@@ -63,13 +63,13 @@ export function SecZonas() {
           <div key={z.id} style={{...S.card,opacity:z.activa?1:.5}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'8px'}}>
               <div style={{fontWeight:700,fontSize:'13px'}}>{z.nombre}</div>
-              <span style={S.pill(z.activa?'g':'r')}>{z.activa?'activa':'inactiva'}</span>
+              <span style={S.pill(z.activa?'g':'r')}>{z.activa?t("uiCopy.short9"):t("uiCopy.short10")}</span>
             </div>
             <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'6px'}}>📍 {z.ciudad} · {z.radio_km} <LocalizedText id="adminAdvanced.radiusSuffix"/></div>
             <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'8px'}}>⏰ {z.hora_inicio}–{z.hora_fin} <LocalizedText id="screen.admin_tariffs.19"/> {z.min_proveedores} <LocalizedText id="adminAdvanced.providers"/></div>
             <div style={{display:'flex',gap:'5px'}}>
               <button style={S.btn('s')} onClick={() => { setForm({...z, lat:String(z.lat), lng:String(z.lng), radio_km:String(z.radio_km), min_proveedores:String(z.min_proveedores)}); setModal(z.id); }}><LocalizedText id="screen.client_profile.30"/></button>
-              <button style={S.btn(z.activa?'d':'p')} onClick={() => toggle(z.id, !z.activa)}>{z.activa?'Desactivar':'Activar'}</button>
+              <button style={S.btn(z.activa?'d':'p')} onClick={() => toggle(z.id, !z.activa)}>{z.activa?t("screen.admin_users.26"):t("adminAdvanced.activate")}</button>
             </div>
           </div>
         ))}
@@ -123,10 +123,10 @@ export function SecPromos() {
             <span>{p.tipo==='porcentaje'?`${p.valor}%`:`R$${p.valor}`}</span>
             <span>{p.usos_actuales}/{p.usos_max||'∞'}</span>
             <span style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{p.expira_at?new Date(p.expira_at).toLocaleDateString('pt-BR'):'—'}</span>
-            <span style={S.pill(p.activo?'g':'r')}>{p.activo?'activo':'inactivo'}</span>
+            <span style={S.pill(p.activo?'g':'r')}>{p.activo?t("uiCopy.short1"):t("uiCopy.short2")}</span>
             <div style={{display:'flex',gap:'4px'}}>
               <button style={S.btn('s')} onClick={() => { setForm({...p,valor:String(p.valor),usos_max:p.usos_max||'',expira_at:p.expira_at?p.expira_at.split('T')[0]:'',categoria_id:p.categoria_id||''}); setModal(p.id); }}><LocalizedText id="screen.client_profile.30"/></button>
-              <button style={S.btn(p.activo?'d':'p')} onClick={() => toggle(p.id, !p.activo)}>{p.activo?'Desact.':'Activar'}</button>
+              <button style={S.btn(p.activo?'d':'p')} onClick={() => toggle(p.id, !p.activo)}>{p.activo?t("uiCopy.short11"):t("adminAdvanced.activate")}</button>
             </div>
           </div>
         ))}
@@ -137,7 +137,7 @@ export function SecPromos() {
           <div style={S.grid2}>
             <div><div style={S.label}><LocalizedText id="adminAdvanced.code"/></div><input style={{...S.input,textTransform:'uppercase'}} value={form.codigo} onChange={f('codigo')} placeholder="DESCUENTO20"/></div>
             <div><div style={S.label}><LocalizedText id="adminSurface.type"/></div><select style={S.select} value={form.tipo} onChange={f('tipo')}><option value="porcentaje"><LocalizedText id="adminAdvanced.percentage"/></option><option value="fijo"><LocalizedText id="adminAdvanced.fixedAmount"/></option></select></div>
-            <div><div style={S.label}>{form.tipo==='porcentaje'?'Descuento (%)':'Monto (R$)'}</div><input style={S.input} type="number" value={form.valor} onChange={f('valor')}/></div>
+            <div><div style={S.label}>{form.tipo==='porcentaje'?t("uiCopy.expression13"):t("uiCopy.expression14")}</div><input style={S.input} type="number" value={form.valor} onChange={f('valor')}/></div>
             <div><div style={S.label}><LocalizedText id="adminAdvanced.maxUses"/></div><input style={S.input} type="number" value={form.usos_max} onChange={f('usos_max')} placeholder={t('adminAdvanced.unlimited')}/></div>
             <div><div style={S.label}><LocalizedText id="adminAdvanced.expiresOn"/></div><input style={S.input} type="date" value={form.expira_at} onChange={f('expira_at')}/></div>
             <div><div style={S.label}><LocalizedText id="adminAdvanced.optionalCategory"/></div><select style={S.select} value={form.categoria_id} onChange={f('categoria_id')}><option value=""><LocalizedText id="screen.demand.9"/></option>{categorias.map(c=><option key={c.id} value={c.id}>{c.emoji} {c.nombre}</option>)}</select></div>
@@ -225,7 +225,7 @@ function TabSurge() {
           <div style={{fontSize:'20px',fontWeight:800,color:'#FFC043'}}>×{r.multiplicador}</div>
           <div style={{display:'flex',gap:'5px'}}>
             <button style={S.btn('s')} onClick={()=>{ setForm({...r,multiplicador:String(r.multiplicador),dias:r.dias||[]}); setModal(r.id); }}><LocalizedText id="screen.client_profile.30"/></button>
-            <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?'Desact.':'Activar'}</button>
+            <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?t("uiCopy.short11"):t("adminAdvanced.activate")}</button>
           </div>
         </div>
       ))}
@@ -325,7 +325,7 @@ function TabOnboarding() {
               <span style={{width:'20px',color:'rgba(0,0,0,.45)',fontSize:'10px'}}>{d.orden}</span>
               <span style={{flex:1,fontWeight:600}}>{d.tipo_doc}</span>
               <span style={{flex:2,fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{d.descripcion}</span>
-              <span style={S.pill(d.obligatorio?'r':'g')}>{d.obligatorio?'obligatorio':'opcional'}</span>
+              <span style={S.pill(d.obligatorio?'r':'g')}>{d.obligatorio?t("uiCopy.short12"):t("providerRate.optional")}</span>
               <button style={S.btn('d')} onClick={()=>remove(d.id)}>✕</button>
             </div>
           ))}
@@ -356,7 +356,7 @@ function TabRoles() {
               {r.permisos?.map((p: string) => <span key={p} style={S.pill('g')}>{p}</span>)}
             </div>
           </div>
-          <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?'Revocar':'Activar'}</button>
+          <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?t("uiCopy.short13"):t("adminAdvanced.activate")}</button>
         </div>
       ))}
       {!roles.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}><LocalizedText id="adminAdvanced.noSubadmins"/></div>}
@@ -485,6 +485,7 @@ function TabTemplates() {
 }
 
 function TabReferidos() {
+ const{t}=useLocale()
   const { update, getAll } = useAdvancedConfig('referido_');
   const [full, setFull] = useState<any[]>([]);
   const [vals, setVals] = useState<Record<string,string>>({});
@@ -501,7 +502,7 @@ function TabReferidos() {
           {item.clave === 'referido_activo' ? (
             <label style={{display:'flex',alignItems:'center',gap:'7px',fontSize:'11px',cursor:'pointer'}}>
               <input type="checkbox" checked={vals[item.clave]==='true'} onChange={e=>{ const v=String(e.target.checked); setVals(p=>({...p,[item.clave]:v})); update(item.clave,v); }}/>
-              {vals[item.clave]==='true'?'Programa activo':'Programa inactivo'}
+              {vals[item.clave]==='true'?t("uiCopy.expression15"):t("uiCopy.expression16")}
             </label>
           ) : (
             <>
@@ -519,6 +520,7 @@ function TabReferidos() {
 }
 
 export function SecValidacionPaises() {
+ const{t}=useLocale()
   const [paises, setPaises] = React.useState<any[]>([]);
   const [sel, setSel] = React.useState<any>(null);
   const [kycError,setKycError] = React.useState('');
@@ -559,7 +561,7 @@ export function SecValidacionPaises() {
               <button onClick={e=>{e.stopPropagation();toggle(p.id,!p.activo);}}
                 style={{padding:'2px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'9px',fontWeight:700,
                   background:p.activo?'rgba(21,147,102,.1)':'rgba(0,0,0,.06)',color:p.activo?'#159366':'#888'}}>
-                {p.activo?'● ON':'○ OFF'}
+                {p.activo?t("uiCopy.short14"):t("uiCopy.expression17")}
               </button>
             </div>
           ))}
@@ -931,7 +933,7 @@ const toggleAll = () => {
           {(['prospectos','usuarios'] as const).map(d => (
             <button key={d} onClick={()=>setDestino(d)}
               style={{padding:'5px 12px',border:'1.5px solid',borderColor:destino===d?'#159366':'#ddd',borderRadius:'20px',fontSize:'10px',fontWeight:700,cursor:'pointer',background:destino===d?'rgba(21,147,102,.08)':'#fff',color:destino===d?'#159366':'#666',fontFamily:'inherit'}}>
-              {d==='prospectos'?'📋 Solo prospectos':'👤 Proveedores (recomendado)'}
+              {d==='prospectos'?t("uiCopy.expression18"):t("uiCopy.expression19")}
             </button>
           ))}
         </div>
@@ -1021,7 +1023,7 @@ const toggleAll = () => {
 
           <button onClick={doImport} disabled={loading||selected.size===0}
             style={{width:'100%',padding:'14px',background:loading||selected.size===0?'#ccc':'#111',color:'#fff',fontWeight:800,fontSize:'14px',border:'none',borderRadius:'13px',cursor:loading||selected.size===0?'not-allowed':'pointer',fontFamily:'inherit',transition:'background .2s'}}>
-            {loading ? '⏳ Importando...' : `📥 Importar ${selected.size} proveedores a U.GO → ${destino==='prospectos'?'Prospectos':'Usuarios'}`}
+            {loading ? t("uiCopy.expression20") : `📥 Importar ${selected.size} proveedores a U.GO → ${destino==='prospectos'?'Prospectos':'Usuarios'}`}
           </button>
         </>
       )}
@@ -1127,7 +1129,7 @@ export function SecTiendasInsumos() {
       {/* Formulario nueva/editar tienda */}
       {showForm&&(
         <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:16,marginBottom:16}}>
-          <div style={{fontWeight:700,fontSize:13,marginBottom:12}}>{editing?'✏️ Editar tienda':'➕ Nueva tienda'}</div>
+          <div style={{fontWeight:700,fontSize:13,marginBottom:12}}>{editing?t("uiCopy.expression21"):t("uiCopy.expression22")}</div>
           <div className="fgrid">
             <div className="fg"><label className="flabel"><LocalizedText id="screen.admin_users.11"/></label><input style={inp} value={form.nombre} onChange={e=>setForm((p:any)=>({...p,nombre:e.target.value}))} placeholder={t('adminAdvanced.storeNameExample')}/></div>
             <div className="fg"><label className="flabel"><LocalizedText id="adminAdvanced.suppliesCategory"/></label>
@@ -1213,7 +1215,7 @@ export function SecTiendasInsumos() {
             <option value="BR">🇧🇷 MLB</option><option value="AR">🇦🇷 MLA</option>
           </select>
           <button className="btn btn-p btn-sm" onClick={searchML} disabled={mlLoading||!mlQuery.trim()}>
-            {mlLoading?'⏳':'🔍 Buscar'}
+            {mlLoading?'⏳':t("uiCopy.expression23")}
           </button>
         </div>
         {mlRes.length>0&&(

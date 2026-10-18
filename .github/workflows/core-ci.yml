@@ -62,6 +62,11 @@ jobs:
       - name: Validate OpenRouter free-first route
         run: node scripts/openrouter-autonomy-probe.mjs
 
+      - name: Translation coverage and assembled catalog parity
+        run: |
+          npm run audit:i18n
+          npm run audit:i18n:keys
+
       - name: TypeScript and production build
         run: npm run build
 

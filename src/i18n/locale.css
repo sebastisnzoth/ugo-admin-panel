@@ -5,3 +5,5 @@
 .ugo-language-trigger{min-height:42px}
 .ugo-language-menu{z-index:12041}
 @media(max-width:520px){.ugo-language-control{top:33px;right:max(8px,env(safe-area-inset-right))}.ugo-language-trigger{min-height:40px}}
+
+.ugo-language-inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;font:500 12px/1.4 Inter,system-ui,sans-serif}.ugo-language-inline select{min-height:40px;max-width:100%;padding:6px 10px;border:1px solid #b5c1c8;border-radius:8px;background:#fff;color:#16232c}.ugo-language-inline select:focus-visible{outline:2px solid #15856d;outline-offset:2px}

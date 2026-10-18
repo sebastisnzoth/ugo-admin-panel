@@ -29,7 +29,7 @@ export function AdminPaymentMethods({config,update}:Props){
  }
 
  return <section className="ugo-system-card ugo-payment-methods">
-  <div className="ugo-system-cardhead"><div><small>{t('screen.admin_methods.1')}</small><h4>{t('screen.admin_methods.2')}</h4></div><span className={cash?'ugo-payment-status active':'ugo-payment-status'}>{cash?'Habilitado':'Deshabilitado'}</span></div>
+  <div className="ugo-system-cardhead"><div><small>{t('screen.admin_methods.1')}</small><h4>{t('screen.admin_methods.2')}</h4></div><span className={cash?'ugo-payment-status active':'ugo-payment-status'}>{cash?t("uiCopy.short29"):t("uiCopy.short30")}</span></div>
   <div className="ugo-payment-method-summary"><div className="ugo-payment-method-icon" aria-hidden="true">$</div><div><strong>{t('screen.admin_methods.3')}</strong><p><LocalizedText id="adminPayment.cashInfo"/></p></div></div>
   <div className="ugo-system-fields">
    <label className="ugo-system-field"><span><b>{t('screen.admin_methods.4')}</b><small>pago_efectivo_activo</small></span><select value={cash?'true':'false'} disabled={saving==='pago_efectivo_activo'} onChange={e=>void toggle('pago_efectivo_activo',e.target.value==='true')}><option value="true">{t('screen.admin_methods.5')}</option><option value="false">{t('screen.admin_methods.6')}</option></select></label>

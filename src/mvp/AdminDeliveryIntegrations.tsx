@@ -55,15 +55,15 @@ export function AdminDeliveryIntegrations(){
  }
 
  return <div className="ugo-delivery-integrations">
-  <header><div><small>{t('screen.admin_integrations.1')}</small><h4>{t('screen.admin_integrations.2')}</h4><p>{t('screen.admin_integrations.3')}</p></div><button type="button" onClick={()=>void load()} disabled={loading}>{loading?'Atualizando…':'↻ Atualizar'}</button></header>
+  <header><div><small>{t('screen.admin_integrations.1')}</small><h4>{t('screen.admin_integrations.2')}</h4><p>{t('screen.admin_integrations.3')}</p></div><button type="button" onClick={()=>void load()} disabled={loading}>{loading?t('admin.refreshing'):t("uiCopy.expression92")}</button></header>
   {error&&<div className="ugo-delivery-integration-error" role="alert">{error}</div>}
   <div className="ugo-delivery-integration-grid">{providers.map(item=>{const result=results[item.id];return <article key={item.id} className={`ugo-delivery-integration-card ${item.configured?'configured':'waiting'}`}>
-   <header><div><small>{item.id==='uber'?'ENTREGAS':item.id==='ifood'?'MERCHANT / SHIPPING':'OPEN ORDERS / CARGO'}</small><strong>{item.label}</strong></div><span>{result?stateLabel[result.state]||result.state:item.configured?'Configurada':'Aguardando credenciais'}</span></header>
+   <header><div><small>{item.id==='uber'?t("uiCopy.short24"):item.id==='ifood'?t("uiCopy.expression93"):t("uiCopy.expression94")}</small><strong>{item.label}</strong></div><span>{result?stateLabel[result.state]||result.state:item.configured?t("uiCopy.short25"):t("uiCopy.expression95")}</span></header>
    <p>{item.note}</p>
    <div className="ugo-delivery-capabilities">{item.capabilities.map(x=><span key={x}>{x}</span>)}</div>
    <div className="ugo-delivery-required"><b>{t('screen.admin_integrations.4')}</b>{item.required.map(x=><code key={x}>{x}</code>)}</div>
    {result&&<div className={`ugo-delivery-test-result ${result.ok?'ok':'fail'}`}><strong>{result.message}</strong>{result.merchants!=null&&<span>{result.merchants} <LocalizedText id="adminDelivery.merchants"/></span>}{result.expiresIn!=null&&<span><LocalizedText id="adminDelivery.tokenValid"/> {Math.round(result.expiresIn/60)} <LocalizedText id="screen.admin_tariffs.19"/></span>}</div>}
-   <footer><a href={item.docs} target="_blank" rel="noreferrer">{t('screen.admin_integrations.5')}</a><button type="button" onClick={()=>void test(item.id)} disabled={testing===item.id}>{testing===item.id?'Testando…':'Testar conexão'}</button></footer>
+   <footer><a href={item.docs} target="_blank" rel="noreferrer">{t('screen.admin_integrations.5')}</a><button type="button" onClick={()=>void test(item.id)} disabled={testing===item.id}>{testing===item.id?t("uiCopy.short26"):t("uiCopy.expression96")}</button></footer>
   </article>})}</div>
   <div className="ugo-system-note"><strong>{t('screen.admin_integrations.6')}</strong><span><LocalizedText id="adminDelivery.installInfo"/></span></div>
  </div>

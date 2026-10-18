@@ -2,32 +2,14 @@
 // On a source-copy mismatch, evaluate the same assertion against each locale's
 // rendered text while preserving interpolation expressions and structural code.
 import assert from 'node:assert/strict'
-import fs from 'node:fs'
-import path from 'node:path'
 import ts from 'typescript'
-
+import {loadCatalogs} from '../../scripts/lib/i18n-catalog.mjs'
 const supportedLocales = ['pt-BR', 'es', 'en']
-const catalogDir = path.resolve('src/i18n/translations')
 const valuesByKey = new Map()
-for (const file of fs.readdirSync(catalogDir).filter(name => name.endsWith('.ts') && name !== 'core.ts')) {
-  const fullPath = path.join(catalogDir, file)
-  const source = ts.createSourceFile(fullPath, fs.readFileSync(fullPath, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
-  const add = (locale, object) => {
-    if (!supportedLocales.includes(locale) || !ts.isObjectLiteralExpression(object)) return
-    for (const property of object.properties) {
-      if (!ts.isPropertyAssignment(property) || !ts.isStringLiteral(property.initializer)) continue
-      const key = property.name && (ts.isStringLiteral(property.name) || ts.isIdentifier(property.name)) ? property.name.text : null
-      if (!key) continue
-      const locales = valuesByKey.get(key) || new Map()
-      locales.set(locale, property.initializer.text)
-      valuesByKey.set(key, locales)
-    }
-  }
-  const visit = node => {
-    if (ts.isPropertyAssignment(node) && node.name && (ts.isStringLiteral(node.name) || ts.isIdentifier(node.name))) add(node.name.text, node.initializer)
-    ts.forEachChild(node, visit)
-  }
-  visit(source)
+for(const [locale,catalog] of Object.entries(loadCatalogs()))for(const [key,value] of Object.entries(catalog)){
+ const values=valuesByKey.get(key)||new Map()
+ values.set(locale,value)
+ valuesByKey.set(key,values)
 }
 
 function localizedSnapshot(actual, locale) {

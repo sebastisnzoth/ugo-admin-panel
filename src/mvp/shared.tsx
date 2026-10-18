@@ -1,3 +1,4 @@
+import{LanguageSelector}from'../i18n/LanguageSelector'
 import{LocalizedText,useLocale}from'../i18n/locale'
 /* eslint-disable react-refresh/only-export-components -- design system barrel: exporta primitivas, constantes y hooks junto a los componentes (patrón intencional UGO) */
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
@@ -133,7 +134,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
           {t(role==='client'?'sharedUi.clientSwitch':'sharedUi.providerSwitch')}
         </button>
       </section>
-      <section className="mvp-auth-card" aria-label={mode==='login'?'Iniciar sesión':mode==='register'?'Crear cuenta':'Recuperar contraseña'}>
+      <section className="mvp-auth-card" aria-label={title}>
         <header className="mvp-auth-card-head">
           <div className="mvp-mini-orb" aria-hidden="true"/>
           <div>
@@ -150,10 +151,10 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
           <button type="button" className="mvp-google-button" onClick={signInWithGoogle} disabled={busy}><span className="mvp-google-mark">G</span><b>{t('sharedUi.google')}</b></button>
           <div className="mvp-auth-divider"><span>{t('sharedUi.orEmail')}</span></div>
         </>}
-        <form onSubmit={submit}>
+        <LanguageSelector/><form data-testid="auth-form" onSubmit={submit}>
           {mode==='register'&&<label><span><LocalizedText id="screen.admin_users.11"/></span><Input value={name} onChange={e=>setName(e.target.value)} autoComplete="name" placeholder={t('sharedUi.name')} required/></label>}
-          <label><span><LocalizedText id="screen.admin_users.13"/></span><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder={t('sharedUi.emailExample')} required/></label>
-          {mode!=='recovery'&&<label><span>{t('sharedUi.password')}</span><div className="mvp-password-field"><Input type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} autoComplete={mode==='login'?'current-password':'new-password'} minLength={6} placeholder={t('sharedUi.passwordMinimum')} required/><button type="button" onClick={()=>setShowPassword(value=>!value)} aria-label={t(showPassword?'sharedUi.hidePassword':'sharedUi.showPassword')}>{showPassword?t('sharedUi.hidePassword'):t('sharedUi.showPassword')}</button></div></label>}
+          <label><span><LocalizedText id="screen.admin_users.13"/></span><Input data-testid="auth-email" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder={t('sharedUi.emailExample')} required/></label>
+          {mode!=='recovery'&&<label><span>{t('sharedUi.password')}</span><div className="mvp-password-field"><Input data-testid="auth-password" type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} autoComplete={mode==='login'?'current-password':'new-password'} minLength={6} placeholder={t('sharedUi.passwordMinimum')} required/><button type="button" onClick={()=>setShowPassword(value=>!value)} aria-label={t(showPassword?'sharedUi.hidePassword':'sharedUi.showPassword')}>{showPassword?t('sharedUi.hidePassword'):t('sharedUi.showPassword')}</button></div></label>}
           {mode==='login'&&<button type="button" className="mvp-auth-text-action" onClick={()=>changeMode('recovery')}>{t('sharedUi.forgotPassword')}</button>}
           {(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'} role={error?'alert':'status'} aria-live="polite">{error?`${error} ${t('sharedUi.errorTryAgain')}`:notice}</div>}{error&&onResetAccess&&<button type="button" className="mvp-auth-text-action" onClick={()=>void onResetAccess()}>{t('sharedUi.sessionRetry')}</button>}
           <Button className="mvp-primary" loading={busy}>{mode==='login'?t('sharedUi.signIn'):mode==='register'?t('sharedUi.createAccount'):t('sharedUi.sendLink')}</Button>
