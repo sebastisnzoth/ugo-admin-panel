@@ -421,6 +421,83 @@ async function importAdminManagedUsers(req: VercelRequest, res: VercelResponse) 
   }
 }
 
+async function uploadAdminManagedProfilePhoto(req: VercelRequest, res: VercelResponse) {
+  const userId = clean(req.body?.userId, 80)
+  const mime = clean(req.body?.mime, 40)
+  const bytesBase64 = typeof req.body?.base64 === 'string' ? req.body.base64 : ''
+  const extensions: Record<string,string> = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}
+  if (!UUID_RE.test(userId) || !extensions[mime]) return res.status(400).json({error:'Usuario o formato de imagen inválido.'})
+  if (bytesBase64.length < 16 || bytesBase64.length > 2800000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(bytesBase64)) return res.status(400).json({error:'Imagen inválida o demasiado grande (máximo 2 MB).'})
+  const bytes = Buffer.from(bytesBase64,'base64')
+  if (bytes.length > 2097152 || bytes.length===0) return res.status(400).json({error:'Imagen demasiado grande.'})
+  const validSignature = mime==='image/png'
+    ? bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))
+    : mime==='image/jpeg'
+      ? bytes[0]===255 && bytes[1]===216 && bytes[2]===255
+      : bytes.toString('ascii',0,4)==='RIFF' && bytes.toString('ascii',8,12)==='WEBP'
+  if (!validSignature) return res.status(400).json({error:'El contenido no coincide con el formato de imagen.'})
+  try {
+    const {sb,user,role}=await requireAdmin(req)
+    const {data:target,error:targetError}=await sb.from('usuarios').select('id,tipo').eq('id',userId).maybeSingle()
+    if (targetError) throw targetError
+    if (!target) return res.status(404).json({error:'Usuario inexistente.'})
+    if (PRIVILEGED_USER_ROLES.has(String(target.tipo)) && role!=='superadmin') return res.status(403).json({error:'Super Admin requerido para esta cuenta.'})
+    const bucket=target.tipo==='proveedor'?'provider-public':'client-public'
+    const fileName=userId+'/admin-profile-'+crypto.randomUUID()+'.'+extensions[mime]
+    const {error:uploadError}=await sb.storage.from(bucket).upload(fileName,bytes,{contentType:mime,upsert:false})
+    if (uploadError) throw uploadError
+    const url=sb.storage.from(bucket).getPublicUrl(fileName).data.publicUrl
+    const {error:auditError}=await sb.from('audit_log').insert({
+      evento:'admin_usuario_foto_subida',actor_id:user.id,entidad_tipo:'usuario',entidad_id:userId,
+      detalles:{bucket,storage_path:fileName,mime,size:bytes.length}
+    })
+    if (auditError) {
+      await sb.storage.from(bucket).remove([fileName])
+      throw auditError
+    }
+    return res.status(200).json({url})
+  } catch(error) { return adminErrorResponse(res,error,'No se pudo subir la foto.') }
+}
+
+async function changeAdminManagedUserEmail(req: VercelRequest, res: VercelResponse) {
+  const userId=clean(req.body?.userId,80)
+  const email=clean(req.body?.email,254).toLowerCase()
+  if (!UUID_RE.test(userId)||!validEmail(email)) return res.status(400).json({error:'Usuario o correo inválido.'})
+  try {
+    const {sb,user,role}=await requireAdmin(req)
+    const {data:target,error:targetError}=await sb.from('usuarios').select('id,tipo,email').eq('id',userId).maybeSingle()
+    if(targetError)throw targetError
+    if(!target)return res.status(404).json({error:'Usuario no encontrado.'})
+    if(PRIVILEGED_USER_ROLES.has(String(target.tipo))&&role!=='superadmin')return res.status(403).json({error:'Super Admin requerido.'})
+    const {data:original,error:authError}=await sb.auth.admin.getUserById(userId)
+    if(authError||!original.user)throw authError||new Error('Cuenta Auth no encontrada.')
+    const oldEmail=String(original.user.email||'').toLowerCase()
+    if(email===oldEmail)return res.status(200).json({success:true,email,unchanged:true})
+    const {data:updated,error:updateError}=await sb.auth.admin.updateUserById(userId,{email,email_confirm:true})
+    if(updateError||!updated.user||updated.user.email?.toLowerCase()!==email)throw updateError||new Error('Auth no confirmó el correo.')
+    let rollbackRequired=true
+    try {
+      const {error:profileError}=await sb.from('usuarios').update({email}).eq('id',userId)
+      if(profileError)throw profileError
+      const {error:auditError}=await sb.from('audit_log').insert({
+       evento:'admin_usuario_email_actualizado',actor_id:user.id,entidad_tipo:'usuario',entidad_id:userId,
+       detalles:{previous_email:oldEmail,new_email:email,target_role:String(target.tipo)}
+      })
+      if(auditError)throw auditError
+      const {data:profile,error:readError}=await sb.from('usuarios').select('email').eq('id',userId).maybeSingle()
+      if(readError||!profile||String(profile.email).toLowerCase()!==email)throw readError||new Error('No se verificó la persistencia de correo.')
+      rollbackRequired=false
+      return res.status(200).json({success:true,email})
+    } catch(error) {
+      if(rollbackRequired) {
+        await sb.auth.admin.updateUserById(userId,{email:oldEmail,email_confirm:Boolean(original.user.email_confirmed_at)}).catch(()=>undefined)
+        await sb.from('usuarios').update({email:target.email}).eq('id',userId)
+      }
+      throw error
+    }
+  }catch(error){return adminErrorResponse(res,error,'No se pudo actualizar el correo.')}
+}
+
 async function resetAdminManagedUserPassword(req: VercelRequest, res: VercelResponse) {
   const userId = clean(req.body?.userId, 80)
   const password = String(req.body?.password ?? '')
@@ -595,6 +672,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'provider-verification': return changeProviderVerification(req, res)
     case 'admin-create-user': return createAdminManagedUser(req, res)
     case 'admin-reset-password': return resetAdminManagedUserPassword(req, res)
+    case 'admin-change-email': return changeAdminManagedUserEmail(req, res)
+    case 'admin-upload-profile-photo': return uploadAdminManagedProfilePhoto(req, res)
     case 'admin-import-users': return importAdminManagedUsers(req, res)
     default: return res.status(404).json({ error: 'Operación no encontrada.' })
   }
