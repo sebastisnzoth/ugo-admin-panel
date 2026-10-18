@@ -1,0 +1,26 @@
+✔ Hive router is TEST scoped, server-authenticated, and rejects non-superadmins (0.914468ms)
+✔ Hive router remains fail closed until durable free quota and billing evidence exist (0.491069ms)
+✔ No key is returned to callers and there is no payment or production write path (0.253055ms)
+✔ SQL quotas persist across engine restart, are idempotent and reject unauthorized roles (2435.143622ms)
+✔ global and user quotas share providers, failed calls stay charged, circuits persist (1324.971967ms)
+✔ backup pointer uses CAS, keeps three versions, denies browser access (1477.939332ms)
+✔ global and provider daily budgets are enforced across four actors and both providers (1262.191803ms)
+✔ cleanup records survive deletion failures and pending uploads have a hard bound (1329.572601ms)
+✔ expired uploads cannot commit after cleanup has selected their bytes (1363.463479ms)
+✔ pricing and endpoint policy rejects every ambiguous or unapproved route (1.303565ms)
+✔ only implemented OpenRouter route reserves once, pins model, disables redirects and paid fallback (4.066717ms)
+✔ durable quota failure, replay and unknown transport outcome cannot trigger another provider (0.598148ms)
+✔ model mismatch, missing usage, oversized output and billable usage fail closed (5.20666ms)
+✔ 429 cannot fall back to an unimplemented FreeAPI pinning contract (0.688773ms)
+✔ receiver rejects unauthorized, unsupported, unversioned, corrupted and oversized backups (29.524023ms)
+✔ concurrent writes only commit once; stale writes cannot replace current snapshot (7.869512ms)
+✔ corrupt stored object, storage errors and uncertain commit outcomes fail safely (2.628623ms)
+✔ receiver refuses stale or missing snapshot freshness and stops writes on cleanup backlog (1.216125ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9371.735761

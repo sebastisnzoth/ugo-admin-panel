@@ -1,0 +1,70 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ugo-deploy@0.0.0 build
+> npm run verify:test-env && tsc -b && vite build
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> ugo-deploy@0.0.0 verify:test-env
+> node scripts/assert-test-environment.mjs
+
+UGO TEST environment guard OK · tmossnqfwfwjrtzwcbmm · 295 runtime files checked
+vite v8.0.16 building client environment for production...
+[2Ktransforming...✓ 390 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                          4.14 kB │ gzip:   1.72 kB
+dist/assets/provider-avatar-BzKYzG3f.jpg               108.96 kB
+dist/assets/work-1-C0xSI166.jpg                        139.85 kB
+dist/assets/work-2-1HtFxaEE.jpg                        180.33 kB
+dist/assets/map-floripa-BM0vVN6p.jpg                   180.55 kB
+dist/assets/work-3-CmoCy-QL.jpg                        184.32 kB
+dist/assets/UgoDemoBoundary-CiEVDTGr.css                 0.75 kB │ gzip:   0.37 kB
+dist/assets/UgoTestDemo-CHh6CAcf.css                     2.45 kB │ gzip:   0.90 kB
+dist/assets/ProviderRecruitmentLanding-ZhueXIin.css      4.38 kB │ gzip:   1.29 kB
+dist/assets/notification-center-CPRW637L.css             6.99 kB │ gzip:   1.82 kB
+dist/assets/ProviderOnboardingGate-DLFgD48C.css         10.53 kB │ gzip:   2.79 kB
+dist/assets/ux-OR9kAjCn.css                             11.20 kB │ gzip:   2.66 kB
+dist/assets/useDisputes-dGgKc9QM.css                    11.72 kB │ gzip:   2.58 kB
+dist/assets/UgoClientWeb-toFwkk3d.css                   13.56 kB │ gzip:   3.22 kB
+dist/assets/DevelopmentDashboard-B7fF1Pz-.css           14.02 kB │ gzip:   3.69 kB
+dist/assets/UgoLanding-CNrDFnR8.css                     15.43 kB │ gzip:   4.04 kB
+dist/assets/ClientFlowV2-GkbcMDM-.css                   25.82 kB │ gzip:   5.22 kB
+dist/assets/UgoWeb-Dvaufyos.css                         33.30 kB │ gzip:   7.03 kB
+dist/assets/vendor-maplibre-CKRTiAqP.css                82.86 kB │ gzip:  10.71 kB
+dist/assets/index-BuK8rvfZ.css                         136.12 kB │ gzip:  24.98 kB
+dist/assets/ProviderRoot-DJPkMrMT.css                  145.55 kB │ gzip:  22.84 kB
+dist/assets/AdminShell-CkEXlBqO.css                    168.84 kB │ gzip:  24.09 kB
+dist/assets/ClientRoot-DVRTrvXX.css                    338.63 kB │ gzip:  49.56 kB
+dist/assets/ClientActiveMap-D__a3Vu9.js                  0.07 kB │ gzip:   0.08 kB
+dist/assets/realtimeChannel-CtRBQTpI.js                  0.43 kB │ gzip:   0.32 kB
+dist/assets/UgoDemoBoundary-C4o0672A.js                  0.52 kB │ gzip:   0.30 kB
+dist/assets/rolldown-runtime-QTnfLwEv.js                 0.69 kB │ gzip:   0.42 kB
+dist/assets/vendor-DjDK5o4-.js                           3.56 kB │ gzip:   1.57 kB
+dist/assets/UgoTestDemo-B_2hhZqp.js                      5.83 kB │ gzip:   1.65 kB
+dist/assets/ProviderRecruitmentLanding-BUbQXw0b.js       6.25 kB │ gzip:   1.95 kB
+dist/assets/AdminGate-Ck80ow4B.js                        6.83 kB │ gzip:   2.48 kB
+dist/assets/UgoLanding-C-hdYTwT.js                       9.95 kB │ gzip:   2.01 kB
+dist/assets/DevelopmentDashboard-Ch_j8SA-.js            13.08 kB │ gzip:   3.46 kB
+dist/assets/UgoClientWeb-BaSttLze.js                    19.53 kB │ gzip:   4.39 kB
+dist/assets/ProviderOnboardingGate-OeRM3BPz.js          22.04 kB │ gzip:   5.40 kB
+dist/assets/ClientFlowV2-Dlkaa_6P.js                    31.07 kB │ gzip:   6.94 kB
+dist/assets/ux-C_UDYl6C.js                              32.14 kB │ gzip:  10.40 kB
+dist/assets/UgoWeb-BCGWiPwO.js                          48.67 kB │ gzip:   8.53 kB
+dist/assets/useDisputes-C7dgbxyM.js                     54.43 kB │ gzip:  13.98 kB
+dist/assets/index-BXj2eyIN.js                           60.24 kB │ gzip:  19.34 kB
+dist/assets/ProviderRoot-DLYj8nUW.js                   152.24 kB │ gzip:  37.08 kB
+dist/assets/ClientRoot-Dgw5_SF8.js                     158.79 kB │ gzip:  39.54 kB
+dist/assets/vendor-react-DRF1AYe1.js                   178.30 kB │ gzip:  55.97 kB
+dist/assets/AdminShell-C7XmKv41.js                     412.95 kB │ gzip:  98.15 kB
+dist/assets/notification-center-WGTWRDzv.js          1,000.51 kB │ gzip: 254.49 kB
+dist/assets/vendor-maplibre-ChemW-1e.js              1,057.82 kB │ gzip: 283.53 kB
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0msrc/features/client/order/ClientActiveMap.tsx is dynamically imported by src/features/client/order/ClientLiveTracking.tsx but also statically imported by src/features/client/home/ClientHomeScreen.tsx, dynamic import will not move module into another chunk.
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 1050 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 670ms

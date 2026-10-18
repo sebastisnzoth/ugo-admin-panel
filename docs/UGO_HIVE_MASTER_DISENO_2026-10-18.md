@@ -1148,3 +1148,15 @@ Para cada HUx.y: comprobar permiso y dependencias → registrar `TASK_ID / REPO 
 **Interrupción humana únicamente por** creación de servicio/bucket, cambios de secretos/credenciales, despliegue, cambios de Supabase, prueba con servicios externos si no autorizada, costos, fusión, producción, seguridad o ampliación de permisos. Agrupar las autorizaciones necesarias por lote; continuar con lectura, documentación y tests seguros cuando haya otro bloqueo. Los agentes sólo trabajan continuamente cuando existe un ejecutor/scheduler real; este documento no crea un proceso en segundo plano.
 
 **Links canónicos:** [documento detallado de implementación Render](https://github.com/sebastisnzoth/freellmapi/blob/docs/ugo-render-free-deployment-plan-20261018/docs/UGO_RENDER_FREE_IMPLEMENTACION.md), [PR #1 FreeLLMAPI](https://github.com/sebastisnzoth/freellmapi/pull/1), [PR #515 UGO Hive](https://github.com/sebastisnzoth/ugo-admin-panel/pull/515). **Estado actual:** NO DEPLOY, NO REAL INFERENCE, NO CUSTOMER QA, NO HIVE MVP VERIFIED.
+
+## 21. Checkpoint de implementación autorizada — 18/10/2026
+
+La orden de implementación actual autoriza ramas aisladas y ensayos locales, sin desplegar, fusionar ni cambiar secretos/datos remotos. El progreso y los comandos reproducibles están en [IMPLEMENTATION_STATUS.md](ugo-hive/IMPLEMENTATION_STATUS.md). Se preservan los trabajos de PR515 y FreeLLMAPI1.
+
+Se prepararon receptor cifrado privado GET/PUT con CAS/retención/limpieza durable, cuotas PostgreSQL separadas del SQLite y manifest Render Free con inferencia bloqueada. Se comprobó interoperabilidad por HTTPS loopback y recuperación de SQLite después de reinicios; esto NO prueba Storage remoto ni Render. FreeLLMAPI se mantiene ineligible para inferencia porque su modelo puede resolver a varios proveedores: falta un contrato ejecutable de pinning. OpenRouter tampoco fue invocado.
+
+No se actualizaron los PR: sus ramas activan previews automáticos Vercel/Netlify y la orden exige autorización antes de desplegar. Los commits son locales y se entregan como bundles/patches con evidencia para revisión. Estado global IN_PROGRESS/BLOCKED_HUMAN, sin ninguna declaración HIVE_MVP_VERIFIED, producción ni Empresa Autónoma ON.
+
+### Canal web actualizado — 18/10/2026 18:53 BRT
+
+Por instrucción del usuario, GitHub Pages es el único destino web; Vercel fue pausado por él y Netlify se descarta. Se omiten previews Netlify de estos PR con su marcador de título. Esto autoriza actualizar ramas de desarrollo y verificar CI, sin merge/publicación main ni habilitar servicios remotos/inferencia. Pages no aloja el backend FreeAPI/SQLite/Edge Functions; esos gates permanecen separados. Ver el checkpoint de implementación para el estado vigente.

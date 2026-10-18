@@ -1,0 +1,4 @@
+# Dedicated opaque backup bearer is verified by handler, not Supabase JWT auth.
+# Apply to project config ONLY after deployment approval.
+[functions.ugo-hive-backup-receiver]
+verify_jwt = false
