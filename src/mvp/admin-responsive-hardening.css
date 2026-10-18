@@ -231,3 +231,37 @@
     min-width:116px!important;
   }
 }
+
+/* Admin responsive pass — module content and user management */
+.ugo-admin2,
+.ugo-admin2-main,
+.ugo-admin2-main > *,
+.ugo-admin2 .ugo-admin2-module-card,
+.ugo-admin-users-panel { min-width:0; box-sizing:border-box; }
+.ugo-admin2 input,.ugo-admin2 select,.ugo-admin2 textarea { max-width:100%; box-sizing:border-box; }
+.ugo-admin2 .ugo-admin-user-edit-form { box-sizing:border-box; min-width:0; }
+.ugo-admin2 .ugo-admin-user-edit-form input,
+.ugo-admin2 .ugo-admin-user-edit-form textarea,
+.ugo-admin2 .ugo-admin-user-edit-form select { min-width:0; width:100%; box-sizing:border-box; }
+.ugo-admin2 .ugo-admin-user-edit-form label { min-width:0; overflow-wrap:anywhere; }
+.ugo-admin2 .ugo-admin-user-card { min-width:0; overflow-wrap:anywhere; }
+.ugo-admin2 .ugo-admin-users-panel { max-width:100%; }
+.ugo-admin2 .ugo-admin-users-panel button,
+.ugo-admin2 .ugo-admin-user-edit-form button { min-height:40px; }
+@media(max-width:760px){
+ .ugo-admin2 { width:100%; max-width:100vw; overflow-x:clip; }
+ .ugo-admin2 .ugo-admin-users-panel { width:100%!important; padding:10px!important; }
+ .ugo-admin2 .ugo-admin-user-edit-form { width:calc(100vw - 20px)!important; max-width:100%!important; padding:clamp(12px,4vw,20px)!important; max-height:calc(100dvh - 24px)!important; overscroll-behavior:contain; }
+ .ugo-admin2 .ugo-admin-user-edit-form nav { overflow-x:auto; max-width:100%; }
+ .ugo-admin2 .ugo-admin-user-edit-form nav button { flex-shrink:0; }
+ .ugo-admin2 .ugo-admin-user-card { grid-template-columns:minmax(0,1fr)!important; }
+ .ugo-admin2 .ugo-admin-user-card > div { min-width:0; }
+ .ugo-admin2 .ugo-admin-user-card button { min-height:44px; }
+ .ugo-admin2 .ugo-admin2-module-card { max-width:100%; overflow-x:auto; }
+ .ugo-admin2 .ugo-superadmin button { min-height:40px; }
+}
+@media(max-width:420px){
+ .ugo-admin2 .ugo-admin-users-panel { padding-inline:8px!important; }
+ .ugo-admin2 .ugo-admin-user-edit-form { width:calc(100vw - 12px)!important; padding:12px!important; }
+ .ugo-admin2 .ugo-admin-user-card { padding:10px!important; }
+}
