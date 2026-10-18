@@ -2,23 +2,18 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {createRoleUiFixtures} from './role-ui-fixtures.mjs'
 import {verifyAdminUserPersistence} from './admin-user-persistence-runtime.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
-const clientEmail=process.env.UGO_TEST_CLIENT_EMAIL||''
-const clientPassword=process.env.UGO_TEST_CLIENT_PASSWORD||''
-const providerEmail=process.env.UGO_TEST_PROVIDER_EMAIL||''
-const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD||''
-const adminEmail=process.env.UGO_TEST_ADMIN_EMAIL||''
-const adminPassword=process.env.UGO_TEST_ADMIN_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
-assert.ok(anon&&serviceKey&&clientEmail&&clientPassword&&providerEmail&&providerPassword&&adminEmail&&adminPassword&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
+assert.ok(anon&&serviceKey&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
 
 async function login(email,password){
  const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
@@ -35,6 +30,11 @@ async function login(email,password){
  throw lastError
 }
 const privileged=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
+const fixtures=await createRoleUiFixtures(privileged,sha)
+try{
+const {email:clientEmail,password:clientPassword}=fixtures.identities.client
+const {email:providerEmail,password:providerPassword}=fixtures.identities.provider
+const {email:adminEmail,password:adminPassword}=fixtures.identities.admin
 const client=await login(clientEmail,clientPassword)
 const provider=await login(providerEmail,providerPassword)
 const admin=await login(adminEmail,adminPassword)
@@ -365,3 +365,4 @@ try{
  await browser.close()
  await Promise.allSettled([client.sb.auth.signOut(),provider.sb.auth.signOut(),admin.sb.auth.signOut()])
 }
+}finally{await fixtures.cleanup()}

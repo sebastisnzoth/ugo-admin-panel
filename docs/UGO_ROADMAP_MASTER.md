@@ -639,3 +639,5 @@ Cierre verificado del bloque de alertas/matching automático: código `355b5a2e9
 ### 18/10/2026 — Admin/Super Admin (en validación)
 
 PR #503 incorpora #504 y conserva ambos controles: lectura persistida antes del éxito y errores de autonomía visibles tras recarga. Se recupera la cola serializada de TEST mediante `queue: max`, conservando la capacidad unitaria del proveedor compartido. Runtime multirrol amplía edición de usuario efímero, aislamiento de permisos y cero filas sin falso éxito. El gate ON se reevaluó READY en TEST; modo seguía OFF. Customer #1 conserva pruebas humanas pendientes. Fuente de continuidad: `docs/UGO_CAMINO_MAESTRO.md`, bloque 18/10. No producción, no readiness global promovido, validación del SHA final pendiente.
+
+Corrección del enfoque de QA: la corrida queue:max también resultó cancelada. Multirrol se migra a identidades efímeras propias por ejecución y grupo por SHA; no comparte ni modifica credenciales/estado de los robots de los demás workflows. No declarar recuperado hasta runtime remoto PASS.

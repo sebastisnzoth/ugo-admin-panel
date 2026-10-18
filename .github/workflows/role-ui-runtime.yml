@@ -6,6 +6,7 @@ on:
     paths:
       - "scripts/role-ui-runtime.mjs"
       - "scripts/admin-user-persistence-runtime.mjs"
+      - "scripts/role-ui-fixtures.mjs"
       - ".github/workflows/role-ui-runtime.yml"
       - "src/features/client/**"
       - "src/mvp/**"
@@ -17,6 +18,7 @@ on:
     paths:
       - "scripts/role-ui-runtime.mjs"
       - "scripts/admin-user-persistence-runtime.mjs"
+      - "scripts/role-ui-fixtures.mjs"
       - "src/features/client/**"
       - "src/mvp/**"
       - "src/components/**"
@@ -30,20 +32,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-role-ui-${{ github.event.pull_request.head.sha || github.sha }}
   cancel-in-progress: false
-  queue: max
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
-  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
-  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
-  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
-  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
-  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
-  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
 
 jobs:
   runtime-proof:
@@ -64,9 +59,6 @@ jobs:
           set -euo pipefail
           test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
-          test -n "$UGO_TEST_CLIENT_PASSWORD"
-          test -n "$UGO_TEST_PROVIDER_PASSWORD"
-          test -n "$UGO_TEST_ADMIN_PASSWORD"
       - run: npm ci --include=dev
       - run: npm run verify:test-env
       - name: Build exact SHA
