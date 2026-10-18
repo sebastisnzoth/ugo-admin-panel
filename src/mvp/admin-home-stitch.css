@@ -10,3 +10,52 @@
 @media(max-width:1120px){.ahs-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.ahs-main-grid,.ahs-bottom-grid{grid-template-columns:1fr}.ahs-map{height:420px}}
 @media(max-width:700px){.ahs-command-bar{align-items:stretch;flex-direction:column}.ahs-command-actions{justify-content:space-between}.ahs-primary{flex:1;justify-content:center}.ahs-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ahs-kpis article:last-child{grid-column:1/-1}.ahs-decision-grid{grid-template-columns:1fr}.ahs-service-row{grid-template-columns:100px 62px 1fr 62px}.ahs-service-row>span:nth-of-type(3),.ahs-service-row>span:nth-of-type(4){display:none}.ahs-map{height:360px}.ahs-bars>div{grid-template-columns:100px 1fr 20px}}
 @media(prefers-reduced-motion:reduce){.ugo-admin-stitch button{transition:none}}
+
+
+/* Control center refinement: clearer hierarchy and responsive operational cards. */
+.ugo-admin-stitch{--ahs-bg:#f4f7f5;--ahs-ink:#182b23;--ahs-muted:#53685d;--ahs-line:#dce7df;--ahs-green:#146c48}
+.ugo-admin-stitch .ugo-admin2-main{background:linear-gradient(180deg,#f6faf7 0,#f4f7f5 320px)}
+.admin-home-stitch{gap:20px;max-width:1680px;margin-inline:auto}
+.ahs-command-bar{padding:clamp(18px,2.4vw,30px);border-radius:20px;background:linear-gradient(115deg,#123a2b,#216249);border:1px solid #295a44;color:white;box-shadow:0 10px 30px rgba(23,66,43,.12);flex-wrap:wrap}
+.ahs-command-bar h2{font-size:clamp(23px,2.5vw,34px);line-height:1.1;margin:8px 0;letter-spacing:-.035em;color:white}
+.ahs-command-bar p,.ahs-command-bar .ahs-eyebrow{color:#d8ebe0}
+.ahs-command-actions{display:flex;flex-wrap:wrap;gap:12px;min-width:0}
+.ahs-command-bar .ahs-live-dot,.ahs-command-bar .ahs-live-dot small{color:#edfff3}
+.ahs-command-bar .ahs-primary{background:#fff;color:#154a34;min-height:44px;border-radius:11px;font-weight:850!important}
+.ahs-command-bar .ahs-primary:hover{background:#e1f4e9}
+.ahs-kpis{gap:14px}
+.ahs-kpis article{min-height:120px;display:flex;flex-direction:column;align-items:flex-start;gap:9px;padding:19px;border-radius:16px;box-shadow:0 3px 14px rgba(20,55,36,.035)}
+.ahs-kpis article>span{font-size:12px;font-weight:750;color:var(--ahs-muted)}
+.ahs-kpis strong{font-size:clamp(28px,3vw,39px);line-height:1;font-weight:850;letter-spacing:-.05em}
+.ahs-kpis small{line-height:1.4;font-size:11px}
+.ahs-decision,.ahs-panel{border-radius:18px;box-shadow:0 3px 16px rgba(20,55,36,.035)}
+.ahs-decision{padding:clamp(16px,2.2vw,24px)}
+.ahs-decision-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ahs-decision-grid button{min-width:0;min-height:98px;gap:10px;padding:14px;border-radius:13px;flex-wrap:wrap;transition:border-color .15s,box-shadow .15s,transform .15s}
+.ahs-decision-grid button:hover{background:#f5faf7;border-color:#7daf94;box-shadow:0 6px 18px rgba(20,55,36,.07);transform:translateY(-1px)}
+.ahs-decision-grid span{flex:1 1 90px}
+.ahs-decision-grid strong{font-size:12px;line-height:1.3}
+.ahs-decision-grid small{font-size:10px;line-height:1.45}
+.ahs-decision-grid em{font-size:22px}
+.ahs-main-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px}
+.ahs-panel{padding:clamp(15px,2vw,22px)}
+.ahs-panel-head h2,.ahs-section-title h2{font-size:clamp(16px,1.7vw,20px);line-height:1.3}
+.ahs-service-row{min-height:58px}
+.ahs-service-row:focus-visible,.ahs-decision-grid button:focus-visible{outline:3px solid #71bc91;outline-offset:2px}
+@media(max-width:1250px){
+  .ahs-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ahs-decision-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ahs-main-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:660px){
+  .admin-home-stitch{gap:14px}
+  .ahs-command-bar{align-items:stretch;padding:18px;border-radius:16px}
+  .ahs-command-actions{width:100%;justify-content:space-between}
+  .ahs-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .ahs-kpis article{min-height:110px;padding:14px}
+  .ahs-kpis article:last-child{grid-column:1/-1}
+  .ahs-decision-grid{grid-template-columns:minmax(0,1fr)}
+  .ahs-decision-grid button{min-height:76px}
+  .ahs-main-grid{gap:12px}
+}
+@media(prefers-reduced-motion:reduce){.ahs-decision-grid button{transition:none}.ahs-decision-grid button:hover{transform:none}}
