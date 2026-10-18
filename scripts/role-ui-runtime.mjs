@@ -296,7 +296,16 @@ async function testAdministrativeSession(viewport,name,key){
   await page.getByTestId('language-selector').selectOption('es')
   await page.locator('form input[type="text"]').fill(identity.email)
   await page.locator('form input[type="password"]').fill(identity.password)
+  const storedPreference=await privileged.auth.admin.getUserById(identity.id)
+  assert.ifError(storedPreference.error)
+  const restoredLocale=storedPreference.data.user.user_metadata?.preferred_language
   await page.locator('form input[type="password"]').press('Enter')
+  await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:30000})
+  if(restoredLocale)await page.waitForFunction(value=>document.documentElement.lang===value,restoredLocale)
+  // The prior desktop translation case legitimately persisted this account's English choice.
+  // Select Spanish inside the authenticated UI before using Spanish accessible names.
+  await page.getByTestId('language-selector').first().selectOption('es')
+  await page.waitForFunction(()=>document.documentElement.lang==='es')
   const navigation=page.getByRole('navigation',{name:'Navegación Admin'})
   await navigation.waitFor({state:'visible',timeout:30000})
   if(!superRole)assert.equal(await navigation.getByRole('button',{name:/Super Admin/}).count(),0,'ADMIN_MUST_NOT_EXPOSE_SUPERADMIN')
