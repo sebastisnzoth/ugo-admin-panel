@@ -95,7 +95,7 @@ try{
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
   await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000});
-  await page.getByLabel('UGO ambiente de prueba').waitFor({state:'visible'});
+  await page.locator('.ugo-superadmin').waitFor({state:'visible',timeout:20000});
 
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
   await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
