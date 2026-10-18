@@ -239,6 +239,8 @@ jobs:
       # Review-only snapshot. Keep the canonical /app/ build from main unchanged.
       # Pin the exact reviewed commit; do not build arbitrary PR code via untrusted input.
       - name: Build isolated Client PR 497 preview
+        # An optional preview must never block the canonical main Pages deployment.
+        continue-on-error: true
         env:
           VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
           VITE_APP_REVISION: 46de38599b8fbb87a63322db350dabf4dc45d154
