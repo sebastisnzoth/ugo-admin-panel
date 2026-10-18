@@ -13,3 +13,12 @@ assert.match(css,/min-height:44px/,'mobile submenu targets must preserve a 44px 
 assert.match(css,/max-width:100vw/,'admin shell must cap itself to viewport width')
 assert.match(css,/overflow-x:hidden!important/,'mobile shell must prevent document-level horizontal overflow')
 console.log(JSON.stringify({status:'PASS',contract:'admin-responsive',checks:8}))
+
+const users=fs.readFileSync('src/mvp/AdminUsersPanel.tsx','utf8')
+assert.match(users,/ugo-admin-users-panel/)
+assert.match(users,/ugo-admin-user-edit-form/)
+assert.match(users,/ugo-admin-user-card/)
+assert.match(users,/repeat\(auto-fit,minmax\(min\(100%,220px\),1fr\)\)/)
+assert.match(css,/@media\(max-width:760px\)/)
+assert.match(css,/\.ugo-admin-user-card \{ grid-template-columns:minmax\(0,1fr\)!important;/)
+assert.match(css,/\.ugo-admin-user-edit-form \{ width:calc\(100vw - 20px\)!important;/)
