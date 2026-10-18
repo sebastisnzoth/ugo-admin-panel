@@ -66,6 +66,10 @@ export async function verifyAdminUserPersistence({page,db,client,sha}) {
   assert.ifError(promoted.error)
   const providerProfile=await db.from('perfiles_proveedor').upsert({usuario_id:id,estado_verificacion:'registrado',online:false,disponible:false})
   assert.ifError(providerProfile.error)
+  // A new fixture role is a separate setup, not a product transition.
+  await page.reload({waitUntil:'domcontentloaded'})
+  await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Personas/i}).click()
+  await page.getByRole('group',{name:'Personas'}).getByRole('button',{name:/Usuarios/i}).click()
   await card.getByText('proveedor',{exact:true}).waitFor({state:'visible',timeout:20000})
   await card.getByRole('button',{name:/Editar/}).click()
   dialog=page.getByRole('dialog',{name:'Editar usuario',exact:true})
@@ -93,7 +97,7 @@ export async function verifyAdminUserPersistence({page,db,client,sha}) {
    assert.equal(state.data.activo,active,'ADMIN_ACTIVATION_NOT_PERSISTED')
   }
   return {status:'PASS',persisted_edit:true,client_contact:true,provider_details:true,categories:true,activation:true,non_admin_denied:true,zero_row_feedback:true,fixture_id:id}
- } finally {
+ }catch(error){await page.screenshot({path:'artifacts/role-ui-admin-user-failure.png',fullPage:true}).catch(()=>{});console.error('ADMIN_PROFILE_RUNTIME_FAILURE',(await page.locator('body').innerText().catch(()=>'' )).slice(-3500));throw error}finally{
   const removed=await db.from('usuarios').delete().eq('id',id)
   cleanupError=removed.error
   const authRemoved=await db.auth.admin.deleteUser(id)

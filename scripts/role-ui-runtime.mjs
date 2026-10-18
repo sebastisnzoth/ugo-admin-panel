@@ -279,6 +279,10 @@ async function testAdminAuthBoundary(viewport,name){
 async function testAdministrativeSession(viewport,name,key){
  const identity=fixtures.identities[key]
  const superRole=key==='admin'
+ const persistedRole=await privileged.from('usuarios').select('tipo,activo').eq('id',identity.id).single()
+ assert.ifError(persistedRole.error)
+ assert.equal(persistedRole.data.tipo,superRole?'superadmin':'admin')
+ assert.equal(persistedRole.data.activo,true)
  const page=await browser.newPage({viewport})
  try{
   await page.goto(base+'/?app='+(superRole?'superadmin':'admin'),{waitUntil:'domcontentloaded'})
@@ -299,7 +303,7 @@ async function testAdministrativeSession(viewport,name,key){
   await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
   assert.equal(await navigation.count(),0,'LOGOUT_RESTORED_PROTECTED_UI')
   results.push({role:superRole?'superadmin-session':'admin-session',viewport:name,status:'PASS',ui_login:true,reload:true,logout:true})
- }finally{await page.close()}
+ }catch(error){await page.screenshot({path:'artifacts/role-ui-session-failure-'+key+'-'+name+'.png',fullPage:true}).catch(()=>{});console.error('ADMIN_SESSION_FAILURE',key,name,(await page.locator('body').innerText().catch(()=>'' )).slice(0,2200));throw error}finally{await page.close()}
 }
 
 async function testAdmin(viewport,name){
