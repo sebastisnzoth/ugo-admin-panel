@@ -24,3 +24,10 @@ Fecha: 2026-10-18. Rama: `codex/hive-superadmin-panel-chat-gated-20261018`.
 
 ## Rollback
 No fusionar si CI o pruebas humanas fallan. Descartar la rama o revertir mediante nuevo PR, sin reset ni force-push. Los cambios son sólo frontend y documentación.
+
+## Revisión de CI y corrección posterior (2026-10-18)
+- SHA anterior `315e95297acc5650b9ec7a257768c89b07c135eb`: Core CI FAIL (2 tests, el fallo confirmado es i18n: 37 literales sin clasificar). TypeScript/build/lint ejecutados antes de la suite de contratos. Cross Security, Hugo Timeout y Admin Realtime SUCCESS.
+- Cross-role UI FAIL: cliente móvil no supera carga de perfil, `PROFILE_QUERY_TIMEOUT`, búsqueda del main `Inicio` agotada (20s). No es prueba de un defecto causal en Hive; no modificar cliente sin trazabilidad.
+- Corrección: consola internacionalizada pt-BR/es/en; nombre de producto `UGO Hive` clasificado explícitamente; se agregan tests de contrato para Super Admin, chat fail-closed y traducciones.
+- HEAD nuevo `075dc1d59a4734f7703608db8fd1e9bc38bad66d`. GitHub Actions recién en cola al cierre de este checkpoint; **NO VERIFIED** hasta revisar los resultados.
+- No se habilitó inferencia, no se crearon recursos Render, secretos ni migraciones. Chat real continúa BLOCKED por pinning de proveedor/modelo/endpoint, ausencia de backend autorizado y comprobación de presupuesto US$0.
