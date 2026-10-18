@@ -226,11 +226,11 @@ async function testProvider(viewport,name){
      checkedItems=items.length+1
    }else{
      const nav=page.getByRole('navigation',{name:'Navegación proveedor'}).first()
-     const items=[/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]
+     const items=['home','orders','work','profile']
      for(const item of items){
        const navLabel=String(item)
        console.info('UGO_ROLE_UI_PROVIDER_MOBILE_NAV_START',name,navLabel)
-       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+navLabel)
+       await safeClick(page,page.getByTestId('provider-mobile-'+item),'provider mobile '+navLabel)
        try{
          await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
        }catch(error){
