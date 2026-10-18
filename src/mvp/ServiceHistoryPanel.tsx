@@ -20,6 +20,37 @@ type GenericFilter='todos'|'completado'|'activo'|'cancelado'
 type Props={role:Role;embedded?:boolean;openRequest?:boolean;onOpenService?:(serviceId:string)=>void;initialServiceId?:string|null}
 type ClientStateCopy={title:string;detail:string;tone:'waiting'|'live'|'done'|'alert'}
 
+// Display-only translation of common catalogue names; database values remain unchanged.
+const CATEGORY_NAMES:Record<string,[string,string,string]>={
+ 'limpieza':['Limpeza','Limpieza','Cleaning'],
+ 'limpeza':['Limpeza','Limpieza','Cleaning'],
+ 'faxina':['Faxina','Limpieza','Home cleaning'],
+ 'electricidad':['Eletricidade','Electricidad','Electrical'],
+ 'eletricidade':['Eletricidade','Electricidad','Electrical'],
+ 'electricista':['Eletricista','Electricista','Electrician'],
+ 'plomeria':['Encanamento','Plomería','Plumbing'],
+ 'encanamento':['Encanamento','Plomería','Plumbing'],
+ 'fontaneria':['Encanamento','Fontanería','Plumbing'],
+ 'reparaciones':['Reparos','Reparaciones','Repairs'],
+ 'reparos':['Reparos','Reparaciones','Repairs'],
+ 'marido de aluguel':['Marido de aluguel','Reparaciones del hogar','Handyman'],
+ 'jardineria':['Jardinagem','Jardinería','Gardening'],
+ 'jardinagem':['Jardinagem','Jardinería','Gardening'],
+ 'pintura':['Pintura','Pintura','Painting'],
+ 'mudanzas':['Mudanças','Mudanzas','Moving'],
+ 'mudancas':['Mudanças','Mudanzas','Moving'],
+ 'montaje':['Montagem','Montaje','Assembly'],
+ 'montagem':['Montagem','Montaje','Assembly'],
+ 'ar condicionado':['Ar-condicionado','Aire acondicionado','Air conditioning'],
+ 'aire acondicionado':['Ar-condicionado','Aire acondicionado','Air conditioning']
+}
+const categoryName=(name:string|undefined|null,locale:string)=>{
+ if(!name)return null
+ const normalized=name.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').trim()
+ const translation=CATEGORY_NAMES[normalized]
+ return translation?translation[locale.startsWith('pt')?0:locale.startsWith('es')?1:2]:name
+}
+
 const STATUS_KEYS:Record<string,string>={borrador:'preparing',buscando:'buscando',ofrecido:'ofrecido',asignado:'asignado',en_camino:'en_camino',llegado:'llegado',en_progreso:'en_progreso',esperando_aprobacion:'esperando_aprobacion',completado:'completed',cancelado:'canceled',disputado:'disputado'}
 const CLIENT_DETAILS:Record<string,string>={borrador:'idle',buscando:'searching',ofrecido:'offers',asignado:'assigned',en_camino:'enRoute',llegado:'arrived',en_progreso:'working',esperando_aprobacion:'approval',completado:'closed',cancelado:'cancelled',disputado:'dispute'}
 const CLIENT_CANCELLABLE_STATES=new Set(CLIENT_CANCELLABLE_SERVICE_STATES)
@@ -121,7 +152,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
    {actionNotice&&<div className="ugo-history-action-notice" role="status" aria-live="polite">{actionNotice}</div>}
    <div className="ugo-history-list">{loading&&<div className="ugo-history-empty">{t('history.loading')}</div>}{error&&<div className="ugo-history-error">{error}</div>}{!loading&&!error&&visible.length===0&&<div className="ugo-history-empty">{t('history.empty')}</div>}{!loading&&!error&&visible.map(r=>{const state=clientState(r.estado,t);const section=role==='client'?sectionOf(r):'';const sectionMeta=section?SECTION_COPY[section]:null;const sectionHead=showSections&&sectionMeta&&sectionStart.has(r.id)?<div className={`ugo-history-section-head tone-${sectionMeta.tone}`} role="heading" aria-level={3}><span className="ugo-history-section-icon">{sectionMeta.icon}</span><strong>{t(sectionMeta.labelKey)}</strong><em>{t(sectionCount[section]===1?'history.orderOne':'history.orderMany',{count:sectionCount[section]})}</em></div>:null;return <React.Fragment key={r.id}>{sectionHead}<article className={role==='client'?`ugo-history-item state-${r.estado}`:undefined}>
     <div className="ugo-history-top"><div><small>{t('history.order')}</small><strong>#{r.numero??String(r.id).slice(0,8)}</strong></div>{role==='client'&&sectionMeta&&<span className={`ugo-history-section-tag tone-${sectionMeta.tone}`}>{t(sectionMeta.tagKey)}</span>}<span className={`state-${r.estado}`}>{t(statusKey(r.estado))}</span></div>
-    <h3>{r.categoria?.emoji||'🧰'} {r.categoria?.nombre||t("providerAgenda.serviceDefault")}</h3>
+    <h3>{r.categoria?.emoji||'🧰'} {categoryName(r.categoria?.nombre,locale)||t("providerAgenda.serviceDefault")}</h3>
     {role==='client'&&<div className={`ugo-history-state-focus tone-${state.tone}`}><span className="ugo-history-state-dot">●</span><div><small>{t('history.orderState')}</small><strong>{state.title}</strong><p>{state.detail}</p>{r.estado==='esperando_aprobacion'&&<em className="ugo-history-state-action">{t('history.action')}</em>}</div></div>}
     {r.descripcion&&<p className="ugo-history-description">{r.descripcion}</p>}
     <div className="ugo-history-meta"><div><small>{t(r.programado_para?'history.scheduled':'history.created')}</small><b>{date(r.programado_para||r.created_at,locale)}</b></div><div><small>{t('history.amount')}</small><b>{money(r.tarifa,locale)}</b></div>{role==='client'&&<><div><small>{t('history.payment')}</small><b>{onePayment(r.pago)?`${String(onePayment(r.pago)?.metodo||t('history.payment'))} · ${String(onePayment(r.pago)?.estado||t('history.unknownStatus'))}`:t('history.noPayment')}</b></div><div><small>{t('history.yourRating')}</small><b>{stars(r.resenas?.find(review=>review.autor_tipo==='cliente')?.puntuacion)}</b></div><div><small>{t('history.ratingReceived')}</small><b>{stars(r.resenas?.find(review=>review.autor_tipo==='proveedor')?.puntuacion)}</b></div></>}{role!=='client'&&<div><small>{t('history.client')}</small><span style={{display:'inline-flex',alignItems:'center',gap:7}}><UserProfileAvatar name={person(r.cliente)} role="client" photoPath={r.clienteFotoPath} size={30}/><b>{person(r.cliente)}</b></span></div>}{role!=='provider'&&<div><small>{t('history.provider')}</small><span style={{display:'inline-flex',alignItems:'center',gap:7}}><UserProfileAvatar name={person(r.proveedor)} role="provider" photoPath={r.proveedorFotoPath} size={30}/><b>{person(r.proveedor)}</b></span></div>}</div>
