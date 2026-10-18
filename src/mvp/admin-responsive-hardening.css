@@ -296,3 +296,28 @@
 
 /* A modal editor must receive pointer input instead of the fixed navigation. */
 .ugo-admin2:has([role="dialog"][aria-modal="true"]) .ugo-admin2-sidebar{pointer-events:none!important;}
+
+/* Admin Personas: keep the entire user list scrollable on desktop and laptops.
+   This intentionally does not affect the existing bottom navigation on mobile. */
+@media (min-width:761px) {
+  .ugo-admin2 {
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+  }
+  .ugo-admin2-sidebar { position:sticky; top:0; height:100dvh; }
+  .ugo-admin2-main {
+    height:100dvh;
+    min-height:0;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:max(48px,env(safe-area-inset-bottom));
+  }
+  .ugo-admin2 .ugo-admin-users-panel {
+    height:auto;
+    max-height:none;
+    overflow:visible;
+  }
+}
