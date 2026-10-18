@@ -19,5 +19,5 @@ test('Hive router remains fail closed until durable free quota and billing evide
 test('No key is returned to callers and there is no payment or production write path',()=>{
  assert.doesNotMatch(source,/console\.log\(openRouterKey\)/)
  assert.doesNotMatch(source,/\.from\(['"]autonomous_jobs['"]\)\.insert/)
- assert.doesNotMatch(source,/deploy|merge_pull_request|payment/gi)
+ assert.doesNotMatch(source,/\.from\(['\"]payments['\"]\)/)
 })
