@@ -14,11 +14,11 @@ import{useDialog}from'./dialogs'
 
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 const when=(v:any)=>v?new Date(v).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'
-const box:React.CSSProperties={background:'var(--ugo-color-surface-lowest)',color:'var(--ugo-color-on-surface)',border:'1px solid var(--ugo-color-outline-variant)',borderRadius:16,padding:16}
-const grid:React.CSSProperties={display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10}
-const table:React.CSSProperties={width:'100%',borderCollapse:'collapse',fontSize:12,color:'var(--ugo-color-on-surface)'}
-const th:React.CSSProperties={textAlign:'left',padding:'11px 10px',borderBottom:'1px solid var(--ugo-color-outline-variant)',color:'var(--ugo-color-on-surface-variant)',fontSize:10,textTransform:'uppercase',letterSpacing:'.04em'}
-const td:React.CSSProperties={padding:'12px 10px',borderBottom:'1px solid var(--ugo-color-outline-variant)',verticalAlign:'middle',color:'var(--ugo-color-on-surface)'}
+const box:React.CSSProperties={background:'var(--ugo-color-surface-lowest)',color:'var(--ugo-color-on-surface)',border:'1px solid var(--ugo-color-border)',borderRadius:16,padding:20,boxShadow:'var(--ugo-shadow-sm)'}
+const grid:React.CSSProperties={display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:16}
+const table:React.CSSProperties={width:'100%',borderCollapse:'collapse',fontSize:13,color:'var(--ugo-color-text)'}
+const th:React.CSSProperties={textAlign:'left',padding:'12px 14px',borderBottom:'1px solid var(--ugo-color-border)',color:'var(--ugo-color-text-muted)',fontSize:11,textTransform:'uppercase',letterSpacing:'.06em',fontWeight:800}
+const td:React.CSSProperties={padding:'14px 14px',borderBottom:'1px solid var(--ugo-color-border)',verticalAlign:'middle',color:'var(--ugo-color-text)'}
 const attentionReason=(s:any)=>{const age=Math.max(0,Date.now()-new Date(s.updated_at||s.created_at).getTime()),minutes=Math.floor(age/60000);if(['buscando','ofrecido'].includes(s.estado)&&!s.proveedor_id)return `Sin proveedor · ${minutes} min`;if(s.estado==='en_camino')return `Proveedor en camino sin actualización · ${minutes} min`;if(s.estado==='esperando_aprobacion'&&!s.metadata?.trabajo_aprobado_at)return `Esperando aprobación del cliente · ${minutes} min`;if(s.estado==='esperando_aprobacion'&&s.metadata?.trabajo_aprobado_at)return `Trabajo aprobado · pago pendiente · ${minutes} min`;if(s.estado==='asignado')return `Asignado sin iniciar viaje · ${minutes} min`;if(s.estado==='llegado')return `Proveedor llegó, trabajo sin iniciar · ${minutes} min`;if(s.estado==='en_progreso')return `Trabajo en curso sin actualización · ${minutes} min`;return `Sin actualización · ${minutes} min`}
 
 export function AdminOverviewNative(){
