@@ -707,4 +707,208 @@ Cuatro áreas conectadas: **Conversar, Planificar, Colmena, Resultados**. La sec
 Mantener el diseño en **tres bloques**: (1) *Cerebro*: Chat/Reina/memoria/presupuesto; (2) *Sistema nervioso*: scheduler/bus/pizarra/locks; (3) *Brazos*: GitHub Worker/ejecutores TEST/QA/Judge/Sentinel. No crear una segunda plataforma, tablas duplicadas ni agentes ornamentales. Cerrar nuevas funcionalidades hasta validar el flujo vertical primero.
 
 
+
+## 18. UGO Hive 3.0 — RUNBOOK DE IMPLEMENTACIÓN AUTÓNOMA PARA CHATGPT
+
+**Fecha de especificación:** 18/10/2026. **Estado:** APROBADO COMO PLAN DOCUMENTAL, NO COMO PERMISO DE EJECUCIÓN. Este runbook prevalece como orden recomendado de implementación sobre las fases exploratorias anteriores, pero conserva todas las prohibiciones anteriores. El objetivo es que ChatGPT u otro ejecutor autorizado pueda reconstruir el estado y continuar de manera autónoma de una sesión a otra **sin fingir trabajo en segundo plano**. La persistencia vive en GitHub/Supabase; un chat sin tarea programada o worker externo no continúa ejecutándose por sí mismo.
+
+### 18.1 Evidencia externa e implicaciones prácticas
+
+Referencias consultadas en octubre de 2026:
+
+- OpenAI Agents SDK / orchestration: manager-as-tools frente a handoffs, con orquestación combinable en código y LLM. https://openai.github.io/openai-agents-js/guides/multi-agent/
+- OpenAI Agents SDK / handoffs: validación de autorización del handoff antes de efectos; los mensajes del modelo no confieren autoridad. https://openai.github.io/openai-agents-js/guides/handoffs/
+- OpenAI Agents SDK / tracing: trazas por ejecución, tool calls, delegación y guardrails. https://openai.github.io/openai-agents-python/tracing/
+- Temporal / idempotency: una actividad reintentada puede tener efecto previo aunque el worker haya caído antes de notificar éxito; **requerir idempotencia y fencing**. https://github.com/temporalio/documentation/blob/main/docs/develop/python/best-practices/error-handling.mdx
+- OpenRouter / precios y límites: nivel Free disponible, límites variables por cuenta (página de precios observada: 50 solicitudes/día sin compra de créditos, 20/minuto para modelos free); confirmar límites efectivos, disponibilidad y metadatos de precios en cada ejecución. https://openrouter.ai/pricing y https://openrouter.ai/docs/api-reference/limits
+
+**Decisión:** usar arquitectura híbrida **supervisor central + handoffs estructurados + scheduler determinista**. La Reina posee el plan y la respuesta al fundador; los especialistas pueden colaborar sin convertirse en superusuarios, y las herramientas se ejecutan mediante políticas de código, no por instrucciones libres. No adoptar un framework externo sólo por moda: evaluar primero si las primitivas actuales de UGO satisfacen el contrato.
+
+### 18.2 Contrato de operación para ChatGPT autónomo
+
+Cuando el usuario **autorice expresamente la implementación** de Hive, el ejecutor debe seguir este procedimiento en cada sesión:
+
+1. Leer este documento y `AGENTS.md`, `docs/UGO_SCHEDULER_POLICY.json`, locks, skills, migraciones, esquemas y PRs relevantes.
+2. Obtener **SHA actual de main**, PRs abiertos, estado de CI y configuración de UGO Arena TEST. No confiar en el SHA documentado aquí para hacer cambios futuros.
+3. Leer el último checkpoint de implementación y el ledger de evidencia; comprobar que corresponde a main/branch actual. Si falta, iniciar Fase 0.
+4. Seleccionar **una unidad verificable desbloqueada**, priorizando camino crítico, sin duplicar PRs ni tocar recursos bloqueados.
+5. Crear rama aislada autorizada; implementar **sólo esa unidad** y sus tests contractuales. No hacer refactor masivo ni mezclar modificaciones ajenas.
+6. Ejecutar pruebas locales/CI y, cuando sea aplicable, runtime TEST con efectos observables; verificar SHA y artifact. Si falla: causa raíz → corrección acotada → reprobar, hasta límites de política.
+7. Pasar resultados a Judge independiente y Sentinel; registrar `DONE/FAILED/BLOCKED` con evidencia. Un commit o un PR no significan DONE.
+8. Actualizar checkpoint y próximos pasos de forma persistente y atómica; abrir/actualizar PR con reporte claro.
+9. Continuar con la siguiente unidad **sólo si** existe presupuesto, ventana de ejecución, permisos y pruebas; de lo contrario guardar estado y finalizar sin prometer ejecución futura.
+10. No fusionar ni desplegar a producción sin autorización aplicable, CI same-SHA, políticas del repositorio y verificaciones completas.
+
+**Condición esencial:** este documento por sí solo no activa agentes ni constituye autorización para escrituras funcionales, cambio de permisos, gasto o despliegue.
+
+### 18.3 Formato obligatorio del checkpoint de continuidad
+
+Ruta propuesta: `docs/ugo-hive/IMPLEMENTATION_STATUS.md` (crear **cuando se autorice la implementación**, no ahora), con información:
+
+```yaml
+hive_plan_version: "3.0"
+repo: "sebastisnzoth/ugo-admin-panel"
+main_sha_at_checkpoint: "<SHA>"
+implementation_branch: "<branch-or-none>"
+phase: "H0"
+task_id: "H0-01"
+status: "PENDING" # DONE | PENDING | FAILED | BLOCKED_EXTERNAL | BLOCKED_HUMAN
+last_run_id: null
+source_sha: null
+result_sha: null
+pr_number: null
+evidence_refs: []
+judge: "NOT_RUN"
+sentinel: "NOT_RUN"
+risks: []
+blockers: []
+next_task_ids: ["H0-02"]
+updated_at: "<UTC>"
+```
+
+Actualizar junto con evidencia; evitar sobrescrituras concurrentes por CAS/versionado, idempotencia y locks. No poner secrets ni PII. Los checkpoints son **índices de progreso**: contrastarlos contra GitHub, Supabase y CI antes de declararlos válidos.
+
+### 18.4 Secuencia de ejecución: fases y dependencias
+
+**H0 — Inventario y contratos existentes (read-only; desbloquea todas las fases)**
+
+- `H0-01`: reconstruir HEAD, PRs y locks; identificar owner de cada cambio para evitar colisiones.
+- `H0-02`: inventariar tablas/RPC de jobs, agent registry, capabilities, leases, ledger, approval, Realtime y scheduler, sólo en TEST.
+- `H0-03`: para D1/D8/D9/D14 y capacidades involucradas crear matriz `CATALOGED/WIRED/EXECUTED/VERIFIED`; no inferir ejecución desde registros.
+- `H0-04`: reconciliar estados permitidos, RLS, IDs, `ON/OFF/SAFE_MODE`, llaves externas y esquema de evidencia.
+- `H0-05`: baseline de test/lint/build y workflows reproducibles exact-SHA; registrar fallas preexistentes.
+- **Gate H0:** reporte exact-SHA y diseño de mínima migración; cero colisiones no resueltas.
+
+**H1 — Modelo de misiones y planner read-only (depende de H0)**
+
+- `H1-01`: contrato tipado de `Mission, PlanVersion, TaskDAG, Approval, CapabilityRequirement` y validación JSON Schema/Zod reutilizando dependencias existentes.
+- `H1-02`: parser de intención con contexto limitado, listas allowlist y redacción PII; planificador determinista fallback para tareas predefinidas.
+- `H1-03`: `HiveFreeOpenRouterAdapter` exclusivamente OpenRouter, modelos con precio cero comprobado, cuota/día/minuto central, timeout, reintento acotado y bloqueo en incertidumbre.
+- `H1-04`: pruebas de DAG sin ciclos, requisitos de aceptación, dependencia, riesgos, permisos y límites de alcance.
+- `H1-05`: endpoint de generación/revisión de borrador sin tool write ni ejecución.
+- **Gate H1:** una instrucción válida produce plan versionado y validado; cuota agotada bloquea sin cobro; prompts hostiles no elevan permisos.
+
+**H2 — Chat de Dirección y aprobación segura (depende de H1)**
+
+- `H2-01`: vista React responsiva de Conversar/Planificar/Colmena/Resultados, con PT-BR/es/en y accesibilidad.
+- `H2-02`: Auth/RLS: comprobar Super Admin en backend en cada acción; nunca depender de un rol editable por el cliente.
+- `H2-03`: guardar conversaciones, borradores y diffs de plan en backend, sólo datos autorizados.
+- `H2-04`: aprobar `plan_hash` exacto, expiración, alcance, risk cap y ambiente. Replanificación invalida autorización anterior.
+- `H2-05`: vista de dry-run de DAG, dependencias, locks, recursos, permisos y simulación **marcada explícitamente como simulación**.
+- **Gate H2:** usuario no autorizado no ve/ejecuta misión; doble clic no duplica; aprobación versión N no autoriza versión N+1.
+
+**H3 — Colaboración: inbox, outbox y pizarra (depende de H1 y H0; integración UI con H2)**
+
+- `H3-01`: mapear Message Bus/Blackboard sobre ledger existente; migración aditiva TEST sólo si la brecha está demostrada.
+- `H3-02`: validar tipo de mensaje, sender/recipient, `mission_id/job_id/correlation/causation`, TTL y ACL.
+- `H3-03`: deduplicar mensajes y limitar hops, cantidad, tamaño, retry y datos sensibles.
+- `H3-04`: pizarra materializada como vista de eventos con procedencia, vigencia, evidencia y estado `HYPOTHESIS/VERIFIED/STALE`.
+- `H3-05`: implementar A→B→A, handoff y recuperación tras reinicio, sin transferir privilegios.
+- **Gate H3:** dos agentes intercambian hallazgos persistidos en TEST y sobreviven reinicio; no loops, duplicados ni exfiltración.
+
+**H4 — Ejecutor GitHub en sandbox (depende de H0 y H2; consume H3 para colaboración)**
+
+- `H4-01`: reutilizar D8/skills `ugo-github-ops` existentes; no registrar nuevo agente por defecto.
+- `H4-02`: contrato de `ToolInvocation` con acciones allowlist (`read_file`, `inspect_pr`, `create_test_branch`, `apply_scoped_patch`, `run_allowed_tests`, `open_pr`) y entradas tipadas.
+- `H4-03`: credenciales mínimas, aislamiento filesystem/runner y egress; negar acceso a service-role PROD, shell arbitrario y secrets en prompts/logs.
+- `H4-04`: locks por recurso/archivo/branch, fencing token y drift check de SHA. Abrir PR, nunca merge por defecto.
+- `H4-05`: runner emite artifacts exact-SHA y datos de trazabilidad job/run/branch/PR.
+- **Gate H4:** tarea inocua en TEST prepara patch con tests y PR; sin escritura en main ni producción.
+
+**H5 — Scheduler, workers y reina colaborativa (depende de H3+H4)**
+
+- `H5-01`: vincular misión a jobs canónicos con idempotencia y DAG; no montar segundo scheduler.
+- `H5-02`: asignar agentes por `required_capability → authority → skill/tool → availability → lease/lock → quota`.
+- `H5-03`: 1 worker de extremo a extremo, luego escalar a 3 workers únicamente para recursos no conflictivos; mantener `openrouter=1` y `ugo-test-worker=1` hasta pruebas y cambio explícito de política.
+- `H5-04`: Reina integra resultados/hallazgos, propone subtareas y replanifica; cambios materiales requieren nueva aprobación.
+- `H5-05`: distinguir mensajes entre agentes (sin costo de modelo) de turnos de razonamiento (cuota compartida).
+- **Gate H5:** al menos 2 especialistas colaboran en una misión, un worker ejecuta efecto real autorizado, no se duplica ningún recurso ni se consume modelo pago.
+
+**H6 — Judge, Sentinel, recuperación y observabilidad (depende de H5)**
+
+- `H6-01`: conectar ledger de evidencias con run_id/PR/SHA y criterios de aceptación. Un LLM no emite el dictamen final.
+- `H6-02`: Judge independiente reproduce evidencia en TEST; Sentinel evalúa invariantes, permisos, gasto y entorno.
+- `H6-03`: crash/restart, expiración de lease, fencing, reintentos, backoff, dead-letter y reparación idempotente.
+- `H6-04`: detección de PR duplicado, conflicto de patches, replays, doble aprobación, prompt injection, cuota 429 y pérdida de Realtime.
+- `H6-05`: tablero de métricas: misiones VERIFIED, handoffs útiles, errores recuperados, duplicados, tiempos, costo facturado, bloqueos humanos; reconciliación si el panel pierde conexión.
+- **Gate H6:** Judge PASS + Sentinel PASS a misma evidencia/SHA; caos y pruebas negativas pasan; reportes no inventan métricas.
+
+**H7 — Piloto completo y expansión (depende H0–H6)**
+
+- `H7-01`: solicitar por Chat de Dirección corrección pequeña de i18n en UGO TEST sin tocar datos sensibles.
+- `H7-02`: Reina prepara plan, usuario autoriza hash; D8 investiga/repara, D9 prueba y D14 audita mediante mensajes persistidos.
+- `H7-03`: crear rama+PR y mostrar pruebas exact-SHA, Judge/Sentinel y estado real en chat.
+- `H7-04`: pasar de una misión a tres misiones de diferentes especialidades sólo si las cuotas y locks lo permiten.
+- `H7-05`: auditar y habilitar progresivamente capacidades de los demás departamentos, con pruebas específicas y métricas de madurez.
+- **Gate H7:** un ciclo íntegro verificable y reversible. `CUSTOMER_1` y activación de empresa siguen sujetos a sus gates propios; no declarar lanzamiento por lograr piloto Hive.
+
+### 18.5 Pruebas automáticas obligatorias por bloque
+
+| Categoría | Prueba mínima | Resultado ante fallo |
+|---|---|---|
+| Validación | Zod/JSON Schema rechaza plan inválido, DAG cíclico y capability inexistente | INVALID_PLAN |
+| Autorización | client/provider/admin no crean ni aprueban misión Super Admin | DENIED |
+| Costos | respuesta de catálogo sin precio o modelo de pago, 429 y router ambiguo | WAITING_MODEL / BLOCKED_EXTERNAL |
+| Mensajería | replay, TTL, duplicado, sender inválido, exceso de hops | REJECTED_MESSAGE |
+| Concurrencia | dos workers compiten por el mismo job/recurso | un solo lease válido |
+| Crash | worker cae tras side effect antes de ack | retry sin segundo efecto |
+| GitHub | PR concurrente/HEAD drift/archivos solapados | pausa + reconciliación |
+| Seguridad | prompt injection, fuga de secretos, modificación PROD | DENIED + evidencia redactada |
+| Independencia | autor ejecutor intenta firmar Judge y Sentinel | REJECTED |
+| Exact-SHA | CI de SHA diferente o artifacts ausentes | UNVERIFIED |
+| UX | sin conexión Realtime, sesión vencida, mobile y PT-BR | estado coherente + recuperación |
+
+### 18.6 Presupuesto operativo para OpenRouter (US$ 0)
+
+- **Restricción absoluta**: ninguna llamada Hive pagada. Si un modelo o router no puede demostrar costo cero, no usarlo.
+- La cuenta gratuita de OpenRouter tiene límites externos. La documentación de precios revisada en octubre de 2026 muestra 50 solicitudes gratuitas diarias para el nivel sin compra de créditos, y 20 por minuto; confirmar con `/api/v1/key` o mecanismo vigente sin exponer token. Los límites no constituyen un SLA.
+- Propuesta de cuota conservadora inicial: **hasta 20 solicitudes de modelo por día para todas las misiones Hive**, con reserva para Chat/Reina y validación; esta es cuota **interna configurable**, no afirmación sobre la cuenta externa. No permitir préstamo o bypass por agente.
+- Usar una llamada de planner por misión cuando sea viable; comunicación interagente vía base de datos; resumir contexto sin perder evidencia; usar código/pruebas deterministas para validación, Judge y Sentinel.
+- Si falta cuota, persistir estado `WAITING_MODEL`/compatible, mostrarlo al usuario y continuar sólo trabajos deterministas autorizados. No pasar a un modelo pagado ni a otro proveedor.
+- Distinguir factura de API de costos externos: GitHub Actions, Supabase y runner pueden tener cuotas/costos diferentes; revisar antes de ejecutar.
+
+### 18.7 Riesgos residuales y mitigaciones concretas
+
+1. **Prompt injection entre agentes** → mensajes de agentes/documentos son datos; permisos y tool calls revalidados en servidor.
+2. **Cascada de subtareas** → máximo número de nodos por misión, límite de profundidad/hops, cuota diaria y revisión de expansión material.
+3. **Memoria obsoleta** → timestamp, provenance, SHA y `valid_until`; hechos stale no gobiernan decisiones.
+4. **Efectos duplicados** → idempotency keys, outbox y fencing token, reconciliación tras crash.
+5. **Secuestro de la Reina** → planner sin permisos de mutación, autoridad independiente del LLM.
+6. **Aprobación accidental** → vista previa, plan_hash, expiración y consentimiento explícito, doble comprobación en API.
+7. **GitHub incongruente** → inspeccionar PRs/locks existentes, base SHA, artifacts y CI same-SHA.
+8. **Modelo gratuito no disponible** → degradación segura, cola sin gasto y reintentos limitados.
+9. **Dependencia de una sola sesión ChatGPT** → checkpoints en sistemas persistentes y workers autorizados; nunca presumir ejecución fuera de la sesión.
+10. **Autoaprendizaje inseguro** → propuesta de skill y pruebas; no permitir que el agente se otorgue permisos ni cambie políticas por sí mismo.
+
+### 18.8 Esquema de ejecución y salida para cada entrega autónoma
+
+Registrar en checkpoint, PR y resumen:
+`MAIN_SHA | PHASE/TASK_ID | OWNERSHIP/LOCK | CHANGES | TESTS | RUN_ID | SOURCE_SHA/RESULT_SHA | EVIDENCE_REFS | JUDGE | SENTINEL | COST | STATUS | NEXT_UNBLOCKED_TASK | HUMAN_REQUIRED`.
+
+Estados de reporte (no necesariamente estados SQL): `DONE`, `PENDING`, `FAILED`, `UNVERIFIED`, `BLOCKED_EXTERNAL`, `BLOCKED_HUMAN`.
+
+**Regla de decisión automática:** si una unidad no puede probarse, no llamarla DONE; si hay riesgo de afectar producción, gasto o trabajo de otro actor, detener la acción y conservar checkpoint; si existe otra unidad autónoma segura desbloqueada, continuar con ella. No fabricar tiempos de entrega.
+
+### 18.9 Definition of Done para la primera colmena operativa
+
+- Super Admin instruye desde el chat autenticado.
+- Planner devuelve DAG válido, hash y criterios observables.
+- Se aprueba versión exacta y se rechazan cambios posteriores no autorizados.
+- Dos especialistas se comunican usando registros persistidos, permisos y correlación.
+- GitHub Worker ejecuta patch permitido en rama aislada, tests y PR.
+- D9 verifica pruebas y D14/independent Judge + Sentinel comprueban evidencia real exact-SHA.
+- El chat muestra trazas, bloqueos, costos y estado sin afirmaciones falsas.
+- Retries/crash/duplicados/modelo sin cuota no producen efectos repetidos ni cobros.
+- Costo OpenRouter facturado = US$ 0; producción intacta; no se forzó Autonomy ON.
+
+**Solo entonces:** `HIVE_MVP_VERIFIED`. La integración completa de los 118 agentes exige validación posterior de cada capacidad; el piloto no equivale a empresa autónoma ni a `CUSTOMER_1` aprobado.
+
+### 18.10 Orden operativo para ChatGPT (resumen copiable)
+
+> Actuá como ejecutor de UGO Hive siguiendo la sección 18 del documento maestro en `main`. Antes de actuar, reconciliá SHA, PRs, locks, skills, DB TEST, gates y checkpoint. Elegí la primera tarea H0–H7 aún no verificada y desbloqueada. Si estás autorizado, implementá en rama aislada con cambios mínimos, probá y reproba, guardá evidencia exact-SHA y solicitá evaluación Judge/Sentinel independiente. Actualizá checkpoint y PR, y continuá sólo con otras tareas seguras autorizadas. Nunca uses modelos pagos, fuerces ON, toques producción sin autorización, simules pruebas humanas ni marques VERIFIED por código o documentación. Al terminar la sesión dejá reporte real y próxima tarea. Si no estás autorizado a implementar, limitate a auditoría y planificación sin escrituras funcionales.
+
+### 18.11 Cierre de diseño
+
+No introducir otra plataforma central de orquestación salvo demostración de que el scheduler existente no puede satisfacer el contrato. **Primero un flujo vertical completo y real, después robustez y escalado.** La eficacia de la colonia se mide por resultados empresariales verificados, no por el número de hormigas, mensajes, tokens o PRs.
+
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
