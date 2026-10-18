@@ -512,4 +512,111 @@ No activar `Empresa Autónoma ON` para probar una interfaz; no crear 118 runners
 La meta “funcionar hoy” es aspiracional y no reemplaza la evidencia; no atribuir una fecha de entrega garantizada a funciones que todavía no se implementaron.
 
 
+
+## 16. UGO Hive 2.2 — Mejoras al catálogo de capacidades (propuesta)
+
+**Estado: ESPECIFICACIÓN DOCUMENTADA, NO APLICADA A SUPABASE NI AL RUNTIME.** Basado en auditoría de lectura de UGO Arena TEST y del código existente. Inventario: 118 agentes en 13 departamentos y 119 capacidades registradas, todas con `executor_kind=DETERMINISTIC` en la muestra agregada (7 GREEN, 83 YELLOW, 29 RED). Estas etiquetas son **niveles de autoridad**, no calificaciones de funcionamiento. `capability` identifica una especialidad nominal única por agente, pero no demuestra integración con herramientas. La evidencia previa no autoriza afirmar 118 agentes capaces de programar.
+
+### 16.1 Principio de mejora
+
+**No sumar agentes por sumar.** Reutilizar las 118 identidades existentes; añadir un catálogo versionado de **capacidades operativas**, contratos tipados, conexiones verificadas a ejecutores y capacidades transversales limitadas por política. Los workers son procesos ejecutores, no nuevas identidades de agente. La Reina distribuye un objetivo solamente entre especialistas necesarios.
+
+### 16.2 Siete capacidades transversales
+
+| Capability propuesta | Para qué sirve | Control obligatorio | Prueba mínima |
+|---|---|---|---|
+| `hive.task.receive.v1` | Tomar subtarea de misión aprobada | Permiso, lease, dependencias, idempotencia | Claim concurrente sin duplicados |
+| `hive.message.exchange.v1` | Solicitar y responder hallazgos entre agentes | ACL remitente/receptor, TTL, tamaño, hops, esquema | Handoff A→B persistido y reproducible |
+| `hive.memory.read.v1` | Consultar conocimiento verificado con procedencia | RLS, alcance, vigencia, redacción de PII | Recuperar evidencia autorizada, bloquear ajena |
+| `hive.tool.invoke.v1` | Ejecutar una herramienta específica | Allowlist, sandbox, permisos y risk gate | Acción autorizada produce efecto y audit log |
+| `hive.task.propose_delegate.v1` | Sugerir subtarea/dependencia | Aprobación del planner y scope inmutable | Rechazar delegación fuera de alcance |
+| `hive.evidence.submit.v1` | Entregar resultado verificable | Source SHA, artifact, actor, correlation y hash | Judge independiente reproduce el efecto |
+| `hive.blocker.escalate.v1` | Informar obstáculos y pedir intervención | Reason code, owner, deduplicación, cooldown | Bloqueo auditable sin retry infinito |
+
+Capacidad transversal **no significa habilitación universal**: cada agente recibe únicamente subconjuntos que necesite. Mensajería, memoria y delegación no transportan privilegios del emisor al receptor.
+
+### 16.3 Contrato mínimo de cada capacidad
+
+```yaml
+capability_key: hive.message.exchange.v1
+version: 1
+owner_department: 1
+executor_kind: QUEUE_DISPATCH
+bound_tools: []
+allowed_agents: [explicit-agent-ids-or-policy-selector]
+authority_class: YELLOW
+allowed_environments: [UGO_TEST]
+required_skill_versions: []
+input_schema_ref: hive.message.v1
+output_schema_ref: hive.receipt.v1
+permissions: [read_mission,send_scoped_message]
+rate_limit: {per_job: 12, max_hops: 4}
+timeout_seconds: 30
+idempotency_scope: mission_job_sender_receiver_kind
+evidence_policy: persistent_receipt
+verification_policy: independent
+rollback_policy: cancel_unclaimed_messages
+enabled: false
+maturity: CATALOGED
+```
+
+Este es un **contrato conceptual**: no crear `executor_kind=QUEUE_DISPATCH`, campos, enums ni privilegios nuevos sin compatibilidad con las tablas/RPC actuales.
+
+### 16.4 Matriz de capacidades especializadas por departamento
+
+| Departamento | Capacidades a fortalecer | Herramientas permitidas inicialmente | Evidencia obligatoria |
+|---|---|---|---|
+| D1 Dirección | `hive.mission.plan`, `hive.mission.route`, `hive.mission.replan` | Lectura de estados, catálogo de capacidades, planner estructurado | DAG validado, `plan_hash`, versión y autorización |
+| D2 Operaciones | `ops.gps.diagnose`, `ops.matching.trace`, `ops.alerts.audit` | Logs anonimizados, queries TEST de sólo lectura, traces | Casos reproducibles, correlation IDs |
+| D3 Cliente | `client.journey.inspect`, `client.feedback.classify` | E2E TEST, UI inspect, logs acotados | Captura/traza + criterios de journey |
+| D4 Proveedor | `provider.session.diagnose`, `provider.location.inspect`, `provider.offer.trace` | Pruebas auth TEST, GPS simulado identificado, Realtime logs | Sesiones/estados observados, regresiones |
+| D5 Crecimiento | `growth.experiment.propose`, `growth.funnel.analyze` | Métricas agregadas, experimentos SHADOW | Fuente de datos y criterio de resultado |
+| D6 Confianza | `trust.case.triage`, `trust.evidence.review` | Expedientes TEST desidentificados; nunca resoluciones automáticas sensibles | Decisión propuesta, provenance y human gate |
+| D7 Finanzas | `finance.ledger.reconcile`, `finance.debt.audit` | Lectura ledger TEST, pruebas de conciliación | Delta contable + referencias; **sin pagos reales automáticos** |
+| D8 Tecnología | `eng.repo.inspect`, `eng.patch.propose`, `eng.test.run`, `eng.pr.prepare` | GitHub API/runner aislado en ramas autorizadas | Diff, SHA, tests, PR, artifacts |
+| D9 QA | `qa.test.execute`, `qa.regression.compare`, `qa.evidence.judge` | Runners TEST, browsers TEST, logs | Resultado por prueba, Judge independiente |
+| D10 Legal | `legal.policy.diff`, `legal.risk.flag` | Documentos públicos y normas con fecha | Fuente, jurisdicción y revisión humana |
+| D11 Marketing | `marketing.copy.draft`, `marketing.i18n.review` | Generación de borradores, diccionarios existentes | Versiones, fuentes y aprobación antes de publicar |
+| D12 Producto | `product.ux.audit`, `product.accessibility.test` | UI TEST, auditoría visual y accesibilidad | Hallazgos vinculados a pantallas y tests |
+| D14 Auditoría | `audit.permission.verify`, `audit.evidence.challenge`, `audit.gate.inspect` | Lectura de ledger, repos/CI, reglas versionadas | Contrapruebas independientes, Sentinel |
+
+**D9/D14 no se autocertifican:** Judge y Sentinel deben verificar de forma independiente a ejecutores, incluso si se trata de otro agente de su mismo departamento. Acciones de alto riesgo (KYC, datos personales, finanzas, cambios legales, producción) requieren aprobaciones humanas y contratos específicos.
+
+### 16.5 Madurez medible en vez de etiquetas decorativas
+
+Por agente y capacidad, conservar cuatro dimensiones independientes: `CATALOGED` (definición), `WIRED` (herramientas, ACL y ruta conectadas), `EXECUTED` (trabajo real), `VERIFIED` (prueba independiente). Registrar último éxito/fallo, fecha, versión de skill, execution run, job, SHA y expiración de la certificación. No degradar/elevar automáticamente autoridad GREEN/YELLOW/RED por madurez.
+
+Reporte de brechas: `UNWIRED`, `STALE`, `NEVER_EXECUTED`, `FAILED_VERIFICATION`, `CAPABILITY_DUPLICATE`, `PERMISSION_EXCESS`, `MODEL_UNAVAILABLE`. Evitar marcar `VERIFIED` por existencia de un script, UI, RPC, commit o job SUCCEEDED sin efecto comprobado.
+
+### 16.6 Reglas de asignación de la Reina
+
+1. Convertir objetivo en criterios medibles y subtareas DAG; revisar dependencias y trabajos ya abiertos.
+2. Para cada tarea, buscar agentes por **capacidad efectiva**, permiso para entorno/recurso, skills versionadas, disponibilidad y conflicto de locks.
+3. Preferir cantidad mínima suficiente de especialistas (p.ej. D8+D9+D14), no fanout indiscriminado a 118 agentes.
+4. Comunicación entre agentes mediante Message Bus acotado; el receptor verifica su propia autoridad. El planeador puede proponer nueva subtarea, pero no aumentar el alcance aprobado.
+5. Asignación sólo si worker conectado y recursos no bloqueados; de lo contrario, estado visible y motivo.
+6. En caso de disputa, pedir evidencia reproducible y evaluación independiente, no votación textual.
+7. No contabilizar llamadas de razonamiento como trabajos completados. Reutilizar pasos deterministas y memoria antes de consumir cuota gratuita.
+
+### 16.7 Priorización para el piloto
+
+**P0** — D1 (`plan/route`), D8 (`inspect/patch/test/pr`), D9 (`test/judge`), D14 (`audit`) + capacidades transversales `receive`, `message`, `tool`, `evidence`, `blocker` con permisos explícitos.
+
+**P1** — D2 y D4 para GPS, matching, alertas y logout del proveedor, utilizando fixtures TEST y sin confundir simulación de GPS con validación física.
+
+**P2** — D3, D5, D6, D7, D10, D11 y D12 en orden de necesidad de la misión, con mayores controles para dinero, disputas y legislación.
+
+### 16.8 Validación adversarial y criterios de aceptación
+
+- Sólo un worker adquiere cada lease; worker vencido no puede enviar resultado válido (fencing token).
+- Agentes A y B intercambian dos mensajes estructurados, con `mission_id` y `correlation_id` consistentes, sin loops.
+- Un agente sin permiso no lee mensajes de otro dominio ni ejecuta tool calls privilegiadas.
+- El D8 Worker prepara una corrección inocua en rama aislada; D9 ejecuta pruebas exact-SHA y D14 audita.
+- Judge y Sentinel verifican el resultado real; fallback prohibido a modelos pagos u otros proveedores.
+- Desconexiones, cuota 429, retries y mensajes duplicados no provocan doble efecto ni gasto.
+- La política de OpenRouter permanece **US$ 0/mes, modelos gratuitos exclusivamente**.
+- Ningún caso autoriza cambios en producción, aprobaciones KYC, transferencias financieras o fusión automática sin un gate aplicable.
+
+**Decisión de arquitectura:** mejorar capacidades, contratos y conectividad del catálogo existente **antes de crear nuevos agentes**. La migración y las pruebas reales requieren una etapa de implementación separada y autorizada.
+
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
