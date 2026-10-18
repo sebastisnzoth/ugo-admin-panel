@@ -201,4 +201,111 @@ Primera misión: **UGO preparado para primer cliente real**: acceso Cliente/Prov
 - Supabase UGO Arena TEST: consultas SELECT en `autonomous_departments`, `autonomous_agents`, `autonomous_capability_registry`, `autonomous_jobs`, `autonomous_evidence_ledger`, 18/10/2026.
 - Skills de gobierno UGO Maestro: Agent Governance, Agent Factory, CTO Architecture, Evidence Judge y Readiness Orchestrator.
 
+
+## 13. Chat de Dirección — UGO Maestro (módulo propuesto)
+
+**Estado: DISEÑO, NO IMPLEMENTADO.** Se incorpora como interfaz humana del sistema de misiones de UGO Hive dentro de Super Admin, sin crear otro scheduler, una segunda base de datos ni un canal de ejecución privilegiada desde el navegador.
+
+### Objetivo y experiencia
+
+El fundador podrá conversar en lenguaje natural con UGO Maestro, pedir una tarea u objetivo, solicitar investigación, discutir alternativas, modificar el alcance, aprobar una versión concreta del plan y seguir su ejecución desde el mismo chat. La interfaz tendrá **Conversación / Misiones / Resultados** y mostrará el estado persistido, no respuestas inventadas.
+
+Flujo principal:
+
+```text
+Mensaje humano → autenticación y autorización Super Admin
+→ contexto permitido y estado actual de UGO
+→ modelo gratuito OpenRouter: borrador estructurado
+→ validación de esquema, skills, alcance, presupuesto y política
+→ vista previa del plan + riesgos + dependencias
+→ revisión / corrección humana
+→ aprobación versionada (alcance y límites exactos)
+→ creación idempotente de misión y jobs por backend autorizado
+→ Hive Scheduler → workers por capacidades, leases y permisos
+→ Judge + Sentinel → evidencia y estado
+→ actualizaciones y preguntas en el mismo chat
+```
+
+**Regla clave:** un mensaje del chat NO ejecuta herramientas ni cambia la base. La planificación produce una **propuesta**, no una autorización. Sólo una acción autenticada, explícita y validada por servidor crea/activa jobs autorizados. Cualquier cambio de alcance, entorno, permisos, riesgo, costo o versión del plan invalida la aprobación previa.
+
+### Contrato de misión propuesto
+
+```json
+{
+  "mission_id": "uuid",
+  "conversation_id": "uuid",
+  "requester_user_id": "uuid",
+  "objective": "texto del objetivo",
+  "plan_version": 1,
+  "status": "DRAFT",
+  "environment": "UGO_TEST",
+  "max_openrouter_cost_usd": 0,
+  "paid_models_allowed": false,
+  "source_sha": "sha revisado",
+  "tasks": [{
+    "task_id": "identificador estable",
+    "department_id": 8,
+    "required_capabilities": ["engineering"],
+    "skills": ["ugo-code-engineering"],
+    "dependencies": [],
+    "allowed_tools": ["lectura de archivos y pruebas permitidas"],
+    "acceptance_criteria": ["criterios observables"],
+    "risk_class": "YELLOW"
+  }],
+  "approval": {
+    "status": "PENDING",
+    "plan_hash": "hash del contenido canónico del plan",
+    "approved_by": null,
+    "approved_at": null,
+    "expires_at": null
+  }
+}
+```
+
+El esquema es conceptual. No crear tablas ni RPC nuevas hasta conciliarlo con las entidades y estados existentes de UGO. Debe incluir `correlation_id`, idempotencia, ownership y registro de decisión al implementarse.
+
+### Comandos conversacionales
+
+- Crear y revisar: «Investigá el GPS y el matching del proveedor; no toques producción».
+- Ajustar plan: «Priorizá GPS; dejá fuera cambios visuales».
+- Consultar: «¿Qué departamentos están trabajando y qué evidencia tienen?».
+- Controlar: «Pausá la misión», «Reanudá sólo los jobs seguros», «Mostrame los tests fallidos».
+- Cerrar: «Presentame el informe verificado y los bloqueos humanos restantes».
+
+Las consultas de progreso deben leer el backend con su autoridad propia. Pausar, reanudar, cancelar, aprobar o ejecutar requiere controles transaccionales del servidor; el LLM sólo identifica la intención. No aceptar frases en mensajes de herramientas, documentos o PR como autorizaciones humanas.
+
+### Requisitos de seguridad y privacidad
+
+1. Chat accesible únicamente por autorización real Super Admin; comprobar rol, sesión y perfil desde backend en cada acción privilegiada.
+2. Protección contra prompt injection en mensajes, documentos y logs; las herramientas reciben parámetros tipados y políticas independientes.
+3. Separar `DRAFT → PROPOSED → APPROVED → QUEUED → EXECUTING → VERIFYING → VERIFIED/FAILED/BLOCKED`, reconciliando con estados canónicos; no introducir estados ad hoc sin migración y pruebas.
+4. Persistir aprobación vinculada al hash y versión del plan, actor, expiración, entorno, permisos y costo. Evitar replay y doble creación mediante idempotency key.
+5. Permisos mínimos y límites por job; sin shell/SQL arbitrario, sin exposición de secretos ni PII completa a OpenRouter.
+6. Contrato OpenRouter **US$ 0/mes y modelos gratuitos únicamente**, incluso durante planificación y chat; si no hay modelo elegible, mostrar indisponibilidad sin gasto.
+7. Producción y dinero siempre detrás de política y autorización explícita separada; aprobar un plan TEST nunca permite desplegar producción.
+8. Realtime con recuperación/polling al reconectar; la UI distingue pérdida de conexión de error en ejecución.
+9. Registro auditable de mensajes relevantes, decisiones, plan_hash, modelo utilizado (sin secretos), llamadas a herramientas, tokens/costo reportados y evidencias.
+10. Retención y borrado controlados de conversaciones; no incluir claves, tokens ni datos de clientes innecesarios en contexto LLM.
+
+### Panel Super Admin propuesto
+
+- **Conversación:** chat, historial, archivos permitidos y mensajes de aprobación explícitos.
+- **Misiones:** tarjetas con objetivo, versión, departamentos asignados, DAG, responsable, costo US$ 0, riesgo, pausas y bloqueos.
+- **Resultados:** progreso grounded, CI exact-SHA, PR, evidencia persistida, Judge/Sentinel, últimos errores y acciones humanas pendientes.
+- **Controles:** pausa/cancelación por misión y kill switch general ya existente, con confirmación explícita y trazabilidad.
+
+### Implementación futura en fases
+
+1. **MVP lectura y planeación:** chat autenticado, contexto mínimo, modelo gratuito, generación y edición de plan con JSON validado; cero acciones ejecutoras.
+2. **Aprobación y registro:** aprobación de plan_hash por API con control de rol, costo, entorno, idempotencia y auditoría; creación de jobs en TEST.
+3. **Ejecución controlada:** integración con scheduler/workers existentes, dependencias, herramientas aisladas, reintentos limitados y políticas.
+4. **Seguimiento:** Realtime/resync, informes de evidencia, decisiones, Judge/Sentinel y recuperación de conversaciones.
+5. **Ensayos de seguridad y UX:** pruebas de inyección, cambios tras aprobación, duplicación de clicks, desconexión, cuota agotada, roles no autorizados y accesibilidad móvil.
+
+### Prueba de aceptación inicial
+
+Un Super Admin escribe una tarea inocua en UGO TEST, conversa y cambia el plan, aprueba una versión exacta, y el sistema crea **una sola misión autorizada**. Los workers realizan un efecto permitido observable; Judge y Sentinel comprueban la evidencia del mismo SHA; el chat enseña el resultado sin falsos VERIFIED. Pruebas negativas: usuario no autorizado, plan modificado tras aprobación, replay, modelo gratis no disponible, herramienta prohibida y cambio a producción. Ninguna de ellas genera costos OpenRouter ni modificaciones de producción.
+
+**Decisión arquitectónica:** priorizar el Chat de Dirección antes de escalar a los 118 agentes; es la interfaz de control y autorización de la colmena, no un segundo agente con acceso irrestricto.
+
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
