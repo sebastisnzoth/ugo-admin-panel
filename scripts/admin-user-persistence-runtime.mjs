@@ -119,7 +119,9 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
   assert.ifError(membership.error)
   assert.ok(membership.data.categorias_ids.includes(category.data.id),'PROVIDER_CATEGORY_NOT_PERSISTED')
   for(const [action,active] of [['Desactivar',false],['Reactivar',true]]){
-   await card.getByRole('button',{name:action,exact:true}).click()
+   const actionButton=card.getByRole('button',{name:action,exact:true})
+   if(!await actionButton.isVisible().catch(()=>false)) await card.getByRole('button',{name:'⋯',exact:true}).click()
+   await actionButton.click()
    await page.getByRole('dialog').getByRole('button',{name:'Confirmar',exact:true}).click()
    await card.getByRole('button',{name:active?'Desactivar':'Reactivar',exact:true}).waitFor({state:'visible',timeout:20000})
    const state=await db.from('usuarios').select('activo').eq('id',id).single()
