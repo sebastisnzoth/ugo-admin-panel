@@ -1,6 +1,11 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.uploadPhoto": "Enviar foto do perfil",
+    "ugoUserEdit.invalidUpload": "Arquivo inválido. Use JPEG, PNG ou WebP de até 2 MB.",
+    "ugoUserEdit.sessionExpired": "Sessão expirada. Faça login novamente.",
+    "ugoUserEdit.uploadFailed": "Não foi possível enviar a foto.",
+    "ugoUserEdit.photoUploadedSave": "Foto enviada. Clique em Salvar para aplicar ao perfil.",
     "ugoUserEdit.verificationFilter": "Verificação do prestador",
     "ugoUserEdit.verification.registrado": "Registrado",
     "ugoUserEdit.verification.pendiente": "Pendente",
@@ -1100,6 +1105,11 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.uploadPhoto": "Subir foto de perfil",
+    "ugoUserEdit.invalidUpload": "Archivo inválido. Usá JPEG, PNG o WebP de hasta 2 MB.",
+    "ugoUserEdit.sessionExpired": "Sesión vencida. Volvé a iniciar sesión.",
+    "ugoUserEdit.uploadFailed": "No se pudo subir la foto.",
+    "ugoUserEdit.photoUploadedSave": "Foto subida. Presioná Guardar para aplicarla al perfil.",
     "ugoUserEdit.verificationFilter": "Verificación del proveedor",
     "ugoUserEdit.verification.registrado": "Registrado",
     "ugoUserEdit.verification.pendiente": "Pendiente",
@@ -2199,6 +2209,11 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.uploadPhoto": "Upload profile photo",
+    "ugoUserEdit.invalidUpload": "Invalid file. Use JPEG, PNG or WebP up to 2 MB.",
+    "ugoUserEdit.sessionExpired": "Your session has expired. Sign in again.",
+    "ugoUserEdit.uploadFailed": "Could not upload the photo.",
+    "ugoUserEdit.photoUploadedSave": "Photo uploaded. Select Save to apply it to the profile.",
     "ugoUserEdit.verificationFilter": "Provider verification",
     "ugoUserEdit.verification.registrado": "Registered",
     "ugoUserEdit.verification.pendiente": "Pending",
