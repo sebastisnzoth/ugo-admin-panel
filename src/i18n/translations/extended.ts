@@ -1,6 +1,14 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.emailAction": "Alterar e-mail",
+    "ugoUserEdit.emailTitle": "Alterar e-mail da conta",
+    "ugoUserEdit.emailMessage": "Informe o novo e-mail da conta.",
+    "ugoUserEdit.emailLabel": "Novo e-mail",
+    "ugoUserEdit.invalidEmail": "Informe um e-mail válido.",
+    "ugoUserEdit.emailConfirm": "Confirmar a alteração para",
+    "ugoUserEdit.emailFailed": "Não foi possível alterar o e-mail.",
+    "ugoUserEdit.emailSaved": "E-mail atualizado e verificado.",
     "ugoUserEdit.uploadPhoto": "Enviar foto do perfil",
     "ugoUserEdit.invalidUpload": "Arquivo inválido. Use JPEG, PNG ou WebP de até 2 MB.",
     "ugoUserEdit.sessionExpired": "Sessão expirada. Faça login novamente.",
@@ -1105,6 +1113,14 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.emailAction": "Cambiar correo",
+    "ugoUserEdit.emailTitle": "Cambiar correo de la cuenta",
+    "ugoUserEdit.emailMessage": "Ingresá el nuevo correo de la cuenta.",
+    "ugoUserEdit.emailLabel": "Correo nuevo",
+    "ugoUserEdit.invalidEmail": "Ingresá un correo válido.",
+    "ugoUserEdit.emailConfirm": "Confirmar el cambio a",
+    "ugoUserEdit.emailFailed": "No se pudo cambiar el correo.",
+    "ugoUserEdit.emailSaved": "Correo actualizado y verificado.",
     "ugoUserEdit.uploadPhoto": "Subir foto de perfil",
     "ugoUserEdit.invalidUpload": "Archivo inválido. Usá JPEG, PNG o WebP de hasta 2 MB.",
     "ugoUserEdit.sessionExpired": "Sesión vencida. Volvé a iniciar sesión.",
@@ -2209,6 +2225,14 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.emailAction": "Change email",
+    "ugoUserEdit.emailTitle": "Change account email",
+    "ugoUserEdit.emailMessage": "Enter the new account email.",
+    "ugoUserEdit.emailLabel": "New email",
+    "ugoUserEdit.invalidEmail": "Enter a valid email address.",
+    "ugoUserEdit.emailConfirm": "Confirm changing email to",
+    "ugoUserEdit.emailFailed": "Could not update email.",
+    "ugoUserEdit.emailSaved": "Email updated and verified.",
     "ugoUserEdit.uploadPhoto": "Upload profile photo",
     "ugoUserEdit.invalidUpload": "Invalid file. Use JPEG, PNG or WebP up to 2 MB.",
     "ugoUserEdit.sessionExpired": "Your session has expired. Sign in again.",
