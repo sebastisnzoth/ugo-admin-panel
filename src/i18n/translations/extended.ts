@@ -1,6 +1,10 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.pagination": "Paginação de usuários",
+    "ugoUserEdit.previous": "Anterior",
+    "ugoUserEdit.next": "Próxima",
+    "ugoUserEdit.page": "Página",
     "ugoUserEdit.editorSections": "Seções do editor",
     "ugoUserEdit.tab.profile": "Editar perfil",
     "ugoUserEdit.tab.account": "Conta e atividade",
@@ -1061,6 +1065,10 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.pagination": "Paginación de usuarios",
+    "ugoUserEdit.previous": "Anterior",
+    "ugoUserEdit.next": "Siguiente",
+    "ugoUserEdit.page": "Página",
     "ugoUserEdit.editorSections": "Secciones del editor",
     "ugoUserEdit.tab.profile": "Editar perfil",
     "ugoUserEdit.tab.account": "Cuenta y actividad",
@@ -2121,6 +2129,10 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.pagination": "User pagination",
+    "ugoUserEdit.previous": "Previous",
+    "ugoUserEdit.next": "Next",
+    "ugoUserEdit.page": "Page",
     "ugoUserEdit.editorSections": "Editor sections",
     "ugoUserEdit.tab.profile": "Edit profile",
     "ugoUserEdit.tab.account": "Account and activity",
