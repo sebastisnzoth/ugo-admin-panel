@@ -1,6 +1,12 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.accountReadOnly": "Dados da conta e operações · somente leitura",
+    "ugoUserEdit.accountReadOnlyHelp": "Segurança, perfil de acesso, estado e reputação não podem ser alterados neste formulário. Utilize as ações administrativas autorizadas.",
+    "ugoUserEdit.additionalReadOnly": "Outras informações do perfil · somente leitura",
+    "ugoUserEdit.additionalReadOnlyHelp": "Os campos de preferências e estado operacional exigem operações específicas e autorizadas para alterações.",
+    "ugoUserEdit.editableFields": "Dados editáveis do perfil",
+    "ugoUserEdit.photoPreview": "Pré-visualização da foto do perfil",
     "ugoUserEdit.primaryCategory": "Categoria principal",
     "ugoUserEdit.categories": "Categorias de serviço",
     "ugoUserEdit.noCategory": "Sem categoria",
@@ -1039,6 +1045,12 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.accountReadOnly": "Datos de cuenta y operaciones · solo lectura",
+    "ugoUserEdit.accountReadOnlyHelp": "La seguridad, el rol, el estado y la reputación no se modifican en este formulario. Utilizá las acciones administrativas autorizadas.",
+    "ugoUserEdit.additionalReadOnly": "Datos adicionales del perfil · solo lectura",
+    "ugoUserEdit.additionalReadOnlyHelp": "Los campos de preferencias y estado operativo requieren operaciones específicas y autorizadas para modificarse.",
+    "ugoUserEdit.editableFields": "Datos editables del perfil",
+    "ugoUserEdit.photoPreview": "Vista previa de foto de perfil",
     "ugoUserEdit.primaryCategory": "Categoría principal",
     "ugoUserEdit.categories": "Categorías de servicios",
     "ugoUserEdit.noCategory": "Sin categoría",
@@ -2077,6 +2089,12 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.accountReadOnly": "Account and operations · read only",
+    "ugoUserEdit.accountReadOnlyHelp": "Security, role, status and reputation cannot be changed using this form. Use authorized administrative actions.",
+    "ugoUserEdit.additionalReadOnly": "Additional profile details · read only",
+    "ugoUserEdit.additionalReadOnlyHelp": "Preference and operational fields require specific authorized actions to change.",
+    "ugoUserEdit.editableFields": "Editable profile details",
+    "ugoUserEdit.photoPreview": "Profile photo preview",
     "ugoUserEdit.primaryCategory": "Primary category",
     "ugoUserEdit.categories": "Service categories",
     "ugoUserEdit.noCategory": "No category",
