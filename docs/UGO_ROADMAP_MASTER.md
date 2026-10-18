@@ -647,3 +647,7 @@ Edición integral Admin ampliada a contacto/domicilio, foto por URL, bio/experie
 Se alinea la autoridad backend con la UI de cuentas privilegiadas: Admin no puede modificar perfiles de otros administradores/Super Admin/árbitros directamente por `usuarios`. Migración sólo TEST y probes transaccionales positivos/negativos; falta runtime PostgREST del SHA integrado antes del cierre.
 
 API/Admin en Pages: base canónica explícita, CORS preflight de integraciones y aliases TEST consistentes. Se amplía el runtime a APIs reales del mismo SHA sin deploy, creación auditada/reset de contraseña y SHADOW→OFF restaurado. La publicación Vercel sigue sujeta a cuota externa; no se generan deploys de prueba.
+
+### Hive — implementación aislada autorizada 18/10/2026
+
+Ver [checkpoint HU0–HU3](ugo-hive/IMPLEMENTATION_STATUS.md). Código y ensayos locales sobre PR515/FreeAPI1, sin refs remotas modificadas; previews automáticos bloquean publicación sin nueva autorización. Inferencia OFF; persistencia remota/Render/facturación/pinning/worker/Judge/Sentinel siguen pendientes. No altera el readiness del primer cliente.
