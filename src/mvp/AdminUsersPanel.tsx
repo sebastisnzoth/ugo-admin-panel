@@ -35,7 +35,7 @@ export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateO
   setTotalCount(count??0)
   const ids=(users||[]).map(u=>u.id)
   const[{data:auth,error:ae},{data:clients,error:ce},{data:providers,error:pe},{data:categoryRows,error:categoryError}]=await Promise.all([
-   (supabase as any).rpc('admin_get_auth_users'),
+   (supabase as any).rpc('admin_get_auth_users_by_ids',{p_ids:ids}),
    ids.length?supabase.from('perfiles_cliente').select('usuario_id,telefono,direccion,barrio,ciudad,idioma_preferido,contacto_preferido,horarios_preferidos,instrucciones_acceso,preferencias_servicio,observaciones,onboarding_completo_at,foto_perfil_path').in('usuario_id',ids):Promise.resolve({data:[],error:null}),
    ids.length?supabase.from('perfiles_proveedor').select('usuario_id,telefono_profesional,ciudad_base,estado_verificacion,online,disponible,tarifa_base,zona_radio_km,especialidades,idiomas,disponibilidad_horaria,motivo_rechazo,onboarding_paso,ubicacion_updated_at,ubicacion_accuracy_m,foto_perfil_path,bio,experiencia_anos,categoria_principal_id,categoria:categorias!perfiles_proveedor_categoria_principal_id_fkey(nombre,emoji)').in('usuario_id',ids):Promise.resolve({data:[],error:null}),
    supabase.from('categorias').select('id,nombre,activa').order('nombre'),
