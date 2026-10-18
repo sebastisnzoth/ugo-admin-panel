@@ -59,3 +59,16 @@ test('admin profile photo uploads enforce authorization, magic bytes, size, and 
  assert.match(ui,/uploadProfilePhoto\(file\)/)
  assert.match(ui,/accept="image\/jpeg,image\/png,image\/webp"/)
 })
+
+test('email changes use protected backend Auth API and confirmation',()=>{
+ const api=readFileSync(new URL('../../api/operations.ts',import.meta.url),'utf8')
+ assert.match(api,/case 'admin-change-email'/)
+ assert.match(api,/async function changeAdminManagedUserEmail/)
+ assert.match(api,/await requireAdmin\(req\)/)
+ assert.match(api,/PRIVILEGED_USER_ROLES\.has/)
+ assert.match(api,/auth\.admin\.updateUserById/)
+ assert.match(api,/admin_usuario_email_actualizado/)
+ assert.match(api,/await sb\.auth\.admin\.getUserById/)
+ assert.match(ui,/void changeEmail\(r\)/)
+ assert.match(ui,/await confirm\(/)
+})
