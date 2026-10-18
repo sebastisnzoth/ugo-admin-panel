@@ -19,7 +19,7 @@ const emptyCreate:CreateForm={nombre:'',apellido:'',email:'',password:'',confirm
 
 export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateOperator=false}:Props){
  const{t}=useLocale();
- const[editing,setEditing]=useState<Row|null>(null),[editName,setEditName]=useState(''),[editSurname,setEditSurname]=useState(''),[editCountry,setEditCountry]=useState(''),[editZone,setEditZone]=useState(''),const[open,setOpen]=useState(true),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'>(initialFilter),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[createOpen,setCreateOpen]=useState(false),[form,setForm]=useState<CreateForm>(emptyCreate),[traceUser,setTraceUser]=useState<Row|null>(null)
+ const[editing,setEditing]=useState<Row|null>(null),[editName,setEditName]=useState(''),[editSurname,setEditSurname]=useState(''),[editCountry,setEditCountry]=useState(''),[editZone,setEditZone]=useState('');const[open,setOpen]=useState(true),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'>(initialFilter),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[createOpen,setCreateOpen]=useState(false),[form,setForm]=useState<CreateForm>(emptyCreate),[traceUser,setTraceUser]=useState<Row|null>(null)
  const{confirm,prompt,node:dialog}=useDialog()
  const load=useCallback(async()=>{
   const[{data:auth,error:ae},{data:users,error:ue},{data:clients},{data:providers}]=await Promise.all([
