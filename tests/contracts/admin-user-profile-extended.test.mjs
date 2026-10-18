@@ -46,3 +46,16 @@ test('directory fetches paginated rows, related profiles and auth metadata by pa
  assert.match(auth,/where au\.id=any/)
  assert.match(ui,/perfiles_proveedor!inner\(estado_verificacion\)/)
 })
+
+test('admin profile photo uploads enforce authorization, magic bytes, size, and audit',()=>{
+ const api=readFileSync(new URL('../../api/operations.ts',import.meta.url),'utf8')
+ assert.match(api,/case 'admin-upload-profile-photo'/)
+ assert.match(api,/await requireAdmin\(req\)/)
+ assert.match(api,/PRIVILEGED_USER_ROLES\.has/)
+ assert.match(api,/2097152/)
+ assert.match(api,/validSignature/)
+ assert.match(api,/admin_usuario_foto_subida/)
+ assert.match(api,/storage\.from\(bucket\)\.remove/)
+ assert.match(ui,/uploadProfilePhoto\(file\)/)
+ assert.match(ui,/accept="image\/jpeg,image\/png,image\/webp"/)
+})
