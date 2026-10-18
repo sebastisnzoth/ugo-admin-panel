@@ -305,7 +305,7 @@ async function testAdmin(viewport,name){
    }
    await safeClick(page,mainNav.getByRole('button',{name:/Configuración/i}),'admin Configuración')
    for(const item of ['Categorías','Analytics|Análisis|Análises','Notificaciones','Reportes','Sistema']){
-     await safeClick(page,page.getByRole('group',{name:'Configuración'}).getByRole('button',{name:new RegExp(item,'i')}),'admin settings '+item)
+     await safeClick(page,item.includes('Analytics')?page.getByTestId('admin-settings-analytics'):page.getByRole('group',{name:'Configuración'}).getByRole('button',{name:new RegExp(item,'i')}),'admin settings '+item)
      await assertResponsive(page,'admin '+name+' settings '+item)
    }
    await safeClick(page,mainNav.getByRole('button',{name:/Super Admin/i}),'admin Super Admin')
