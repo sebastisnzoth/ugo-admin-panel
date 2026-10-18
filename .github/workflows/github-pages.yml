@@ -236,6 +236,25 @@ jobs:
           sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html
           sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html
 
+      # Review-only snapshot. Keep the canonical /app/ build from main unchanged.
+      # Pin the exact reviewed commit; do not build arbitrary PR code via untrusted input.
+      - name: Build isolated Client PR 497 preview
+        env:
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+          VITE_APP_REVISION: 46de38599b8fbb87a63322db350dabf4dc45d154
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin 46de38599b8fbb87a63322db350dabf4dc45d154
+          git worktree add --detach /tmp/ugo-preview-pr497 FETCH_HEAD
+          (
+            cd /tmp/ugo-preview-pr497
+            npm ci --include=dev
+            npm run build -- --base=/ugo-admin-panel/preview/pr-497/
+          )
+          mkdir -p _site/preview/pr-497
+          cp -a /tmp/ugo-preview-pr497/dist/. _site/preview/pr-497/
+          test -f _site/preview/pr-497/index.html
+
       - name: Build main HEAD snapshot
         env:
           GH_TOKEN: ${{ github.token }}
