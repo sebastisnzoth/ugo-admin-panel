@@ -34,3 +34,15 @@ test('editor tabs and extended fields use localized keys',()=>{
  }
  assert.match(ui,/aria-pressed=\{editTab===id\}/)
 })
+
+test('directory fetches paginated rows, related profiles and auth metadata by page',()=>{
+ const auth=readFileSync(new URL('../../supabase/migrations/20261018051200_admin_auth_users_by_ids.sql',import.meta.url),'utf8')
+ assert.match(ui,/\.range\(page\*50,page\*50\+49\)/)
+ assert.match(ui,/\.rpc\('admin_get_auth_users_by_ids',\{p_ids:ids\}\)/)
+ assert.doesNotMatch(ui,/\.limit\(500\)/)
+ assert.match(auth,/auth\.uid\(\) is null/)
+ assert.match(auth,/actor\.activo is true/)
+ assert.match(auth,/TOO_MANY_USER_IDS/)
+ assert.match(auth,/where au\.id=any/)
+ assert.match(ui,/perfiles_proveedor!inner\(estado_verificacion\)/)
+})
