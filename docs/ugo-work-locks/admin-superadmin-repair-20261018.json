@@ -12,12 +12,13 @@
   ],
   "resources": [
     "admin-users",
-    "super-admin-ui"
+    "super-admin-ui",
+    "test-autonomy-state"
   ],
   "status": "IN_PROGRESS",
   "started_at": "2026-10-18T03:08:00Z",
-  "heartbeat_at": "2026-10-18T03:26:51Z",
-  "lease_expires_at": "2026-10-18T04:11:51Z",
+  "heartbeat_at": "2026-10-18T04:13:16.782076Z",
+  "lease_expires_at": "2026-10-18T04:58:16.782076Z",
   "source_sha": "6ab7d84fc635cc046623e49485a73f4eb4ad170f",
   "pull_requests": [
     503,
@@ -42,5 +43,5 @@
   ],
   "correlation_id": "ugo-admin-superadmin-repair-20261018",
   "current_step": "RUNTIME_VALIDATION",
-  "attempt": 4
+  "attempt": 5
 }

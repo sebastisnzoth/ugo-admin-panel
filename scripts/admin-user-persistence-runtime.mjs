@@ -33,6 +33,17 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
   assert.ifError(profileError)
   const clientProfile=await db.from('perfiles_cliente').upsert({usuario_id:id})
   assert.ifError(clientProfile.error)
+  // A real missing profile must reject the whole transaction without a base write.
+  const transactional=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:{Authorization:'Bearer '+session.access_token}}})
+  const removed=await db.from('perfiles_cliente').delete().eq('usuario_id',id)
+  assert.ifError(removed.error)
+  const rejected=await transactional.rpc('admin_update_user_profile',{p_usuario_id:id,p_user:{nombre:'Must never persist',apellido:'Partial'},p_profile:{ciudad:'TEST'}})
+  assert.ok(rejected.error?.message.includes('CLIENT_PROFILE_NOT_FOUND'),'MISSING_PROFILE_NOT_REJECTED')
+  const rolledBack=await db.from('usuarios').select('nombre,apellido').eq('id',id).single()
+  assert.ifError(rolledBack.error)
+  assert.deepEqual(rolledBack.data,{nombre:marker,apellido:'Before'},'PARTIAL_PROFILE_SAVE_PERSISTED')
+  const restored=await db.from('perfiles_cliente').insert({usuario_id:id})
+  assert.ifError(restored.error)
   await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Personas/i}).click()
   await page.getByRole('group',{name:'Personas'}).getByRole('button',{name:/Usuarios/i}).click()
   const card=page.locator('article').filter({hasText:email})
@@ -64,11 +75,11 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
   // Exercise the original false-success bug at the HTTP boundary (not RLS proof).
   const intercept=async route=>{
    const req=route.request()
-   if(req.method()==='PATCH'&&new URL(req.url()).searchParams.get('id')==='eq.'+id)
-    await route.fulfill({status:200,contentType:'application/json',body:'[]'})
+   if(req.method()==='POST'&&req.postDataJSON()?.p_usuario_id===id)
+    await route.fulfill({status:200,contentType:'application/json',body:'null'})
    else await route.continue()
   }
-  await page.route('**/rest/v1/usuarios?*',intercept)
+  await page.route('**/rest/v1/rpc/admin_update_user_profile',intercept)
   try {
    await card.getByRole('button',{name:/Editar/}).click()
    dialog=page.getByRole('dialog',{name:'Editar usuario',exact:true})
@@ -76,7 +87,7 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
    await dialog.getByRole('button',{name:'Guardar cambios',exact:true}).click()
    await dialog.getByRole('status').filter({hasText:'No se modificó ningún usuario'}).waitFor({state:'visible',timeout:10000})
    await dialog.getByRole('button',{name:'Cancelar',exact:true}).click()
-  } finally {await page.unroute('**/rest/v1/usuarios?*',intercept)}
+  } finally {await page.unroute('**/rest/v1/rpc/admin_update_user_profile',intercept)}
   const after=await db.from('usuarios').select('apellido').eq('id',id).single()
   assert.ifError(after.error)
   assert.equal(after.data.apellido,saved.data.apellido,'ZERO_ROW_PROBE_CHANGED_PROFILE')

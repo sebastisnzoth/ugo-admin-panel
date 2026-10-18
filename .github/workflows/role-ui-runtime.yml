@@ -38,7 +38,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-role-ui-${{ github.event.pull_request.head.sha || github.sha }}
+  group: ugo-role-ui-test-autonomy-singleton
   cancel-in-progress: false
 
 env:

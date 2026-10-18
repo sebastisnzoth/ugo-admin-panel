@@ -186,7 +186,7 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
   const rappiConfigured=Boolean((process.env.RAPPI_ACCESS_TOKEN||process.env.RAPPI_API_KEY)&&process.env.RAPPI_TEST_URL)
 
   const integrations:Integration[]=[
-   {id:'supabase',label:'Supabase',category:'core',configured:true,enabled:true,environment:UGO_ENVIRONMENT,runtimeSource:'server env',note:'Auth, PostgreSQL, Realtime y Storage del proyecto UGO.'},
+   {id:'supabase',label:'Supabase',category:'core',configured:true,enabled:true,environment:SUPABASE_URL===UGO_SUPABASE_URL?UGO_ENVIRONMENT:'custom',runtimeSource:'server env',note:'Auth, PostgreSQL, Realtime y Storage del proyecto UGO.'},
    {id:'mercadopago_br',label:'Mercado Pago Brasil',category:'payments',configured:mpBrConfigured,enabled:mpBrConfigured,environment:'production',runtimeSource:'MERCADO_PAGO_ACCESS_TOKEN',note:'Runtime actual de Pix y checkout electrónico BR.'},
    {id:'pix_direto',label:'Pix direto UGO',category:'payments',configured:pixDirectConfigured,enabled:pixDirectConfigured,environment:'production',runtimeSource:'UGO_PIX_KEY',note:'Generación EMV propia; requiere conciliación antes de considerar pago protegido.'},
    {id:'openpix',label:'OpenPix / Woovi',category:'payments',configured:openPixConfigured,enabled:openPixEnabled,environment:'sandbox',runtimeSource:'OPENPIX_SANDBOX_APP_ID + PAYMENTS_OPENPIX_ENABLED',note:'Sandbox solamente; el webhook no libera fondos reales.'},
