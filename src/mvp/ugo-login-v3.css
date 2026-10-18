@@ -1,0 +1,93 @@
+/* UGO Login V3 — visual-only, shared responsive styling. No auth/role logic changes. */
+.mvp-auth-page.role-client,.mvp-auth-page.role-provider{
+ --auth-accent:#00cfae;
+ background:radial-gradient(circle at 9% 10%,#dff8f4,transparent 32%),#f5f8fa!important;
+}
+.mvp-auth-page.role-provider{--auth-accent:#18d4a2}
+.mvp-auth-page.role-client .mvp-auth-shell,.mvp-auth-page.role-provider .mvp-auth-shell{
+ width:min(1160px,100%);grid-template-columns:minmax(0,1fr) minmax(390px,1fr);
+ border-radius:28px;box-shadow:0 26px 78px rgba(2,23,28,.13);
+}
+.mvp-auth-page.role-client .mvp-auth-intro,.mvp-auth-page.role-provider .mvp-auth-intro{
+ background:linear-gradient(180deg,rgba(3,22,28,.13),rgba(3,22,28,.94)),radial-gradient(circle at 68% 30%,#135b60,#051619 65%)!important;
+}
+.mvp-auth-page.role-provider .mvp-auth-intro{
+ background:linear-gradient(180deg,rgba(3,22,20,.10),rgba(3,22,20,.96)),radial-gradient(circle at 60% 28%,#1e6856,#061917 67%)!important;
+}
+.mvp-auth-intro-copy h2{letter-spacing:-.055em;max-width:490px}
+.mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{padding:clamp(25px,4.2vw,58px)!important}
+.mvp-auth-page.role-client .mvp-primary,.mvp-auth-page.role-provider .mvp-primary{
+ background:linear-gradient(105deg,#064d48,#007c67)!important;color:white!important;
+ box-shadow:0 8px 22px rgba(0,93,82,.16)!important;
+}
+.mvp-auth-page.role-provider .mvp-primary{background:linear-gradient(105deg,#065d46,#008f65)!important}
+.mvp-auth-page.role-client .mvp-primary:hover:not(:disabled),.mvp-auth-page.role-provider .mvp-primary:hover:not(:disabled){filter:brightness(1.1)}
+.mvp-auth-page :is(input,select,button):focus-visible{outline:3px solid #009c8c!important;outline-offset:3px}
+.mvp-auth-page.role-client .mvp-auth-card input,.mvp-auth-page.role-provider .mvp-auth-card input{font-size:16px}
+.mvp-auth-page .mvp-auth-card{min-width:0}
+.mvp-auth-page .mvp-auth-card :is(input,select,button){max-width:100%}
+@media(max-width:820px){
+ .mvp-auth-page.role-client .mvp-auth-shell,.mvp-auth-page.role-provider .mvp-auth-shell{display:flex;flex-direction:column;border-radius:0;box-shadow:none}
+ .mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{padding:25px max(16px,env(safe-area-inset-right)) max(25px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important}
+}
+@media(max-width:600px){
+ .mvp-auth-page.role-client .mvp-auth-intro,.mvp-auth-page.role-provider .mvp-auth-intro{min-height:160px!important}
+ .mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{padding-top:22px!important}
+}
+@media(max-width:360px){
+ .mvp-auth-page.role-client .mvp-auth-card,.mvp-auth-page.role-provider .mvp-auth-card{padding-left:12px!important;padding-right:12px!important}
+}
+/* Dedicated, role-aware administrative logins; no simulated metrics or external assets. */
+.mvp-auth-page.ugo-admin-auth{
+ --ugo-login-accent:#1677ef;
+ box-sizing:border-box;min-height:100dvh!important;display:grid!important;place-items:center;
+ padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;
+ background:radial-gradient(circle at 18% 18%,#152c4f,transparent 50%),#06111f!important;
+}
+.mvp-auth-page.ugo-admin-auth.ugo-superadmin-auth{--ugo-login-accent:#8946ed;background:radial-gradient(circle at 18% 18%,#36215f,transparent 50%),#0c0a1d!important}
+.ugo-admin-auth .ugo-admin-auth-shell{
+ display:grid;grid-template-columns:minmax(0,1fr) minmax(350px,.93fr);
+ width:min(1060px,100%);min-height:min(660px,calc(100dvh - 40px));
+ overflow:hidden;border-radius:26px;border:1px solid rgba(255,255,255,.15);
+ background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.24);
+}
+.ugo-admin-auth .ugo-admin-auth-intro{
+ display:flex;flex-direction:column;justify-content:space-between;gap:32px;
+ padding:clamp(28px,4.3vw,56px);color:white;
+ background:radial-gradient(circle at 80% 35%,rgba(49,128,240,.32),transparent 45%),linear-gradient(150deg,#071322,#102d52);
+}
+.ugo-superadmin-auth .ugo-admin-auth-intro{background:radial-gradient(circle at 80% 35%,rgba(159,71,245,.35),transparent 50%),linear-gradient(150deg,#100c27,#291348)}
+.ugo-admin-auth-brand{font-size:32px;font-weight:900;letter-spacing:-.07em}
+.ugo-admin-auth-role{display:inline-block;margin-left:12px;padding:5px 10px;border-radius:99px;border:1px solid #ffffff35;font-size:11px;font-weight:800;letter-spacing:0}
+.ugo-admin-auth-intro h2{font-size:clamp(34px,4.2vw,54px);line-height:1.02;letter-spacing:-.06em;margin:0 0 18px}
+.ugo-admin-auth-intro p{font-size:15px;line-height:1.55;color:#d0ddeb;max-width:360px}
+.ugo-admin-auth-intro small{color:#aebed4;font-size:12px}
+.mvp-auth-page.ugo-admin-auth .mvp-auth-card{
+ width:100%!important;max-width:none!important;display:flex;flex-direction:column;justify-content:center;
+ padding:clamp(28px,4.1vw,56px)!important;margin:0!important;border:0!important;
+ border-radius:0!important;background:#fff!important;box-shadow:none!important;color:#101828!important;
+}
+.ugo-admin-auth .mvp-auth-card h1{font-size:clamp(26px,2.5vw,36px);line-height:1.1;letter-spacing:-.04em;color:#111827!important}
+.ugo-admin-auth .mvp-auth-card p{color:#5a697b}
+.ugo-admin-auth .mvp-auth-card form{display:grid;gap:14px;margin-top:20px}
+.ugo-admin-auth .mvp-auth-card input{width:100%;min-height:52px;padding:0 15px;border:1px solid #cbd5e1;border-radius:12px;background:#fff!important;color:#111827!important;font-size:16px}
+.ugo-admin-auth .mvp-auth-card form button[type=submit]{min-height:52px;border:0;border-radius:12px;background:var(--ugo-login-accent)!important;color:#fff!important;font-weight:800;cursor:pointer}
+.ugo-admin-auth .mvp-auth-card .mvp-link{min-height:44px;color:#235cbd!important;align-self:flex-end}
+.ugo-superadmin-auth .mvp-auth-card .mvp-link{color:#6937b6!important}
+.ugo-admin-auth :is(input,button,select):focus-visible{outline:3px solid var(--ugo-login-accent)!important;outline-offset:3px}
+.ugo-admin-auth .mvp-error{color:#b42318!important}
+@media(max-width:800px){
+ .ugo-admin-auth .ugo-admin-auth-shell{grid-template-columns:1fr;min-height:0;max-width:540px}
+ .ugo-admin-auth .ugo-admin-auth-intro{padding:24px;gap:15px}
+ .ugo-admin-auth .ugo-admin-auth-intro h2{font-size:28px;margin-bottom:8px}
+ .ugo-admin-auth .ugo-admin-auth-intro p{font-size:13px;margin:0}
+ .ugo-admin-auth .ugo-admin-auth-intro small{display:none}
+ .mvp-auth-page.ugo-admin-auth .mvp-auth-card{padding:28px 24px!important}
+}
+@media(max-width:420px){
+ .mvp-auth-page.ugo-admin-auth{padding:0!important;display:block!important}
+ .ugo-admin-auth .ugo-admin-auth-shell{min-height:100dvh;border:0;border-radius:0}
+ .ugo-admin-auth .ugo-admin-auth-intro{padding:max(24px,env(safe-area-inset-top)) 20px 20px}
+ .mvp-auth-page.ugo-admin-auth .mvp-auth-card{padding:25px 20px max(30px,env(safe-area-inset-bottom))!important}
+}
+@media(prefers-reduced-motion:reduce){.ugo-admin-auth *, .mvp-auth-page.role-client *, .mvp-auth-page.role-provider *{animation:none!important;transition:none!important}}
