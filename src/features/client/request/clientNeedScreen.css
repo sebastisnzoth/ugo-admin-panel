@@ -137,3 +137,6 @@
 @media(prefers-reduced-motion:reduce){
   .ugo-need-screen button{transition:none!important;transform:none!important}
 }
+
+/* Keep the guided-request step counter readable at all viewport widths. */
+.ugo-need-top>small{grid-column:1/-1;justify-self:start;white-space:nowrap;width:max-content;max-width:100%;box-sizing:border-box}
