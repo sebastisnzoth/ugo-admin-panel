@@ -304,7 +304,7 @@ async function testAdmin(viewport,name){
      await assertResponsive(page,'admin '+name+' finance '+item)
    }
    await safeClick(page,mainNav.getByRole('button',{name:/Configuración/i}),'admin Configuración')
-   for(const item of ['Categorías','Analytics','Notificaciones','Reportes','Sistema']){
+   for(const item of ['Categorías','Analytics|Análisis|Análises','Notificaciones','Reportes','Sistema']){
      await safeClick(page,page.getByRole('group',{name:'Configuración'}).getByRole('button',{name:new RegExp(item,'i')}),'admin settings '+item)
      await assertResponsive(page,'admin '+name+' settings '+item)
    }
