@@ -105,10 +105,10 @@ try{
    await snap(page,name+' home')
    if(name==='mobile')await assertMobileHomeNav(page)
 
-   for(const item of ['Inicio','Actividad y pedidos','Direcciones','Formas de pago','Configuración']){
+   for(const item of ['Inicio','Actividad','Direcciones','Formas de pago','Configuración']){
     await clickMenu(page,item)
     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
-    if(item==='Actividad y pedidos')await page.locator('.ugo-client-history-wrap').waitFor({state:'visible',timeout:10000})
+    if(item==='Actividad')await page.locator('.ugo-client-history-wrap').waitFor({state:'visible',timeout:10000})
     if(['Direcciones','Formas de pago','Configuración'].includes(item))await page.getByRole('dialog',{name:'Perfil del cliente'}).waitFor({state:'visible',timeout:10000})
     await snap(page,name+' '+item)
     const dispute=page.locator('.ugo-dispute-backdrop').first()
@@ -159,7 +159,7 @@ try{
  } finally {await logoutPage.close()}
 
  assert.equal(pageErrors.length,0,'runtime page errors detected')
- const required=['Inicio','Actividad y pedidos','Direcciones','Formas de pago','Configuración','Pedir servicio','Servicios y categorías','Notificaciones','Hugo / Asistente IA','Ayuda y soporte','Header Ir al inicio','Cerrar sesión']
+ const required=['Inicio','Actividad','Direcciones','Formas de pago','Configuración','Pedir servicio','Servicios y categorías','Notificaciones','Hugo / Asistente IA','Ayuda y soporte','Header Ir al inicio','Cerrar sesión']
  for(const control of required)assert.ok(clickMap.some(x=>x.control===control||x.control.startsWith(control+' ')),control+': missing runtime coverage')
  const evidence={readiness_id:'client-navigation',task_id:'readiness-client-navigation',job_id:'UGO-READINESS-CLIENT-NAVIGATION',correlation_id:'readiness-client-navigation-20260929T220300Z-ff633eb5',environment:'UGO TEST',sha,tested_url:base+'/?app=client',viewports:['desktop','mobile'],click_map:clickMap,views,page_errors:pageErrors,result:'PASS',completed_at:new Date().toISOString()}
  await fs.writeFile('artifacts/client-navigation-runtime.json',JSON.stringify(evidence,null,2)+'\n')
