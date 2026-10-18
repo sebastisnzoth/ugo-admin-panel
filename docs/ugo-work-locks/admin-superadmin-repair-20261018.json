@@ -13,12 +13,12 @@
   "resources": [
     "admin-users",
     "super-admin-ui",
-    "test-autonomy-state"
+    "autonomy-state"
   ],
   "status": "IN_PROGRESS",
   "started_at": "2026-10-18T03:08:00Z",
-  "heartbeat_at": "2026-10-18T04:13:16.782076Z",
-  "lease_expires_at": "2026-10-18T04:58:16.782076Z",
+  "heartbeat_at": "2026-10-18T04:22:17.888910Z",
+  "lease_expires_at": "2026-10-18T05:07:17.888910Z",
   "source_sha": "6ab7d84fc635cc046623e49485a73f4eb4ad170f",
   "pull_requests": [
     503,
@@ -32,7 +32,7 @@
     "Applicable same-SHA CI and browser runtime pass"
   ],
   "production_touched": false,
-  "judge": "PENDING",
+  "judge": "SOURCE_REVIEW_PASS",
   "sentinel": "PENDING",
   "title": "Repair Admin/Super Admin editing, sessions, autonomy feedback and publication entry",
   "owner": "Codex",
@@ -43,5 +43,6 @@
   ],
   "correlation_id": "ugo-admin-superadmin-repair-20261018",
   "current_step": "RUNTIME_VALIDATION",
-  "attempt": 5
+  "attempt": 5,
+  "runtime_candidate": "4df3695041f8bedbeaa8443d441b99202bb25ec5"
 }
