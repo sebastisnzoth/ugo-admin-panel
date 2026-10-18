@@ -619,4 +619,92 @@ Reporte de brechas: `UNWIRED`, `STALE`, `NEVER_EXECUTED`, `FAILED_VERIFICATION`,
 
 **Decisión de arquitectura:** mejorar capacidades, contratos y conectividad del catálogo existente **antes de crear nuevos agentes**. La migración y las pruebas reales requieren una etapa de implementación separada y autorizada.
 
+
+## 17. UGO Hive 2.3 — Inteligencia colectiva y operación eficiente
+
+**Estado:** DISEÑO DOCUMENTADO, NO IMPLEMENTADO. Las ocho mejoras complementan Hive 2.2, sin sustituir los contratos de seguridad, las skills ni el scheduler existente. Continúa vigente OpenRouter **US$ 0/mes y exclusivamente modelos gratuitos**. No autoriza cambios de producción.
+
+### 17.1 Ocho mejoras de inteligencia colectiva
+
+| Prioridad | Mejora | Mecanismo | Prueba exigida |
+|---|---|---|---|
+| P0 | Reina con planificación adaptable | Replanifica DAG por nuevas evidencias; nueva versión y aprobación si cambia alcance, permisos o riesgo | Un cambio invalida la aprobación anterior; no se ejecutan subtareas añadidas sin autorización |
+| P0 | Pizarra colectiva por misión | Blackboard persistente de hallazgos, hipótesis, artefactos, bloqueos y decisiones con versiones y procedencia | Agente B continúa el trabajo de A tras caída de worker sin repetir investigación ni perder evidencia |
+| P1 | Reputación técnica basada en resultados | Métricas por agente/capacidad de jobs VERIFIED, fallos, regresiones, tiempo y muestra suficiente | Routing usa calidad únicamente entre agentes elegibles y autorizados; no eleva permisos |
+| P0 | Supervisor de conflictos | Detecta ediciones concurrentes, PRs solapados, recursos exclusivos, inconsistencias y conclusiones opuestas | Dos workers no escriben el mismo recurso; contradicciones se resuelven con evidencia o escalan |
+| P0 | Presupuesto de razonamiento | Preferir reglas deterministas, caché válida y evidencia antes de invocar modelo; cuotas por misión/worker | Ninguna llamada facturable y ningún bucle consume cuota ilimitada |
+| P1 | Simulador de misiones | Dry-run de DAG, actores, herramientas, dependencias, locks, alcance, autorizaciones y riesgo | Simulación no crea efectos ni declara pruebas reales VERIFIED |
+| P0 | Detector de trabajo repetido | Deduplicación por objetivo normalizado, recursos, source SHA, correlation y jobs/PR activos | No abrir otro job o PR si uno equivalente sigue activo; preservar excepciones justificadas |
+| P0 | Memoria con caducidad y confianza | Cada hecho guarda autor, origen, SHA, timestamp, alcance, expiry, corroboración y clasificación | Información stale de CI/modelos/gates no se presenta como estado actual |
+
+### 17.2 Blackboard: pizarra colectiva por misión
+
+La pizarra **no es un chat sin límites ni otra fuente de verdad**. Es una vista indexada sobre eventos/evidencias del mission ledger y Message Bus, reutilizando entidades actuales cuando alcancen. Un registro propuesto:
+
+```json
+{
+  "mission_id": "uuid",
+  "entry_id": "uuid",
+  "kind": "FINDING",
+  "author_agent_id": "uuid",
+  "job_id": "uuid",
+  "summary": "Hipótesis sobre pérdida de sesión al publicar GPS",
+  "evidence_refs": ["evidence-id"],
+  "source_sha": "git-sha",
+  "created_at": "ISO8601",
+  "valid_until": "ISO8601",
+  "confidence_basis": "TEST_REPRODUCTION",
+  "access_scope": "ugo-test-provider-auth",
+  "supersedes_entry_id": null,
+  "verification_state": "UNVERIFIED"
+}
+```
+
+Tipos propuestos: `FINDING`, `QUESTION`, `HANDOFF`, `BLOCKER`, `DECISION`, `EVIDENCE`, `CONTRADICTION`, `RESOLUTION`. Ningún hallazgo autorreportado pasa automáticamente a verdad verificada. La vista muestra hallazgos confirmados, hipótesis, controversias y evidencia por separado. Limitar cantidad/tamaño, redactar PII, aplicar scopes y RLS, y prevenir instrucciones maliciosas inyectadas por documentos, logs o agentes.
+
+### 17.3 Replanificación y conflictos
+
+- La Reina puede **proponer** cambios al DAG basándose en evidencia nueva; versionar y explicar el diff.
+- Si cambia entorno, recurso, autorización, costo, tipo de herramienta o riesgo, solicitar nueva aprobación de `plan_hash` exacto; nunca heredar autorización de forma implícita.
+- Establecer invariantes: un solo lease por recurso exclusivo, fencing tokens para workers expirados, idempotencia por efecto, bloqueo de PR solapado y ledger histórico conservado.
+- Para desacuerdos técnicos, ejecutar una contraprueba independiente antes de decidir; escalar si no hay evidencia suficiente. No votar por el número de agentes ni por el texto más persuasivo.
+
+### 17.4 Reputación responsable y métricas empresariales
+
+La reputación es un **indicador técnico de resultados observados**, no una puntuación humana general. Usar ventanas temporales, confianza estadística, tamaño de muestra y penalización explícita de resultados stale. No optimizar por volumen de mensajes, commits, tokens, PRs o autoevaluaciones.
+
+**KPIs propuestos:** `verified_mission_rate`, `time_to_verified`, `useful_handoffs`, `duplicate_effects`, `recovered_jobs`, `conflict_preventions`, `human_approvals_required`, `stale_fact_rejections`, `openrouter_billed_usd`, `policy_denials`, `evidence_completeness`. Denominadores y períodos visibles; no inventar datos.
+
+### 17.5 Estrategia de razonamiento gratuito
+
+```text
+Nueva tarea → ¿resultado verificable cacheado y vigente?
+  ├─ sí: reutilizar con SHA y límites de contexto
+  └─ no: ¿regla/prueba determinista suficiente?
+          ├─ sí: ejecutar herramienta permitida
+          └─ no: validar catálogo y costo cero OpenRouter
+                  ├─ elegible y cuota disponible: consultar con límite
+                  └─ no: WAITING_MODEL/BLOCKED_EXTERNAL, sin gasto
+```
+
+Control compartido de peticiones/tokens por misión, agente y ventana de tiempo. Rechazar costos inciertos, fallbacks pagos o hacia otros proveedores, incluso desde el chat de planificación. Separar gasto de OpenRouter de cualquier costo eventual de infraestructura.
+
+### 17.6 Interfaz Command Center
+
+Cuatro áreas conectadas: **Conversar, Planificar, Colmena, Resultados**. La sección Colmena incluirá una **pizarra de misión** con hallazgos, preguntas, contribuciones, contradicciones, jobs asignados y artefactos. Mostrar fuente/fecha/estado de verificación y marcar visiblemente datos obsoletos. Añadir visualización *dry-run* del DAG y conflictos antes de aprobar, y controles de pausa/reanudación sujetos a servidor y permisos.
+
+### 17.7 Fases de implementación (subordinadas al primer MVP)
+
+1. **P0 mínimo:** Reina → plan aprobado → bus/pizarra → D8 GitHub Worker → D9 pruebas → D14 auditoría; única misión TEST con evidencia completa.
+2. **P0 robustez:** replanificación segura, deduplicación, locks y control central de llamadas gratuitas, memoria con caducidad y recuperación.
+3. **P1 optimización:** simulador de misiones, reputación técnica con suficiente evidencia y selección informada de especialistas.
+4. **Expansión:** incorporar demás departamentos conforme a capacidad real verificada, sin activar 118 ejecutores simultáneos.
+
+**Criterio de aceptación de Hive 2.3:** una misión real de UGO TEST sobrevive caída de un worker, evita PR duplicado, comparte evidencia entre al menos dos especialistas, no reutiliza un hecho stale, respeta aprobación de alcance y termina en prueba exact-SHA con Judge/Sentinel. OpenRouter facturado debe permanecer en cero; de otro modo fallo/no-go. Producción intacta.
+
+### 17.8 Decisión arquitectónica
+
+Mantener el diseño en **tres bloques**: (1) *Cerebro*: Chat/Reina/memoria/presupuesto; (2) *Sistema nervioso*: scheduler/bus/pizarra/locks; (3) *Brazos*: GitHub Worker/ejecutores TEST/QA/Judge/Sentinel. No crear una segunda plataforma, tablas duplicadas ni agentes ornamentales. Cerrar nuevas funcionalidades hasta validar el flujo vertical primero.
+
+
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
