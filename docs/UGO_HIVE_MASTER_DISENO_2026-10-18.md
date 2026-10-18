@@ -1,4 +1,4 @@
-# UGO HIVE 1.0 — Documento maestro de diseño y auditoría
+# UGO HIVE — Documento maestro de diseño y auditoría
 
 **Fecha:** 2026-10-18
 **Estado:** PROPUESTA / DISEÑO — NO IMPLEMENTADO
@@ -410,5 +410,106 @@ Regla **HIVE_ONLY_OPENROUTER_FREE**: limitar toda llamada de la colmena (incluye
 - Preservar trabajo concurrente: PRs abiertos, fixtures compartidos, permisos y CI actual deben reconciliarse antes de escribir.
 
 **Decisión:** reutilizar el catálogo de 118 agentes, construir tres capacidades nuevas (planificador de misiones, bus de mensajes interagente y ejecutor de herramientas GitHub aislado) y demostrar primero una misión completa. Esta sección no autoriza implementar, activar ON ni modificar producción.
+
+
+## 15. Revisión integral v2.1: decisiones corregidas y plan ejecutable
+
+**Estado: ESPECIFICACIÓN, NO IMPLEMENTACIÓN.** Revisión contra `main`, `docs/UGO_SCHEDULER_POLICY.json`, `scripts/autonomous-worker-cycle.mjs`, `scripts/connect-autonomous-agents-openrouter.mjs` y `docs/UGO_AI_AGENT_SYSTEM_MASTER.md`. Fecha: 18/10/2026. Los snapshots de secciones anteriores siguen siendo históricos.
+
+### 15.1 Correcciones de diseño que evitan falsas promesas
+
+1. **Reina no es superusuario.** UGO Maestro actúa como *planner/coordinator* sin token de escritura. Todas las autorizaciones se materializan en backend con identidad, entorno, acción, recursos y expiración.
+2. **Colaboración no significa 118 chats LLM.** Agentes = identidades/capacidades; workers = procesos limitados; Message Bus = intercambios tipados. Evitar explosión combinatoria de mensajes, loops y agotamiento de cuota.
+3. **La selección por departamento no es garantía de aptitud.** Requerir `capability_key`, versión de skill, permiso efectivo, herramientas y prueba reciente; si falta, devolver `UNWIRED` y no ejecutar.
+4. **No modificar el worker legado para forzar Hive.** `autonomous-worker-cycle.mjs` está acoplado a `ON/SAFE_MODE` y una RPC determinista. Diseñar adaptador Hive separado para SHADOW/TEST y migración explícita posterior. No burlar OFF, ni crear job ejecutable si gate no permite.
+5. **Incompatibilidad de proveedor.** La selección histórica `gemini/openrouter` no satisface la política de Hive. Implementar `HiveFreeOpenRouterAdapter` aislado del router Hugo; sin fallbacks alternativos y con `fail closed`.
+6. **Aprobación y ejecución separadas.** El plan validado no autoriza nuevas subtareas con riesgos superiores ni acciones inesperadas. Replanificar crea otra versión y revoca la aprobación anterior. Para tareas sólo de lectura, aplicar igualmente permisos y auditoría.
+7. **Paralelismo real subordinado a locks.** El scheduler actual permite 5 tareas globales, pero recursos `openrouter` y `ugo-test-worker` están limitados a 1. Proponer hasta 3 workers **no significa** 3 llamadas simultáneas a OpenRouter ni 3 escrituras en el mismo repo/fixture.
+8. **GitHub no equivale a runner.** GitHub API gestiona repos/PR/Actions; ejecución de tests o cambios multiarchivo necesita runner aislado, tool allowlist, control de SHA y permisos. Preferir workflow determinista existente si sirve.
+9. **No prometer 24/7 gratuito.** OpenRouter gratis tiene límites cambiantes, y runner/DB/Actions también; diferenciar costo OpenRouter de costo total de infraestructura.
+10. **Un resultado no es VERIFIED por consenso textual.** Judge y Sentinel requieren evidencia externa exact-SHA; los agentes no votan para declarar éxito. Los eventos de auditoría deben ser inmutables o protegidos contra edición.
+11. **Concurrencia de PRs:** ningún worker modifica archivos afectados por otro PR sin lock y análisis de conflictos. Mantener worktrees/ramas separadas y reconciliar `main` y PRs antes de actuar.
+12. **UGO TEST no es producción:** datos, tokens, storage, RLS y credenciales separados, egress limitado. Todas las acciones de escritura inicialmente restringidas a TEST y ramas de desarrollo.
+
+### 15.2 Arquitectura mínima sin duplicación
+
+```text
+Super Admin Chat (RLS + backend auth)
+    ↓ create_draft / revise_plan / approve_plan
+Mission API: versiones + plan_hash + aprobación + policy
+    ↓ enqueue idempotente
+Scheduler existente: DAG + capabilities + leases + resource locks
+    ↔ Message Bus: outbox/inbox tipada + permisos + TTL + correlation
+    ↓ claims por worker
+Worker D8 (GitHub/runner)      Worker D2/D9 (consulta y tests)
+    ↓ evidencia inmutable y artefactos same-SHA
+Independent Judge → Sentinel → Mission materialized status
+    ↑ actualización realtime / reconciliación HTTP
+Super Admin Chat y Dashboard
+```
+
+**Integrar tablas existentes primero.** Nuevas entidades sólo si no hay representación suficiente; si se requieren, proponer migraciones versionadas y compatibilidad con consumidores actuales. Nunca crear dos ledgers ni dos schedulers.
+
+### 15.3 Contratos de seguridad y mensajes
+
+- Misión: `mission_id, requester_id, plan_version, plan_hash, objective, environment, source_sha, capability_requirements, DAG, acceptance_criteria, risk_budget, openrouter_budget_usd=0, created_at`.
+- Aprobación: `approver_id, role_checked_server_side, scope_hash, approved_actions, approved_environment, allowed_resources, expiry, revoked_at`.
+- Handoff: `message_id, mission_id, job_id, sender_id, recipient_id, kind, schema_version, payload_ref, evidence_refs, correlation_id, causation_id, ttl, max_hops, idempotency_key`.
+- Claim: `job_id, lease_owner, lease_token, lease_expires_at, heartbeat_at, attempt, claimed_source_sha`. La escritura de resultados exige comprobar `lease_token` (fencing token) para impedir que un worker expirado cierre un job recuperado.
+- Evidencia: `job_id, action_id, actor, source_sha, result_sha, artifact_ref, test_run_id, observed_effect, verification_version, judge_decision, sentinel_decision`.
+- No delegación implícita: un mensaje recibido **nunca** transporta permisos del remitente. El receptor verifica su propia política y que la tarea pertenezca a la misión aprobada.
+- Prohibidos mensajes entre agentes sin misión, spam circular, contenido no confiable interpretado como instrucciones de sistema y exfiltración a modelos de terceros.
+
+### 15.4 Máquina de estados y consistencia
+
+**Plan:** `DRAFT → PROPOSED → APPROVED | REJECTED | EXPIRED`. Un cambio produce `DRAFT(version+1)` y revoca el hash aprobado anterior.
+
+**Job (vista conceptual, adaptar a enum vigente):** `WAITING_DEPENDENCIES → QUEUED → LEASED → RUNNING → VERIFYING → VERIFIED`; excepciones `WAITING_MODEL, WAITING_APPROVAL, BLOCKED, FAILED, CANCELLED`. No insertar estos strings en Supabase sin comprobar constraints/RPC.
+
+**Transacciones:** guardar plan+aprobación de forma atómica; crear misión y jobs idempotentemente; outbox transaccional para notificaciones; reconciliar eventos tardíos; usar lease fencing y compensación segura ante fallos. Usar retención razonable y logs sin PII.
+
+**Recuperación:** retries acotados conforme a `UGO_SCHEDULER_V2` (`max_attempts=3`, backoff 5/15/30 minutos por política actual); circuito abierto cuando el modelo gratis está saturado; dead-letter con intervención; jamás reintentar efectos no idempotentes a ciegas.
+
+### 15.5 Política de gasto cero más estricta
+
+- `HIVE_MODEL_PROVIDER_ALLOWLIST=["openrouter"]`; `HIVE_MAX_BILLABLE_USD=0`; deny by default.
+- Verificación de catálogo **en el momento de la llamada**: todos los componentes de precios facturables conocidos deben ser exactamente cero; precio faltante o incierto ⇒ rechazar; registrar modelo realmente retornado y reevaluar.
+- No confiar sólo en sufijo `:free`, metadatos almacenados o selección automática si puede cambiar el modelo/costo. Para rutas enrutadas, exigir garantía verificable de cero costo o no usarlas.
+- Reservar cuota local por misión, planificador y worker; limitar tokens y contexto, max calls, timeout y solicitudes concurrentes; respetar 429 / Retry-After y degradación.
+- Distinguir *costo facturado* de *estimación local*; presupuesto de proveedor cero no sustituye alertas/cuotas nativas de la cuenta. La cuenta deberá impedir cargos por mecanismos externos al propio código cuando OpenRouter lo permita.
+- Sin fallback a Gemini, modelos pagos u otros proveedores en Hive. Las integraciones históricas de otras partes de UGO quedan fuera del alcance del modo Hive.
+
+### 15.6 UX del Chat de Dirección y operación humana
+
+Chat con 4 vistas: **Conversar, Plan, Colmena, Resultados**; mostrar siempre entorno, modo global, autorización pendiente, SHA base, grado de confianza, modelo libre elegido y bloqueo si no hay cuota. Borrador de plan editable con diffs entre versiones; aprobar `plan_hash`, no sólo texto de chat; cancelación con confirmación, revocación y progreso visible. Accesibilidad móvil, PT-BR/es/en y recuperación de sesión. La UI debe distinguir `SIN MODELO`, `SIN PERMISO`, `SIN WORKER`, `SIN EVIDENCIA`, `BLOQUEO HUMANO` y `ERROR DE CI`.
+
+### 15.7 Fases P0 y pruebas de aceptación
+
+| Fase | Trabajo | Prueba objetiva | Estado |
+|---|---|---|---|
+| 0 | Reconciliar repo/PRs, schemas TEST, jobs, skills y locks con main SHA | Matriz `cataloged/wired/executed/verified` para capacidades seleccionadas | PENDING |
+| 1 | Chat y planner read-only + plan versionado | Conversación produce DAG validado; modelo ausente no genera gasto | PENDING |
+| 2 | Aprobación exacta + mensaje A→B y respuesta | Autorización server-side; 2 agentes intercambian evidencia sin loops ni fuga de permisos | PENDING |
+| 3 | GitHub tool executor en TEST | Cambia rama aislada y abre PR con tests/exact SHA; ninguna escritura en main | PENDING |
+| 4 | Judge, Sentinel, rollback y resumen del chat | Resultado rederivado desde efecto real; fallo visible como FAILED/UNVERIFIED | PENDING |
+| 5 | Caos y límites: crash, double-click, cuota, replay, roles, conflictos | Sin duplicados, cargos ni elevación; recuperación observable | PENDING |
+| 6 | Expansión gradual por capacidad | Cada agente incorporado tiene job real verificado y ownership claro | PENDING |
+
+**Piloto:** una orden concreta para corregir un texto de i18n en rama aislada usando D8 + D9 + D14, con handoffs persistidos; hasta tres workers sólo si locks/cupos lo permiten; PR, CI exact SHA, Judge y Sentinel. Si el modelo gratuito no está disponible, terminar como `BLOCKED_EXTERNAL` con evidencia, no simular.
+
+**Métricas de salida:** `mission_completion_verified_rate`, `duplicate_effects=0`, `unauthorized_actions=0`, `billed_openrouter_cost=0`, `human_gate_bypass=0`, `recovery_rate`, `time_to_verified`, `evidence_completeness`, `cost_per_verified_mission`. No declarar porcentaje de éxito sin muestra observada.
+
+### 15.8 Qué NO hacer
+
+No activar `Empresa Autónoma ON` para probar una interfaz; no crear 118 runners; no dar service-role al navegador; no introducir GitHub PAT en prompts; no añadir migraciones antes de reconciliar contratos; no desplegar Vercel; no modificar `main` salvo documentación autorizada; no autofusionar PR ni marcar VERIFIED con una respuesta de LLM.
+
+### 15.9 Criterio final de decisión
+
+**Go** sólo si hay demostración end-to-end real en UGO TEST de `orden humana → plan → aprobación → asignación → mensajes entre agentes → herramienta GitHub/runner → tests/PR → Judge/Sentinel → resultado visible`, con OpenRouter facturado US$ 0 y sin tocar producción.
+
+**No-go** si cualquiera de esos es una simulación, sólo UI/código sin conectar, carece de evidencia, usa modelo de costo incierto o exige un bypass. Mantener explícitas las dependencias humanas y externas.
+
+La meta “funcionar hoy” es aspiracional y no reemplaza la evidencia; no atribuir una fecha de entrega garantizada a funciones que todavía no se implementaron.
+
 
 **Documento de diseño únicamente. No implementar ni activar autonomía hasta nueva autorización.**
