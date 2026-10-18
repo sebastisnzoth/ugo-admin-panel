@@ -27,3 +27,29 @@
 - Código y documentación: propuestos en rama de revisión.
 - Build/tests y runtime: **UNVERIFIED** hasta resultados del mismo SHA.
 - Producción / GitHub Pages: **sin cambios**, pendiente de aprobación basada en evidencia.
+
+
+## V4 — Diseño aprobado desde ZIP (18 octubre 2026)
+Fuente visual: `create-html-web-pages.zip` (referencia adjunta por el usuario).
+La referencia contiene un prototipo de login simulado, valores estadísticos de demostración e imágenes alojadas en Pexels. **No se importó el sistema de login simulado, los datos de prueba, ni una app React paralela.**
+
+Implementación incremental:
+- `src/mvp/ugo-login-v3.css`: adaptación fotográfica de los cuatro accesos, tratamiento con gradiente oscuro y panel de formulario blanco; mantiene los componentes y callbacks reales.
+- Cliente: fotografía ref. Pexels 18162024, tonos esmeralda.
+- Proveedor: fotografía ref. Pexels 40248590, tonos teal/verde.
+- Admin: fotografía ref. Pexels 5831259, tonos azul.
+- Super Admin: fotografía ref. Pexels 30547584, tonos violeta.
+- Las fotografías se cargan desde un tercero, sin credenciales ni API privada; pueden no estar disponibles offline. Revisar licencias y política de contenidos/remotos antes de la publicación definitiva. El formulario permanece legible sobre fondo blanco y el overlay oscuro mantiene contraste.
+- Layout de dos paneles desktop y apilado en móvil con hero reducido, safe-area, focus visible, soporte de landscape corto y reduced motion.
+- Los textos de Admin/Super Admin siguen utilizando el i18n ya existente; los textos publicitarios de la referencia no se copiaron literalmente.
+
+## Estado de verificación V4
+- Implementación CSS en PR #516: **IMPLEMENTED_IN_BRANCH** (no es `main`).
+- La validación CI anterior correspondía a `cf46e147`, no sirve como evidencia de la revisión V4.
+- Nuevo SHA V4: registrar el último SHA del PR en cada resultado de GitHub Actions.
+- Pruebas humanas de OAuth, permisos reales y screenshots sobre dispositivos: **UNVERIFIED/BLOCKED_HUMAN** hasta su ejecución.
+- GitHub Pages: NO publicar sobre /app/ ni /demo/ sin validación y autorización; preview pública aislada todavía pendiente.
+- Netlify y Vercel: fuera del alcance por decisión de producto.
+
+## Reversión
+Quitar exclusivamente la capa V4 añadida al final de `ugo-login-v3.css` para restaurar el aspecto V3; no revertir ni modificar las funciones de autenticación.
