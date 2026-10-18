@@ -1,6 +1,12 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "ugoUserEdit.verificationFilter": "Verificação do prestador",
+    "ugoUserEdit.verification.registrado": "Registrado",
+    "ugoUserEdit.verification.pendiente": "Pendente",
+    "ugoUserEdit.verification.verificado": "Verificado",
+    "ugoUserEdit.verification.rechazado": "Rejeitado",
+    "ugoUserEdit.verification.suspendido": "Suspenso",
     "ugoUserEdit.field.id": "ID",
     "ugoUserEdit.field.email": "E-mail",
     "ugoUserEdit.field.role": "Função",
@@ -1094,6 +1100,12 @@ export const extendedMessages={
 
   },
   "es": {
+    "ugoUserEdit.verificationFilter": "Verificación del proveedor",
+    "ugoUserEdit.verification.registrado": "Registrado",
+    "ugoUserEdit.verification.pendiente": "Pendiente",
+    "ugoUserEdit.verification.verificado": "Verificado",
+    "ugoUserEdit.verification.rechazado": "Rechazado",
+    "ugoUserEdit.verification.suspendido": "Suspendido",
     "ugoUserEdit.field.id": "ID",
     "ugoUserEdit.field.email": "Correo",
     "ugoUserEdit.field.role": "Rol",
@@ -2187,6 +2199,12 @@ export const extendedMessages={
 
   },
   "en": {
+    "ugoUserEdit.verificationFilter": "Provider verification",
+    "ugoUserEdit.verification.registrado": "Registered",
+    "ugoUserEdit.verification.pendiente": "Pending",
+    "ugoUserEdit.verification.verificado": "Verified",
+    "ugoUserEdit.verification.rechazado": "Rejected",
+    "ugoUserEdit.verification.suspendido": "Suspended",
     "ugoUserEdit.field.id": "ID",
     "ugoUserEdit.field.email": "Email",
     "ugoUserEdit.field.role": "Role",
