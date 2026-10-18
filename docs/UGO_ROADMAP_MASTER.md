@@ -651,3 +651,6 @@ API/Admin en Pages: base canónica explícita, CORS preflight de integraciones y
 ### Hive — implementación aislada autorizada 18/10/2026
 
 Ver [checkpoint HU0–HU3](ugo-hive/IMPLEMENTATION_STATUS.md). Código y ensayos locales sobre PR515/FreeAPI1, sin refs remotas modificadas; previews automáticos bloquean publicación sin nueva autorización. Inferencia OFF; persistencia remota/Render/facturación/pinning/worker/Judge/Sentinel siguen pendientes. No altera el readiness del primer cliente.
+
+
+Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles idénticos a PR revisados; revalidación18PASS y19PASS/1SKIP. Backend/inferenciaOFF; Pages observado aún7931173. Ver checkpoint vigente en docs/ugo-hive/IMPLEMENTATION_STATUS.md; CI del merge omitido para no ejecutar probes/modelos/GHCR, CI del PR documentado.
