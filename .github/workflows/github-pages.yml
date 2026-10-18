@@ -258,6 +258,26 @@ jobs:
           cp -a /tmp/ugo-preview-pr497/dist/. _site/preview/pr-497/
           test -f _site/preview/pr-497/index.html
 
+      # Isolated review snapshot. Source is pinned to PR #516 verified CI SHA.
+      # Leaves the canonical /app/ and /demo/ builds unchanged.
+      - name: Build isolated Login V4 PR 516 preview
+        continue-on-error: true
+        env:
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+          VITE_APP_REVISION: 0a8aceba9c28ec748788e47a667d4702c5d9dd97
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin 0a8aceba9c28ec748788e47a667d4702c5d9dd97
+          git worktree add --detach /tmp/ugo-preview-pr516 FETCH_HEAD
+          (
+            cd /tmp/ugo-preview-pr516
+            npm ci --include=dev
+            npm run build -- --base=/ugo-admin-panel/preview/pr-516/
+          )
+          mkdir -p _site/preview/pr-516
+          cp -a /tmp/ugo-preview-pr516/dist/. _site/preview/pr-516/
+          test -f _site/preview/pr-516/index.html
+
       - name: Build main HEAD snapshot
         env:
           GH_TOKEN: ${{ github.token }}
