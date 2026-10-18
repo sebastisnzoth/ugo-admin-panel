@@ -3,6 +3,7 @@ import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{useDialog}from'./dialogs'
+import{AdminUsersPanel}from'./AdminUsersPanel'
 import'./admin-provider-verification.css'
 
 type VerificationState='registrado'|'pendiente'|'verificado'|'rechazado'|'suspendido'
@@ -24,7 +25,7 @@ const specialText=(v:any)=>Array.isArray(v)?v.join(', '):v&&typeof v==='object'?
 
 export function AdminProviderVerificationPanel(){
  const{t,locale}=useLocale();
- const[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[docs,setDocs]=useState<ProviderDoc[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('todos'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[expanded,setExpanded]=useState<Record<string,boolean>>({})
+ const[editProviderId,setEditProviderId]=useState<string|null>(null),[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[docs,setDocs]=useState<ProviderDoc[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('todos'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[expanded,setExpanded]=useState<Record<string,boolean>>({})
  const{confirm,prompt,node:dialog}=useDialog()
  const load=useCallback(async()=>{
   setMessage('')
@@ -112,10 +113,11 @@ export function AdminProviderVerificationPanel(){
     </div>}
     <div className="ugo-provider-verification-details"><div><small>{t('screen.admin_verification.10')}</small><b>{specialText(r.especialidades)||r.categoria?.nombre||'—'}</b></div><div><small>{t('screen.admin_verification.11')}</small><b>{r.bio||t("uiCopy.expression109")}</b></div><div><small>{t('screen.admin_verification.12')}</small><b>{when(r.updated_at)}</b></div></div>
     <label className="ugo-provider-reject-reason"><span>{t('verification.rejectTitle')} <em>{t('screen.admin_verification.14')}</em></span><textarea value={motives[r.usuario_id]||''} onChange={e=>setMotives(v=>({...v,[r.usuario_id]:e.target.value}))} placeholder={t('verification.rejectPlaceholder')}/></label>
-    <div className="ugo-provider-verification-actions"><button type="button" className="verify" disabled={!!busy} onClick={()=>void providerState(r,'verificado')}>{t('screen.admin_verification.15')}</button><button type="button" className="reject" disabled={!!busy} onClick={()=>void providerState(r,'rechazado')}>{t('screen.admin_verification.8')}</button><button type="button" disabled={!!busy} onClick={()=>void providerState(r,'pendiente')}>{t('screen.admin_verification.16')}</button><button type="button" disabled={!!busy} onClick={()=>void providerState(r,'suspendido')}>{t('screen.admin_verification.17')}</button></div>
+    <div className="ugo-provider-verification-actions"><button type="button" onClick={()=>setEditProviderId(r.usuario_id)} disabled={!!busy}>{t('ugoUserEdit.edit')}</button><button type="button" className="verify" disabled={!!busy} onClick={()=>void providerState(r,'verificado')}>{t('screen.admin_verification.15')}</button><button type="button" className="reject" disabled={!!busy} onClick={()=>void providerState(r,'rechazado')}>{t('screen.admin_verification.8')}</button><button type="button" disabled={!!busy} onClick={()=>void providerState(r,'pendiente')}>{t('screen.admin_verification.16')}</button><button type="button" disabled={!!busy} onClick={()=>void providerState(r,'suspendido')}>{t('screen.admin_verification.17')}</button></div>
    </article>})}</div>
    <footer>{t('verification.policy')}</footer>
   </section>}
+ {editProviderId&&<div role="dialog" aria-modal="true" aria-label={t('ugoUserEdit.editUser')} className="ugo-verification-edit-backdrop"><section className="ugo-verification-edit-panel"><div className="ugo-verification-edit-heading"><strong>{t('ugoUserEdit.editUser')}</strong><button type="button" onClick={()=>{setEditProviderId(null);void load().catch(e=>setMessage(e instanceof Error?e.message:'Failed to load'))}} aria-label={t('ugoUserEdit.cancel')}>×</button></div><AdminUsersPanel key={editProviderId} initialEditUserId={editProviderId} initialFilter="proveedor" embedded/></section></div>}
  {dialog}
  </>
 }
