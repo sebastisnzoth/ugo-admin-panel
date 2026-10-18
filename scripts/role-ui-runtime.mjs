@@ -283,6 +283,13 @@ async function testAdministrativeSession(viewport,name,key){
  assert.ifError(persistedRole.error)
  assert.equal(persistedRole.data.tipo,superRole?'superadmin':'admin')
  assert.equal(persistedRole.data.activo,true)
+ if(!superRole){
+  const ordinary=await login(identity.email,identity.password)
+  try{
+   const denied=await ordinary.sb.from('usuarios').update({nombre:'Unauthorized QA edit'}).eq('id',fixtures.identities.admin.id).select('id')
+   assert.ok(denied.error||!denied.data?.length,'ADMIN_COULD_EDIT_PRIVILEGED_ACCOUNT_DIRECTLY')
+  }finally{await ordinary.sb.auth.signOut({scope:'local'})}
+ }
  const page=await browser.newPage({viewport})
  try{
   await page.goto(base+'/?app='+(superRole?'superadmin':'admin'),{waitUntil:'domcontentloaded'})

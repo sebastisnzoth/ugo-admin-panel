@@ -643,3 +643,5 @@ PR #503 incorpora #504 y conserva ambos controles: lectura persistida antes del 
 Corrección del enfoque de QA: la corrida queue:max también resultó cancelada. Multirrol se migra a identidades efímeras propias por ejecución y grupo por SHA; no comparte ni modifica credenciales/estado de los robots de los demás workflows. No declarar recuperado hasta runtime remoto PASS.
 
 Edición integral Admin ampliada a contacto/domicilio, foto por URL, bio/experiencia y categorías del proveedor, con verificación de persistencia por tabla y mensajes en tres idiomas. Pendiente UI/DB same-SHA de los cambios; no certificado por la presencia del formulario.
+
+Se alinea la autoridad backend con la UI de cuentas privilegiadas: Admin no puede modificar perfiles de otros administradores/Super Admin/árbitros directamente por `usuarios`. Migración sólo TEST y probes transaccionales positivos/negativos; falta runtime PostgREST del SHA integrado antes del cierre.
