@@ -1,6 +1,40 @@
-.ugo-admin-stitch{--ahs-bg:#f8fafc;--ahs-panel:#fff;--ahs-ink:#0f172a;--ahs-muted:#64748b;--ahs-line:#e2e8f0;--ahs-green:#159366;--ahs-cyan:#0891b2;background:var(--ahs-bg);color:var(--ahs-ink)}
-.ugo-admin-stitch .ugo-admin2-sidebar{background:#fff;color:var(--ahs-ink);border-right:1px solid var(--ahs-line)}
-.ugo-admin-stitch .ugo-admin2-brand span{color:#00677d}.ugo-admin-stitch .ugo-admin2-sidebar nav button{color:#475569}.ugo-admin-stitch .ugo-admin2-sidebar nav button:hover{background:#f1f5f9}.ugo-admin-stitch .ugo-admin2-sidebar nav button.active{background:#ecfdf5;color:var(--ahs-green)}.ugo-admin-stitch .ugo-admin2-sidebar nav button em{background:#eff4ff;color:var(--ahs-ink)}.ugo-admin-stitch .ugo-admin2-status{color:#475569;border-color:var(--ahs-line)}
+.ugo-admin-stitch {
+  --ahs-bg: var(--ugo-color-surface-muted);
+  --ahs-panel: var(--ugo-color-surface-lowest);
+  --ahs-ink: var(--ugo-color-text);
+  --ahs-muted: var(--ugo-color-text-muted);
+  --ahs-line: var(--ugo-color-border);
+  --ahs-green: var(--ugo-color-success);
+  --ahs-cyan: var(--ugo-color-focus);
+  background: var(--ahs-bg);
+  color: var(--ahs-ink);
+}
+.ugo-admin-stitch .ugo-admin2-sidebar {
+  background: var(--ahs-panel);
+  color: var(--ahs-ink);
+  border-right: 1px solid var(--ahs-line);
+}
+.ugo-admin-stitch .ugo-admin2-brand span {
+  color: var(--ahs-ink);
+}
+.ugo-admin-stitch .ugo-admin2-sidebar nav button {
+  color: var(--ahs-muted);
+}
+.ugo-admin-stitch .ugo-admin2-sidebar nav button:hover {
+  background: var(--ugo-color-surface-subtle);
+}
+.ugo-admin-stitch .ugo-admin2-sidebar nav button.active {
+  background: var(--ugo-color-success-bg);
+  color: var(--ahs-green);
+}
+.ugo-admin-stitch .ugo-admin2-sidebar nav button em {
+  background: var(--ugo-color-surface-muted);
+  color: var(--ahs-ink);
+}
+.ugo-admin-stitch .ugo-admin2-status {
+  color: var(--ahs-muted);
+  border-color: var(--ahs-line);
+}
 .ugo-admin-stitch .ugo-admin2-main>header{margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--ahs-line)}.ugo-admin-stitch .ugo-admin2-main>header h1{font-size:24px}.admin-home-stitch{display:grid;gap:16px;min-width:0}.admin-home-stitch *{box-sizing:border-box}.admin-home-stitch button{cursor:pointer;font:inherit}.ugo-admin-stitch button:focus-visible{outline:3px solid #0891b2;outline-offset:3px}
 .ahs-command-bar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px;background:var(--ahs-panel);border:1px solid var(--ahs-line);border-radius:12px}.ahs-eyebrow{display:block;color:var(--ahs-muted);font-size:var(--ugo-font-caption);font-weight:800;letter-spacing:.12em}.ahs-command-bar h2{margin:5px 0 4px;font-size:22px;letter-spacing:-.03em}.ahs-command-bar p{margin:0;color:var(--ahs-muted);font-size:12px}.ahs-command-actions{display:flex;align-items:center;gap:14px}.ahs-live-dot{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#2f3d34;white-space:nowrap}.ahs-live-dot i{display:inline-block;width:7px;height:7px;margin-right:1px;border-radius:50%;background:#f79009}.ahs-live-dot.live{color:#197249}.ahs-live-dot.live i{background:#12b76a}.ahs-live-dot.degraded{color:#b54708}.ahs-live-dot small{font-size:9px;color:#56645b;font-weight:700}.ahs-primary{display:flex;align-items:center;gap:15px;min-height:var(--ugo-touch-target);padding:0 15px;border:0;border-radius:8px;background:var(--ahs-green);color:#fff;font-size:12px!important;font-weight:700!important}.ahs-primary:hover{background:#005137}
 .ahs-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.ahs-kpis article{display:grid;grid-template-columns:1fr auto;gap:5px 10px;padding:14px;background:var(--ahs-panel);border:1px solid var(--ahs-line);border-radius:10px}.ahs-kpis article>span{font-size:var(--ugo-font-caption);color:var(--ahs-muted)}.ahs-kpis strong{grid-column:2;grid-row:1/3;font-size:25px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.ahs-kpis small{font-size:var(--ugo-font-caption);color:var(--ahs-muted)}.ahs-kpis article.attention{border-color:#fecdca;background:#fffafa}.ahs-kpis article.attention strong{color:#b42318}

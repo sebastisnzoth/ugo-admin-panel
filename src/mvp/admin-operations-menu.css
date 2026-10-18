@@ -1,1 +1,72 @@
-.ugo-admin2-operations-menu{grid-template-columns:repeat(8,minmax(112px,1fr));overflow-x:auto;scrollbar-width:thin}.ugo-admin2-operations-menu button{min-width:112px}.ugo-admin2-native-module{position:relative;margin-top:12px;min-height:220px;border-radius:18px;overflow:auto;background:transparent}.ugo-admin2-native-module>div{min-width:0}.ugo-admin2-native-module table{max-width:100%}.ugo-admin2-native-module button,.ugo-admin2-native-module input,.ugo-admin2-native-module textarea,.ugo-admin2-native-module select{font:inherit}.ugo-admin2-native-module button{min-height:36px;border:1px solid #dce4dd;background:#fff;color:#2f3d34;border-radius:10px;padding:7px 10px;font-weight:700;cursor:pointer}.ugo-admin2-native-module button:hover{background:#f7f9f7}.ugo-admin2-native-module button:disabled{opacity:.5;cursor:not-allowed}.ugo-admin2-native-module input,.ugo-admin2-native-module textarea,.ugo-admin2-native-module select{border:1px solid #dce4dd;border-radius:10px;background:#fff;color:#18211d}.ugo-admin2-native-module textarea{resize:vertical}.ugo-admin2-native-module a{color:#197249}@media(max-width:1100px){.ugo-admin2-operations-menu{grid-template-columns:repeat(8,minmax(126px,1fr))}}@media(max-width:700px){.ugo-admin2-operations-menu{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity}.ugo-admin2-operations-menu button{flex:0 0 128px;scroll-snap-align:start}.ugo-admin2-native-module{margin-top:10px;border-radius:16px;overflow-x:auto}.ugo-admin2-native-module table{min-width:680px}}
+.ugo-admin2-operations-menu {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(120px, 1fr));
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 8px;
+  background: var(--ugo-color-surface-lowest);
+  border: 1px solid var(--ugo-color-border);
+  border-radius: var(--ugo-radius-lg);
+  box-shadow: var(--ugo-shadow-sm);
+  margin-top: 24px;
+}
+.ugo-admin2-operations-menu::-webkit-scrollbar {
+  display: none;
+}
+.ugo-admin2-operations-menu button {
+  min-width: 120px;
+  min-height: 80px;
+  padding: 12px 14px 12px 42px;
+}
+
+.ugo-admin2-native-module {
+  position: relative;
+  margin-top: 24px;
+  min-height: 280px;
+  border-radius: var(--ugo-radius-lg);
+  overflow: auto;
+  background: var(--ugo-color-surface-lowest);
+  border: 1px solid var(--ugo-color-border);
+  box-shadow: var(--ugo-shadow-sm);
+}
+.ugo-admin2-native-module>div { min-width: 0; padding: 24px; }
+.ugo-admin2-native-module table { max-width: 100%; width: 100%; }
+.ugo-admin2-native-module button, .ugo-admin2-native-module input, .ugo-admin2-native-module textarea, .ugo-admin2-native-module select { font: inherit; }
+.ugo-admin2-native-module button {
+  min-height: var(--ugo-control-height-sm);
+  border: 1px solid var(--ugo-color-border-strong);
+  background: var(--ugo-color-surface-lowest);
+  color: var(--ugo-color-text);
+  border-radius: var(--ugo-radius-md);
+  padding: 0 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 150ms ease;
+  box-shadow: var(--ugo-shadow-sm);
+}
+.ugo-admin2-native-module button:hover:not(:disabled) {
+  background: var(--ugo-color-surface-subtle);
+}
+.ugo-admin2-native-module button:disabled { opacity: 0.5; cursor: not-allowed; }
+.ugo-admin2-native-module input, .ugo-admin2-native-module textarea, .ugo-admin2-native-module select {
+  border: 1px solid var(--ugo-color-border);
+  border-radius: var(--ugo-radius-md);
+  background: var(--ugo-color-surface-lowest);
+  color: var(--ugo-color-text);
+  padding: 8px 12px;
+}
+.ugo-admin2-native-module textarea { resize: vertical; }
+.ugo-admin2-native-module a { color: var(--ugo-color-success); font-weight: 700; text-decoration: none; }
+.ugo-admin2-native-module a:hover { text-decoration: underline; }
+
+@media(max-width: 1100px) {
+  .ugo-admin2-operations-menu { grid-template-columns: repeat(8, minmax(130px, 1fr)); }
+}
+@media(max-width: 700px) {
+  .ugo-admin2-operations-menu { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; }
+  .ugo-admin2-operations-menu button { flex: 0 0 140px; scroll-snap-align: start; }
+  .ugo-admin2-native-module { margin-top: 16px; border-radius: var(--ugo-radius-md); overflow-x: auto; }
+  .ugo-admin2-native-module>div { padding: 16px; }
+  .ugo-admin2-native-module table { min-width: 720px; }
+}
