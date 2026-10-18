@@ -197,7 +197,11 @@ async function testProvider(viewport,name){
    await authEmail.waitFor({state:'visible',timeout:20000})
    await authEmail.fill(providerEmail)
    await page.getByTestId('auth-password').fill(providerPassword)
-   await page.getByTestId('auth-form').locator('button[type=submit]').click()
+   await page.getByTestId('auth-password').press('Enter')
+   await Promise.race([
+     page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000}),
+     page.getByRole('alert').filter({hasText:/error|inválid|incorrect|falló|falhou|failed/i}).waitFor({state:'visible',timeout:30000}).then(async()=>{throw new Error('PROVIDER_LOGIN_ERROR '+(await page.locator('body').innerText()).slice(0,1200))})
+   ])
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
    await page.getByTestId('language-selector').selectOption('es')
    await assertResponsive(page,'provider '+name+' home')
