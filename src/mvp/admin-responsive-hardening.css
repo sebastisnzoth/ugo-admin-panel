@@ -293,3 +293,6 @@
   .ugo-admin2 .ugo-admin-users-panel .ugo-admin-users-toolbar { grid-template-columns:minmax(0,1fr); }
   .ugo-admin2 .ugo-admin-users-panel .ugo-admin-user-actions { grid-template-columns:minmax(0,1fr); }
 }
+
+/* A modal editor must receive pointer input instead of the fixed navigation. */
+.ugo-admin2:has([role="dialog"][aria-modal="true"]) .ugo-admin2-sidebar{pointer-events:none!important;}
