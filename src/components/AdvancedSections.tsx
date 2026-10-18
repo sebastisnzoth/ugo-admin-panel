@@ -573,11 +573,11 @@ export function SecValidacionPaises() {
           <button type="button" disabled={saving!==null||!p.docs_requeridos?.length&&!p.activo} onClick={()=>void toggle(p)} aria-label={(p.activo?labels.deactivate:labels.activate)+' '+p.pais} title={!p.docs_requeridos?.length?labels.pending:undefined}>{saving===p.id?'…':p.activo?labels.deactivate:labels.activate}</button>
         </div>)}</div>
         <div className="tw" style={{padding:16,minWidth:0,overflowWrap:'anywhere'}}>
-          {selected&&<><h3>{flags[selected.codigo_iso]||'🌐'} {selected.pais}</h3><p>ISO: {selected.codigo_iso}</p>
+          {selected&&<><h3>{flags[selected.codigo_iso]||'🌐'} {selected.pais}</h3><p><LocalizedText id="adminAdvanced.iso"/>: {selected.codigo_iso}</p>
           {!selected.docs_requeridos?.length&&<p>{labels.pending}</p>}
           {Object.entries(selected.reglas_ocr?.docs||{}).map(([tipo,cfg])=><div key={tipo} style={{padding:12,marginBottom:10,background:'var(--bg)',borderRadius:8}}>
             <strong>{tipo} — {cfg.nombre_completo||tipo}</strong>
-            {cfg.formato_regex&&<p style={{overflowWrap:'anywhere'}}>Regex: {cfg.formato_regex}</p>}
+            {cfg.formato_regex&&<p style={{overflowWrap:'anywhere'}}><LocalizedText id="adminAdvanced.regex"/>: {cfg.formato_regex}</p>}
             {cfg.digitos&&<p>{cfg.digitos}</p>}
             {cfg.prompt_gemini&&<p>{cfg.prompt_gemini}</p>}
           </div>)}{selected.reglas_ocr?.nota_cultural&&<p>{selected.reglas_ocr.nota_cultural}</p>}</>}
