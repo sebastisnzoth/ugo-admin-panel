@@ -38,7 +38,7 @@ function SecureAdminGate({children,gateParams}:AdminGateProps&{gateParams:URLSea
   const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[identifier,setIdentifier]=useState(''),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState(false)
   const requestedApp=gateParams.get('app')
   const secureAdminAccess=requestedApp==='admin'&&gateParams.get('auth')==='1'
-  const requiresSuperAdmin=requestedSection==='superadmin'||requestedApp==='superadmin'
+  const requiresSuperAdmin=requestedSection==='superadmin'||requestedSection==='hive'||requestedApp==='superadmin'
   const appName=requestedApp==='development'?'development':'admin'
   async function getAdminProfile(uid:string){let lastError:any=null;for(let attempt=0;attempt<ADMIN_PROFILE_RETRY_DELAYS.length;attempt++){await adminWait(ADMIN_PROFILE_RETRY_DELAYS[attempt]);const query=(supabase as any).from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle();const{data,error}=await withAdminProfileTimeout<any>(query,4500);if(!error)return{profile:(data||null)as AdminProfile|null,error:null};lastError=error;if(!transientAdminProfileError(error))break}return{profile:null,error:lastError}} 
   async function authorizeSession(session:any){if(!session)return false;const{profile,error}=await getAdminProfile(session.user.id);if(error)throw error;const allowed=Boolean(profile&&profile.activo&&(requiresSuperAdmin?profile.tipo==='superadmin':['admin','superadmin'].includes(profile.tipo)));if(allowed)await supabase.realtime.setAuth(session.access_token);return allowed}

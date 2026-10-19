@@ -24,7 +24,7 @@ test('Super Admin remains protected by persisted superadmin role',async()=>{
  const gate=await read('src/mvp/AdminGate.tsx')
  const phase=await read('src/mvp/AdminPhase2.tsx')
  assert.match(gate,/requiresSuperAdmin\?profile\.tipo==='superadmin'/)
- assert.match(phase,/section==='superadmin'&&adminRole&&!isSuperAdmin/)
+ assert.match(phase,/\(section==='superadmin'\|\|section==='hive'\)&&adminRole&&!isSuperAdmin/)
  assert.match(phase,/section==='superadmin'&&isSuperAdmin/)
 })
 

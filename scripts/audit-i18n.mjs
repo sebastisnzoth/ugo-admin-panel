@@ -7,7 +7,7 @@ const root=path.resolve('src')
 const results=[]
 const excluded=[]
 function exclusionReason(file,text){
- if(/^(?:Hugo|U\.GO(?:\.| · ADMIN| ·)?|U\.G\.O\. ·|U\.G\.O\.|QUANTUM SERVICE OS|Quantum OS|UGO Empresas|ML|MLB|MLA|🛒 ML|🇧🇷 MLB|🇦🇷 MLA|ML →|Gmail|Gmail \(|BCC \(|Visa · 2025)$/i.test(text))return 'product or service name, platform name, or standard email/payment brand'
+ if(/^(?:Hugo|U\.GO(?:\.| · ADMIN| ·)?|U\.G\.O\. ·|U\.G\.O\.|QUANTUM SERVICE OS|Quantum OS|UGO Empresas|UGO Hive|ML|MLB|MLA|🛒 ML|🇧🇷 MLB|🇦🇷 MLA|ML →|Gmail|Gmail \(|BCC \(|Visa · 2025)$/i.test(text))return 'product or service name, platform name, or standard email/payment brand'
  if(/^(?:https?:\/\/|Auth: Header|Authorization: Bearer|pago_efectivo(?:_br|_ar)?_activo|Supabase TEST:|correlation|serviceId|GREEN ·|· correlation|· serviceId)/i.test(text))return 'technical identifier, API example, or configuration key'
  if(/^(?:\d+(?:[.,]\d+)?\s?(?:km|min|m)|⌁?\s?\d+(?:[.,]\d+)?\s?km|&lt;\s?\d+\s?km|,\d+\s?km · ETA|ETA\s+\d+\s+min|\d+[–-]\d+\s+min|Desde R\$\s?\d|R\$\s?\d|· R\$)/i.test(text))return 'numeric demo value, measurement, ETA, or currency amount'
  if(/^(?:Centro · Florianópolis|UGO · Florianópolis, SC|· Florianópolis, SC|Florianópolis, SC|Av\. Beira-Mar Norte, 540|Mariana Costa ·|Mariana · 14:31|Floripa|Canasvieiras, Floripa|João P\.|Rafael Oliveira ·|Rafael Oliveira|Lucía Barros|Roberto Silva|Mariana Costa|mariana@email\.com|rafael@pix\.com)$/i.test(text))return 'fictional/sample person, contact, or place data'
