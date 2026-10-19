@@ -35,6 +35,24 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  useProviderRealtime(supabase,session?.user.id||null,handleRealtime)
  const providerReady=Boolean(provider),providerOnline=Boolean(provider?.online),providerAvailable=Boolean(provider?.disponible)
  useEffect(()=>{if(!session||!providerReady||typeof navigator==='undefined'||!navigator.geolocation)return;let alive=true;navigator.geolocation.getCurrentPosition(async position=>{if(!alive)return;const accuracy=Number(position.coords.accuracy),lat=Number(position.coords.latitude),lng=Number(position.coords.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>250)return;const capturedAt=new Date(position.timestamp||Date.now()).toISOString();if(providerOnline&&providerAvailable){try{await setProviderAvailability(supabase,session.user.id,true);if(alive)setProvider(current=>current?{...current,ubicacion_updated_at:capturedAt,ubicacion_accuracy_m:accuracy}:current)}catch(e){if(alive)setNotice({type:'error',text:e instanceof Error?e.message:t('providerRuntime.locationRefreshFailed')})}}else if(alive)setNotice({type:'info',text:t('providerRuntime.locationEnabled')})},error=>{if(!alive)return;if(error.code===1)setNotice({type:'info',text:t('providerRuntime.locationPermission')});else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})},{enableHighAccuracy:false,maximumAge:0,timeout:15_000});return()=>{alive=false}},[provider?.usuario_id,providerOnline,providerAvailable,providerReady,session,supabase,t])
+ // Matching excludes GPS older than 90s. Keep the persisted GPS fresh while a provider remains online,
+ // not just when availability is toggled or the component first mounts.
+ useEffect(()=>{
+  if(!session||!providerOnline||!providerAvailable||provider?.estado_verificacion!=='verificado')return
+  let disposed=false,refreshing=false
+  const refreshLocation=async()=>{
+   if(disposed||refreshing||document.visibilityState!=='visible'||!navigator.onLine)return
+   refreshing=true
+   try{await setProviderAvailability(supabase,session.user.id,true)}
+   catch(error){if(!disposed)setNotice({type:'error',text:error instanceof Error?error.message:t('providerRuntime.locationRefreshFailed')})}
+   finally{refreshing=false}
+  }
+  const timer=window.setInterval(()=>void refreshLocation(),45_000)
+  const onVisible=()=>{if(document.visibilityState==='visible')void refreshLocation()}
+  document.addEventListener('visibilitychange',onVisible)
+  window.addEventListener('online',onVisible)
+  return()=>{disposed=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);window.removeEventListener('online',onVisible)}
+ },[session,providerOnline,providerAvailable,provider?.estado_verificacion,supabase,t])
  if(auth.loading||loading)return <LoadingScreen label={t('providerRuntime.preparing')}/>
  if(!session)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
  if(!profile)return auth.error?<main className="provider-screen"><ErrorState title={t('providerRuntime.sessionTitle')} description={auth.error} actionLabel={t('providerRuntime.retryProfile')} onAction={()=>void auth.retryProfile()}/></main>:<LoadingScreen label={t('providerRuntime.recovering')}/>
