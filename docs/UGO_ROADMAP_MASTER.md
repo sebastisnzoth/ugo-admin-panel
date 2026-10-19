@@ -654,3 +654,14 @@ Ver [checkpoint HU0–HU3](ugo-hive/IMPLEMENTATION_STATUS.md). Código y ensayos
 
 
 Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles idénticos a PR revisados; revalidación18PASS y19PASS/1SKIP. Backend/inferenciaOFF; Pages observado aún7931173. Ver checkpoint vigente en docs/ugo-hive/IMPLEMENTATION_STATUS.md; CI del merge omitido para no ejecutar probes/modelos/GHCR, CI del PR documentado.
+
+
+### P0 Proveedor — persistencia de sesión · 2026-10-19 · PR #531
+
+Base inspeccionada: `fa939296d9228e6ae569542676e54e52cfb7ee61`. La prueba de comportamiento de `useRoleSession` reprodujo: confirmación SIGNED_OUT obsoleta borrando un SIGNED_IN nuevo, error de transporte tratado como sesión ausente y perfil tardío restaurado después del logout. Durante la reparación también se detectó y cubrió renovación concurrente con la primera carga de perfil. El hook ahora verifica versión/época, comprueba los errores del SDK y diferencia bootstrap pendiente de ausencia confirmada. Proveedor muestra recuperación/reintento mientras no existe una comprobación autoritativa; no crea tokens ni modifica RLS.
+
+Prueba: `tests/contracts/role-session-concurrency-behavior.test.mjs` ejecuta el hook real con orden de IO controlado; nueve casos pasan tras observar los fallos anteriores. Las pruebas estructurales existentes se ajustaron únicamente a la nueva desestructuración de error y al límite del efecto, conservando sus aserciones de seguridad. Diagnósticos `ugo:session-diagnostic` contienen sólo categorías, evento y tiempo; sin identidad, tokens, correos ni respuestas de API.
+
+Se reutilizan los commits existentes de GPS/matching y el E2E de #529/#530, conservando su historia. `scripts/p0-client-provider-e2e.mjs` exige TEST, credenciales de Actions y SHA: login UI → Online → dos GPS persistidos → JWT validado por Auth → refresh SDK → red interrumpida/restaurada → reload → Offline/Online → oferta real → aceptación UI → JWT navegador → logout explícito. La ubicación del navegador está simulada por Playwright; no equivale a prueba física. El script registra un hash del session_id, nunca el JWT.
+
+Estado: corrección en rama aislada, CI/runtime en verificación; sin fusión ni publicación. La prueba previa de #530 (`ef8ae3d5`) pasó login pero se bloqueó al activar Online; la captura muestra sesión activa y operación pendiente, no logout. No atribuir ese bloqueo a autenticación sin nueva evidencia de red/GPS. Gates: suite completa, Core CI y runtime del mismo SHA; después recién merge y Vercel READY/sha/smoke. No se tocó `trfsjuseqjxlhrxuvdsm` ni usuarios reales.
