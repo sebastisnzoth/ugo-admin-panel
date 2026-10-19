@@ -31,7 +31,7 @@ const PROVIDER_LAT=-27.5965,PROVIDER_LNG=-48.5499
 const SERVICE_DESCRIPTION='P0 E2E · servicio real de prueba UGO Arena'
 const stages=[]
 let clientId=null,providerId=null,serviceId=null,offerId=null,categoryId=null
-let browser=null
+let browser=null,ui=null
 
 const describe=(error)=>{
   if(!error)return null
@@ -246,7 +246,7 @@ try{
   stage('sessions',{clientExpiresAt:clientSignIn.data.session.expires_at,providerExpiresAt:providerSignIn.data.session.expires_at})
 
   // 3 · provider goes Online in the real app (browser GPS + session proof)
-  let ui=null,clientUi=null
+  let clientUi=null
   if(UI){
     clientUi=await clientUiLogin({email:clientEmail,clientUserId:clientId})
     ui=await providerUiLogin({email:providerEmail,providerUserId:providerId})
@@ -344,11 +344,12 @@ try{
 }catch(error){
   let pageDump=null
   try{
-    if(browser&&browser.contexts()[0]?.pages()[0]){
-      const page=browser.contexts()[0].pages()[0]
-      pageDump={url:page.url(),body:(await page.locator('body').innerText().catch(()=>'' )).slice(0,3000)}
-      await page.screenshot({path:'artifacts/p0-failure.png',fullPage:true}).catch(()=>{})
-    }
+    const pages=[]
+    for(const context of browser?.contexts()||[])for(const page of context.pages())pages.push({url:page.url(),body:(await page.locator('body').innerText().catch(()=>'' )).slice(0,1500)})
+    const providerPage=ui?.page
+    pageDump={providerUrl:providerPage?.url()||null,providerBody:providerPage?(await providerPage.locator('body').innerText().catch(()=>'')).slice(0,2500):null,providerErrors:ui?.pageErrors||[],pages}
+    if(providerPage)await providerPage.screenshot({path:'artifacts/p0-failure-provider.png',fullPage:true}).catch(()=>{})
+    if(browser?.contexts()[0]?.pages()[0])await browser.contexts()[0].pages()[0].screenshot({path:'artifacts/p0-failure.png',fullPage:true}).catch(()=>{})
   }catch{/* diagnóstico opcional */}
   const payload={result:'FAIL',sha,stage:stages.at(-1)?.stage||'bootstrap',message:error instanceof Error?error.message:String(error),cause:error?.cause?describe(error.cause):null,details:error?.p0||null,pageDump,stages}
   console.log('P0_E2E_FAILURE '+JSON.stringify(payload))
