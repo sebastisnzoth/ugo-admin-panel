@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
       - name: Validate dependency inventory without database access
         run: node scripts/ugo-hive-prod-dependency-audit.mjs > hive-static-preflight.json
+      - name: Validate local-only backup harness syntax
+        run: bash -n scripts/ugo-production-private-backup-local-restore.sh
       - name: Upload audit artifact
         if: always()
         uses: actions/upload-artifact@v4
