@@ -29,7 +29,7 @@ Deno.serve(async (req: Request) => {
   const { data: snapshot, error: backupError } = await db.from('hive_backup_versions').select('version,bytes,created_at').order('sequence', { ascending: false }).limit(1).maybeSingle()
   const started = Date.now()
   let online = false
-  let health: 'ONLINE' | 'HTTP_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR' = 'NETWORK_ERROR'
+  let health: 'ONLINE' | 'HTTP_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR'
   let httpStatus: number | null = null
   try {
     // Render Free may cold-start for longer than the former 4.5-second deadline.
