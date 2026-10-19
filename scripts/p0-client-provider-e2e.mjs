@@ -95,7 +95,10 @@ async function providerUiJourney({email,providerUserId}){
     locale:'es-BR',
   })
   const page=await context.newPage()
-  const pageErrors=[]
+  const pageErrors=[],network=[],pendingRequests=new Set()
+  page.on('request',request=>{if(request.url().startsWith(TEST_URL))pendingRequests.add(request.url().split('?')[0].replace(TEST_URL,''))})
+  page.on('response',response=>{if(response.url().startsWith(TEST_URL)){const path=response.url().split('?')[0].replace(TEST_URL,'');pendingRequests.delete(path);network.push({path,status:response.status()})}})
+  await page.addInitScript(()=>{window.__ugoSessionDiagnostics=[];window.addEventListener('ugo:session-diagnostic',event=>{window.__ugoSessionDiagnostics.push(event.detail);if(window.__ugoSessionDiagnostics.length>100)window.__ugoSessionDiagnostics.shift()})})
   page.on('pageerror',error=>pageErrors.push(error.message))
   page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
   await page.addInitScript(userId=>{
@@ -111,17 +114,57 @@ async function providerUiJourney({email,providerUserId}){
     await page.locator('[data-testid="auth-email"]').fill(email)
     await page.locator('[data-testid="auth-password"]').fill(password)
     await screenshot('01-login')
-    await page.locator('[data-testid="auth-form"] button[type="submit"]').click()
+    await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
     await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
     stage('ui_login',{url:page.url(),authenticated:true})
 
     const onlineToggle=page.locator('.provider-client-online')
     if((await onlineToggle.getAttribute('aria-pressed'))!=='true'){
       await onlineToggle.click()
-      await page.waitForFunction(()=>document.querySelector('.provider-client-online')?.getAttribute('aria-pressed')==='true',null,{timeout:30000})
+      await page.waitForFunction(()=>document.querySelector('.provider-client-online')?.getAttribute('aria-pressed')==='true',null,{timeout:90000})
     }
     stage('ui_online',{pressed:await onlineToggle.getAttribute('aria-pressed')})
 
+    const assertSession=async label=>{
+      const proof=await page.evaluate(async({url,key})=>{
+        const session=JSON.parse(localStorage.getItem('ugo-test-provider-auth')||'null')
+        if(!session?.access_token)return{stored:false,valid:false}
+        const claims=JSON.parse(atob(session.access_token.split('.')[1].replaceAll('-','+').replaceAll('_','/')))
+        const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(claims.session_id||''))
+        const fingerprint=Array.from(new Uint8Array(bytes)).map(x=>x.toString(16).padStart(2,'0')).join('')
+        const response=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+session.access_token}})
+        return{stored:true,valid:response.ok,unexpired:claims.exp*1000>Date.now(),fingerprint}
+      },{url:TEST_URL,key:anon})
+      assert.equal(proof.stored,true,label+'_STORED');assert.equal(proof.valid,true,label+'_VALID');assert.equal(proof.unexpired,true,label+'_UNEXPIRED')
+      assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,label+'_NO_LOGIN')
+      stage(label,proof);return proof.fingerprint
+    }
+    const fingerprint=await assertSession('ui_session_after_online')
+    // Two independent persisted GPS renewals, without extending matching freshness.
+    let previous=must(await admin.from('perfiles_proveedor').select('ubicacion_updated_at').eq('usuario_id',providerUserId).single(),'initial GPS').data.ubicacion_updated_at
+    for(let renewal=1;renewal<=2;renewal++){
+      const deadline=Date.now()+70000;let updated=false
+      while(Date.now()<deadline){
+        await page.waitForTimeout(3000)
+        const row=must(await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at').eq('usuario_id',providerUserId).single(),'GPS renewal').data
+        assert.equal(row.online,true);assert.equal(row.disponible,true)
+        if(row.ubicacion_updated_at>previous){previous=row.ubicacion_updated_at;updated=true;break}
+      }
+      assert.ok(updated,'P0_GPS_RENEWAL_'+renewal+'_MISSING');stage('gps_renewal',{renewal})
+    }
+    assert.equal(await assertSession('ui_session_after_gps'),fingerprint)
+    // Exercise the SDK token rotation without logging or exporting token material.
+    const refresh=await page.evaluate(async()=>{
+      const {getRoleSupabase}=await import('/src/lib/roleSupabase.ts')
+      const {data,error}=await getRoleSupabase('provider').auth.refreshSession()
+      return{ok:!error&&Boolean(data.session)}
+    })
+    assert.equal(refresh.ok,true,'P0_REFRESH_FAILED')
+    assert.equal(await assertSession('ui_session_after_refresh'),fingerprint)
+    await context.setOffline(true);await page.waitForTimeout(10000)
+    assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_OFFLINE_LOGOUT')
+    await context.setOffline(false)
+    assert.equal(await assertSession('ui_session_after_reconnect'),fingerprint)
     // A transient GPS/realtime/profile hiccup must never send a valid provider back to auth.
     await page.reload({waitUntil:'domcontentloaded'})
     await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
@@ -136,10 +179,16 @@ async function providerUiJourney({email,providerUserId}){
     })
     assert.ok(storedSession,'P0_PROVIDER_SESSION_NOT_PERSISTED')
     stage('ui_reload_session',{authenticated:true,persisted:true})
-    return {page,screenshot,pageErrors,onlinePressed:await onlineToggle.getAttribute('aria-pressed')}
+    assert.equal(await assertSession('ui_session_after_reload'),fingerprint)
+    await onlineToggle.click()
+    await page.waitForFunction(()=>document.querySelector('.provider-client-online')?.getAttribute('aria-pressed')==='false',null,{timeout:90000})
+    await onlineToggle.click()
+    await page.waitForFunction(()=>document.querySelector('.provider-client-online')?.getAttribute('aria-pressed')==='true',null,{timeout:90000})
+    assert.equal(await assertSession('ui_session_after_toggle'),fingerprint)
+    return {page,screenshot,pageErrors,assertSession,fingerprint,onlinePressed:await onlineToggle.getAttribute('aria-pressed')}
   }catch(error){
     await screenshot('ui-failure')
-    await fs.writeFile('artifacts/p0-ui-failure.json',JSON.stringify({url:page.url(),pageErrors,stages},null,2)+'\n').catch(()=>{})
+    await fs.writeFile('artifacts/p0-ui-failure.json',JSON.stringify({url:page.url(),pageErrors,stages,network,pendingRequests:[...pendingRequests],diagnostics:await page.evaluate(()=>window.__ugoSessionDiagnostics)},null,2)+'\n').catch(()=>{})
     throw error
   }
 }
@@ -188,7 +237,7 @@ try{
     onboarding_completo_at:nowIso,termos_aceitos_at:nowIso,termos_versao:'2026-09-04',
     disponibilidad_horaria:null,bio:'UGO P0 E2E provider',
   }),'insert provider profile row')
-  stage('identities',{clientId,providerId,clientEmail,providerEmail})
+  stage('identities',{clientId,providerId})
 
   // 2 · real authenticated sessions --------------------------------------
   const clientAuth=anonClient()
@@ -271,6 +320,14 @@ try{
     assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AT_END')
   }
   stage('sessions_alive',{client:clientStill.data.user.id,provider:providerStill.data.user.id})
+  if(ui){
+    assert.equal(await ui.assertSession('ui_session_after_accept'),ui.fingerprint)
+    await ui.page.locator('[data-testid="provider-mobile-profile"]').click()
+    await ui.page.locator('.provider-signout').click()
+    await ui.page.locator('[data-testid="auth-form"]').waitFor({state:'visible',timeout:45000})
+    assert.equal(await ui.page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-provider-auth'))),false,'P0_EXPLICIT_LOGOUT_STORAGE')
+    stage('ui_explicit_logout',{login:true,credentials_removed:true})
+  }
 
   const evidence={
     readiness_id:'p0-client-provider-e2e',sha,environment:'UGO TEST',project_ref:TEST_REF,production_touched:false,

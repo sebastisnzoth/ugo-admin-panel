@@ -9,6 +9,9 @@ on:
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
       - "src/mvp/provider/**"
+      - "src/mvp/shared.tsx"
+      - "src/lib/roleSupabase.ts"
+      - "tests/contracts/role-session-concurrency-behavior.test.mjs"
       - "src/features/client/request/**"
       - "src/lib/dispatch/**"
       - ".github/workflows/p0-client-provider-e2e.yml"

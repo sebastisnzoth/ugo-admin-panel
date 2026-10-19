@@ -1,5 +1,6 @@
 import{useEffect,useState}from'react'
 import type{SupabaseClient}from'@supabase/supabase-js'
+import{recordSessionDiagnostic}from'../../lib/roleSupabase'
 
 export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,onChange:()=>void){
  const[channelEpoch,setChannelEpoch]=useState(0)
@@ -7,7 +8,7 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
   if(!userId)return
   let alive=true
   let reconnectTimer:number|undefined
-  const resync=()=>void onChange()
+  const resync=()=>{if(alive)void onChange()}
   const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
   const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}}
   const onFocus=()=>resync()
@@ -21,7 +22,7 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor',filter:`proveedor_id=eq.${userId}`},resync)
-   .subscribe(status=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){resync();reconnect()}})
+   .subscribe(status=>{if(!alive)return;if(status==='SUBSCRIBED'){recordSessionDiagnostic('provider','realtime','channel_ready');resync()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){recordSessionDiagnostic('provider','realtime','channel_failed');resync();reconnect()}})
   return()=>{
    alive=false
    if(reconnectTimer)window.clearTimeout(reconnectTimer)
