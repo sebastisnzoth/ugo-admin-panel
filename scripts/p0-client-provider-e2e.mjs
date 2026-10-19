@@ -28,7 +28,7 @@ const clientEmail=`ugo-p0-client-${token}@example.test`
 const providerEmail=`ugo-p0-provider-${token}@example.test`
 const CLIENT_LAT=-27.5949,CLIENT_LNG=-48.5482
 const PROVIDER_LAT=-27.5965,PROVIDER_LNG=-48.5499
-const SERVICE_DESCRIPTION='P0 E2E · servicio real de prueba UGO Arena'
+const SERVICE_DESCRIPTION='UGO auth session proof '+token
 const stages=[]
 let clientId=null,providerId=null,serviceId=null,offerId=null,categoryId=null
 let browser=null,gpsFeedTimer=null
