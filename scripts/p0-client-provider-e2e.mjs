@@ -31,7 +31,7 @@ const PROVIDER_LAT=-27.5965,PROVIDER_LNG=-48.5499
 const SERVICE_DESCRIPTION='P0 E2E · servicio real de prueba UGO Arena'
 const stages=[]
 let clientId=null,providerId=null,serviceId=null,offerId=null,categoryId=null
-let browser=null
+let browser=null,gpsFeedTimer=null
 
 const describe=(error)=>{
   if(!error)return null
@@ -53,6 +53,7 @@ const asUser=session=>createClient(url,anon,{
 })
 
 async function cleanup(){
+  if(gpsFeedTimer)clearInterval(gpsFeedTimer)
   const failures=[]
   try{
     if(serviceId){
@@ -94,6 +95,9 @@ async function providerUiJourney({email,providerUserId}){
     geolocation:{latitude:PROVIDER_LAT,longitude:PROVIDER_LNG,accuracy:12},
     locale:'es-BR',
   })
+  // Chromium's fixed geolocation override retains its original timestamp. Supply
+  // fresh browser sensor samples, rather than relaxing production GPS freshness.
+  gpsFeedTimer=setInterval(()=>void context.setGeolocation({latitude:PROVIDER_LAT,longitude:PROVIDER_LNG,accuracy:12}).catch(()=>{}),15000)
   const page=await context.newPage()
   const pageErrors=[],network=[],pendingRequests=new Set()
   page.on('request',request=>{if(request.url().startsWith(TEST_URL))pendingRequests.add(request.url().split('?')[0].replace(TEST_URL,''))})
