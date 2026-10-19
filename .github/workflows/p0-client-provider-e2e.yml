@@ -10,6 +10,7 @@ on:
       - "scripts/p0-client-provider-e2e.mjs"
       - "src/mvp/provider/**"
       - "src/mvp/shared.tsx"
+      - "src/mvp/AdminGate.tsx"
       - "src/lib/roleSupabase.ts"
       - "supabase/migrations/*_defer_insert_settlement_until_assignment.sql"
       - "tests/contracts/service-insert-pricing-rls-behavior.test.mjs"

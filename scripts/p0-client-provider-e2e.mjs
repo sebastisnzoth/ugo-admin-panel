@@ -159,6 +159,22 @@ async function providerUiJourney({email,providerUserId}){
       assert.ok(updated,'P0_GPS_RENEWAL_'+renewal+'_MISSING');stage('gps_renewal',{renewal})
     }
     assert.equal(await assertSession('ui_session_after_gps'),fingerprint)
+    // An automatic Admin role rejection must not globally revoke this provider.
+    const adminContext=await browser.newContext()
+    try{
+      const adminPage=await adminContext.newPage()
+      await adminPage.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
+      await adminPage.locator('.ugo-admin-auth input[autocomplete="username"]').fill(email)
+      await adminPage.locator('.ugo-admin-auth input[autocomplete="current-password"]').fill(password)
+      const logout=adminPage.waitForResponse(response=>response.url().includes('/auth/v1/logout')&&response.request().method()==='POST',{timeout:30000})
+      await adminPage.locator('.ugo-admin-auth form button[type="submit"]').click()
+      const logoutResponse=await logout
+      assert.equal(new URL(logoutResponse.url()).searchParams.get('scope'),'local','P0_ADMIN_DENIAL_GLOBAL_LOGOUT')
+      assert.equal(logoutResponse.ok(),true,'P0_ADMIN_DENIAL_LOGOUT_FAILED')
+      await adminPage.locator('.ugo-admin-auth .mvp-error[role="alert"]').waitFor({state:'visible',timeout:30000})
+      assert.equal(await adminPage.locator('.ugo-admin-auth form').isVisible(),true,'P0_NON_ADMIN_WAS_ALLOWED')
+      stage('admin_role_denied',{scope:'local',denied:true})
+    }finally{await adminContext.close()}
     // Exercise the SDK token rotation without logging or exporting token material.
     const refresh=await page.evaluate(async()=>{
       const {getRoleSupabase}=await import('/src/lib/roleSupabase.ts')
