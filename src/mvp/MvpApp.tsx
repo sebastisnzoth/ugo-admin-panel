@@ -63,10 +63,35 @@ function hasImplicitRecoveryToken(){const hash=new URLSearchParams(window.locati
 function cleanRecoveryUrl(){const clean=new URL(window.location.href);clean.searchParams.delete('code');clean.searchParams.delete('auth');clean.hash='';window.history.replaceState({},'',clean.toString())}
 function RecoveryGate({role,children}:{role:'client'|'provider';children:React.ReactNode}){
  const{t}=useLocale()
- const hasCode=new URLSearchParams(window.location.search).has('code'),recoveryIntent=hasCode||hasImplicitRecoveryToken()||new URLSearchParams(window.location.search).get('auth')==='recovery'
+ const search=new URLSearchParams(window.location.search),explicitRecovery=search.get('auth')==='recovery'||search.get('type')==='recovery',recoveryIntent=explicitRecovery||hasImplicitRecoveryToken()
  const[phase,setPhase]=useState<RecoveryPhase>(()=>recoveryIntent?'checking':'idle'),[password,setPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
  const supabase=React.useMemo(()=>getRoleSupabase(role),[role])
- useEffect(()=>{if(!recoveryIntent)return;let alive=true,settled=false;const ready=()=>{if(!alive||settled)return;settled=true;cleanRecoveryUrl();setMessage('');setPhase('ready')},fail=(text:string)=>{if(!alive||settled)return;settled=true;setMessage(text);setPhase('error')},code=new URLSearchParams(window.location.search).get('code');const{data:listener}=supabase.auth.onAuthStateChange((event,session)=>{if(alive&&(event==='PASSWORD_RECOVERY'||event==='SIGNED_IN')&&session)ready()});if(code){supabase.auth.exchangeCodeForSession(code).then(({data,error})=>{if(error)return fail(error.message);if(data.session)ready();else fail(t('recovery.linkError'))}).catch(e=>fail(e instanceof Error?e.message:t('recovery.errorValidation')))}else{supabase.auth.getSession().then(({data,error})=>{if(error)return fail(error.message);if(data.session)ready();else fail(t('recovery.linkExpired'))}).catch(e=>fail(e instanceof Error?e.message:t('recovery.errorValidation')))}return()=>{alive=false;listener.subscription.unsubscribe()}},[recoveryIntent,supabase,t])
+ useEffect(()=>{
+  if(!recoveryIntent)return
+  let alive=true,settled=false
+  const ready=()=>{if(!alive||settled)return;settled=true;cleanRecoveryUrl();setMessage('');setPhase('ready')}
+  const fail=(text:string)=>{if(!alive||settled)return;settled=true;setMessage(text);setPhase('error')}
+  // A normal sign-in/confirmation link carries ?code= too. Only a PASSWORD_RECOVERY event (or the
+  // explicit auth=recovery marker) may take over the screen; otherwise keep the role app mounted.
+  const continueIntoApp=()=>{if(!alive||settled)return;settled=true;cleanRecoveryUrl();setPhase('idle')}
+  const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{if(alive&&event==='PASSWORD_RECOVERY'&&session)ready()})
+  const code=new URLSearchParams(window.location.search).get('code')
+  const settleCode=async()=>{
+    const current=await supabase.auth.getSession()
+    if(!alive||settled)return
+    if(current.data.session){if(explicitRecovery)ready();else continueIntoApp();return}
+    if(code){
+      const{data,error}=await supabase.auth.exchangeCodeForSession(code)
+      if(!alive||settled)return
+      if(error){fail(error.message);return}
+      if(data.session)ready();else fail(t('recovery.linkError'))
+      return
+    }
+    fail(t('recovery.linkExpired'))
+  }
+  void settleCode().catch(e=>fail(e instanceof Error?e.message:t('recovery.errorValidation')))
+  return()=>{alive=false;listener.subscription.unsubscribe()}
+ },[explicitRecovery,recoveryIntent,supabase,t])
  if(phase==='idle')return <>{children}</>
  async function save(e:React.FormEvent){e.preventDefault();setMessage('');if(password.length<8)return setMessage(t('recovery.errorShort'));if(password!==confirmPassword)return setMessage(t('recovery.errorMatch'));setBusy(true);const{error}=await supabase.auth.updateUser({password});if(error){setBusy(false);setMessage(error.message);return}await supabase.auth.signOut();setBusy(false);setPassword('');setConfirmPassword('');setMessage(t('recovery.success'));setPhase('success')}
  const backToLogin=()=>window.location.replace(`${window.location.pathname}?app=${role}`)

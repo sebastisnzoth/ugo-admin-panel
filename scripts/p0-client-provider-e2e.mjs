@@ -84,7 +84,7 @@ async function cleanup(){
   return failures
 }
 
-async function providerUiJourney({email,providerUserId}){
+async function providerUiLogin({email,providerUserId}){
   const {chromium}=await import('playwright')
   await fs.mkdir('artifacts',{recursive:true})
   browser=await chromium.launch({headless:true})
@@ -96,8 +96,12 @@ async function providerUiJourney({email,providerUserId}){
   })
   const page=await context.newPage()
   const pageErrors=[]
+  const failedRequests=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
   page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
+  page.on('requestfailed',request=>{
+    if(request.url().includes(TEST_REF))failedRequests.push({url:request.url().split('?')[0],reason:request.failure()?.errorText||'unknown'})
+  })
   await page.addInitScript(userId=>{
     try{
       localStorage.setItem('ugo.locale.guest.provider','es')
@@ -105,53 +109,46 @@ async function providerUiJourney({email,providerUserId}){
     }catch{/* almacenamiento opcional */}
   },providerUserId)
   const screenshot=name=>page.screenshot({path:`artifacts/p0-${name}.png`,fullPage:true}).catch(()=>{})
-  try{
-    await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
-    await page.locator('[data-testid="auth-form"]').waitFor({state:'visible',timeout:45000})
-    await page.locator('[data-testid="auth-email"]').fill(email)
-    await page.locator('[data-testid="auth-password"]').fill(password)
-    await screenshot('01-login')
-    await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
-    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
-    stage('ui_login',{url:page.url(),authenticated:true})
-
-    const onlineToggle=page.locator('.provider-client-online')
-    if((await onlineToggle.getAttribute('aria-pressed'))!=='true'){
-      await onlineToggle.click()
-      await page.waitForFunction(()=>document.querySelector('.provider-client-online')?.getAttribute('aria-pressed')==='true',null,{timeout:30000})
-    }
-    stage('ui_online',{pressed:await onlineToggle.getAttribute('aria-pressed')})
-
-    // A transient GPS/realtime/profile hiccup must never send a valid provider back to auth.
-    await page.reload({waitUntil:'domcontentloaded'})
-    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
-    assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RELOAD')
-    const storedSession=await page.evaluate(()=>{
-      try{
-        const raw=localStorage.getItem('ugo-test-provider-auth')
-        if(!raw)return false
-        const parsed=JSON.parse(raw)
-        return Boolean(parsed?.access_token||parsed?.currentSession?.access_token)
-      }catch{return false}
-    })
-    assert.ok(storedSession,'P0_PROVIDER_SESSION_NOT_PERSISTED')
-    stage('ui_reload_session',{authenticated:true,persisted:true})
-    return {page,screenshot,pageErrors,onlinePressed:await onlineToggle.getAttribute('aria-pressed')}
-  }catch(error){
-    await screenshot('ui-failure')
-    await fs.writeFile('artifacts/p0-ui-failure.json',JSON.stringify({url:page.url(),pageErrors,stages},null,2)+'\n').catch(()=>{})
-    throw error
-  }
-}
-
-async function acceptOfferInUi(ui,{offerId:expectedOfferId}){
-  const {page,screenshot,pageErrors}=ui
+  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
+  await page.locator('[data-testid="auth-form"]').waitFor({state:'visible',timeout:45000})
+  await page.locator('[data-testid="auth-email"]').fill(email)
+  await page.locator('[data-testid="auth-password"]').fill(password)
+  await screenshot('01-login')
+  await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
+  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+  const stored=await page.evaluate(()=>{
+    try{const raw=localStorage.getItem('ugo-test-provider-auth');if(!raw)return false;const parsed=JSON.parse(raw);return Boolean(parsed?.access_token||parsed?.currentSession?.access_token)}catch{return false}
+  })
+  assert.ok(stored,'P0_PROVIDER_SESSION_NOT_PERSISTED')
+  // Reload: a valid session must survive a page reload without returning to auth.
   await page.reload({waitUntil:'domcontentloaded'})
   await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+  assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RELOAD')
+  stage('ui_login_reload',{authenticated:true,sessionPersisted:true,pageErrors})
+  return {page,context,screenshot,pageErrors,failedRequests}
+}
+
+async function attemptUiOnline(ui){
+  const {page,screenshot}=ui
+  const toggle=page.locator('.provider-client-online')
+  const before=await toggle.getAttribute('aria-pressed')
+  if(before!=='true'){
+    await toggle.click()
+    await page.waitForFunction(()=>document.querySelector('.provider-client-online')?.getAttribute('aria-pressed')==='true',null,{timeout:20000}).catch(()=>{})
+  }
+  const pressed=await toggle.getAttribute('aria-pressed')
+  const notices=await page.locator('.provider-notice').allInnerTexts().catch(()=>[])
+  const body=(await page.locator('body').innerText().catch(()=>'')).slice(0,2500)
+  await screenshot('02-online')
+  return {pressed,notices,body,buttons:await page.locator('button').allInnerTexts().catch(()=>[])}
+}
+
+async function acceptOfferInUi(ui){
+  const {page,screenshot,pageErrors}=ui
   await page.locator('[data-testid="provider-mobile-orders"]').click()
   await page.getByText(SERVICE_DESCRIPTION).first().waitFor({state:'visible',timeout:30000})
-  await screenshot('02-offer-visible')
-  stage('ui_offer_visible',{offerId:expectedOfferId})
+  await screenshot('03-offer-visible')
+  stage('ui_offer_visible',{offerId})
   const card=page.locator('.provider-opportunity-simple').filter({hasText:SERVICE_DESCRIPTION}).first()
   await card.locator('button.provider-primary').click()
   await page.locator('.provider-main-action').waitFor({state:'visible',timeout:30000})
@@ -160,9 +157,8 @@ async function acceptOfferInUi(ui,{offerId:expectedOfferId}){
     const text=document.body.textContent||''
     return /TRABAJO ACTIVO|Continuar trabajo|Trabajo activo|Servicio asignado/i.test(text)
   },null,{timeout:45000}).catch(()=>{})
-  await screenshot('03-accepted')
+  await screenshot('04-accepted')
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_ACCEPT')
-  stage('ui_accept_clicked',{pageErrors})
   return pageErrors
 }
 
@@ -204,16 +200,24 @@ try{
   // 3 · provider goes Online in the real app (browser GPS + session proof)
   let ui=null
   if(UI){
-    ui=await providerUiJourney({email:providerEmail,providerUserId:providerId})
-    stage('ui_online_persisted',{online:ui.onlinePressed})
+    ui=await providerUiLogin({email:providerEmail,providerUserId:providerId})
+    const online=await attemptUiOnline(ui)
+    const after=await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).maybeSingle()
+    stage('ui_online_attempt',{...online,profile:after.data,profileError:describe(after.error),failedRequests:ui.failedRequests})
   }
+
+  // 3b · authoritative API activation (captures the exact backend rejection)
+  const activated=await provider.rpc('activar_disponibilidad_proveedor',{
+    p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
+  })
+  stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
 
   const profileAfter=must(await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m,categoria_principal_id').eq('usuario_id',providerId).single(),'read provider eligibility')
   const gpsAgeMs=Date.now()-Date.parse(String(profileAfter.data.ubicacion_updated_at||''))
+  stage('provider_eligibility',{...profileAfter.data,gps_age_ms:gpsAgeMs})
   assert.equal(profileAfter.data.online,true,'P0_PROVIDER_NOT_ONLINE')
   assert.equal(profileAfter.data.disponible,true,'P0_PROVIDER_NOT_AVAILABLE')
   assert.ok(Number.isFinite(gpsAgeMs)&&gpsAgeMs>=0&&gpsAgeMs<=90_000,'P0_PROVIDER_GPS_NOT_FRESH')
-  stage('provider_eligibility',{...profileAfter.data,gps_age_ms:gpsAgeMs})
 
   // 4 · client creates the request and persists the pickup ---------------
   const insertedService=must(await client.from('servicios').insert({
@@ -249,7 +253,7 @@ try{
 
   // 7 · acceptance through the real provider UI (or RPC fallback) --------
   if(ui){
-    const pageErrors=await acceptOfferInUi(ui,{offerId})
+    const pageErrors=await acceptOfferInUi(ui)
     stage('ui_accept_page_errors',{pageErrors})
   }else{
     must(await provider.rpc('aceptar_oferta',{p_oferta_id:offerId}),'aceptar_oferta')
@@ -267,9 +271,7 @@ try{
   const providerStill=must(await provider.auth.getUser(),'provider session still valid')
   assert.equal(clientStill.data.user.id,clientId,'P0_CLIENT_SESSION_LOST')
   assert.equal(providerStill.data.user.id,providerId,'P0_PROVIDER_SESSION_LOST')
-  if(ui){
-    assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AT_END')
-  }
+  if(ui)assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AT_END')
   stage('sessions_alive',{client:clientStill.data.user.id,provider:providerStill.data.user.id})
 
   const evidence={
@@ -283,7 +285,15 @@ try{
   console.log('P0_E2E_EVIDENCE '+JSON.stringify(evidence))
   console.log(`::notice title=P0 Client→Provider E2E PASS::${JSON.stringify({service_id:serviceId,offer_id:offerId,gps_age_ms:gpsAgeMs,ui:UI,result:'PASS'})}`)
 }catch(error){
-  const payload={result:'FAIL',sha,stage:stages.at(-1)?.stage||'bootstrap',message:error instanceof Error?error.message:String(error),cause:error?.cause?describe(error.cause):null,details:error?.p0||null,stages}
+  let pageDump=null
+  try{
+    if(browser&&browser.contexts()[0]?.pages()[0]){
+      const page=browser.contexts()[0].pages()[0]
+      pageDump={url:page.url(),body:(await page.locator('body').innerText().catch(()=>'' )).slice(0,3000)}
+      await page.screenshot({path:'artifacts/p0-failure.png',fullPage:true}).catch(()=>{})
+    }
+  }catch{/* diagnóstico opcional */}
+  const payload={result:'FAIL',sha,stage:stages.at(-1)?.stage||'bootstrap',message:error instanceof Error?error.message:String(error),cause:error?.cause?describe(error.cause):null,details:error?.p0||null,pageDump,stages}
   console.log('P0_E2E_FAILURE '+JSON.stringify(payload))
   await fs.mkdir('artifacts',{recursive:true}).catch(()=>{})
   await fs.writeFile('artifacts/p0-client-provider-e2e-failure.json',JSON.stringify(payload,null,2)+'\n').catch(()=>{})

@@ -107,6 +107,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
   const label=t(role==='client'?'sharedUi.client':'sharedUi.professional')
   const appParam=role==='client'?'client':'provider'
   const authRedirectTo=`${window.location.origin}${window.location.pathname}?app=${appParam}`
+  const recoveryRedirectTo=`${authRedirectTo}&auth=recovery`
   const title=mode==='login'?t('sharedUi.welcome'):mode==='register'?t('sharedUi.createAccount'):t('sharedUi.recoverAccess')
   const description=mode==='recovery'
     ?t('sharedUi.recoveryDescription')
@@ -118,7 +119,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
     :{eyebrow:t('sharedUi.providerEyebrow'),title:t('sharedUi.providerHeadline'),text:t('sharedUi.providerText'),items:[t('sharedUi.providerFlexible'),t('sharedUi.providerAgenda'),t('sharedUi.providerIncome')]}
   function changeMode(next:'login'|'register'|'recovery'){onError('');setNotice('');setPassword('');setShowPassword(false);setMode(next)}
   async function signInWithGoogle(){onError('');setNotice('');setBusy(true);try{window.localStorage.setItem(OAUTH_ROLE_KEY,role==='client'?'cliente':'proveedor');const{error:x}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:authRedirectTo}});if(x)throw x}catch{window.localStorage.removeItem(OAUTH_ROLE_KEY);onError(t('sharedUi.retryAccess'));setBusy(false)}}
-  async function submit(e:FormEvent){e.preventDefault();onError('');setNotice('');setBusy(true);try{if(mode==='recovery'){const{error:x}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:authRedirectTo});if(x)throw x;setNotice(t('sharedUi.recoverySent'));return}if(mode==='login'){const{error:x}=await supabase.auth.signInWithPassword({email,password});if(x)throw x}else{if(!name.trim())throw new Error(t('sharedUi.nameRequired'));const{data,error:x}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirectTo,data:{nombre:name.trim(),tipo:role==='client'?'cliente':'proveedor'}}});if(x)throw x;if(!data.session)setNotice(t('sharedUi.accountCreated'))}}catch(error){onError(mode==='login'?sharedSignInError(error,t):t('sharedUi.retryAccess'))}finally{setBusy(false)}}
+  async function submit(e:FormEvent){e.preventDefault();onError('');setNotice('');setBusy(true);try{if(mode==='recovery'){const{error:x}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:recoveryRedirectTo});if(x)throw x;setNotice(t('sharedUi.recoverySent'));return}if(mode==='login'){const{error:x}=await supabase.auth.signInWithPassword({email,password});if(x)throw x}else{if(!name.trim())throw new Error(t('sharedUi.nameRequired'));const{data,error:x}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirectTo,data:{nombre:name.trim(),tipo:role==='client'?'cliente':'proveedor'}}});if(x)throw x;if(!data.session)setNotice(t('sharedUi.accountCreated'))}}catch(error){onError(mode==='login'?sharedSignInError(error,t):t('sharedUi.retryAccess'))}finally{setBusy(false)}}
   return <div className={`mvp-auth-page role-${role}`}>
     <button type="button" className="mvp-back" onClick={()=>go('home')} aria-label={t('sharedUi.return')}><LocalizedText id="screen.need.8"/></button>
     <div className="mvp-auth-shell">

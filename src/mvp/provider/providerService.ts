@@ -153,11 +153,13 @@ const GPS_TIMEOUT_MS=15_000
 function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy);return Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(accuracy)&&accuracy>0&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
 function positionAge(position:GeolocationPosition){return Math.max(0,Date.now()-Number(position.timestamp||0))}
 function acceptablePosition(position:GeolocationPosition){return usablePosition(position)&&positionAge(position)<=GPS_FRESH_MS&&Number(position.coords.accuracy)<=GPS_ACCEPTABLE_ACCURACY_M}
+export type ProviderGeoError=Error&{ugoGeoCode:'permission'|'unavailable'|'timeout'}
 function geolocationError(error:GeolocationPositionError){
- if(error.code===1)return new Error('UGO necesita tu ubicación para ponerte Online y enviarte pedidos. Habilitá Ubicación precisa para este sitio y reintentá.')
- if(error.code===2)return new Error('El teléfono todavía no pudo fijar tu posición. Salí a un lugar con mejor señal y reintentá.')
- return new Error('El GPS está demorando en fijar tu posición. Mantené UGO abierto y reintentá.')
+ if(error.code===1)return Object.assign(new Error('UGO necesita tu ubicación para ponerte Online y enviarte pedidos. Habilitá Ubicación precisa para este sitio y reintentá.'),{ugoGeoCode:'permission' as const})
+ if(error.code===2)return Object.assign(new Error('El teléfono todavía no pudo fijar tu posición. Salí a un lugar con mejor señal y reintentá.'),{ugoGeoCode:'unavailable' as const})
+ return Object.assign(new Error('El GPS está demorando en fijar tu posición. Mantené UGO abierto y reintentá.'),{ugoGeoCode:'timeout' as const})
 }
+export function providerGeoErrorCode(error:unknown){const code=errorRecord(error)?.ugoGeoCode;return typeof code==='string'?code:null}
 function onePosition(options:PositionOptions){return new Promise<GeolocationPosition>((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
 async function currentPosition(){
  if(!window.isSecureContext)throw new Error('El GPS requiere una conexión HTTPS. Abrí UGO Proveedor desde GitHub Pages.')
@@ -179,6 +181,18 @@ async function currentPosition(){
    if(position.coords.accuracy<=GPS_TARGET_ACCURACY_M)finish(position)
   },error=>{lastError=error;if(error.code===1)fail(geolocationError(error))},{enableHighAccuracy:true,timeout:GPS_TIMEOUT_MS,maximumAge:0})
  })
+}
+// Refresh the persisted trusted GPS of an already-online provider without touching the
+// online/disponible flags. This keeps matching eligibility alive every 45 s and can never
+// flip a provider that just went Offline back to Online.
+export async function refreshProviderAvailabilityLocation(supabase:SupabaseClient){
+ const position=await currentPosition()
+ const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy)
+ if(!acceptablePosition(position))throw new Error('La ubicación GPS no es suficientemente reciente o precisa para seguir recibiendo pedidos.')
+ const capturedAt=new Date(Number(position.timestamp)||Date.now()).toISOString()
+ const{error}=await supabase.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:capturedAt,p_accuracy_m:accuracy})
+ if(error)throw error
+ return{capturedAt,accuracy,latitude,longitude}
 }
 export async function saveProviderBaseLocation(supabase:SupabaseClient){
  const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)

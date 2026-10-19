@@ -2,7 +2,7 @@
 import React,{createContext,useCallback,useContext,useEffect,useState}from'react'
 import{AuthScreen,ErrorState,LoadingScreen,timeAgo,money,useRoleSession,type Notice,type Offer,type Service}from'../shared'
 import{ProviderOnboardingGate}from'../ProviderOnboardingGate'
-import{acceptProviderOpportunity,advanceProviderService,cancelProviderService,loadProviderSnapshot,rejectProviderOpportunity,saveProviderBaseLocation,setProviderAvailability,type ProviderAdvanceOptions,type ProviderDebt,type ProviderPayment,type ProviderProfileFull}from'./providerService'
+import{acceptProviderOpportunity,advanceProviderService,cancelProviderService,loadProviderSnapshot,providerGeoErrorCode,refreshProviderAvailabilityLocation,rejectProviderOpportunity,saveProviderBaseLocation,setProviderAvailability,type ProviderAdvanceOptions,type ProviderDebt,type ProviderPayment,type ProviderProfileFull}from'./providerService'
 import{useProviderRealtime}from'./useProviderRealtime'
 import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{useLocale}from'../../i18n/locale'
@@ -26,37 +26,75 @@ const PROFILE_PHOTO_EXT:Record<string,string>={'image/jpeg':'jpg','image/png':'p
 
 export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const{t}=useLocale(),auth=useRoleSession('provider'),{supabase,session,profile}=auth
- const[provider,setProvider]=useState<ProviderProfileFull|null>(null),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<ProviderPayment[]>([]),[debts,setDebts]=useState<ProviderDebt[]>([]),[demand,setDemand]=useState<DemandSignal[]>([]),[demandError,setDemandError]=useState<string|null>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState<Notice>(null)
- const reload=useCallback(async()=>{if(!session){setDemand([]);setDemandError(null);setLoading(false);return}const{data:gateProfile,error:gateError}=await supabase.from('perfiles_proveedor').select('*').eq('usuario_id',session.user.id).maybeSingle();if(gateError)throw gateError;const verifiedProfile=(gateProfile as ProviderProfileFull|null)||null;setProvider(verifiedProfile);setLoading(false);const snap=await loadProviderSnapshot(supabase,session.user.id);const effectiveProvider=snap.provider||verifiedProfile;setProvider(effectiveProvider);setOffers(snap.offers);setService(snap.service);setPayments(snap.payments);setDebts(snap.debts);let nextDemand:DemandSignal[]=[];setDemandError(null);if(effectiveProvider?.estado_verificacion==='verificado'){const categoryId=effectiveProvider.categoria_principal_id||null;const[{data:market,error:marketError},{data:category}]=await Promise.all([supabase.rpc('obtener_demanda_proveedor',{p_categoria_id:categoryId,p_horas:24}),categoryId?supabase.from('categorias').select('nombre').eq('id',categoryId).maybeSingle():Promise.resolve({data:null,error:null})]);if(marketError){setDemandError('No pudimos actualizar el radar de demanda. Podés reintentar sin perder tus oportunidades.')}else{const categoryName=String(category?.nombre||'Tu categoría');nextDemand=((market||[])as DemandRow[]).map((row,index)=>{const requests=Math.max(0,Number(row.pedidos||0)),urgent=Math.max(0,Number(row.urgentes||0)),ratio=requests?urgent/requests:0,latitude=coordinate(row.zona_lat),longitude=coordinate(row.zona_lng);return{id:`demand-${latitude??'x'}-${longitude??'x'}-${index}`,category:categoryName,zone:`Zona activa ${index+1} · ${requests} pedido${requests===1?'':'s'} reciente${requests===1?'':'s'}`,latitude,longitude,distanceKm:0,estimatedValue:Number(row.tarifa_promedio||0),requestedAt:row.ultimo_pedido||new Date().toISOString(),urgency:ratio>=.5?'high':urgent>0?'medium':'low',demandLevel:requests>=6||ratio>=.5?'high':requests>=3?'medium':'low'}})}}setDemand(nextDemand);setLoading(false)},[session,supabase])
+ const[provider,setProvider]=useState<ProviderProfileFull|null>(null),[profileError,setProfileError]=useState<string|null>(null),[profileLoaded,setProfileLoaded]=useState(false),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<ProviderPayment[]>([]),[debts,setDebts]=useState<ProviderDebt[]>([]),[demand,setDemand]=useState<DemandSignal[]>([]),[demandError,setDemandError]=useState<string|null>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState<Notice>(null)
+ const reload=useCallback(async()=>{
+ if(!session){setDemand([]);setDemandError(null);setProfileError(null);setProfileLoaded(false);setLoading(false);return}
+ let gateProfile:unknown=null,gateError:Error|null=null
+ for(let attempt=0;attempt<3;attempt++){
+  const result=await supabase.from('perfiles_proveedor').select('*').eq('usuario_id',session.user.id).maybeSingle()
+  gateProfile=result.data
+  gateError=(result.error as Error|null)??null
+  if(!gateError)break
+  if(attempt<2)await new Promise(resolve=>window.setTimeout(resolve,350*(attempt+1)))
+ }
+ if(gateError){setProfileError(gateError.message||'No pudimos leer tu perfil profesional. Tu sesión sigue activa.');setProfileLoaded(true);setLoading(false);throw gateError}
+ setProfileError(null);setProfileLoaded(true)
+ const verifiedProfile=(gateProfile as ProviderProfileFull|null)||null;setProvider(verifiedProfile);setLoading(false);const snap=await loadProviderSnapshot(supabase,session.user.id);const effectiveProvider=snap.provider||verifiedProfile;setProvider(effectiveProvider);setOffers(snap.offers);setService(snap.service);setPayments(snap.payments);setDebts(snap.debts);let nextDemand:DemandSignal[]=[];setDemandError(null);if(effectiveProvider?.estado_verificacion==='verificado'){const categoryId=effectiveProvider.categoria_principal_id||null;const[{data:market,error:marketError},{data:category}]=await Promise.all([supabase.rpc('obtener_demanda_proveedor',{p_categoria_id:categoryId,p_horas:24}),categoryId?supabase.from('categorias').select('nombre').eq('id',categoryId).maybeSingle():Promise.resolve({data:null,error:null})]);if(marketError){setDemandError('No pudimos actualizar el radar de demanda. Podés reintentar sin perder tus oportunidades.')}else{const categoryName=String(category?.nombre||'Tu categoría');nextDemand=((market||[])as DemandRow[]).map((row,index)=>{const requests=Math.max(0,Number(row.pedidos||0)),urgent=Math.max(0,Number(row.urgentes||0)),ratio=requests?urgent/requests:0,latitude=coordinate(row.zona_lat),longitude=coordinate(row.zona_lng);return{id:`demand-${latitude??'x'}-${longitude??'x'}-${index}`,category:categoryName,zone:`Zona activa ${index+1} · ${requests} pedido${requests===1?'':'s'} reciente${requests===1?'':'s'}`,latitude,longitude,distanceKm:0,estimatedValue:Number(row.tarifa_promedio||0),requestedAt:row.ultimo_pedido||new Date().toISOString(),urgency:ratio>=.5?'high':urgent>0?'medium':'low',demandLevel:requests>=6||ratio>=.5?'high':requests>=3?'medium':'low'}})}}setDemand(nextDemand);setLoading(false)},[session,supabase])
  const handleRealtime=useCallback(()=>{reload().catch(()=>{})},[reload])
  useEffect(()=>{if(session)reload().catch((e:Error)=>{setNotice({type:'error',text:e.message});setLoading(false)});else setLoading(false)},[reload,session])
  const marketAutoRefresh=Boolean(session&&provider?.estado_verificacion==='verificado'&&provider.disponible)
  useEffect(()=>{if(!marketAutoRefresh)return;let disposed=false;const refresh=()=>{if(!disposed&&document.visibilityState!=='hidden')void reload().catch(()=>{})};const timer=window.setInterval(refresh,45_000);const onFocus=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('focus',onFocus);document.addEventListener('visibilitychange',onVisibility);return()=>{disposed=true;window.clearInterval(timer);window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onVisibility)}},[marketAutoRefresh,reload])
  useProviderRealtime(supabase,session?.user.id||null,handleRealtime)
  const providerReady=Boolean(provider),providerOnline=Boolean(provider?.online),providerAvailable=Boolean(provider?.disponible)
- useEffect(()=>{if(!session||!providerReady||typeof navigator==='undefined'||!navigator.geolocation)return;let alive=true;navigator.geolocation.getCurrentPosition(async position=>{if(!alive)return;const accuracy=Number(position.coords.accuracy),lat=Number(position.coords.latitude),lng=Number(position.coords.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>250)return;const capturedAt=new Date(position.timestamp||Date.now()).toISOString();if(providerOnline&&providerAvailable){try{await setProviderAvailability(supabase,session.user.id,true);if(alive)setProvider(current=>current?{...current,ubicacion_updated_at:capturedAt,ubicacion_accuracy_m:accuracy}:current)}catch(e){if(alive)setNotice({type:'error',text:e instanceof Error?e.message:t('providerRuntime.locationRefreshFailed')})}}else if(alive)setNotice({type:'info',text:t('providerRuntime.locationEnabled')})},error=>{if(!alive)return;if(error.code===1)setNotice({type:'info',text:t('providerRuntime.locationPermission')});else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})},{enableHighAccuracy:false,maximumAge:0,timeout:15_000});return()=>{alive=false}},[provider?.usuario_id,providerOnline,providerAvailable,providerReady,session,supabase,t])
+ useEffect(()=>{
+  if(!session||!providerReady||typeof navigator==='undefined'||!navigator.geolocation)return
+  let alive=true,refreshing=false
+  const refresh=async()=>{
+   if(!alive||refreshing)return
+   if(!providerOnline||!providerAvailable){setNotice({type:'info',text:t('providerRuntime.locationEnabled')});return}
+   refreshing=true
+   try{
+    const fix=await refreshProviderAvailabilityLocation(supabase)
+    if(alive)setProvider(current=>current?{...current,ubicacion_updated_at:fix.capturedAt,ubicacion_accuracy_m:fix.accuracy}:current)
+   }catch(error){
+    if(!alive)return
+    if(providerGeoErrorCode(error)==='permission')setNotice({type:'info',text:t('providerRuntime.locationPermission')})
+    else if(error instanceof Error&&/precis|reciente/i.test(error.message))setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
+   }finally{refreshing=false}
+  }
+  void refresh()
+  return()=>{alive=false}
+ },[provider?.usuario_id,providerOnline,providerAvailable,providerReady,session,supabase,t])
  // Matching excludes GPS older than 90s. Keep the persisted GPS fresh while a provider remains online,
  // not just when availability is toggled or the component first mounts.
  useEffect(()=>{
   if(!session||!providerOnline||!providerAvailable||provider?.estado_verificacion!=='verificado')return
-  let disposed=false,refreshing=false
+  let disposed=false,refreshing=false,permissionWarned=false
   const refreshLocation=async()=>{
    if(disposed||refreshing||document.visibilityState!=='visible'||!navigator.onLine)return
    refreshing=true
-   try{await setProviderAvailability(supabase,session.user.id,true)}
-   catch(error){if(!disposed)setNotice({type:'error',text:error instanceof Error?error.message:t('providerRuntime.locationRefreshFailed')})}
-   finally{refreshing=false}
+   try{
+    const fix=await refreshProviderAvailabilityLocation(supabase)
+    if(disposed)return
+    setProvider(current=>current?{...current,ubicacion_updated_at:fix.capturedAt,ubicacion_accuracy_m:fix.accuracy}:current)
+   }catch(error){
+    if(disposed)return
+    // A failed GPS refresh must never change online state or end a valid session.
+    if(providerGeoErrorCode(error)==='permission'&&!permissionWarned){permissionWarned=true;setNotice({type:'info',text:t('providerRuntime.locationPermission')})}
+   }finally{refreshing=false}
   }
   const timer=window.setInterval(()=>void refreshLocation(),45_000)
   const onVisible=()=>{if(document.visibilityState==='visible')void refreshLocation()}
   document.addEventListener('visibilitychange',onVisible)
   window.addEventListener('online',onVisible)
   return()=>{disposed=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);window.removeEventListener('online',onVisible)}
- },[session,providerOnline,providerAvailable,provider?.estado_verificacion,supabase,t])
+ },[provider?.estado_verificacion,providerAvailable,providerOnline,session,supabase,t])
  if(auth.loading||loading)return <LoadingScreen label={t('providerRuntime.preparing')}/>
  if(!session)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
  if(!profile)return auth.error?<main className="provider-screen"><ErrorState title={t('providerRuntime.sessionTitle')} description={auth.error} actionLabel={t('providerRuntime.retryProfile')} onAction={()=>void auth.retryProfile()}/></main>:<LoadingScreen label={t('providerRuntime.recovering')}/>
- if(!provider||provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate onVerified={reload}/>
+ if(!profileLoaded)return <LoadingScreen label={t('providerRuntime.recovering')}/>
+ if(!provider)return profileError?<main className="provider-screen"><ErrorState title={t('providerRuntime.sessionTitle')} description={`${profileError} Tu sesión sigue activa; podés reintentar sin volver a iniciar sesión.`} actionLabel={t('providerRuntime.retryProfile')} onAction={()=>void reload().catch(()=>{})}/></main>:<ProviderOnboardingGate onVerified={reload}/>
+ if(provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate onVerified={reload}/>
  const run=async(fn:()=>Promise<void>,ok:string)=>{setBusy(true);setNotice(null);try{await fn()}catch(e){try{await reload()}catch{/* recuperación opcional */}const message=e instanceof Error?e.message:typeof e==='object'&&e!==null&&'message'in e&&typeof e.message==='string'?e.message:'La operación fue rechazada. Revisá los permisos o la conexión e intentá nuevamente.';setNotice({type:'error',text:message});setBusy(false);return false}try{await reload();setNotice({type:'ok',text:ok})}catch{setNotice({type:'info',text:'La acción se guardó, pero no pudimos actualizar la pantalla. Tocá actualizar para consultar el estado.'})}finally{setBusy(false)}return true}
  const unresolvedDebts=debts.filter(debt=>debt.ambiente==='real'&&!['pagado','anulado'].includes(debt.estado)&&Number(debt.saldo_pendiente||0)>0)
  const pendingDebtCount=unresolvedDebts.length,debtBlocked=pendingDebtCount>=3
