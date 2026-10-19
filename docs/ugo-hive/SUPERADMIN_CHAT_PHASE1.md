@@ -31,3 +31,15 @@ No fusionar si CI o pruebas humanas fallan. Descartar la rama o revertir mediant
 - Corrección: consola internacionalizada pt-BR/es/en; nombre de producto `UGO Hive` clasificado explícitamente; se agregan tests de contrato para Super Admin, chat fail-closed y traducciones.
 - HEAD nuevo `075dc1d59a4734f7703608db8fd1e9bc38bad66d`. GitHub Actions recién en cola al cierre de este checkpoint; **NO VERIFIED** hasta revisar los resultados.
 - No se habilitó inferencia, no se crearon recursos Render, secretos ni migraciones. Chat real continúa BLOCKED por pinning de proveedor/modelo/endpoint, ausencia de backend autorizado y comprobación de presupuesto US$0.
+
+
+## LIVE backend and TEST status gateway checkpoint — 2026-10-19
+- Render Free `ugo-hive-freeapi` (`srv-dbangp2jnfac738dnbtg`) reported LIVE on deploy `dep-dbanq2gm7kps739j53j0`, with Auto-Deploy off. Render logs showed SQLite restore and encrypted backup upload. Status must still be treated as time-dependent.
+- Supabase Arena TEST `tmossnqfwfwjrtzwcbmm` hosts private `hive-freeapi-backups` Storage and receiver `ugo-hive-backup-receiver` v2; three latest versioned backups were recorded at audit time.
+- New `ugo-hive-status` Edge Function v2 is deployed ONLY in Arena TEST. It authenticates a Supabase user session using Auth, verifies an ACTIVE persisted `superadmin` role, reads limited backup metadata with service role SERVER-SIDE, and performs a bounded public Render /api/ping check. It returns unavailable on failure and never returns secrets. Allowed browser origins are UGO GitHub Pages and localhost preview ports only. The function requires a real authenticated browser test before declaring end-to-end VERIFIED.
+- HiveConsole in PR #518 now requests this gateway and displays real backend reachability and snapshot version/size when authorized. Anonymous/failed requests display unverified; disabled inference and chat remain explicitly blocked.
+- No paid provider, inference, autonomy, secret-bearing frontend variable or production Supabase change was introduced.
+- Corrected the Super Admin contract test to assert both `superadmin` and `hive` role gating; localized Hive header and navigation label. Complete PR CI must pass before merge and publishing GitHub Pages.
+- Important boundary: a public `/api/ping` success does not prove inference capability, authentication of all backend routes, integrity/decryptability of every snapshot, or autonomous readiness. Restart disaster-recovery proof and authenticated role browser proof remain outstanding.
+- Rollback: redeploy status gateway prior version, or disable dashboard status fetch by reverting the small HiveConsole change on its feature branch; do not change backup tables or delete existing snapshots.
+- Classification: Render prior LIVE VERIFIED at observed deploy; Arena status gateway deployed IMPLEMENTED_NOT_VERIFIED; role isolation source reviewed IMPLEMENTED_NOT_VERIFIED; full integration BLOCKED pending CI and browser runtime.
