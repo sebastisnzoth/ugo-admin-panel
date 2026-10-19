@@ -11,6 +11,8 @@ on:
       - "src/mvp/provider/**"
       - "src/mvp/shared.tsx"
       - "src/lib/roleSupabase.ts"
+      - "supabase/migrations/*_defer_insert_settlement_until_assignment.sql"
+      - "tests/contracts/service-insert-pricing-rls-behavior.test.mjs"
       - "tests/contracts/role-session-concurrency-behavior.test.mjs"
       - "src/features/client/request/**"
       - "src/lib/dispatch/**"

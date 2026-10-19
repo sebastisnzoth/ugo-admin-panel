@@ -54,6 +54,8 @@ const asUser=session=>createClient(url,anon,{
 
 async function cleanup(){
   if(gpsFeedTimer)clearInterval(gpsFeedTimer)
+  // Stop GPS/Realtime and pending UI work before deleting owned fixtures.
+  if(browser){await browser.close().catch(()=>{});browser=null}
   const failures=[]
   try{
     if(serviceId){
@@ -209,10 +211,8 @@ async function acceptOfferInUi(ui,{offerId:expectedOfferId}){
   await card.locator('button.provider-primary').click()
   await page.locator('.provider-main-action').waitFor({state:'visible',timeout:30000})
   await page.locator('.provider-main-action').click()
-  await page.waitForFunction(()=>{
-    const text=document.body.textContent||''
-    return /TRABAJO ACTIVO|Continuar trabajo|Trabajo activo|Servicio asignado/i.test(text)
-  },null,{timeout:45000})
+  await page.locator('.provider-active-job').waitFor({state:'visible',timeout:60000})
+  await page.locator('.provider-active-job').getByText(SERVICE_DESCRIPTION,{exact:true}).first().waitFor({state:'visible',timeout:15000})
   await screenshot('03-accepted')
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_ACCEPT')
   stage('ui_accept_clicked',{pageErrors})
@@ -326,6 +326,7 @@ try{
   stage('sessions_alive',{client:clientStill.data.user.id,provider:providerStill.data.user.id})
   if(ui){
     assert.equal(await ui.assertSession('ui_session_after_accept'),ui.fingerprint)
+    await ui.page.locator('.provider-active-job .provider-back').click()
     await ui.page.locator('[data-testid="provider-mobile-profile"]').click()
     await ui.page.locator('.provider-signout').click()
     await ui.page.locator('[data-testid="auth-form"]').waitFor({state:'visible',timeout:45000})
