@@ -2,7 +2,7 @@
 import React,{createContext,useCallback,useContext,useEffect,useState}from'react'
 import{AuthScreen,ErrorState,LoadingScreen,timeAgo,money,useRoleSession,type Notice,type Offer,type Service}from'../shared'
 import{ProviderOnboardingGate}from'../ProviderOnboardingGate'
-import{acceptProviderOpportunity,advanceProviderService,cancelProviderService,loadProviderSnapshot,providerGeoErrorCode,refreshProviderAvailabilityLocation,rejectProviderOpportunity,saveProviderBaseLocation,setProviderAvailability,type ProviderAdvanceOptions,type ProviderDebt,type ProviderPayment,type ProviderProfileFull}from'./providerService'
+import{acceptProviderOpportunity,advanceProviderService,cancelProviderService,loadProviderSnapshot,providerGeoErrorCode,publishProviderAvailabilityLocation,refreshProviderAvailabilityLocation,rejectProviderOpportunity,saveProviderBaseLocation,setProviderAvailability,type ProviderAdvanceOptions,type ProviderDebt,type ProviderPayment,type ProviderProfileFull}from'./providerService'
 import{useProviderRealtime}from'./useProviderRealtime'
 import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{useLocale}from'../../i18n/locale'
@@ -31,7 +31,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  if(!session){setDemand([]);setDemandError(null);setProfileError(null);setProfileLoaded(false);setLoading(false);return}
  let gateProfile:unknown=null,gateError:Error|null=null
  for(let attempt=0;attempt<3;attempt++){
-  const result=await supabase.from('perfiles_proveedor').select('*').eq('usuario_id',session.user.id).maybeSingle()
+  const result=await supabase.from('perfiles_proveedor').select('*').eq('usuario_id',session.user.id).maybeSingle() // gateProfile (reintentado)
   gateProfile=result.data
   gateError=(result.error as Error|null)??null
   if(!gateError)break
@@ -46,25 +46,27 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  useEffect(()=>{if(!marketAutoRefresh)return;let disposed=false;const refresh=()=>{if(!disposed&&document.visibilityState!=='hidden')void reload().catch(()=>{})};const timer=window.setInterval(refresh,45_000);const onFocus=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('focus',onFocus);document.addEventListener('visibilitychange',onVisibility);return()=>{disposed=true;window.clearInterval(timer);window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onVisibility)}},[marketAutoRefresh,reload])
  useProviderRealtime(supabase,session?.user.id||null,handleRealtime)
  const providerReady=Boolean(provider),providerOnline=Boolean(provider?.online),providerAvailable=Boolean(provider?.disponible)
- useEffect(()=>{
-  if(!session||!providerReady||typeof navigator==='undefined'||!navigator.geolocation)return
-  let alive=true,refreshing=false
-  const refresh=async()=>{
-   if(!alive||refreshing)return
-   if(!providerOnline||!providerAvailable){setNotice({type:'info',text:t('providerRuntime.locationEnabled')});return}
-   refreshing=true
-   try{
-    const fix=await refreshProviderAvailabilityLocation(supabase)
-    if(alive)setProvider(current=>current?{...current,ubicacion_updated_at:fix.capturedAt,ubicacion_accuracy_m:fix.accuracy}:current)
-   }catch(error){
-    if(!alive)return
-    if(providerGeoErrorCode(error)==='permission')setNotice({type:'info',text:t('providerRuntime.locationPermission')})
-    else if(error instanceof Error&&/precis|reciente/i.test(error.message))setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
-   }finally{refreshing=false}
-  }
-  void refresh()
+ useEffect(()=>{if(!session||!provider||typeof navigator==='undefined'||!navigator.geolocation)return
+  let alive=true
+  navigator.geolocation.getCurrentPosition(async position=>{
+   if(!alive)return
+   if(providerOnline&&providerAvailable){
+    try{
+     const fix=await publishProviderAvailabilityLocation(supabase,position)
+     if(alive)setProvider(current=>current?{...current,ubicacion_updated_at:fix.capturedAt,ubicacion_accuracy_m:fix.accuracy}:current)
+    }catch(error){
+     if(!alive)return
+     if(providerGeoErrorCode(error)==='permission')setNotice({type:'info',text:t('providerRuntime.locationPermission')})
+     else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
+    }
+   }else setNotice({type:'info',text:t('providerRuntime.locationEnabled')})
+  },error=>{
+   if(!alive)return
+   if(error.code===1)setNotice({type:'info',text:t('providerRuntime.locationPermission')})
+   else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
+  },{enableHighAccuracy:false,maximumAge:0,timeout:15_000})
   return()=>{alive=false}
- },[provider?.usuario_id,providerOnline,providerAvailable,providerReady,session,supabase,t])
+ },[provider?.usuario_id,providerOnline,providerAvailable,session,supabase,t])
  // Matching excludes GPS older than 90s. Keep the persisted GPS fresh while a provider remains online,
  // not just when availability is toggled or the component first mounts.
  useEffect(()=>{

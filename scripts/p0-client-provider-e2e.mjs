@@ -47,10 +47,14 @@ const must=(result,label)=>{
   return result
 }
 const anonClient=()=>createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
-const asUser=session=>createClient(url,anon,{
-  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
-  global:{headers:{Authorization:`Bearer ${session.access_token}`}},
-})
+// Reuse the real signed-in session so every request carries the user JWT (RLS applies)
+// and the session can be revalidated at the end of the journey.
+const sessionClient=async session=>{
+  const client=anonClient()
+  const{error}=await client.auth.setSession({access_token:session.access_token,refresh_token:session.refresh_token})
+  if(error)throw error
+  return client
+}
 
 async function cleanup(){
   const failures=[]
@@ -145,20 +149,26 @@ async function attemptUiOnline(ui){
 
 async function acceptOfferInUi(ui){
   const {page,screenshot,pageErrors}=ui
+  // Reload keeps the persisted session and forces a fresh provider feed from
+  // obtener_ofertas_proveedor instead of trusting an in-memory list.
+  await page.reload({waitUntil:'domcontentloaded'})
+  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+  assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_BEFORE_OFFER')
   await page.locator('[data-testid="provider-mobile-orders"]').click()
-  await page.getByText(SERVICE_DESCRIPTION).first().waitFor({state:'visible',timeout:30000})
+  await page.getByText(SERVICE_DESCRIPTION).first().waitFor({state:'visible',timeout:45000})
   await screenshot('03-offer-visible')
   stage('ui_offer_visible',{offerId})
   const card=page.locator('.provider-opportunity-simple').filter({hasText:SERVICE_DESCRIPTION}).first()
   await card.locator('button.provider-primary').click()
-  await page.locator('.provider-main-action').waitFor({state:'visible',timeout:30000})
+  await page.locator('.provider-main-action').waitFor({state:'visible',timeout:45000})
+  await screenshot('04-offer-detail')
   await page.locator('.provider-main-action').click()
-  await page.waitForFunction(()=>{
-    const text=document.body.textContent||''
-    return /TRABAJO ACTIVO|Continuar trabajo|Trabajo activo|Servicio asignado/i.test(text)
-  },null,{timeout:45000}).catch(()=>{})
-  await screenshot('04-accepted')
+  // The provider app must land on the assigned job screen and keep the session.
+  await page.locator('.provider-view-active-job').waitFor({state:'visible',timeout:60000})
+  await page.waitForFunction(()=>/TRABAJO ACTIVO|Continuar trabajo|Trabajo activo/i.test(document.body.textContent||''),null,{timeout:30000}).catch(()=>{})
+  await screenshot('05-accepted')
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_ACCEPT')
+  stage('ui_accepted',{url:page.url(),pageErrors})
   return pageErrors
 }
 
@@ -174,8 +184,8 @@ try{
   clientId=createdClient.data.user.id
   const createdProvider=must(await admin.auth.admin.createUser({email:providerEmail,password,email_confirm:true,user_metadata:{nombre:'UGO P0 Provider',tipo:'proveedor'}}),'create provider auth user')
   providerId=createdProvider.data.user.id
-  must(await admin.from('usuarios').upsert({id:clientId,email:clientEmail,nombre:'UGO P0 Client',apellido:'E2E',tipo:'cliente',activo:true,es_demo:true,pais:'BR',zona:'UGO TEST E2E'}),'insert client profile')
-  must(await admin.from('usuarios').upsert({id:providerId,email:providerEmail,nombre:'UGO P0 Provider',apellido:'E2E',tipo:'proveedor',activo:true,es_demo:true,pais:'BR',zona:'UGO TEST E2E'}),'insert provider profile')
+  must(await admin.from('usuarios').upsert({id:clientId,email:clientEmail,nombre:'UGO P0 Client',apellido:'E2E',tipo:'cliente',activo:true,es_demo:false,pais:'BR',zona:'UGO TEST E2E'}),'insert client profile')
+  must(await admin.from('usuarios').upsert({id:providerId,email:providerEmail,nombre:'UGO P0 Provider',apellido:'E2E',tipo:'proveedor',activo:true,es_demo:false,pais:'BR',zona:'UGO TEST E2E'}),'insert provider profile')
   must(await admin.from('perfiles_cliente').upsert({usuario_id:clientId,ciudad:'Florianópolis',telefono:'48999999999',direccion:'Rua P0 E2E TEST',barrio:'TEST',termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',idioma_preferido:'es',onboarding_completo_at:new Date().toISOString()}),'insert client profile row')
   const nowIso=new Date().toISOString()
   must(await admin.from('perfiles_proveedor').upsert({
@@ -193,8 +203,8 @@ try{
   const providerAuth=anonClient()
   const providerSignIn=must(await providerAuth.auth.signInWithPassword({email:providerEmail,password}),'provider sign-in')
   assert.ok(providerSignIn.data.session,'P0_PROVIDER_SESSION_REQUIRED')
-  const client=asUser(clientSignIn.data.session)
-  const provider=asUser(providerSignIn.data.session)
+  const client=await sessionClient(clientSignIn.data.session)
+  const provider=await sessionClient(providerSignIn.data.session)
   stage('sessions',{clientExpiresAt:clientSignIn.data.session.expires_at,providerExpiresAt:providerSignIn.data.session.expires_at})
 
   // 3 · provider goes Online in the real app (browser GPS + session proof)
@@ -211,6 +221,14 @@ try{
     p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
   })
   stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+  if(ui){
+    await ui.page.reload({waitUntil:'domcontentloaded'})
+    await ui.page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+    assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RELOAD_ONLINE')
+    const onlineReflected=await ui.page.locator('.provider-client-online').getAttribute('aria-pressed')
+    stage('ui_online_persisted',{onlineReflected})
+    assert.equal(onlineReflected,'true','P0_PROVIDER_UI_DOES_NOT_REFLECT_ONLINE')
+  }
 
   const profileAfter=must(await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m,categoria_principal_id').eq('usuario_id',providerId).single(),'read provider eligibility')
   const gpsAgeMs=Date.now()-Date.parse(String(profileAfter.data.ubicacion_updated_at||''))
@@ -222,7 +240,7 @@ try{
   // 4 · client creates the request and persists the pickup ---------------
   const insertedService=must(await client.from('servicios').insert({
     cliente_id:clientId,categoria_id:categoryId,estado:'buscando',descripcion:SERVICE_DESCRIPTION,
-    direccion_cliente:'Rua P0 E2E TEST, Florianópolis',zona:'TEST',tarifa:120,urgencia:false,
+    direccion_cliente:'Rua P0 E2E TEST, Florianópolis',zona:'TEST',tarifa:120,urgencia:false,ambiente:'real',
     metadata:{requested_payment_method:'pix',payment_method:'pix',payment_selected_before_order:true,estimated_duration_minutes:60,qa_p0_e2e:true,runtime_sha:sha},
   }).select('id,estado,numero,cliente_id,categoria_id').single(),'client insert service')
   serviceId=insertedService.data.id

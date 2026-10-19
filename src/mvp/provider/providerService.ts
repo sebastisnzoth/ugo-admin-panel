@@ -185,14 +185,16 @@ async function currentPosition(){
 // Refresh the persisted trusted GPS of an already-online provider without touching the
 // online/disponible flags. This keeps matching eligibility alive every 45 s and can never
 // flip a provider that just went Offline back to Online.
-export async function refreshProviderAvailabilityLocation(supabase:SupabaseClient){
- const position=await currentPosition()
+export async function publishProviderAvailabilityLocation(supabase:SupabaseClient,position:GeolocationPosition){
  const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy)
  if(!acceptablePosition(position))throw new Error('La ubicación GPS no es suficientemente reciente o precisa para seguir recibiendo pedidos.')
  const capturedAt=new Date(Number(position.timestamp)||Date.now()).toISOString()
  const{error}=await supabase.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:capturedAt,p_accuracy_m:accuracy})
  if(error)throw error
  return{capturedAt,accuracy,latitude,longitude}
+}
+export async function refreshProviderAvailabilityLocation(supabase:SupabaseClient){
+ return publishProviderAvailabilityLocation(supabase,await currentPosition())
 }
 export async function saveProviderBaseLocation(supabase:SupabaseClient){
  const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
