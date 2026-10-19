@@ -38,3 +38,46 @@
 }
 @media(max-width:359px){.ugo-client-root .ugo-home-categories{grid-template-columns:repeat(2,minmax(0,1fr))!important}.ugo-client-root .ugo-home-categories>button{min-height:84px}}
 @media(prefers-reduced-motion:reduce){.ugo-client-root .ugo-premium-search *,.ugo-client-root .ugo-premium-map-toggle{transition:none!important;animation:none!important}}
+
+
+/* Approved seven-screen visual reference: precise mobile hierarchy and palette.
+   Live data only: no decorative fake provider avatars, prices, ratings or ETA. */
+.ugo-client-root{--client-bg:#f3faf8!important;--client-ink:#0c2636!important;--client-green:#008c70!important;--client-green-deep:#056750!important;--client-soft:#e9fbf2!important}
+.ugo-client-root .ugo-home-screen{background:radial-gradient(circle at 10% 0%,#e7f8f7,transparent 48%),#f3faf8!important}
+.ugo-client-root .ugo-home-hero{background:linear-gradient(135deg,#fff 5%,#f3fcf8 85%)!important;border-color:#e3f1ed!important}
+.ugo-client-root .ugo-home-kicker{color:#008c70!important}
+.ugo-client-root .ugo-home-hero h1{font-weight:850!important;letter-spacing:-.05em!important;color:#092638!important}
+.ugo-client-root .ugo-premium-search{box-shadow:0 9px 25px #0d675313!important;border-radius:18px!important}
+.ugo-client-root .ugo-home-hugo-cta{background:linear-gradient(115deg,#00a47f,#087d78 61%,#064d71)!important;border-radius:18px!important}
+.ugo-client-root .ugo-home-services{border-color:#e4efed!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 1){background:#e8fbf2!important;border-color:#dbf5e8!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 2){background:#fff5e9!important;border-color:#ffebd3!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 3){background:#eaf5ff!important;border-color:#daebfc!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 4){background:#f4edff!important;border-color:#e9dfff!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 1) .ugo-home-category-icon{background:#d7f9e9!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 2) .ugo-home-category-icon{background:#ffe6c6!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 3) .ugo-home-category-icon{background:#d8ecff!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 4) .ugo-home-category-icon{background:#e7d9ff!important}
+.ugo-client-root .ugo-home-map-card{border-color:#e2efed!important}
+.ugo-client-root .ugo-home-map-card>footer button{background:linear-gradient(110deg,#059978,#047f91)!important}
+.ugo-client-root .ugo-home-provider-card{background:#fff!important;border:1px solid #e5eeeb!important}
+.ugo-client-root .ugo-home-provider-info strong{color:#102b38!important}
+.ugo-client-root .ugo-home-mobile-nav button{color:#647987!important}
+.ugo-client-root .ugo-home-mobile-nav button.active{color:#008a70!important}
+@media(max-width:800px){
+ .ugo-client-root .ugo-home-layout{padding:9px 10px 20px!important}
+ .ugo-client-root .ugo-home-hero{border-radius:25px!important;padding:18px 14px 16px!important}
+ .ugo-client-root .ugo-home-topline{margin-bottom:11px!important}
+ .ugo-client-root .ugo-home-kicker{font-size:9px!important;margin-bottom:7px!important}
+ .ugo-client-root .ugo-home-hero h1{font-size:clamp(26px,7.3vw,33px)!important;margin:6px 0 8px!important;max-width:330px!important}
+ .ugo-client-root .ugo-home-hero>p{max-width:315px!important}
+ .ugo-client-root .ugo-home-hugo-cta{min-height:72px!important}
+ .ugo-client-root .ugo-home-services{border-radius:24px!important}
+ .ugo-client-root .ugo-home-services-head h2{font-size:21px!important}
+ .ugo-client-root .ugo-home-categories>button{border-radius:15px!important;box-shadow:none!important}
+ .ugo-client-root .ugo-home-map-card{border-radius:24px!important}
+ .ugo-client-root .ugo-home-map-card>header{min-height:66px!important}
+ .ugo-client-root .ugo-home-map{height:315px!important}
+ .ugo-client-root .ugo-home-provider-card{padding:12px!important}
+ .ugo-client-root .ugo-home-mobile-nav{border-top:1px solid #e7f0ec!important}
+}
