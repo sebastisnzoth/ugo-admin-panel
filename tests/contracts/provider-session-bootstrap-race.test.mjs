@@ -13,7 +13,9 @@ test('provider session bootstrap ignores a stale initial snapshot after an auth 
 test('an initial empty session resolves loading and a real sign-out is rechecked', () => {
  assert.match(auth, /event==='INITIAL_SESSION'&&!next/)
  assert.match(auth, /event==='SIGNED_OUT'/)
- assert.match(auth, /supabase\.auth\.getSession\(\)\.then\(\(\{data\}\)=>\{/)
+ assert.match(auth, /supabase\.auth\.getSession\(\)\.then\(\(\{data,error:sessionError\}\)=>\{/)
+ assert.match(auth, /if\(sessionError\)\{unavailable\(\);return\}/)
+ assert.match(auth, /version!==authEventVersion/)
  assert.match(auth, /setLoading\(false\)/)
 })
 

@@ -92,6 +92,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
   return()=>{disposed=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);window.removeEventListener('online',onVisible)}
  },[provider?.estado_verificacion,providerAvailable,providerOnline,session,supabase,t])
  if(auth.loading||loading)return <LoadingScreen label={t('providerRuntime.preparing')}/>
+ if(!session&&!auth.sessionChecked)return <main className="provider-screen"><ErrorState title={t('sharedUi.loadError')} description={auth.error} actionLabel={t('sharedUi.retry')} onAction={auth.retrySession}/></main>
  if(!session)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
  if(!profile)return auth.error?<main className="provider-screen"><ErrorState title={t('providerRuntime.sessionTitle')} description={auth.error} actionLabel={t('providerRuntime.retryProfile')} onAction={()=>void auth.retryProfile()}/></main>:<LoadingScreen label={t('providerRuntime.recovering')}/>
  if(!profileLoaded)return <LoadingScreen label={t('providerRuntime.recovering')}/>
