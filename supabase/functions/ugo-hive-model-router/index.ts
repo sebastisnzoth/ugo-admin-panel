@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
     })
     if (!catalogResponse.ok) return errorResponse(503, 'FREE_CATALOG_UNAVAILABLE', id)
     const catalog = await catalogResponse.json()
-    const isZero = (v: unknown) => v === 0 || (typeof v === 'string' && /^0(?:\\.0+)?$/.test(v))
+    const isZero = (v: unknown) => v === 0 || (typeof v === 'string' && /^0(?:\.0+)?$/.test(v))
     const options = Array.isArray(catalog?.data) ? catalog.data.filter((m: any) =>
       typeof m.id === 'string' && m.id.endsWith(':free') && m.id !== 'openrouter/free' &&
       m.pricing && ['prompt','completion','request'].every(k => Object.hasOwn(m.pricing,k) && isZero(m.pricing[k])) &&
