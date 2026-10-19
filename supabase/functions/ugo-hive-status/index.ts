@@ -29,13 +29,21 @@ Deno.serve(async (req: Request) => {
   const { data: snapshot, error: backupError } = await db.from('hive_backup_versions').select('version,bytes,created_at').order('sequence', { ascending: false }).limit(1).maybeSingle()
   const started = Date.now()
   let online = false
+  let health: 'ONLINE' | 'HTTP_ERROR' | 'TIMEOUT' | 'NETWORK_ERROR'
+  let httpStatus: number | null = null
   try {
-    const response = await fetch(PING, { method: 'GET', redirect: 'error', signal: AbortSignal.timeout(4500), headers: { 'accept': 'application/json' } })
+    // Render Free may cold-start for longer than the former 4.5-second deadline.
+    // Never treat a timeout as proof that the service itself is offline.
+    const response = await fetch(PING, { method: 'GET', redirect: 'error', signal: AbortSignal.timeout(15000), headers: { 'accept': 'application/json' } })
     online = response.ok
-  } catch { /* Explicitly report unavailable, never fake readiness */ }
+    httpStatus = response.status
+    health = response.ok ? 'ONLINE' : 'HTTP_ERROR'
+  } catch (error) {
+    health = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError') ? 'TIMEOUT' : 'NETWORK_ERROR'
+  }
   return json(req, 200, {
     environment: 'TEST',
-    backend: { reachable: online, checked_at: new Date().toISOString(), latency_ms: Date.now() - started },
+    backend: { reachable: online, state: health, http_status: httpStatus, checked_at: new Date().toISOString(), latency_ms: Date.now() - started },
     backup: backupError ? { state: 'UNKNOWN' } : snapshot ? { state: 'RECORDED', version: snapshot.version, bytes: snapshot.bytes, created_at: snapshot.created_at } : { state: 'NONE' },
     inference: { state: 'DISABLED', verified_runtime: false },
     autonomy: { state: 'NOT_ENABLED_BY_HIVE' }
