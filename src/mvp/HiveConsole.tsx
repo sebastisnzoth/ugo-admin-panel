@@ -1,4 +1,5 @@
-import React,{useEffect,useState} from 'react'\nimport{supabase}from'../lib/supabase'
+import React,{useEffect,useState} from 'react'
+import{supabase}from'../lib/supabase'
 import{useLocale}from'../i18n/locale'
 import'./hive-console.css'
 
@@ -46,7 +47,10 @@ type Tab='overview'|'chat'|'agents'
 export function HiveConsole(){
  const{locale}=useLocale()
  const tr=locale.startsWith('pt')?translations['pt-BR']:locale.startsWith('es')?translations.es:translations.en
- const[tab,setTab]=useState<Tab>('overview')\n const[status,setStatus]=useState<HiveStatus|null>(null)\n const[statusError,setStatusError]=useState(false)\n useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
+ const[tab,setTab]=useState<Tab>('overview')
+ const[status,setStatus]=useState<HiveStatus|null>(null)
+ const[statusError,setStatusError]=useState(false)
+ useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
   <nav className="ugo-hive-tabs" aria-label={tr.navLabel}>
