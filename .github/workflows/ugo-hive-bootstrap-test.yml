@@ -1,0 +1,19 @@
+name: UGO Hive Bootstrap TEST
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/ugo-hive-backup-receiver/**'
+      - '.github/workflows/ugo-hive-bootstrap-test.yml'
+permissions:
+  contents: read
+jobs:
+  bootstrap-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Hive backup bootstrap handler
+        run: node --test supabase/functions/ugo-hive-backup-receiver/handler.test.mjs
