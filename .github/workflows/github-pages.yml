@@ -278,6 +278,27 @@ jobs:
           cp -a /tmp/ugo-preview-pr516/dist/. _site/preview/pr-516/
           test -f _site/preview/pr-516/index.html
 
+      # Isolated PR #518 preview pinned to verified build; canonical /app unchanged.
+      - name: Build isolated Hive PR 518 preview
+        continue-on-error: true
+        env:
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+          VITE_APP_REVISION: b5f6194b46f9bdc0a23fb1b38a06a30c6398bdb1
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin b5f6194b46f9bdc0a23fb1b38a06a30c6398bdb1
+          git worktree add --detach /tmp/ugo-preview-pr518 FETCH_HEAD
+          (
+            cd /tmp/ugo-preview-pr518
+            npm ci --include=dev
+            npm run build -- --base=/ugo-admin-panel/preview/pr-518/
+            node --test tests/contracts/hive-superadmin-console.test.mjs tests/contracts/admin-auth-boundary.test.mjs
+          )
+          mkdir -p _site/preview/pr-518
+          cp -a /tmp/ugo-preview-pr518/dist/. _site/preview/pr-518/
+          test -s _site/preview/pr-518/index.html
+          grep -q '/ugo-admin-panel/preview/pr-518/assets/' _site/preview/pr-518/index.html
+
       - name: Build main HEAD snapshot
         env:
           GH_TOKEN: ${{ github.token }}
