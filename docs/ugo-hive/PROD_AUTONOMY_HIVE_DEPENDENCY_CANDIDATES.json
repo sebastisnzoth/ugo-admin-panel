@@ -1,0 +1,414 @@
+{
+  "schema_version": "UGO_PRODUCTION_AUTONOMY_MIGRATION_MANIFEST_V1",
+  "environment": "PROD_PREP_ONLY",
+  "apply_to_production": false,
+  "files": [
+    {
+      "order": 1,
+      "path": "supabase/migrations/20260916081500_admin_superadmin_config_hardening.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 2,
+      "path": "supabase/migrations/20260927234500_autonomous_corporation_foundation.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 3,
+      "path": "supabase/migrations/20260928000500_autonomous_corporate_agents.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 4,
+      "path": "supabase/migrations/20260928002000_autonomous_safe_execution.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 5,
+      "path": "supabase/migrations/20260928005500_autonomous_authority_approval.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 6,
+      "path": "supabase/migrations/20260928163000_autonomous_qa_lab.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 7,
+      "path": "supabase/migrations/20260928170000_autonomous_job_resilience.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 8,
+      "path": "supabase/migrations/20260928173000_autonomous_data_quality_evidence.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 9,
+      "path": "supabase/migrations/20260928180000_autonomous_qa_simulators.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 10,
+      "path": "supabase/migrations/20260928184500_autonomous_action_envelope.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 11,
+      "path": "supabase/migrations/20260928193000_autonomous_yellow_dual_control.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 12,
+      "path": "supabase/migrations/20260928200000_autonomous_d14_assurance.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 13,
+      "path": "supabase/migrations/20260928203000_autonomous_voice_signals.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 14,
+      "path": "supabase/migrations/20260928213000_autonomous_model_router.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 15,
+      "path": "supabase/migrations/20260928220000_autonomous_qa_meta_gate.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 16,
+      "path": "supabase/migrations/20260928223000_autonomous_governance_table_grants.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 17,
+      "path": "supabase/migrations/20260928231500_autonomous_release_gate_hardening.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 18,
+      "path": "supabase/migrations/20260928233000_autonomous_model_router_bootstrap.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 19,
+      "path": "supabase/migrations/20260928234500_autonomous_worker_cycle.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 20,
+      "path": "supabase/migrations/20260929004500_autonomous_recovery_audit.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 21,
+      "path": "supabase/migrations/20260929011500_autonomous_qa_p0_coverage.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 22,
+      "path": "supabase/migrations/20260929013000_autonomous_yellow_routing.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 23,
+      "path": "supabase/migrations/20260929014500_autonomous_finding_reaudit.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 24,
+      "path": "supabase/migrations/20260929020000_autonomous_ip_evidence_links.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 25,
+      "path": "supabase/migrations/20260929021500_autonomous_p0_event_binding.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 26,
+      "path": "supabase/migrations/20260929023000_autonomous_qa_remediation.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 27,
+      "path": "supabase/migrations/20260929024500_autonomous_qa_coverage_mapping.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 28,
+      "path": "supabase/migrations/20260929030000_autonomous_qa_remediation_verify.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 29,
+      "path": "supabase/migrations/20260929031500_autonomous_worker_agent_grants.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 30,
+      "path": "supabase/migrations/20260929034500_autonomous_green_capability_executor.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 31,
+      "path": "supabase/migrations/20260929040000_autonomous_service_role_claim_guard.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 32,
+      "path": "supabase/migrations/20260929040500_autonomous_worker_status_ambiguity.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 33,
+      "path": "supabase/migrations/20260929041500_autonomous_qa_service_worker.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 34,
+      "path": "supabase/migrations/20260929043000_autonomous_qa_persisted_state_judges.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 35,
+      "path": "supabase/migrations/20260929044500_autonomous_qa_demo_namespace_fix.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 36,
+      "path": "supabase/migrations/20260929050000_autonomous_p0_test_harness.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 37,
+      "path": "supabase/migrations/20260929051500_autonomous_p0_real_business_paths.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 38,
+      "path": "supabase/migrations/20260929052000_autonomous_qa_runtime_service_role_reads.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 39,
+      "path": "supabase/migrations/20260929054000_autonomous_pgcrypto_schema_hardening.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 40,
+      "path": "supabase/migrations/20260929055000_autonomous_recovery_kill_switch_schema_fix.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 41,
+      "path": "supabase/migrations/20260929060000_autonomous_customer_one_real_gate.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 42,
+      "path": "supabase/migrations/20260929061000_autonomous_customer_acceptance_proof.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 43,
+      "path": "supabase/migrations/20260929062000_autonomous_release_gate_current_qa.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 44,
+      "path": "supabase/migrations/20260929063000_autonomous_release_gate_alias_fix.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 45,
+      "path": "supabase/migrations/20260929063500_qa_separate_admin_superadmin_assertions.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 46,
+      "path": "supabase/migrations/20260929080000_autonomous_job_agent_authority_guard.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 47,
+      "path": "supabase/migrations/20260929120000_autonomous_regression_agent.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 48,
+      "path": "supabase/migrations/20260929121000_autonomous_release_gate_agent.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 49,
+      "path": "supabase/migrations/20260929122000_autonomous_qa_director_reconciler.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 50,
+      "path": "supabase/migrations/20260929124000_release_gate_validation_only.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 51,
+      "path": "supabase/migrations/20260929160000_autonomous_model_route_reconcile.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 52,
+      "path": "supabase/migrations/20260929161500_autonomous_job_owner_integrity.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 53,
+      "path": "supabase/migrations/20260929162000_autonomous_corporate_challenges_runtime.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 54,
+      "path": "supabase/migrations/20260929162500_autonomous_corporate_challenges_summary_fix.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 55,
+      "path": "supabase/migrations/20260929163000_autonomous_digital_twin_correlated_service.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 56,
+      "path": "supabase/migrations/20260929164000_autonomous_final_corporate_audit.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 57,
+      "path": "supabase/migrations/20260929164500_autonomous_control_integrity_verifier.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 58,
+      "path": "supabase/migrations/20260929164500_autonomous_final_corporate_audit_control_fix.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 59,
+      "path": "supabase/migrations/20260929164700_autonomous_final_corporate_audit_recreate.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 60,
+      "path": "supabase/migrations/20260929170000_autonomous_runtime_revision_evidence.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 61,
+      "path": "supabase/migrations/20260929173500_autonomous_model_runtime_service_grants.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 62,
+      "path": "supabase/migrations/20260929182500_autonomous_p0_audit_event_chain.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 63,
+      "path": "supabase/migrations/20260929190746_autonomous_exception_recovery_runtime.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 64,
+      "path": "supabase/migrations/20260929191500_release_gate_deterministic_probe.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 65,
+      "path": "supabase/migrations/20260929191800_release_gate_qa_verifier.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 66,
+      "path": "supabase/migrations/20260929192100_release_gate_deterministic_judge.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 67,
+      "path": "supabase/migrations/20260929205500_autonomous_departments_readiness_service_grants.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 68,
+      "path": "supabase/migrations/20260930030000_superadmin_scheduled_worker_proof_wrapper.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 69,
+      "path": "supabase/migrations/20260930030500_autonomous_blocked_reason_schema_fix.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 70,
+      "path": "supabase/migrations/20260930031000_autonomous_worker_correlated_decision_ledger.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 71,
+      "path": "supabase/migrations/20260930033000_autonomy_on_readiness_gate.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 72,
+      "path": "supabase/migrations/20260930034000_preserve_autonomy_mode_in_worker_proof.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 73,
+      "path": "supabase/migrations/20260930034500_service_role_release_gate_read.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 74,
+      "path": "supabase/migrations/20260930035500_autonomy_on_scoped_containment.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 75,
+      "path": "supabase/migrations/20261002123500_autonomous_worker_shadow_mode_compat.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 76,
+      "path": "supabase/migrations/20261002124500_autonomous_claim_safe_mode.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 77,
+      "path": "supabase/migrations/20261002131500_autonomy_readiness_requires_workflow_pass.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 78,
+      "path": "supabase/migrations/20261003004000_release_gate_expected_seeded_defect.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 79,
+      "path": "supabase/migrations/20261005150000_superadmin_autonomy_gate_refresh.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    },
+    {
+      "order": 80,
+      "path": "supabase/migrations/20261018212409_hive_test_quota_and_backup_cas.sql",
+      "status": "REQUIRES_DEPENDENCY_REVIEW"
+    }
+  ],
+  "hard_gates": [
+    "verified_restorable_postgres_backup",
+    "prod_schema_diff",
+    "isolation_test",
+    "rls_and_privilege_audit",
+    "prod_specific_authorization"
+  ]
+}
