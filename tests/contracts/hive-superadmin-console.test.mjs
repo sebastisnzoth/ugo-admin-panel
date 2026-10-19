@@ -14,7 +14,9 @@ test('Hive navigation is Super Admin only and auth gate enforces this section',(
 test('Hive offline chat never submits prompts or invokes providers',()=>{
  assert.match(consoleCode,/disabled rows=\{3\}/)
  assert.match(consoleCode,/<button type="button" disabled>/)
- assert.match(consoleCode,/supabase\.functions\.invoke<HiveStatus>\('ugo-hive-status'/)\n assert.doesNotMatch(consoleCode,/supabase\.functions\.invoke[^\n]*(?:chat|completion|inference|model)/i)\n assert.doesNotMatch(consoleCode,/signInWithPassword\(|localStorage|OPENROUTER_API_KEY/)
+ assert.match(consoleCode,/supabase\.functions\.invoke<HiveStatus>\('ugo-hive-status'/)
+ assert.doesNotMatch(consoleCode,/supabase\.functions\.invoke[^\n]*(?:chat|completion|inference|model)/i)
+ assert.doesNotMatch(consoleCode,/signInWithPassword\(|localStorage|OPENROUTER_API_KEY/)
 })
 test('Hive multilingual UI copy is present and no fictional metrics are rendered',()=>{
  assert.match(consoleCode,/'pt-BR':/)
