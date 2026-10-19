@@ -41,6 +41,10 @@ const stage=(name,payload={})=>{
   const record={stage:name,at:new Date().toISOString(),...payload}
   stages.push(record)
   console.log('P0_E2E_STAGE '+JSON.stringify(record))
+  try{
+    const message=JSON.stringify(record).slice(0,9000).replaceAll('%','%25').replaceAll('\r','%0D').replaceAll('\n','%0A')
+    console.log(`::notice title=P0 stage ${name}::${message}`)
+  }catch{/* anotación opcional */}
 }
 const must=(result,label)=>{
   if(result?.error)throw Object.assign(new Error(label+': '+result.error.message),{cause:result.error,p0:{label,error:describe(result.error)}})
@@ -91,7 +95,7 @@ async function cleanup(){
 async function providerUiLogin({email,providerUserId}){
   const {chromium}=await import('playwright')
   await fs.mkdir('artifacts',{recursive:true})
-  browser=await chromium.launch({headless:true})
+  if(!browser)browser=await chromium.launch({headless:true})
   const context=await browser.newContext({
     viewport:{width:412,height:915},
     permissions:['geolocation'],
@@ -130,6 +134,40 @@ async function providerUiLogin({email,providerUserId}){
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RELOAD')
   stage('ui_login_reload',{authenticated:true,sessionPersisted:true,pageErrors})
   return {page,context,screenshot,pageErrors,failedRequests}
+}
+
+async function clientUiLogin({email,clientUserId}){
+  const {chromium}=await import('playwright')
+  await fs.mkdir('artifacts',{recursive:true})
+  if(!browser)browser=await chromium.launch({headless:true})
+  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR'})
+  const page=await context.newPage()
+  const pageErrors=[]
+  page.on('pageerror',error=>pageErrors.push(error.message))
+  page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
+  await page.addInitScript(userId=>{
+    try{
+      localStorage.setItem('ugo.locale.guest.client','es')
+      localStorage.setItem(`ugo.locale.client.${userId}`,'es')
+    }catch{/* almacenamiento opcional */}
+  },clientUserId)
+  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
+  await page.locator('[data-testid="auth-form"]').waitFor({state:'visible',timeout:45000})
+  await page.locator('[data-testid="auth-email"]').fill(email)
+  await page.locator('[data-testid="auth-password"]').fill(password)
+  await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
+  await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:60000})
+  assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_CLIENT_SENT_BACK_TO_AUTH')
+  const stored=await page.evaluate(()=>{
+    try{const raw=localStorage.getItem('ugo-test-client-auth');if(!raw)return false;const parsed=JSON.parse(raw);return Boolean(parsed?.access_token||parsed?.currentSession?.access_token)}catch{return false}
+  })
+  assert.ok(stored,'P0_CLIENT_SESSION_NOT_PERSISTED')
+  await page.reload({waitUntil:'domcontentloaded'})
+  await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:60000})
+  assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_CLIENT_SENT_BACK_TO_AUTH_AFTER_RELOAD')
+  await page.screenshot({path:'artifacts/p0-00-client-login.png',fullPage:true}).catch(()=>{})
+  stage('ui_client_login_reload',{authenticated:true,sessionPersisted:true,pageErrors})
+  return {page,context,pageErrors}
 }
 
 async function attemptUiOnline(ui){
@@ -208,8 +246,9 @@ try{
   stage('sessions',{clientExpiresAt:clientSignIn.data.session.expires_at,providerExpiresAt:providerSignIn.data.session.expires_at})
 
   // 3 · provider goes Online in the real app (browser GPS + session proof)
-  let ui=null
+  let ui=null,clientUi=null
   if(UI){
+    clientUi=await clientUiLogin({email:clientEmail,clientUserId:clientId})
     ui=await providerUiLogin({email:providerEmail,providerUserId:providerId})
     const online=await attemptUiOnline(ui)
     const after=await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).maybeSingle()
@@ -295,7 +334,7 @@ try{
   const evidence={
     readiness_id:'p0-client-provider-e2e',sha,environment:'UGO TEST',project_ref:TEST_REF,production_touched:false,
     client_id:clientId,provider_id:providerId,category_id:categoryId,service_id:serviceId,offer_id:offerId,
-    service_state:'asignado',offer_state:'aceptada',gps_age_ms:gpsAgeMs,sessions_alive:true,ui_proof:UI,
+    service_state:'asignado',offer_state:'aceptada',gps_age_ms:gpsAgeMs,sessions_alive:true,ui_proof:UI,client_ui_proof:Boolean(clientUi),
     stages,result:'PASS',completed_at:new Date().toISOString(),
   }
   await fs.mkdir('artifacts',{recursive:true})
