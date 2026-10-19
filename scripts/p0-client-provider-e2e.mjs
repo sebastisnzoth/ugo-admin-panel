@@ -199,7 +199,7 @@ async function providerUiJourney({email,providerUserId}){
 
 async function acceptOfferInUi(ui,{offerId:expectedOfferId}){
   const {page,screenshot,pageErrors}=ui
-  await page.reload({waitUntil:'domcontentloaded'})
+  // Receive the offer in the live session, without reload masking a broken feed.
   await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
   await page.locator('[data-testid="provider-mobile-orders"]').click()
   await page.getByText(SERVICE_DESCRIPTION).first().waitFor({state:'visible',timeout:30000})
@@ -212,7 +212,7 @@ async function acceptOfferInUi(ui,{offerId:expectedOfferId}){
   await page.waitForFunction(()=>{
     const text=document.body.textContent||''
     return /TRABAJO ACTIVO|Continuar trabajo|Trabajo activo|Servicio asignado/i.test(text)
-  },null,{timeout:45000}).catch(()=>{})
+  },null,{timeout:45000})
   await screenshot('03-accepted')
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_ACCEPT')
   stage('ui_accept_clicked',{pageErrors})
@@ -336,7 +336,7 @@ try{
   const evidence={
     readiness_id:'p0-client-provider-e2e',sha,environment:'UGO TEST',project_ref:TEST_REF,production_touched:false,
     client_id:clientId,provider_id:providerId,category_id:categoryId,service_id:serviceId,offer_id:offerId,
-    service_state:'asignado',offer_state:'aceptada',gps_age_ms:gpsAgeMs,sessions_alive:true,ui_proof:UI,
+    service_state:'asignado',offer_state:'aceptada',gps_age_ms:gpsAgeMs,sessions_alive:true,ui_proof:UI,geolocation_source:'Playwright browser sensor samples (not physical GPS)',
     stages,result:'PASS',completed_at:new Date().toISOString(),
   }
   await fs.mkdir('artifacts',{recursive:true})
