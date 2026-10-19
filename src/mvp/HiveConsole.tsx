@@ -44,12 +44,26 @@ const translations={
 const catalog=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const
 type HiveStatus={environment:string;backend:{reachable:boolean;state?:'ONLINE'|'TIMEOUT'|'HTTP_ERROR'|'NETWORK_ERROR';http_status?:number|null;checked_at:string;latency_ms:number};backup:{state:string;version?:string;bytes?:number;created_at?:string};inference:{state:string};autonomy:{state:string}}
 type Tab='overview'|'chat'|'agents'
+type KeyCheck={state:'idle'|'checking'|'verified'|'failed';code?:string}
 export function HiveConsole(){
  const{locale}=useLocale()
  const tr=locale.startsWith('pt')?translations['pt-BR']:locale.startsWith('es')?translations.es:translations.en
  const[tab,setTab]=useState<Tab>('overview')
  const[status,setStatus]=useState<HiveStatus|null>(null)
  const[statusError,setStatusError]=useState(false)
+ const[keyCheck,setKeyCheck]=useState<KeyCheck>({state:'idle'})
+ const checkKey=async()=>{
+  setKeyCheck({state:'checking'})
+  try{
+   const {data,error}=await supabase.functions.invoke<{ok:boolean;code:string}>('ugo-hive-model-router',{
+    method:'POST',body:{action:'check_openrouter_key'}
+   })
+   if(error||data?.ok!==true||data.code!=='OPENROUTER_KEY_AUTHENTICATED'){
+    setKeyCheck({state:'failed',code:data?.code||'KEY_CHECK_FAILED'});return
+   }
+   setKeyCheck({state:'verified',code:data.code})
+  }catch{setKeyCheck({state:'failed',code:'KEY_CHECK_UNREACHABLE'})}
+ }
  useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
@@ -65,6 +79,8 @@ export function HiveConsole(){
    <article><small>{tr.autonomy}</small><strong>{tr.off}</strong><p>{tr.autonomyInfo}</p></article>
   </div><section className="ugo-hive-panel"><h2>{tr.operational}</h2><p>{tr.notice}</p><p role="status">{status?.backup?.state==='RECORDED'?('TEST · '+tr.backupLabel+' '+status.backup.version+' · '+status.backup.bytes+' bytes'):statusError?tr.statusUnavailable:tr.unverified}</p>
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/IMPLEMENTATION_STATUS.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
+   <div><button type="button" disabled={keyCheck.state==='checking'} onClick={()=>{void checkKey()}}>{locale.startsWith('pt')?'Verificar chave OpenRouter':locale.startsWith('es')?'Verificar clave OpenRouter':'Check OpenRouter key'}</button>
+   <p role="status" aria-live="polite">{keyCheck.state==='checking'?'Consultando OpenRouter…':keyCheck.state==='verified'?'OPENROUTER_KEY_AUTHENTICATED':keyCheck.state==='failed'?(keyCheck.code||'KEY_CHECK_FAILED'):tr.unverified}</p></div>
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
    <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.gateway}</p></div><span>{tr.offline}</span></div>
