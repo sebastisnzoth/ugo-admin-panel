@@ -111,7 +111,7 @@ async function providerUiJourney({email,providerUserId}){
     await page.locator('[data-testid="auth-email"]').fill(email)
     await page.locator('[data-testid="auth-password"]').fill(password)
     await screenshot('01-login')
-    await page.locator('[data-testid="auth-form"] button[type="submit"]').click()
+    await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
     await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
     stage('ui_login',{url:page.url(),authenticated:true})
 
