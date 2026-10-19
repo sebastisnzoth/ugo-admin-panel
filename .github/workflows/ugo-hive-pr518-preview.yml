@@ -1,0 +1,46 @@
+name: UGO Hive PR 518 Preview Artifact TEST
+
+on:
+  push:
+    branches:
+      - codex/hive-superadmin-panel-chat-gated-20261018
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-preview:
+    name: Build isolated Hive preview (no Pages deployment)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact dependencies
+        run: npm ci --include=dev
+      - name: Validate TEST target and Hive auth boundaries
+        run: |
+          node scripts/assert-test-environment.mjs
+          node --test tests/contracts/hive-superadmin-console.test.mjs tests/contracts/admin-auth-boundary.test.mjs
+      - name: Compile isolated GitHub Pages preview
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+        run: npm run build -- --base=/ugo-admin-panel/preview/pr-518/
+      - name: Verify HTML routes, assets and absence of secrets
+        run: |
+          test -s dist/index.html
+          grep -q '/ugo-admin-panel/preview/pr-518/assets/' dist/index.html
+          test -n "$(find dist/assets -type f -name '*.js' -print -quit)"
+          test -n "$(find dist/assets -type f -name '*.css' -print -quit)"
+          ! grep -R -E 'SUPABASE_SERVICE_ROLE_KEY|FREEAPI_DB_BACKUP_KEY|FREEAPI_HIVE_TOKEN|OPENROUTER_API_KEY|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY' dist
+      - name: Upload review artifact only
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-hive-pr518-static-preview-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
