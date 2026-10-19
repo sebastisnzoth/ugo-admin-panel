@@ -45,13 +45,17 @@ export function createBackupHandler({ token, store, projectUrl }) {
         return new Response(blob,{headers:{'cache-control':'no-store','content-type':'application/octet-stream',etag:'"'+current.version+'"'}});
       }
       if(req.headers.get('content-type')?.split(';')[0]!=='application/octet-stream') return reply(415,'BINARY_REQUIRED');
-      // Empty-store provisioning requires a one-time, separately authorized operation.
-      // Runtime PUTs always require a current ETag; no force/rollback API is exposed.
+      // One-time bootstrap: an authenticated caller may create the very first
+      // encrypted snapshot only. SQL compare-and-swap serializes concurrent calls.
+      // Existing backups cannot be replaced via this path.
+      const bootstrap=req.headers.get('if-none-match')==='*';
       const match=req.headers.get('if-match');
-      if(!/^"[0-9a-f-]{36}"$/.test(match||'')) return reply(428,'IF_MATCH_REQUIRED');
-      const expectedVersion=match.slice(1,-1);
+      if(bootstrap && match) return reply(400,'CONFLICTING_PRECONDITIONS');
+      if(!bootstrap && !/^"[0-9a-f-]{36}"$/.test(match||'')) return reply(428,'IF_MATCH_REQUIRED');
       const current=await store.current();
-      if(!current || current.version!==expectedVersion) return reply(412,'STALE_BACKUP');
+      if(bootstrap && current) return reply(412,'BACKUP_ALREADY_INITIALIZED');
+      const expectedVersion=bootstrap ? null : match.slice(1,-1);
+      if(!bootstrap && (!current || current.version!==expectedVersion)) return reply(412,'STALE_BACKUP');
       const blob=await readBounded(req,MAX_BYTES);
       if(blob.length<=36 || !magic.every((x,i)=>blob[i]===x)) return reply(400,'INVALID_ENVELOPE');
       const version=crypto.randomUUID(); const key='snapshots/'+version;
