@@ -1,0 +1,40 @@
+/* UGO premium complete experience — scoped to authenticated client Home. */
+.ugo-client-root .ugo-premium-search{display:flex;align-items:center;gap:9px;border:1px solid #d8e9df;border-radius:16px;background:#fff;padding:7px 7px 7px 15px;margin:0 0 14px;box-shadow:0 7px 22px rgba(12,83,65,.055)}
+.ugo-client-root .ugo-premium-search>span{font-size:24px;color:#087e65}
+.ugo-client-root .ugo-premium-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#17362f;font-size:16px;min-height:40px}
+.ugo-client-root .ugo-premium-search input:focus-visible{outline:2px solid #087e65;outline-offset:2px;border-radius:5px}
+.ugo-client-root .ugo-premium-search>button{min-width:44px;min-height:44px;border:0;border-radius:12px;background:#007e69;color:#fff;font-size:22px;cursor:pointer}
+.ugo-client-root .ugo-premium-map-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 18px;border:0;border-bottom:1px solid #e2ebe6;background:#f7fbf8;color:#006b58;font-weight:750;cursor:pointer}
+.ugo-client-root .ugo-premium-map-expanded .ugo-home-map{height:min(66dvh,680px)!important}
+.ugo-client-root .ugo-premium-map-expanded .ugo-home-route-view{min-height:420px}
+.ugo-client-root .ugo-home-hero{background:linear-gradient(140deg,#eafaf3 0%,#fff 78%)!important}
+.ugo-client-root .ugo-home-hero h1{max-width:460px!important}
+.ugo-client-root .ugo-home-hugo-cta{background:linear-gradient(110deg,#05876c,#035d70)!important;color:#fff!important;border-color:transparent!important}
+.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy strong,.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy small{color:#fff!important}
+.ugo-client-root .ugo-home-hugo-cta>b{background:#fff!important;color:#006b58!important}
+.ugo-client-root .ugo-home-categories{gap:12px!important}
+.ugo-client-root .ugo-home-categories>button{background:#f6faf8!important;border-color:#e3eee8!important}
+.ugo-client-root .ugo-home-services{scroll-margin-top:86px}
+.ugo-client-root #ugo-client-map{scroll-margin-top:86px}
+@media(max-width:800px){
+ .ugo-client-root .ugo-home-screen{height:auto!important;min-height:100dvh!important;overflow:visible!important;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
+ .ugo-client-root .ugo-home-layout{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;gap:12px!important;padding:10px 12px 20px!important}
+ .ugo-client-root .ugo-home-hero{order:1;width:100%;padding:20px 16px!important}
+ .ugo-client-root .ugo-home-services{order:2;width:100%;padding:18px 14px!important}
+ .ugo-client-root .ugo-home-map-card{order:3;width:100%}
+ .ugo-client-root .ugo-home-mobile-nav{order:4}
+ .ugo-client-root .ugo-home-topline{margin-bottom:14px!important}
+ .ugo-client-root .ugo-home-hero h1{font-size:clamp(25px,7.8vw,35px)!important;line-height:1.12!important}
+ .ugo-client-root .ugo-home-hero>p{font-size:13px!important;line-height:1.45!important;margin-bottom:15px!important}
+ .ugo-client-root .ugo-home-categories{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+ .ugo-client-root .ugo-home-categories>button{display:flex!important;flex-direction:column!important;justify-content:center;align-items:center;text-align:center!important;gap:6px!important;padding:9px 3px!important;min-height:88px}
+ .ugo-client-root .ugo-home-categories>button>div small,.ugo-client-root .ugo-home-categories>button>em{display:none!important}
+ .ugo-client-root .ugo-home-categories>button>div b{font-size:10px!important;overflow-wrap:anywhere}
+ .ugo-client-root .ugo-home-category-icon{width:40px!important;height:40px!important;flex-shrink:0}
+ .ugo-client-root .ugo-home-mobile-nav{position:fixed!important;display:flex!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;justify-content:space-around!important;z-index:55!important;padding-bottom:env(safe-area-inset-bottom,0px)!important;background:#fff!important;box-shadow:0 -8px 30px rgba(20,50,40,.07)}
+ .ugo-client-root .ugo-home-mobile-nav button{min-width:0;min-height:54px;flex:1}
+ .ugo-client-root .ugo-home-map{height:320px!important}
+ .ugo-client-root .ugo-premium-map-expanded .ugo-home-map{height:min(65dvh,560px)!important}
+}
+@media(max-width:359px){.ugo-client-root .ugo-home-categories{grid-template-columns:repeat(2,minmax(0,1fr))!important}.ugo-client-root .ugo-home-categories>button{min-height:84px}}
+@media(prefers-reduced-motion:reduce){.ugo-client-root .ugo-premium-search *,.ugo-client-root .ugo-premium-map-toggle{transition:none!important;animation:none!important}}
