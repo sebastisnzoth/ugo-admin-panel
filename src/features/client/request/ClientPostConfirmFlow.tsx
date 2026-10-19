@@ -47,7 +47,7 @@ export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
   }
   if(!row?.id)throw new Error(t('clientMatch.createFailed'))
   setService(row);setView(isMatchingServiceState(row.estado)?'matching':row.estado==='completado'?'completed':'assigned');setMessage(row.estado==='buscando'?t('clientMatch.created'):t('clientMatch.recovered'))
-  if(isMatchingServiceState(row.estado)){await startDispatch(row.id,context);clearDraft();await load(row.id);setNow(Date.now());setMessage(t('clientMatch.sent'))}
+  if(isMatchingServiceState(row.estado)){const dispatchResult=await startDispatch(row.id,context);clearDraft();await load(row.id);setNow(Date.now());setMessage(dispatchResult.state==='offering'||dispatchResult.state==='matched'?t('clientMatch.sent'):t('clientMatch.created'))}
   else clearDraft()
  }catch(error){setMessage(error instanceof Error?error.message:t('clientMatch.draftSavedRetry'))}finally{creating.current=false;setBusy(false)}},[clearDraft,draftKey,findByDraft,load,requestKey,session,startDispatch,supabase,t])
  useEffect(()=>{void create()},[create])
