@@ -27,3 +27,13 @@ El PR **NO se fusiona ni modifica Pages producción**. Para una URL GitHub Pages
 
 ## Rollback
 Revertir únicamente los commits de este PR (estilos importados, buscador, nav y mapa expandido); no tocar tablas Supabase ni otros PRs.
+
+
+## Referencia visual obligatoria (nueva aprobación)
+Imagen aportada por el usuario en la conversación, con siete pantallas: 1) Home con foto hero y grilla 4x2; 2) catálogo en tarjetas pastel; 3) mapa con bottom sheet de profesionales reales; 4) perfil del profesional con foto, verificación y servicios; 5) solicitud en tres pasos; 6) resultados en lista; 7) pedido en curso con timeline, mapa y contacto. **Esta imagen reemplaza la preview HTML previa como criterio visual de aceptación.**
+
+Se aplicó un refinamiento de tokens, paleta, tarjetas alternadas, mapa, CTA y tipografía en `clientPremiumExperience2026.css`. Queda pendiente adaptar/comprobar cada una de las pantallas existentes a la composición de la referencia. No afirmar que la app ya es idéntica; no inventar fotografías, precios, evaluaciones, ubicación, disponibilidad ni etapas.
+
+**Bloqueador independiente detectado:** Cross-role UI Runtime TEST del SHA `05b901d` falla al esperar `.ugo-provider-root` durante 30 s. Investigar el arranque o permisos del Proveedor separadamente; no marcar la experiencia Cliente como validada por ese resultado.
+
+**Gates pendientes:** resultados completos del nuevo SHA, evidencia de navegador móvil en 320/360/390/430, búsqueda/navegación accesible, solicitud real con dos cuentas de prueba y snapshot comparativo con la imagen de referencia. No fusionar ni publicar /app/ hasta revisión visual del usuario.
