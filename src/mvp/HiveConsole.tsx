@@ -1,4 +1,4 @@
-import React,{useState} from 'react'
+import React,{useEffect,useState} from 'react'\nimport{supabase}from'../lib/supabase'
 import{useLocale}from'../i18n/locale'
 import'./hive-console.css'
 
@@ -41,11 +41,12 @@ const translations={
  }
 } as const
 const catalog=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const
+type HiveStatus={environment:string;backend:{reachable:boolean;checked_at:string;latency_ms:number};backup:{state:string;version?:string;bytes?:number;created_at?:string};inference:{state:string};autonomy:{state:string}}
 type Tab='overview'|'chat'|'agents'
 export function HiveConsole(){
  const{locale}=useLocale()
  const tr=locale.startsWith('pt')?translations['pt-BR']:locale.startsWith('es')?translations.es:translations.en
- const[tab,setTab]=useState<Tab>('overview')
+ const[tab,setTab]=useState<Tab>('overview')\n const[status,setStatus]=useState<HiveStatus|null>(null)\n const[statusError,setStatusError]=useState(false)\n useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
   <nav className="ugo-hive-tabs" aria-label={tr.navLabel}>
@@ -56,9 +57,9 @@ export function HiveConsole(){
   {tab==='overview'&&<div className="ugo-hive-stack"><div className="ugo-hive-cards">
    <article><small>{tr.router}</small><strong>{tr.prepared}</strong><p>{tr.routerInfo}</p></article>
    <article><small>{tr.provider}</small><strong>{tr.unverified}</strong><p>{tr.providerInfo}</p></article>
-   <article><small>{tr.remote}</small><strong>{tr.unverified}</strong><p>{tr.remoteInfo}</p></article>
+   <article><small>{tr.remote}</small><strong>{status?(status.backend.reachable?'ONLINE':'OFFLINE'):tr.unverified}</strong><p>{status?('TEST · '+status.backend.checked_at):tr.remoteInfo}</p></article>
    <article><small>{tr.autonomy}</small><strong>{tr.off}</strong><p>{tr.autonomyInfo}</p></article>
-  </div><section className="ugo-hive-panel"><h2>{tr.operational}</h2><p>{tr.notice}</p>
+  </div><section className="ugo-hive-panel"><h2>{tr.operational}</h2><p>{tr.notice}</p><p role="status">{status?.backup?.state==='RECORDED'?('TEST · backup '+status.backup.version+' · '+status.backup.bytes+' bytes'):statusError?'TEST · status unavailable':tr.unverified}</p>
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/IMPLEMENTATION_STATUS.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
