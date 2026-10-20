@@ -31,11 +31,11 @@ jobs:
           node-version: 22
       - name: Verify credentials and control
         env:
-          OPENAI_API_KEY: ${{ secrets.UGO_CODING_AGENT_OPENAI_API_KEY }}
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
         shell: bash
         run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "::error::Missing UGO_CODING_AGENT_OPENAI_API_KEY; agent not started."
+          if [ -z "$UGO_FREEAPI_API_KEY" ]; then
+            echo "::error::Missing UGO_CODING_AGENT_FREEAPI_KEY (FreeLLMAPI gateway token); agent not started."
             exit 1
           fi
       - name: Recover persisted task and constraints
@@ -54,8 +54,9 @@ jobs:
         run: npm install --global @openai/codex
       - name: Execute one bounded repair cycle
         env:
-          OPENAI_API_KEY: ${{ secrets.UGO_CODING_AGENT_OPENAI_API_KEY }}
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
           CODEX_MODEL: ${{ vars.UGO_CODING_AGENT_MODEL }}
+          UGO_FREEAPI_BASE_URL: https://ugo-hive-freeapi.onrender.com/v1
         shell: bash
         run: |
           cat > "$RUNNER_TEMP/ugo-task.txt" <<'PROMPT'
@@ -76,11 +77,23 @@ jobs:
           and write the verified blocker and next action in your final response.
           PROMPT
           export UGO_ISSUE_FILE="$RUNNER_TEMP/ugo-issue-543.json"
-          if [ -n "$CODEX_MODEL" ]; then
-            codex exec --full-auto --sandbox workspace-write --model "$CODEX_MODEL" - < "$RUNNER_TEMP/ugo-task.txt"
-          else
-            codex exec --full-auto --sandbox workspace-write - < "$RUNNER_TEMP/ugo-task.txt"
-          fi
+          # Fail closed if the gateway is unavailable; never fall back to OpenAI billing.
+          test -n "$UGO_FREEAPI_API_KEY"
+          export UGO_FREEAPI_API_KEY
+          cat > "$RUNNER_TEMP/freeapi-provider.toml" <<EOF
+          model_provider = "ugo_freeapi"
+          model = "openai/gpt-oss-120b"
+          model_providers.ugo_freeapi.name = "UGO FreeLLMAPI (Render)"
+          model_providers.ugo_freeapi.base_url = "$UGO_FREEAPI_BASE_URL"
+          model_providers.ugo_freeapi.env_key = "UGO_FREEAPI_API_KEY"
+          model_providers.ugo_freeapi.wire_api = "responses"
+          EOF
+          model="${CODEX_MODEL:-openai/gpt-oss-120b}"
+          CODEX_HOME="$RUNNER_TEMP/ugo-codex-home"
+          export CODEX_HOME
+          mkdir -p "$CODEX_HOME"
+          cp "$RUNNER_TEMP/freeapi-provider.toml" "$CODEX_HOME/config.toml"
+          codex exec --full-auto --sandbox workspace-write --model "$model" - < "$RUNNER_TEMP/ugo-task.txt"
       - name: Validate no protected paths changed
         shell: bash
         run: |
