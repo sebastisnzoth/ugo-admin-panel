@@ -88,8 +88,9 @@ jobs:
       - name: Validate no protected paths changed
         shell: bash
         run: |
-          git diff --name-only
-          if git diff --name-only | grep -E '^(\.github/workflows/ugo-persistent-coding-agent.yml|\.env|\.env\.|supabase/migrations/)' ; then
+          # All modifications, including newly created/untracked files.
+          git status --porcelain
+          if git status --porcelain | sed 's/^...//' | grep -E '^(\.github/|\.env($|\.)|supabase/|infra/|vercel\.json$|\.vercel/)' ; then
             echo "::error::Protected path changed. Manual review required."
             exit 1
           fi
