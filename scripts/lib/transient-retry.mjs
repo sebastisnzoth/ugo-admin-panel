@@ -8,9 +8,9 @@
 // NUNCA reintenta errores de comportamiento bajo prueba (asserts, timeouts de
 // UI/Realtime, transiciones inválidas, etc.): esas expectativas no cambian.
 
-const DEFAULT_ATTEMPTS = 4
-const DEFAULT_BASE_DELAY_MS = 1500
-const MAX_DELAY_MS = 10000
+const DEFAULT_ATTEMPTS = 6
+const DEFAULT_BASE_DELAY_MS = 2000
+const MAX_DELAY_MS = 15000
 
 const TRANSIENT_STATUS = new Set([408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 599])
 const TRANSIENT_CODES = new Set([
@@ -97,7 +97,13 @@ export async function withTransientRetry (operation, options = {}) {
       return await operation(attempt)
     } catch (error) {
       lastError = error
-      if (!isTransientSupabaseError(error) || attempt === attempts) throw error
+      if (!isTransientSupabaseError(error)) throw error
+      if (attempt === attempts) {
+        console.warn(
+          `[transient-retry] ${label} agotó ${attempts} intentos con error transitorio (${String(error.message || error).slice(0, 200)}) · sin reintento adicional`,
+        )
+        throw error
+      }
       const delay = retryDelayMs(attempt, baseDelayMs)
       console.warn(
         `[transient-retry] ${label} intento ${attempt}/${attempts} falló transitoriamente (${String(error.message || error).slice(0, 160)}) · reintentando en ${delay}ms`,

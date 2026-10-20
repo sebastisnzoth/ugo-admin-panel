@@ -107,6 +107,34 @@ grupo pasó a `ugo-runtime-timing-singleflight-${{ github.workflow }}` — **sin
 todo el repo (todas las ramas)**, sin colisión entre workflows distintos. Este es el motivo exacto por el
 que los grupos originales del repo siempre incluían `github.workflow` o un prefijo propio.
 
+### 3.2 Resultado del primer batch con fixes y evidencia nueva (02:34–02:45Z, PR #535)
+
+Los workflows con `::error` ahora publican la causa exacta (las anotaciones reemplazaron al `exit 1` mudo):
+
+- **Ventana de 504 sostenida en GoTrue**: Hugo Provider Actions (`39359617460`, `39359897024`),
+  Admin Realtime (`39359897518`), Cross-role (`39359897140`), Profile Photo (`39359617508`,
+  `39359897178`) y Cross Performance (`39359617548`, `39359897057`) fallaron TODOS con
+  `{status: 504, __isAuthError: true}` en `signInWithPassword`/`createUser`. Cross Performance ya traía
+  **su propio** login con 7 intentos/`cap 20 s` (~71 s de presupuesto) y igual falló → la ventana de 504
+  duró **≥ 2–3 minutos** (≈02:34–02:45Z). `UGO TEST Auth Isolation` (autenticación más liviana, corrida
+  temprana) pasó en ambos batches → GoTrue no estaba globalmente caído, sino saturado en ráfagas.
+- **Operating Zone `39359617465`**: los 5 intentos del RPC terminaron en `code: '57014'`
+  (statement timeout) y el paso Runtime tardó ~10 min → el RPC esperaba/bloqueaba más de lo que el
+  reintento podía cubrir.
+- Contexto: en esa ventana **no corría la otra sesión** (último batch de `arena/607fd3ca` a las 02:01Z) y
+  los workers de `main` estaban `skipped`; el exceso vino de los **dos batches propios solapados**
+  (02:34 + 02:37) — una tercera sesión `arena/9a1da8aa` cerró su corrida a las 02:22Z. Lección operativa:
+  **una sola corrida de suite a la vez por repositorio**.
+
+Iteración 2 aplicada sobre esta evidencia (mismo PR #535):
+
+- Defaults del helper subidos a **6 intentos / base 2 s / tope 15 s** (62 s de backoff puro) y log final
+  `agotó N intentos` para que quede dentro del `tail` de anotaciones.
+- `cross-performance`: su login propio pasa de 7 intentos/20 s a **10 intentos/30 s** (~2.5 min), porque
+  su evidencia demostró que 71 s no cubren la ventana observada.
+- `provider-operating-zone`: **plazo por intento de 45 s** (`CLIENT_DEADLINE_45000MS`, SQLSTATE 57014)
+  + 4 intentos/4 s → falla temprano y legible en lugar de colgar 10 min.
+
 ## 4. Validación local (misma sesión, misma base `cbd671b6`)
 
 - `npm run build` (`verify:test-env` + `tsc -b` + `vite build`) → **PASS**.

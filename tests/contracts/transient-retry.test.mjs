@@ -189,8 +189,8 @@ test('fetchWithTransientRetry devuelve sin reintentar un 404 definitivo', async 
 })
 
 test('retryDelayMs crece exponencialmente con tope', () => {
-  assert.equal(retryDelayMs(1), 1500)
-  assert.equal(retryDelayMs(2), 3000)
-  assert.equal(retryDelayMs(3), 6000)
-  assert.equal(retryDelayMs(10), 10000)
+  assert.equal(retryDelayMs(1), 2000)
+  assert.equal(retryDelayMs(2), 4000)
+  assert.equal(retryDelayMs(3), 8000)
+  assert.equal(retryDelayMs(10), 15000)
 })
