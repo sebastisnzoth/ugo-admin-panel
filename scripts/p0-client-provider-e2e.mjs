@@ -412,6 +412,7 @@ try{
   const payload={result:'FAIL',sha,stage:stages.at(-1)?.stage||'bootstrap',message:error instanceof Error?error.message:String(error),cause:error?.cause?describe(error.cause):null,details:error?.p0||null,stages}
   for(const [role,page] of [['provider',ui?.page],['client',clientUi?.page]]){
     if(page){await page.screenshot({path:'artifacts/p0-'+role+'-failure.png',fullPage:true}).catch(()=>{});payload[role]={url:page.url(),body:(await page.locator('body').innerText().catch(()=>'' )).slice(0,8000)}}
+  }
   console.log('P0_E2E_FAILURE '+JSON.stringify(payload))
   await fs.mkdir('artifacts',{recursive:true}).catch(()=>{})
   await fs.writeFile('artifacts/p0-client-provider-e2e-failure.json',JSON.stringify(payload,null,2)+'\n').catch(()=>{})
