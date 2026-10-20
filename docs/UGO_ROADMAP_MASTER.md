@@ -654,3 +654,12 @@ Ver [checkpoint HU0–HU3](ugo-hive/IMPLEMENTATION_STATUS.md). Código y ensayos
 
 
 Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles idénticos a PR revisados; revalidación18PASS y19PASS/1SKIP. Backend/inferenciaOFF; Pages observado aún7931173. Ver checkpoint vigente en docs/ugo-hive/IMPLEMENTATION_STATUS.md; CI del merge omitido para no ejecutar probes/modelos/GHCR, CI del PR documentado.
+
+
+## Contrato de ejecución y actualización continua — 20/10/2026
+
+**Meta:** UGO/HUGO funciona de extremo a extremo y se lanza en Florianópolis; HIVE, Maestro, Empresa Autónoma y Observatory son medios. El roadmap es obligatorio para todas las sesiones: al iniciar, contrastar con main, CI, UGO Arena, producción y Sentinel; al terminar, actualizar fase, evidencia, SHA, regresiones y siguiente trabajo. Nunca declarar éxito por código o deploy sin pruebas.
+
+**Secuencia hasta producción:** 0) estado y baseline; 1) Auth y deslogueo de Proveedor/Cliente; 2) permisos GPS y disponibilidad; 3) pedido→matching→alerta; 4) Realtime y reconexión; 5) aceptación, traslado, PIN/QR, ejecución y cierre; 6) chat; 7) agenda, programados y multipedidos; 8) PIX, efectivo, deuda y comisión; 9) perfiles, fotos y KYC; 10) HUGO voz/texto; 11) UX, accesibilidad y PT-BR; 12) Admin y Super Admin; 13) seguridad, rendimiento, CI y regresiones; 14) recuperar e integrar HIVE, Empresa Autónoma y Observatory; 15) continuidad autónoma, presupuestos y límites Supabase; 16) piloto Faxina/Marido de Aluguel; 17) E2E humano dos dispositivos y primer cliente; 18) lanzamiento gradual en Florianópolis; 19) operación repetible y mejoras.
+
+**«Seguí»** = ejecutar el siguiente bloqueo priorizado y verificable sin perder el objetivo general; no implica trabajo continuo después de finalizar la ejecución del chat. No alterar producción ni datos sin gates; no romper funcionalidades previamente comprobadas. Actualizar también `docs/UGO_CAMINO_MAESTRO.md` para permitir retomar sin repetir instrucciones. Estados: PENDIENTE, IMPLEMENTADO, CI VALIDATED, RUNTIME VALIDATED, PUBLISHED, ACCEPTED.
