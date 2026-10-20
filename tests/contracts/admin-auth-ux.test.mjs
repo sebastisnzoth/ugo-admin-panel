@@ -52,6 +52,6 @@ test('a valid admin session with a slow profile is retried instead of shown as a
   // The profile query keeps its bounded timeout, but its failure must not authorize the login form.
   assert.match(gate, /setSessionActive\(transientAdminProfileError\(profileError\)\)/)
   assert.match(gate, /if\(sessionActive&&!allowed\)/)
-  assert.match(gate, /if\(!sessionActive\|\|allowed\|\|checking\|\|profileRetry>=4\)return/)
+  assert.match(gate, /if\(!sessionActive\|\|allowed\|\|checking\|\|profileRetry>=12\)return/)
   assert.match(gate, /setSessionActive\(false\);await supabase\.auth\.signOut\(\)/)
 })
