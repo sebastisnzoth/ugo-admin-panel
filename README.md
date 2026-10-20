@@ -9,7 +9,7 @@ UGO conecta clientes con proveedores locales y administra el ciclo completo del 
 - **Admin** — opera servicios, usuarios, proveedores, pagos, disputas, Scout, reportes, configuración y observabilidad.
 - **Super Admin / Command Center** — gobierno, readiness, evidencia, autonomía y controles globales.
 
-Las superficies visuales de Hugo/orbe están actualmente deshabilitadas. El backend de IA permanece aislado y protegido como integración dormida/futura; su existencia no implica que la UI de voz esté activa.
+Las superficies visuales de Hugo/orbe están actualmente deshabilitadas por ruta (no hay `?app=` que las exponga al usuario final). El backend de IA permanece aislado y protegido como integración dormida/futura; su existencia no implica que la UI de voz esté activa. Componentes como `ClientHugoBridge` / `ClientVoiceHugoDock` siguen en código pero sólo se montan tras gate explícito; ver `docs/INDEX.md` y `docs/HUGO_BACKEND_SECURITY_ARCHITECTURE.md`.
 
 ## Stack
 
@@ -61,7 +61,7 @@ tests/            contratos e integración
 .github/workflows/ CI/readiness/runtime gates
 ```
 
-Reglas detalladas: ver `ARCHITECTURE.md`, `SECURITY.md` y `CONTRIBUTING.md`.
+Reglas detalladas: ver `ARCHITECTURE.md`, `SECURITY.md` y `CONTRIBUTING.md`. Índice de todos los documentos: `docs/INDEX.md`.
 
 ## Desarrollo local
 

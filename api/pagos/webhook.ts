@@ -1,9 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN
+const MP_WEBHOOK_SECRET = process.env.MERCADO_PAGO_WEBHOOK_SECRET || process.env.MP_WEBHOOK_SECRET || ''
 
 type ServiceHint={id:string;numero:number|string|null;cliente_id:string;proveedor_id:string|null;tarifa:number|null;moneda:string|null;estado:string}
 type PaymentUpdate={estado:string;mp_status:string;mp_payment_id:string;updated_at:string;autorizado_at?:string;reembolsado_at?:string}
@@ -41,8 +43,48 @@ function openPixStatus(event: string) {
   return 'pending'
 }
 
+function parseMpSignature(headerValue: string): { ts: string; v1: string } | null {
+  if (!headerValue) return null
+  // Expected: t=... or ts=..., v1=...  — MP docs use "ts=...,v1=..."
+  const parts = headerValue.split(',').map(s => s.trim())
+  let ts = '', v1 = ''
+  for (const p of parts) {
+    if (p.startsWith('ts=')) ts = p.slice(3).trim()
+    else if (p.startsWith('t=')) ts = p.slice(2).trim()
+    else if (p.startsWith('v1=')) v1 = p.slice(3).trim()
+  }
+  if (!ts || !v1) return null
+  return { ts, v1 }
+}
+
+function verifyMpWebhookSignature(req: VercelRequest): boolean {
+  if (!MP_WEBHOOK_SECRET) return true // secret not configured → warn but allow (provisioning phase)
+  const sigHeader = String(req.headers['x-signature'] || req.headers['x-Signature'] || '')
+  const requestId = String(req.headers['x-request-id'] || req.headers['x-Request-Id'] || '')
+  const parsed = parseMpSignature(sigHeader)
+  if (!parsed) return false
+  const dataId = paymentIdFrom(req) || String(req.body?.data?.id || '')
+  // MP manifest per docs: id:{data.id};request-id:{x-request-id};ts:{ts};
+  const manifest = `id:${dataId};request-id:${requestId};ts:${parsed.ts};`
+  const expected = createHmac('sha256', MP_WEBHOOK_SECRET).update(manifest).digest('hex')
+  try {
+    const a = Buffer.from(expected, 'hex')
+    const b = Buffer.from(parsed.v1, 'hex')
+    if (a.length !== b.length) return false
+    return timingSafeEqual(a, b)
+  } catch {
+    return false
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'GET' && req.method !== 'POST') return res.status(200).json({ received: true })
+  // Hardening: webhook must be POST only. GET widens crawl/CSRF surface.
+  if (req.method !== 'POST') return res.status(405).json({ received: true })
+
+  // MP signature guard (when secret is provisioned). Rejects unauthenticated re-sync attempts.
+  if (MP_WEBHOOK_SECRET && !verifyMpWebhookSignature(req)) {
+    return res.status(401).json({ received: true })
+  }
 
   const openPixEvent = openPixEventFrom(req)
   if (process.env.PAYMENTS_OPENPIX_ENABLED === 'true' && openPixEvent.toUpperCase().startsWith('OPENPIX:')) {
@@ -63,7 +105,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const paymentId = paymentIdFrom(req)
   const eventType = eventTypeFrom(req)
-  if (!paymentId || (eventType && !eventType.includes('payment'))) return res.status(200).json({ received: true, ignored: true })
+  // Uniform response — do not leak whether paymentId was valid or event type mismatched
+  if (!paymentId || (eventType && !eventType.includes('payment'))) return res.status(200).json({ received: true })
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
@@ -103,11 +146,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { data: expansion, error: expansionError } = await sb.from('ampliaciones_servicio').select('id,servicio_id,monto_extra,estado,pago_estado,ajuste_estado').eq('id', expansionId).maybeSingle()
       if (expansionError || !expansion) {
         console.error('Ampliación del webhook no encontrada:', expansionError)
-        return res.status(200).json({ received: true, ignored: true })
+        return res.status(200).json({ received: true })
       }
       const { data: service, error: serviceError } = await sb.from('servicios').select('id,moneda').eq('id', expansion.servicio_id).maybeSingle()
-      if (serviceError || !service) return res.status(200).json({ received: true, ignored: true })
-      if (serviceHint && serviceHint !== service.id) return res.status(200).json({ received: true, mismatch: true })
+      if (serviceError || !service) return res.status(200).json({ received: true })
+      if (serviceHint && serviceHint !== service.id) return res.status(200).json({ received: true })
 
       const paidAmount = Number(paymentData.transaction_amount || 0)
       const expectedAmount = Number(expansion.monto_extra || 0)
@@ -121,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { error: confirmError } = await sb.rpc('confirmar_pago_ampliacion', { p_ampliacion_id: expansion.id, p_pago_externo_id: externalPaymentId, p_monto: paidAmount, p_moneda: expectedCurrency })
         if (confirmError) {
           console.error('No se pudo aplicar el ajuste de ampliación:', confirmError)
-          return res.status(200).json({ received: true, updated: false })
+          return res.status(200).json({ received: true })
         }
         return res.status(200).json({ received: true, updated: true, tipo: 'ampliacion', estado: 'retenido' })
       }
@@ -135,7 +178,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         })
         if (refundError) {
           console.error('No se pudo revertir el ajuste reembolsado de ampliación:', refundError)
-          return res.status(200).json({ received: true, updated: false, tipo: 'ampliacion', estado: 'reembolso_pendiente' })
+          return res.status(200).json({ received: true })
         }
         return res.status(200).json({ received: true, updated: true, tipo: 'ampliacion', estado: 'reembolsado' })
       }
@@ -146,13 +189,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (updateError) console.error('No se pudo actualizar estado del ajuste:', updateError)
       if (paymentData.status === 'approved' && (!amountMatches || !currencyMatches)) {
         console.error('Ajuste aprobado con monto/moneda inconsistente', { expansionId, expectedAmount, paidAmount, expectedCurrency, paidCurrency })
-        return res.status(200).json({ received: true, mismatch: true })
+        return res.status(200).json({ received: true })
       }
       return res.status(200).json({ received: true, updated: !updateError, tipo: 'ampliacion', estado: adjustmentState })
     }
 
     const servicioId = String(paymentData.external_reference || paymentData.metadata?.servicio_id || serviceHint || '')
-    if (!servicioId) return res.status(200).json({ received: true, ignored: true })
+    if (!servicioId) return res.status(200).json({ received: true })
 
     const servicio = hintedService?.id === servicioId ? hintedService : ((await sb.from('servicios').select('id,numero,cliente_id,proveedor_id,tarifa,moneda,estado').eq('id', servicioId).maybeSingle()).data as ServiceHint|null)
     if (!servicio) {
@@ -190,7 +233,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (paymentData.status === 'approved' && (!amountMatches || !currencyMatches)) {
       console.error('Pago aprobado con monto/moneda inconsistente', { servicioId, expectedAmount, paidAmount, expectedCurrency, paidCurrency })
-      return res.status(200).json({ received: true, updated: true, mismatch: true })
+      return res.status(200).json({ received: true })
     }
 
     return res.status(200).json({ received: true, updated: true, estado: nuevoEstado, modeloPago: pago.modelo_pago || 'custodia_ugo' })
