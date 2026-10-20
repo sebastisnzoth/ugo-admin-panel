@@ -27,6 +27,9 @@ test('Mercado Pago refund webhook delegates expansion reversal to backend RPC', 
 
   assert.match(source, /paymentData\.status === 'refunded'/)
   assert.match(source, /sb\.rpc\('reembolsar_pago_ampliacion'/)
-  assert.match(source, /estado: 'reembolso_pendiente'/)
+  // Invalid refund RPCs must not be acknowledged as a successful reversal.
+  assert.match(source, /if \(refundError\)/)
+  assert.match(source, /console\.error\('No se pudo revertir el ajuste reembolsado de ampliación:'/)
+  assert.match(source, /return res\.status\(200\)\.json\(\{ received: true \}\)/)
   assert.match(source, /estado: 'reembolsado'/)
 })
