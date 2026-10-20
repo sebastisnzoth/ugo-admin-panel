@@ -53,7 +53,17 @@ jobs:
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
-          node scripts/hugo-provider-actions-runtime.mjs
+          set -o pipefail
+          node scripts/hugo-provider-actions-runtime.mjs 2>&1 | tee /tmp/ugo-hugo-provider-actions-runtime.log
+      - name: Runtime failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-hugo-provider-actions-runtime.log ]; then
+            tail -n 60 /tmp/ugo-hugo-provider-actions-runtime.log | while IFS= read -r line; do
+              printf '::error title=Hugo Provider Actions failure::%s\n' "${line//\%/%25}"
+            done
+          fi
       - name: Judge
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}

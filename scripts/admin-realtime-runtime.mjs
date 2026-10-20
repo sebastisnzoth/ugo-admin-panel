@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {createTestUser,withTransientRetry} from './lib/transient-retry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -16,8 +17,25 @@ assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_ADMIN_REALTIME_INPUTS
 
 const root=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
-const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password})
-assert.ifError(loginError)
+// Supabase Auth rate-limits bursts from the shared runner IP when many workflows sign in at
+// once. Retry only transient auth failures (429/5xx/network) with backoff, log each attempt and
+// fail loudly with the exact code otherwise. A permanent invalid credential is never retried.
+async function signInWithRetry(){
+ let lastError=null
+ for(let attempt=0;attempt<4;attempt++){
+  const{data,error}=await user.auth.signInWithPassword({email,password})
+  if(!error)return data
+  lastError=error
+  const code=String(error.code||''),message=String(error.message||'')
+  const transient=/rate.?limit|over_request_rate_limit|429|timeout|timed out|fetch|network|5\d\d/i.test(code+' '+message)
+  console.log('::warning title=ADMIN_REALTIME_AUTH_RETRY::'+JSON.stringify({attempt:attempt+1,code,message:message.slice(0,200),transient}).replaceAll('%','%25').replaceAll('\n','%0A'))
+  if(!transient)break
+  await new Promise(resolve=>setTimeout(resolve,1500*(attempt+1)))
+ }
+ console.log('::error title=ADMIN_REALTIME_AUTH_FAILED::'+JSON.stringify({code:String(lastError?.code||''),message:String(lastError?.message||'').slice(0,300)}).replaceAll('%','%25').replaceAll('\n','%0A'))
+ throw lastError
+}
+const login=await signInWithRetry()
 assert.ok(login.user&&login.session,'UGO_TEST_ADMIN_SESSION_REQUIRED')
 const {data:profile,error:profileError}=await root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
 assert.ifError(profileError)
@@ -27,7 +45,7 @@ assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
 const fixtureToken=sha.slice(0,8)+'-'+Date.now()
 const fixtureEmail=`ugo-admin-realtime-provider-${fixtureToken}@example.test`
 const fixturePassword='UGO-Test-'+fixtureToken+'-A9!'
-const {data:createdProvider,error:providerCreateError}=await root.auth.admin.createUser({email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}})
+const {data:createdProvider,error:providerCreateError}=await createTestUser(root,{email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}},{label:'admin-realtime-fixture'})
 assert.ifError(providerCreateError)
 assert.ok(createdProvider.user?.id,'PROVIDER_PROFILE_FIXTURE_REQUIRED')
 const providerId=createdProvider.user.id
@@ -106,7 +124,22 @@ try{
  await page.getByPlaceholder(/Usuario o email/i).fill(email)
  await page.getByPlaceholder(/Contraseña/i).fill(password)
  await page.getByRole('button',{name:/Ingresar/i}).click()
- await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+ try{
+  await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+ }catch(adminGateTimeout){
+  const state=await page.evaluate(()=>({
+   url:location.href,
+   lang:document.documentElement.lang,
+   adminShell:document.querySelectorAll('.ugo-admin2').length,
+   loginForm:document.querySelectorAll('form input[type=password]').length,
+   loading:document.querySelectorAll('.mvp-loading').length,
+   alerts:Array.from(document.querySelectorAll('[role=alert],.mvp-error')).map(node=>node.textContent?.trim()).filter(Boolean).slice(0,4),
+   retryButtons:Array.from(document.querySelectorAll('button')).map(node=>node.textContent?.trim()).filter(text=>text&&/reintentar|retry|tentar/i.test(text)).slice(0,4),
+   body:(document.body.innerText||'').slice(0,600)
+  })).catch(()=>({probe:'unavailable'}))
+  console.log('::error title=ADMIN_REALTIME_UI_STATE::'+JSON.stringify({events:pageErrors,state}).replaceAll('%','%25').replaceAll('\n','%0A').slice(0,6000))
+  throw adminGateTimeout
+ }
  const before=await readOnlineKpi()
  const expected=before+(targetOnline?1:-1)
  const direct=eventSignal()

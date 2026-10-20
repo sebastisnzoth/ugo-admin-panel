@@ -2,6 +2,7 @@ import assert from'node:assert/strict'
 import fs from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
 import{chromium}from'playwright'
+import{createTestUser,withTransientRetry}from'./lib/transient-retry.mjs'
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY');assert.ok(serviceKey&&sha,'HUGO_PROVIDER_ACTIONS_RUNTIME_INPUTS_REQUIRED')
@@ -11,15 +12,28 @@ const pe=`ugo-hugo-provider-${token}@example.test`,ce=`ugo-hugo-client-${token}@
 let providerId=null,clientId=null,serviceId=null,browser=null
 async function cleanup(){if(serviceId){await admin.from('pagos').delete().eq('servicio_id',serviceId);await admin.from('ofertas_servicio').delete().eq('servicio_id',serviceId);await admin.from('servicios').delete().eq('id',serviceId)}for(const id of[providerId,clientId]){if(!id)continue;await admin.from('notificaciones').delete().eq('usuario_id',id);await admin.from('perfiles_proveedor').delete().eq('usuario_id',id);await admin.from('usuarios').delete().eq('id',id);await admin.auth.admin.deleteUser(id)}if(browser)await browser.close()}
 try{
- const p=await admin.auth.admin.createUser({email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Provider Runtime',tipo:'proveedor'}});if(p.error)throw p.error;providerId=p.data.user.id
- const c=await admin.auth.admin.createUser({email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Client Runtime',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
- const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId});assert.ifError(prep.error);serviceId=prep.data.service_id;assert.equal(prep.data.state,'asignado')
+ const p=await createTestUser(admin,{email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Provider Runtime',tipo:'proveedor'}},{label:'hugo-provider-create'});if(p.error)throw p.error;providerId=p.data.user.id
+ const c=await createTestUser(admin,{email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Client Runtime',tipo:'cliente'}},{label:'hugo-client-create'});if(c.error)throw c.error;clientId=c.data.user.id
+ const prep=await withTransientRetry(()=>admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId}),{label:'hugo-provider-prep'});if(prep.error){console.log('::error title=HUGO_PROVIDER_SETUP_FAILED::'+JSON.stringify({code:String(prep.error.code||''),message:String(prep.error.message||'').slice(0,300)}).replaceAll('%','%25').replaceAll('\n','%0A'));throw prep.error}serviceId=prep.data.service_id;assert.equal(prep.data.state,'asignado')
  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},permissions:['geolocation'],geolocation:{latitude:-27.5949,longitude:-48.5482,accuracy:12}});const page=await context.newPage()
  await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.addInitScript(()=>{window.__ugoToolResponses=[];window.UGOVoiceBridge={isAvailable:()=>true,startListening:async()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})
  const call=async(name,args={})=>{const id='provider-'+Math.random().toString(36).slice(2);for(let attempt=0;attempt<3;attempt++){await page.evaluate(({id,name,args})=>window.dispatchEvent(new CustomEvent('ugo:native-voice-tool-call',{detail:{id,name,args}})),{id,name,args});try{await page.waitForFunction(id=>Array.isArray(window.__ugoToolResponses)&&window.__ugoToolResponses.some(item=>item.id===id),id,{timeout:7000});const response=await page.evaluate(id=>window.__ugoToolResponses.find(item=>item.id===id)?.response,id);await page.waitForTimeout(500);return response}catch{await page.waitForTimeout(600)}}throw new Error('HUGO_PROVIDER_TOOL_RESPONSE_TIMEOUT:'+name)}
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(pe);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click()
- await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000});await page.getByRole('button',{name:'Continuar trabajo'}).waitFor({state:'visible',timeout:20000});await page.getByRole('button',{name:'Hablar con Hugo'}).click();await page.getByText('HUGO · PROVEEDOR').waitFor({state:'visible',timeout:10000});await page.waitForTimeout(300)
+ try{await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000})}catch(activeJobTimeout){
+  const state=await page.evaluate(()=>({
+   url:location.href,
+   providerRoot:document.querySelectorAll('.ugo-provider-root').length,
+   loginForm:document.querySelectorAll('[data-testid=\"auth-form\"]').length,
+   loading:document.querySelectorAll('.mvp-loading').length,
+   notices:Array.from(document.querySelectorAll('.provider-notice,[role=alert]')).map(node=>node.textContent?.trim()).filter(Boolean).slice(0,4),
+   retryButtons:Array.from(document.querySelectorAll('button')).map(node=>node.textContent?.trim()).filter(text=>text&&/reintentar|retry|tentar/i.test(text)).slice(0,4),
+   body:(document.body.innerText||'').slice(0,600)
+  })).catch(()=>({probe:'unavailable'}))
+  console.log('::error title=HUGO_PROVIDER_UI_STATE::'+JSON.stringify(state).replaceAll('%','%25').replaceAll('\n','%0A').slice(0,6000))
+  throw activeJobTimeout
+ }
+ await page.getByRole('button',{name:'Continuar trabajo'}).waitFor({state:'visible',timeout:20000});await page.getByRole('button',{name:'Hablar con Hugo'}).click();await page.getByText('HUGO · PROVEEDOR').waitFor({state:'visible',timeout:10000});await page.waitForTimeout(300)
  const active=await call('provider_get_active_service');assert.equal(active.ok,true);assert.equal(active.data.service.serviceId,serviceId);assert.equal(active.data.service.state,'asignado')
  const noConfirm=await call('provider_update_service_status',{service_id:serviceId,status:'en_camino',confirmed:false});assert.equal(noConfirm.ok,false);assert.equal(noConfirm.code,'CONFIRMATION_REQUIRED')
  const offline=await call('provider_set_offline',{confirmed:true});assert.equal(offline.ok,true);assert.equal(offline.data.online,false);await page.locator('.provider-operational-chip.is-offline').first().waitFor({state:'visible',timeout:10000})

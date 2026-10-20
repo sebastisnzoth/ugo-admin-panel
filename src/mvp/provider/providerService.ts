@@ -32,9 +32,20 @@ export function pickActionableProviderService(rows:ProviderService[],now=Date.no
  return rows.find(service=>PASSIVE_SERVICE_STATES.has(service.estado))||null
 }
 
+// A transient read failure (network hiccup, statement timeout under load) must not blank the
+// provider workspace: it is retried with a short backoff. Permanent errors fail immediately so a
+// real permission/contract problem is never hidden.
+const SNAPSHOT_RETRY_DELAYS=[0,400,1200] as const
+function transientSnapshotError(error:unknown){
+ const text=messageOf(error,'')
+ return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst|502|503|504/i.test(text)
+}
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
  let failedPart:SnapshotPart|null=null
- try{
+ let lastError:unknown=null
+ for(let attempt=0;attempt<SNAPSHOT_RETRY_DELAYS.length;attempt++){
+  if(SNAPSHOT_RETRY_DELAYS[attempt])await new Promise(resolve=>setTimeout(resolve,SNAPSHOT_RETRY_DELAYS[attempt]))
+  try{
   const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae},{data:debts,error:debtError}]=await Promise.all([
    supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
    supabase.rpc('obtener_ofertas_proveedor'),
@@ -46,11 +57,15 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
   if(pe){failedPart='profile';throw pe}if(oe){failedPart='offers';throw oe}if(se){failedPart='services';throw se}if(pae){failedPart='payments';throw pae}if(debtError){failedPart='debts';throw debtError}
   const services=(s||[])as ProviderService[]
   return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[],debts:(debts||[])as ProviderDebt[]}
- }catch(error){
-  const fallback='No se pudo cargar el estado operativo del proveedor.'
-  void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(error,fallback),error,role:'provider',severity:'P1',action:'provider.snapshot.load',metadata:{component:failedPart,errorCode:errorCode(error)}})
-  throw error
+  }catch(error){
+   lastError=error
+   failedPart=failedPart||'profile'
+   if(!transientSnapshotError(error))break
+  }
  }
+ const fallback='No se pudo cargar el estado operativo del proveedor.'
+ void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(lastError,fallback),error:lastError,role:'provider',severity:'P1',action:'provider.snapshot.load',metadata:{component:failedPart,errorCode:errorCode(lastError)}})
+ throw lastError
 }
 
 async function persistedProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean):Promise<boolean|null>{
@@ -153,11 +168,13 @@ const GPS_TIMEOUT_MS=15_000
 function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy);return Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(accuracy)&&accuracy>0&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
 function positionAge(position:GeolocationPosition){return Math.max(0,Date.now()-Number(position.timestamp||0))}
 function acceptablePosition(position:GeolocationPosition){return usablePosition(position)&&positionAge(position)<=GPS_FRESH_MS&&Number(position.coords.accuracy)<=GPS_ACCEPTABLE_ACCURACY_M}
+export type ProviderGeoError=Error&{ugoGeoCode:'permission'|'unavailable'|'timeout'}
 function geolocationError(error:GeolocationPositionError){
- if(error.code===1)return new Error('UGO necesita tu ubicación para ponerte Online y enviarte pedidos. Habilitá Ubicación precisa para este sitio y reintentá.')
- if(error.code===2)return new Error('El teléfono todavía no pudo fijar tu posición. Salí a un lugar con mejor señal y reintentá.')
- return new Error('El GPS está demorando en fijar tu posición. Mantené UGO abierto y reintentá.')
+ if(error.code===1)return Object.assign(new Error('UGO necesita tu ubicación para ponerte Online y enviarte pedidos. Habilitá Ubicación precisa para este sitio y reintentá.'),{ugoGeoCode:'permission' as const})
+ if(error.code===2)return Object.assign(new Error('El teléfono todavía no pudo fijar tu posición. Salí a un lugar con mejor señal y reintentá.'),{ugoGeoCode:'unavailable' as const})
+ return Object.assign(new Error('El GPS está demorando en fijar tu posición. Mantené UGO abierto y reintentá.'),{ugoGeoCode:'timeout' as const})
 }
+export function providerGeoErrorCode(error:unknown){const code=errorRecord(error)?.ugoGeoCode;return typeof code==='string'?code:null}
 function onePosition(options:PositionOptions){return new Promise<GeolocationPosition>((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
 async function currentPosition(){
  if(!window.isSecureContext)throw new Error('El GPS requiere una conexión HTTPS. Abrí UGO Proveedor desde GitHub Pages.')
@@ -179,6 +196,20 @@ async function currentPosition(){
    if(position.coords.accuracy<=GPS_TARGET_ACCURACY_M)finish(position)
   },error=>{lastError=error;if(error.code===1)fail(geolocationError(error))},{enableHighAccuracy:true,timeout:GPS_TIMEOUT_MS,maximumAge:0})
  })
+}
+// Refresh the persisted trusted GPS of an already-online provider without touching the
+// online/disponible flags. This keeps matching eligibility alive every 45 s and can never
+// flip a provider that just went Offline back to Online.
+export async function publishProviderAvailabilityLocation(supabase:SupabaseClient,position:GeolocationPosition){
+ const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy)
+ if(!acceptablePosition(position))throw new Error('La ubicación GPS no es suficientemente reciente o precisa para seguir recibiendo pedidos.')
+ const capturedAt=new Date(Number(position.timestamp)||Date.now()).toISOString()
+ const{error}=await supabase.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:capturedAt,p_accuracy_m:accuracy})
+ if(error)throw error
+ return{capturedAt,accuracy,latitude,longitude}
+}
+export async function refreshProviderAvailabilityLocation(supabase:SupabaseClient){
+ return publishProviderAvailabilityLocation(supabase,await currentPosition())
 }
 export async function saveProviderBaseLocation(supabase:SupabaseClient){
  const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)

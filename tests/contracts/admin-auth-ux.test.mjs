@@ -46,3 +46,12 @@ test('client/provider auth preserves a valid session during transient profile ou
   assert.match(shared, /Tu sesión sigue activa/)
   assert.equal(shared.includes("La sesión tardó demasiado en responder. Podés ingresar nuevamente.');setSession(null)"),false)
 })
+
+test('a valid admin session with a slow profile is retried instead of shown as a login screen', async () => {
+  const gate = await read('src/mvp/AdminGate.tsx')
+  // The profile query keeps its bounded timeout, but its failure must not authorize the login form.
+  assert.match(gate, /setSessionActive\(transientAdminProfileError\(profileError\)\)/)
+  assert.match(gate, /if\(sessionActive&&!allowed\)/)
+  assert.match(gate, /if\(!sessionActive\|\|allowed\|\|checking\|\|profileRetry>=12\)return/)
+  assert.match(gate, /setSessionActive\(false\);await supabase\.auth\.signOut\(\)/)
+})

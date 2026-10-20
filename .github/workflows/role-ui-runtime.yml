@@ -105,7 +105,17 @@ jobs:
           fi
           curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:4174/__health
           node scripts/i18n-login-runtime.mjs
-          node scripts/role-ui-runtime.mjs
+          node scripts/role-ui-runtime.mjs 2>&1 | tee /tmp/ugo-role-ui-runtime.log
+      - name: Cross-role failure details
+        if: failure()
+        shell: bash
+        run: |
+          LOG=/tmp/ugo-role-ui-runtime.log
+          if [ -f "$LOG" ]; then
+            tail -n 80 "$LOG" > /tmp/ugo-role-ui-tail.txt
+            BODY=$(python3 -c "print(open('/tmp/ugo-role-ui-tail.txt').read().replace('%','%25').replace('\r','%0D').replace('\n','%0A'))")
+            echo "::error title=Cross-role UI failure::$BODY"
+          fi
       - name: Upload UI runtime evidence
         if: always()
         uses: actions/upload-artifact@v4

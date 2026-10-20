@@ -1,3 +1,4 @@
+// Cross-role browser proof: Cliente + Proveedor + Admin over UGO Arena TEST.
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
