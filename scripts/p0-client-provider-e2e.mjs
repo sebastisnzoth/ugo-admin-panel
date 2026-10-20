@@ -65,9 +65,40 @@ async function cleanup(){
       }
       const {error:notesError}=await admin.from('notificaciones').delete().filter('datos->>servicio_id','eq',serviceId)
       if(notesError&&!String(notesError.message||'').includes('does not exist'))failures.push(`notificaciones: ${notesError.message}`)
-      const {error}=await admin.from('servicios').delete().eq('id',serviceId)
-      if(error)failures.push(`servicios: ${error.message}`)
+      // Clean direct dependents before removing the synthetic service. Relying on
+      // a single cascading DELETE exceeded the PostgREST statement timeout in TEST.
+      const dependentTables=[
+        ['servicio_estado_eventos','servicio_id'],
+        ['eventos_servicio','servicio_id'],
+        ['evidencias_servicio','servicio_id'],
+        ['evidencias_solicitud','servicio_id'],
+        ['mensajes','servicio_id'],
+        ['resenas','servicio_id'],
+        ['whatsapp_notificaciones','servicio_id'],
+        ['autonomous_qa_actor_actions','service_id'],
+        ['autonomous_qa_assertion_evidence','service_id'],
+        ['autonomous_meta_qa_calibrations','service_id'],
+        ['ampliaciones_servicio','servicio_id'],
+        ['disputas','servicio_id'],
+        ['acuerdos_previos_disputa','servicio_id'],
+        ['proveedor_calendar_eventos','servicio_id'],
+      ]
+      for(const [table,column] of dependentTables){
+        const {error}=await admin.from(table).delete().eq(column,serviceId)
+        if(error)failures.push(`${table}: ${error.message}`)
+      }
+      if(!failures.length){
+        const {error}=await admin.from('servicios').delete().eq('id',serviceId)
+        if(error)failures.push(`servicios: ${error.message}`)
+        else{
+          const {data:remaining,error:verifyError}=await admin.from('servicios').select('id').eq('id',serviceId).maybeSingle()
+          if(verifyError||remaining)failures.push('servicios: cleanup could not confirm deletion')
+        }
+      }
     }
+    // Never delete either test identity while its service still exists.
+    // Otherwise FKs fail and Auth cleanup leaves inconsistent fixtures.
+    if(failures.length)return failures
     for(const id of [providerId,clientId]){
       if(!id)continue
       const profileTable=id===providerId?'perfiles_proveedor':'perfiles_cliente'
