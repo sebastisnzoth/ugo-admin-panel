@@ -16,8 +16,25 @@ assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_ADMIN_REALTIME_INPUTS
 
 const root=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
-const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password})
-assert.ifError(loginError)
+// Supabase Auth rate-limits bursts from the shared runner IP when many workflows sign in at
+// once. Retry only transient auth failures (429/5xx/network) with backoff, log each attempt and
+// fail loudly with the exact code otherwise. A permanent invalid credential is never retried.
+async function signInWithRetry(){
+ let lastError=null
+ for(let attempt=0;attempt<4;attempt++){
+  const{data,error}=await user.auth.signInWithPassword({email,password})
+  if(!error)return data
+  lastError=error
+  const code=String(error.code||''),message=String(error.message||'')
+  const transient=/rate.?limit|over_request_rate_limit|429|timeout|timed out|fetch|network|5\d\d/i.test(code+' '+message)
+  console.log('::warning title=ADMIN_REALTIME_AUTH_RETRY::'+JSON.stringify({attempt:attempt+1,code,message:message.slice(0,200),transient}).replaceAll('%','%25').replaceAll('\n','%0A'))
+  if(!transient)break
+  await new Promise(resolve=>setTimeout(resolve,1500*(attempt+1)))
+ }
+ console.log('::error title=ADMIN_REALTIME_AUTH_FAILED::'+JSON.stringify({code:String(lastError?.code||''),message:String(lastError?.message||'').slice(0,300)}).replaceAll('%','%25').replaceAll('\n','%0A'))
+ throw lastError
+}
+const login=await signInWithRetry()
 assert.ok(login.user&&login.session,'UGO_TEST_ADMIN_SESSION_REQUIRED')
 const {data:profile,error:profileError}=await root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
 assert.ifError(profileError)
