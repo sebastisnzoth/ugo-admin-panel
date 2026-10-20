@@ -7,6 +7,7 @@ import {
 } from '../hooks/useAdvancedData';
 import { useCategorias } from '../hooks/useAdminData';
 import { supabase } from '../lib/supabase';
+import { UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY } from '../lib/supabaseProject';
 
 
 
@@ -635,8 +636,8 @@ export function SecAvanzado() {
    SecImportProviders — CSV + inserción Supabase directa
    Formato: prospectos_scouts o genérico con auto-mapeo
 ───────────────────────────────────────────── */
-const SB_IMP_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SB_IMP_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
+const SB_IMP_URL = UGO_SUPABASE_URL;
+const SB_IMP_KEY = UGO_SUPABASE_PUBLISHABLE_KEY;
 
 // Categorías válidas
 const CATS_VALID = ['electricista','plomero','limpeza','pintura','carpintaria','jardinagem','climatizacao','ti_redes','reformas','chaveiro'];
