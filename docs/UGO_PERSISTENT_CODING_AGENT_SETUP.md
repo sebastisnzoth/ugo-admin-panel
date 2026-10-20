@@ -1,24 +1,21 @@
-# UGO — Agente de código persistente (preparado, desactivado por defecto)
+# UGO — agente persistente con FreeLLMAPI y Groq (desactivado hasta validación)
 
-Workflow: `.github/workflows/ugo-persistent-coding-agent.yml`.
+Workflow: `.github/workflows/ugo-persistent-coding-agent.yml`, PR #546.
 
-## Qué hace
-- GitHub Actions lo despierta cada 6 horas o manualmente, siempre que esté habilitado.
-- Recupera la tarea persistente #543 y las instrucciones del repositorio.
-- Ejecuta un único ciclo de reparación con Codex CLI en un runner aislado usando **FreeLLMAPI en Render** como proveedor de `/v1/responses` (modelo predeterminado `openai/gpt-oss-120b`). No utiliza la API de OpenAI.
-- Si hay modificaciones, crea **solamente una rama y un PR borrador**; nunca fusiona ni despliega.
-- Cada ejecución comienza desde `main`, releyendo pendientes. No se proclama finalizada una tarea sin evidencia.
+## Arquitectura y seguridad
 
-## Activación (requiere decisión de costos)
-1. Confirmar en Render que FreeLLMAPI responde a `/api/ping`, que Groq está disponible en el dashboard del gateway y que su modelo funciona en `/v1/responses`. La variable de entorno `GROQ_API_KEY` por sí sola **no demuestra** que FreeLLMAPI haya registrado el proveedor.
-2. Crear una **clave de cliente del gateway FreeLLMAPI** con alcance limitado y guardarla en GitHub → Settings → Secrets and variables → Actions → Secrets con nombre `UGO_CODING_AGENT_FREEAPI_KEY`. **No es la clave de Groq.** No pegar secretos en archivos, issues o chats.
-3. En Actions → Variables, mantener `UGO_CODING_AGENT_ENABLED=false` hasta verificar una invocación autenticada; opcionalmente configurar `UGO_CODING_AGENT_MODEL=openai/gpt-oss-120b`.
-4. Integrar el workflow a `main` solamente después de validar YAML/CI. Habilitar el agente únicamente cuando se compruebe el gateway, el modelo, límites de uso y el aislamiento. Ejecutar manualmente una vez y revisar el resultado antes de dejar el cron activo.
-5. El agente **no** tiene acceso a credenciales de Supabase ni a producción. No usar `GROQ_API_KEY` como token para autenticar el gateway; nunca hay fallback a OpenAI.
+GitHub Actions (runner efímero) → Aider (OpenAI-compatible Chat Completions) → `https://ugo-hive-freeapi.onrender.com/v1` → proveedor Groq configurado en FreeLLMAPI → modelo `openai/gpt-oss-120b`.
 
-## Advertencias
-- No es un daemon infinito; es una ejecución periódica con límite de 45 minutos.
-- El workflow no garantiza por sí solo la corrección, los tests E2E ni la entrega. Las pruebas reales siguen siendo obligatorias.
-- No activar auto-merge ni despliegues desde estos PRs. Revisar permisos del token de Actions y reglas de protección del repositorio.
-- Ninguna credencial adicional de Supabase, Vercel o de producción se inyecta en el agente.
-- La rama de configuración debe superar su CI antes de integrarse; no modificar producción desde esta configuración.
+Una ejecución cada seis horas, con límite de 45 minutos, solo al habilitar explícitamente `UGO_CODING_AGENT_ENABLED=true`. Crea como máximo un PR borrador en una rama nueva; nunca fusiona ni despliega, y nunca requiere dejar la Mac encendida. No se agregan claves de Supabase/Vercel/producción.
+
+## Bloqueos verificables antes de activar
+
+1. **Proveedor de FreeLLMAPI**: `GROQ_API_KEY` presente como variable en Render no implica que FreeLLMAPI la haya importado. Revisar su panel de API Keys: debe existir un registro de plataforma `groq` válido. El código admite importación declarativa mediante `FREEAPI_CONFIG_JSON` con `keys:[{platform:"groq",key:"..."}]` pero jamás almacenar la clave en GitHub o texto plano. No inventar conexión ni resultado.
+2. **Acceso al gateway**: crear un token para el proxy desde el mecanismo de autenticación de FreeLLMAPI y guardarlo en GitHub Actions secret `UGO_CODING_AGENT_FREEAPI_KEY`. No es necesariamente igual a la clave de Groq; verificar la autenticación de `/v1/chat/completions`. No usar secretos en URLs/logs.
+3. **Prueba real**: ejecutar una llamada pequeña al gateway con `openai/gpt-oss-120b` y confirmar respuesta HTTP, contenido y límite gratuito. Aider requiere Chat Completions compatible y soporte de edición. Si el gateway rechaza la llamada, **no activar** el workflow.
+4. **Instalación de Aider**: confirmar que la versión fijada `aider-chat==0.86.1` existe, se instala y funciona con el modelo/proxy en un runner de prueba; actualizar la versión con CI si falla.
+5. **Activación**: solo tras pruebas pasar `UGO_CODING_AGENT_ENABLED=true` en las variables de Actions y lanzar manualmente; verificar logs, PR, CI y límites antes de aceptar la programación recurrente.
+
+## Notas
+
+El flujo anterior de Codex CLI usaba la API de OpenAI de pago y el protocolo Responses; se reemplazó por Aider para usar Chat Completions de FreeLLMAPI. El PR #546 **no está desplegado ni operativo** mientras esté en borrador y fuera de main. Los P0 del proveedor, GPS y matching permanecen pendientes hasta haber evidencias. Nunca interpretar presencia de código como prueba E2E.
