@@ -130,7 +130,18 @@ try{
 
   const client=await openRole('client')
   try{
-    await visible(client.page.getByRole('main',{name:'Inicio'}),20000)
+    try{
+      await visible(client.page.getByRole('main',{name:'Inicio'}),20000)
+    }catch(initialError){
+      // Keep a timed-out backend visible in evidence; exercise only the
+      // explicit application recovery, never bypass readiness assertions.
+      const retry=client.page.getByRole('button',{name:/Reintentar carga del perfil/i})
+      if(!(await retry.isVisible().catch(()=>false)))throw initialError
+      result.performance.client_profile_recovery_required=true
+      await persist()
+      await retry.click()
+      await visible(client.page.getByRole('main',{name:'Inicio'}),20000)
+    }
     await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
     await timed('client_request_navigation_ms',async()=>{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
