@@ -178,3 +178,10 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Cross Performance (`39492425031`) falló al esperar navegación Proveedor. Se añadió una recuperación explícita únicamente cuando aparece el control real de reintento del perfil, sin convertir el timeout en éxito: `scripts/cross-performance-runtime.mjs`, commit `1bc370ff2ec7a1ab628fee26a4b37d8f4bcee6c3`. Se registra `provider_profile_recovery_required` para conservar señal de degradación.
 - NO VERIFIED hasta resultado de CI del SHA actualizado. Admin Realtime (`39492425114`) sigue fallando esperando `.ugo-admin2-status`. Provider Operating Zone (`39492424989`) y Hugo Provider Actions (`39492425080`) fallan por `statement timeout` en TEST y requieren corrección de consulta/contención, no incremento arbitrario de tiempos.
 - No hubo fusión ni despliegue; siguiente acción: leer resultados exact-SHA y resolver el primer error causal restante.
+
+
+### 20/10/2026 — Auth Proveedor: no reinicializar sesión al volver Internet
+
+- Commit `8432584693e978cf080fd211941875d75180a2f3`, `src/mvp/shared.tsx`: eliminado el listener de `window.online` que forzaba `sessionEpoch` y desmontaba/rehacía la comprobación Auth. Conservar la sesión vigente al reconectar; Realtime ya tiene su propio callback de reconexión. La recuperación manual sigue disponible.
+- Alcance: Cliente/Proveedor comparten `useRoleSession`; el cambio aplica a ambos. No se alteraron permisos, signOut explícito ni control de roles. Es una corrección de condición de carrera, **no prueba todavía que todos los deslogueos estén eliminados**.
+- Verificar CI SAME-SHA, especialmente pruebas de login y Provider UI. En navegador real probar Online/Offline, permisos GPS y persistencia durante refresh del token; no simular esa aceptación humana.
