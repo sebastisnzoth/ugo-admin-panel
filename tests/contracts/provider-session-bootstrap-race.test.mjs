@@ -25,7 +25,9 @@ test('a refreshed session does not trigger a profile reload', () => {
 
 test('auth state recovery never reads an undeclared sessionRef and preserves stored session', () => {
  assert.doesNotMatch(auth, /sessionRef\.current/)
- assert.match(auth, /if\(data\.session\)\{setSession\(data\.session\);return\}/)
+ assert.match(auth, /if\(data\.session\)\{/) 
+ assert.match(auth, /void loadProfile\(data\.session\)\.then/) 
+ assert.match(auth, /setSessionChecked\(true\)/)
 })
 
 test('session logout is local and navigation does not revoke other provider sessions', () => {
