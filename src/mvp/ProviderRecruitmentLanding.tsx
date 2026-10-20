@@ -1,8 +1,7 @@
 import{LocalizedText}from'../i18n/locale'
-import React,{useEffect,useMemo,useState}from'react'
-import{getRoleSupabase}from'../lib/roleSupabase'
+import React,{useEffect,useState}from'react'
 import{ProviderOnboardingGate}from'./ProviderOnboardingGate'
-import{LoadingScreen}from'./shared'
+import{ErrorState,LoadingScreen,useRoleSession}from'./shared'
 import{useLocale}from'../i18n/locale'
 import'./provider-recruitment.css'
 
@@ -11,10 +10,10 @@ type Mode='register'|'login'
 
 export function ProviderRecruitmentLanding(){
  const{t}=useLocale()
- const sb=useMemo(()=>getRoleSupabase('provider'),[])
+ const auth=useRoleSession('provider'),sb=auth.supabase,session=auth.session
  const params=new URLSearchParams(window.location.search),token=params.get('invite')||''
  const[invite,setInvite]=useState<Invite|null>(null),[loading,setLoading]=useState(true),[invalid,setInvalid]=useState(false)
- const[session,setSession]=useState<any>(null),[claimed,setClaimed]=useState(false),[mode,setMode]=useState<Mode>('register')
+ const[claimed,setClaimed]=useState(false),[mode,setMode]=useState<Mode>('register')
  const[name,setName]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
 
  useEffect(()=>{let alive=true;(async()=>{
@@ -26,7 +25,6 @@ export function ProviderRecruitmentLanding(){
   setInvite(row as Invite);setName(String(row.nombre||''));setEmail(String(row.email||''));setLoading(false)
  })();return()=>{alive=false}},[sb,token])
 
- useEffect(()=>{sb.auth.getSession().then(({data})=>setSession(data.session));const{data:l}=sb.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>l.subscription.unsubscribe()},[sb])
 
  useEffect(()=>{if(!session||!token||claimed)return;let alive=true;(async()=>{
   setBusy(true);setMessage(t('recruit.loading'))
@@ -34,7 +32,7 @@ export function ProviderRecruitmentLanding(){
   if(!alive)return
   if(error){setMessage(error.message);setBusy(false);return}
   setClaimed(true);setMessage(t('recruit.linked'));setBusy(false)
- })();return()=>{alive=false}},[claimed,sb,session,token])
+ })();return()=>{alive=false}},[claimed,sb,session,t,token])
 
  async function submit(e:React.FormEvent){
   e.preventDefault();setBusy(true);setMessage('')
@@ -56,6 +54,7 @@ export function ProviderRecruitmentLanding(){
 
  if(loading)return <LoadingScreen label={t('recruit.loading')}/>
  if(invalid||!invite)return <main className="ugo-recruit"><section className="ugo-recruit-invalid"><div className="ugo-recruit-orb">H</div><small>{t('recruit.eyebrow')}</small><h1>{t('recruit.invalidTitle')}</h1><p>{t('recruit.invalidCopy')}</p><button type="button" onClick={()=>window.location.replace(window.location.pathname)}>{t('recruit.back')}</button></section></main>
+ if(!auth.sessionChecked)return auth.error?<main className="ugo-recruit"><ErrorState title={t('providerRuntime.sessionTitle')} description={auth.error||t('sharedUi.sessionCheckFailed')} actionLabel={t('sharedUi.retry')} onAction={auth.retrySession}/></main>:<LoadingScreen label={t('recruit.loading')}/>
 
  if(session&&claimed)return <div className="ugo-recruit-onboarding"><header className="ugo-recruit-minihead"><div className="ugo-recruit-orb">H</div><div><b>{t('recruit.onboardingTitle')}</b><span>{t('recruit.onboardingCopy')}</span></div></header><ProviderOnboardingGate onVerified={()=>window.location.replace(`${window.location.pathname}?app=provider`)}/></div>
 

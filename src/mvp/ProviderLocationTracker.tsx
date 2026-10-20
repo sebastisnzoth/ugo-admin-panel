@@ -2,7 +2,7 @@ import React,{useEffect,useMemo,useRef,useState}from'react'
 import{useLocale}from'../i18n/locale'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import type{RealtimeChannel}from'@supabase/supabase-js'
-import{getRoleSupabase}from'../lib/roleSupabase'
+import{getRoleSupabase,recordSessionDiagnostic}from'../lib/roleSupabase'
 import type{Service}from'./shared'
 
 type Props={service?:Service|null;onAutoArrival?:()=>Promise<boolean>|boolean|void}
@@ -117,6 +117,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
 
   const setGeoError=(error:GeolocationPositionError)=>{
    if(!alive)return
+   recordSessionDiagnostic('provider','gps','gps_error',{error})
    if(error.code===1){setLocationError(serviceId?translateRef.current('providerGps.permissionRoute'):translateRef.current('providerGps.permissionOnline'));return}
    if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
    setLocationError(error.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
@@ -138,7 +139,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
      :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
     if(!alive)return
-    if(error){setLocationError(translateRef.current('providerGps.publishFailed'));return}
+    if(error){recordSessionDiagnostic('provider','gps','gps_publish_failed',{error});setLocationError(translateRef.current('providerGps.publishFailed'));return}
     lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy});setLocationError('')
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
@@ -176,6 +177,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     await publish(pos,true)
    }catch(error){
     if(!alive)return
+    recordSessionDiagnostic('provider','gps','gps_error',{error})
     const geoError=error as GeolocationPositionError
     if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
     setLocationError(geoError.code===1?translateRef.current('providerGps.lostPermission'):geoError.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))

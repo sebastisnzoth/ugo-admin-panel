@@ -1,10 +1,10 @@
 import{LanguageSelector}from'../i18n/LanguageSelector'
 import{LocalizedText,useLocale}from'../i18n/locale'
 /* eslint-disable react-refresh/only-export-components -- design system barrel: exporta primitivas, constantes y hooks junto a los componentes (patrón intencional UGO) */
-import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ButtonHTMLAttributes, InputHTMLAttributes, HTMLAttributes } from 'react'
-import type { Session, SupabaseClient } from '@supabase/supabase-js'
-import { getRoleSupabase, type UgoRole } from '../lib/roleSupabase'
+import type { AuthChangeEvent, Session, SupabaseClient } from '@supabase/supabase-js'
+import { getRoleSupabase, recordSessionDiagnostic, type SessionDiagnosticReason, type UgoRole } from '../lib/roleSupabase'
 import { CLIENT_ACTIVE_SERVICE_STATES, MARKETPLACE_STATUS_LABELS, PROVIDER_ACTIVE_SERVICE_STATES, PROVIDER_LIFECYCLE_ORDER } from '../lib/marketplace/lifecycle'
 
 export type Category = { id:string; slug:string; nombre:string; emoji:string }
@@ -64,23 +64,199 @@ export function SuccessState(props:GlobalStateProps){const{t}=useLocale();return
 export function OfflineState({onAction,className}:{onAction?:()=>void;className?:string}){const{t}=useLocale();return <div className={joinClasses('ugo-ds-offline',className)} role="status"><span aria-hidden="true">⌁</span><span>{t('sharedUi.offline')}</span>{onAction&&<button type="button" onClick={onAction}><LocalizedText id="screen.demand.18"/></button>}</div>}
 
 const AUTH_PROFILE_RETRY_DELAYS=[0,350,900,1800] as const
+
 function transientProfileError(value:unknown){
-  const text=value instanceof Error?value.message:String((value as any)?.message||value||'')
-  return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst/i.test(text)
+  const error=value&&typeof value==='object'?value as Record<string,unknown>:{}
+  const code=String(error.code||'').toLowerCase(),status=Number(error.status)
+  const text=value instanceof Error?value.message.toLowerCase():String(error.message||value||'').toLowerCase()
+  if(status===401||status===403||['42501','pgrst301'].includes(code)||/unauthori[sz]ed|forbidden|permission denied/.test(text))return false
+  return status>=500||/timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|offline|failed to load|failed to fetch/.test(`${code} ${text}`)
+}
+function profileAuthorizationError(value:unknown){
+  const error=value&&typeof value==='object'?value as Record<string,unknown>:{}
+  const code=String(error.code||'').toLowerCase(),status=Number(error.status)
+  const text=value instanceof Error?value.message.toLowerCase():String(error.message||value||'').toLowerCase()
+  return status===401||status===403||['42501','pgrst301'].includes(code)||/unauthori[sz]ed|forbidden|permission denied/.test(text)
+}
+function terminalSessionError(value:unknown){
+  const error=value&&typeof value==='object'?value as Record<string,unknown>:{}
+  const name=String(error.name||''),code=String(error.code||'').toLowerCase()
+  const text=value instanceof Error?value.message.toLowerCase():String(error.message||value||'').toLowerCase()
+  return ['AuthSessionMissingError','AuthInvalidTokenResponseError'].includes(name)||['invalid_grant','refresh_token_not_found','refresh_token_already_used','session_not_found'].includes(code)||/invalid refresh token|refresh token (?:was )?(?:not found|already used|revoked|expired)/.test(text)
 }
 async function wait(ms:number){if(ms>0)await new Promise(resolve=>window.setTimeout(resolve,ms))}
-async function withProfileTimeout<T>(operation:PromiseLike<T>,ms=4500){return await Promise.race([Promise.resolve(operation),new Promise<T>((_,reject)=>window.setTimeout(()=>reject(new Error('PROFILE_QUERY_TIMEOUT')),ms))])}
+async function withProfileTimeout<T>(operation:PromiseLike<T>,ms=4500){
+  let timer:number|undefined
+  const timeout=new Promise<T>((_,reject)=>{timer=window.setTimeout(()=>reject(new Error('PROFILE_QUERY_TIMEOUT')),ms)})
+  try{return await Promise.race([Promise.resolve(operation),timeout])}
+  finally{if(timer!==undefined)window.clearTimeout(timer)}
+}
 
 export function useRoleSession(role:UgoRole){
+  const{t}=useLocale()
   const profileChannelInstance=useId().replace(/:/g,'')
+  const sessionRef=useRef<Session|null>(null),profileGeneration=useRef(0),profileUserId=useRef<string|null>(null)
+  const[sessionChecked,setSessionChecked]=useState(false),[sessionEpoch,setSessionEpoch]=useState(0)
   const supabase=useMemo(()=>getRoleSupabase(role),[role]);const[session,setSession]=useState<Session|null>(null);const[profile,setProfile]=useState<UgoUser|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('');const[profileChannelEpoch,setProfileChannelEpoch]=useState(0)
-  const loadProfile=useCallback(async(next:Session|null)=>{if(!next){setProfile(null);return}let data:any=null,e:any;for(let attempt=0;attempt<AUTH_PROFILE_RETRY_DELAYS.length;attempt++){await wait(AUTH_PROFILE_RETRY_DELAYS[attempt]);const query=supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).maybeSingle();const result=await withProfileTimeout(query,4500);data=result.data;e=result.error;if(!e)break;if(!transientProfileError(e)||attempt===AUTH_PROFILE_RETRY_DELAYS.length-1)throw e}if(!data)throw new Error('No se encontró el perfil conectado a esta cuenta.');if(!data.activo){throw new Error('Esta cuenta está desactivada. Contactá a UGO si necesitás revisión.')}const expected=role==='client'?'cliente':'proveedor';const pendingRole=window.localStorage.getItem(OAUTH_ROLE_KEY);const isFreshOAuthUser=Date.now()-new Date(next.user.created_at).getTime()<120000;if(role==='provider'&&data.tipo==='cliente'&&pendingRole==='proveedor'&&isFreshOAuthUser){const{error:updateError}=await supabase.from('usuarios').update({tipo:'proveedor'}).eq('id',next.user.id);if(updateError)throw updateError;const{error:providerError}=await supabase.from('perfiles_proveedor').upsert({usuario_id:next.user.id},{onConflict:'usuario_id'});if(providerError)throw providerError;const refreshed=await supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).single();if(refreshed.error)throw refreshed.error;data=refreshed.data}if(data.tipo!==expected){window.localStorage.removeItem(OAUTH_ROLE_KEY);throw new Error(`Esta cuenta está registrada como ${data.tipo}. Abrí la aplicación correspondiente.`)}window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(data as UgoUser)},[role,supabase])
-  useEffect(()=>{let active=true;let authEventVersion=0;const failSafe=window.setTimeout(()=>{if(!active)return;setError(current=>current||'UGO está tardando en cargar tu perfil. Tu sesión sigue activa; reintentaremos automáticamente.');setLoading(false)},15000);supabase.auth.getSession().then(async({data})=>{if(!active||authEventVersion>0)return;setSession(data.session);if(data.session){const url=new URL(window.location.href);if(url.searchParams.has('code')){url.searchParams.delete('code');url.searchParams.delete('error');url.searchParams.delete('error_code');url.searchParams.delete('error_description');window.history.replaceState({},'',url.toString())}}try{await loadProfile(data.session);if(active)setError('')}catch(e){if(active){const message=e instanceof Error?e.message:'No se pudo cargar la sesión.';setError(transientProfileError(e)?'UGO está recuperando la conexión con tu perfil. Tu sesión sigue activa; reintentá en unos segundos.':message);if(!transientProfileError(e)){setProfile(null)}}}finally{window.clearTimeout(failSafe);if(active)setLoading(false)}}).catch(e=>{window.clearTimeout(failSafe);if(!active)return;setError(e instanceof Error?e.message:'No se pudo validar la sesión.');setLoading(false)});const{data:l}=supabase.auth.onAuthStateChange((event,next)=>{if(!active)return;authEventVersion++;if(event==='SIGNED_OUT'){window.setTimeout(()=>{if(!active)return;void supabase.auth.getSession().then(({data})=>{if(!active)return;if(data.session){setSession(data.session);return}setSession(null);setProfile(null);window.clearTimeout(failSafe);setLoading(false)}).catch(()=>{})},0);return}if(next){setSession(next)}if(event==='INITIAL_SESSION'&&!next){window.clearTimeout(failSafe);setLoading(false);return}if(event==='TOKEN_REFRESHED')return;if(!next)return;window.setTimeout(()=>{if(!active)return;void loadProfile(next).then(()=>{if(active)setError('')}).catch((e:Error)=>{if(active)setError(transientProfileError(e)?'UGO está recuperando la conexión con tu perfil. Tu sesión sigue activa; reintentá en unos segundos.':e.message)}).finally(()=>{if(active){window.clearTimeout(failSafe);setLoading(false)}})},0)});return()=>{active=false;window.clearTimeout(failSafe);l.subscription.unsubscribe()}},[loadProfile,supabase])
+  const setCurrentSession=useCallback((next:Session|null)=>{
+    const previousUserId=sessionRef.current?.user.id||null,nextUserId=next?.user.id||null
+    if(previousUserId!==nextUserId){profileGeneration.current++;if(!next||profileUserId.current!==nextUserId){profileUserId.current=null;setProfile(null)}}
+    sessionRef.current=next;setSession(next)
+  },[])
+  const invalidateProfileLoads=useCallback(()=>{profileGeneration.current++},[])
+  const loadProfile=useCallback(async(next:Session|null)=>{
+    if(!next){profileUserId.current=null;setProfile(null);return}
+    const generation=profileGeneration.current
+    try{
+      let data:any=null,lastError:unknown=null
+      for(let attempt=0;attempt<AUTH_PROFILE_RETRY_DELAYS.length;attempt++){
+        await wait(AUTH_PROFILE_RETRY_DELAYS[attempt])
+        if(generation!==profileGeneration.current)return
+        try{
+          const query=supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).maybeSingle()
+          const result=await withProfileTimeout(query,4500)
+          data=result.data;lastError=result.error
+        }catch(queryError){
+          lastError=queryError
+          if(!transientProfileError(queryError)||attempt===AUTH_PROFILE_RETRY_DELAYS.length-1)throw queryError
+          continue
+        }
+        if(!lastError)break
+        if(!transientProfileError(lastError)||attempt===AUTH_PROFILE_RETRY_DELAYS.length-1)throw lastError
+      }
+      if(generation!==profileGeneration.current)return
+      if(!data){profileUserId.current=null;setProfile(null);throw new Error('No se encontró el perfil conectado a esta cuenta.')}
+      if(!data.activo){profileUserId.current=null;setProfile(null);throw new Error('Esta cuenta está desactivada. Contactá a UGO si necesitás revisión.')}
+      const expected=role==='client'?'cliente':'proveedor'
+      const pendingRole=window.localStorage.getItem(OAUTH_ROLE_KEY)
+      const isFreshOAuthUser=Date.now()-new Date(next.user.created_at).getTime()<120000
+      if(role==='provider'&&data.tipo==='cliente'&&pendingRole==='proveedor'&&isFreshOAuthUser){
+        const{error:updateError}=await supabase.from('usuarios').update({tipo:'proveedor'}).eq('id',next.user.id)
+        if(updateError)throw updateError
+        if(generation!==profileGeneration.current)return
+        const{error:providerError}=await supabase.from('perfiles_proveedor').upsert({usuario_id:next.user.id},{onConflict:'usuario_id'})
+        if(providerError)throw providerError
+        if(generation!==profileGeneration.current)return
+        const refreshed=await supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).single()
+        if(refreshed.error)throw refreshed.error
+        data=refreshed.data
+      }
+      if(data.tipo!==expected){
+        profileUserId.current=null;setProfile(null);window.localStorage.removeItem(OAUTH_ROLE_KEY)
+        throw new Error(`Esta cuenta está registrada como ${data.tipo}. Abrí la aplicación correspondiente.`)
+      }
+      if(generation!==profileGeneration.current)return
+      window.localStorage.removeItem(OAUTH_ROLE_KEY)
+      profileUserId.current=data.id
+      setProfile(data as UgoUser)
+    }catch(profileError){
+      if(generation===profileGeneration.current&&profileAuthorizationError(profileError)){profileUserId.current=null;setProfile(null)}
+      throw profileError
+    }
+  },[role,supabase])
+  useEffect(()=>{
+    let active=true,authEventVersion=0
+    const diagnostic=(reason:SessionDiagnosticReason,options:{event?:AuthChangeEvent;error?:unknown}={})=>recordSessionDiagnostic(role,'auth',reason,options)
+    const failSafe=window.setTimeout(()=>{
+      if(!active)return
+      setError(current=>current||t('sharedUi.sessionCheckFailed'))
+      setLoading(false)
+    },15000)
+    const clearFailSafe=()=>window.clearTimeout(failSafe)
+    const unavailable=(sessionError?:unknown,expectedVersion?:number)=>{
+      if(!active||(expectedVersion!==undefined&&expectedVersion!==authEventVersion))return
+      diagnostic(terminalSessionError(sessionError)?'session_invalidated':'session_check_failed',{error:sessionError})
+      if(terminalSessionError(sessionError)){
+        profileGeneration.current++;sessionRef.current=null;profileUserId.current=null
+        setSession(null);setProfile(null);setSessionChecked(true)
+        setError(t('sharedUi.sessionInvalidated'))
+      }else setError(t('sharedUi.sessionCheckFailed'))
+      clearFailSafe();setLoading(false)
+    }
+    const scheduleProfileLoad=(next:Session)=>{
+      const generation=++profileGeneration.current
+      window.setTimeout(()=>{
+        if(!active||generation!==profileGeneration.current)return
+        void loadProfile(next).then(()=>{
+          if(active&&generation===profileGeneration.current)setError('')
+        }).catch((profileError:unknown)=>{
+          if(active&&generation===profileGeneration.current){
+            recordSessionDiagnostic(role,'profile','profile_load_failed',{error:profileError})
+            setError(transientProfileError(profileError)?t('sharedUi.profileRecoveryFailed'):profileError instanceof Error?profileError.message:t('sharedUi.loadError'))
+          }
+        }).finally(()=>{
+          if(active&&generation===profileGeneration.current){clearFailSafe();setLoading(false)}
+        })
+      },0)
+    }
+    const{data:listener}=supabase.auth.onAuthStateChange((event,next)=>{
+      if(!active)return
+      if(event==='INITIAL_SESSION'&&!next){diagnostic('initial_session_empty_ignored',{event});return}
+      authEventVersion++
+      const version=authEventVersion
+      if(event==='SIGNED_OUT'){
+        diagnostic('signed_out_received',{event})
+        profileGeneration.current++
+        window.setTimeout(()=>{
+          if(!active||version!==authEventVersion)return
+          void supabase.auth.getSession().then(({data,error:sessionError})=>{
+            if(!active||version!==authEventVersion)return
+            if(sessionError){unavailable(sessionError);return}
+            if(data.session){
+              setCurrentSession(data.session);setSessionChecked(true);setError('')
+              diagnostic('session_preserved_after_signed_out',{event})
+              if(profileUserId.current!==data.session.user.id)scheduleProfileLoad(data.session)
+              return
+            }
+            profileGeneration.current++
+            setCurrentSession(null);setSessionChecked(true);setError('')
+            diagnostic('signed_out_confirmed',{event})
+            clearFailSafe();setLoading(false)
+          }).catch(sessionError=>unavailable(sessionError,version))
+        },0)
+        return
+      }
+      if(event==='TOKEN_REFRESHED'){
+        diagnostic('token_refreshed',{event})
+        if(next){setCurrentSession(next);setSessionChecked(true);if(profileUserId.current!==next.user.id)scheduleProfileLoad(next)}
+        return
+      }
+      diagnostic('auth_event',{event})
+      if(next){setCurrentSession(next);setSessionChecked(true);scheduleProfileLoad(next)}
+    })
+    const onOnline=()=>setSessionEpoch(value=>value+1)
+    window.addEventListener('online',onOnline)
+    const bootstrapVersion=authEventVersion
+    if(bootstrapVersion===0)supabase.auth.getSession().then(async({data,error:sessionError})=>{
+      if(!active||authEventVersion!==bootstrapVersion)return
+      if(sessionError){unavailable(sessionError,bootstrapVersion);return}
+      setCurrentSession(data.session);setSessionChecked(true)
+      diagnostic(data.session?'session_restored':'session_unavailable')
+      if(data.session){
+        const url=new URL(window.location.href)
+        if(url.searchParams.has('code')){url.searchParams.delete('code');url.searchParams.delete('error');url.searchParams.delete('error_code');url.searchParams.delete('error_description');window.history.replaceState({},'',url.toString())}
+      }
+      try{
+        await loadProfile(data.session)
+        if(active&&authEventVersion===bootstrapVersion)setError('')
+      }catch(profileError){
+        if(active&&authEventVersion===bootstrapVersion){
+          recordSessionDiagnostic(role,'profile','profile_load_failed',{error:profileError})
+          setError(transientProfileError(profileError)?t('sharedUi.profileRecoveryFailed'):profileError instanceof Error?profileError.message:t('sharedUi.loadError'))
+        }
+      }finally{if(active&&authEventVersion===bootstrapVersion){clearFailSafe();setLoading(false)}}
+    }).catch(sessionError=>unavailable(sessionError,bootstrapVersion))
+    return()=>{
+      active=false;invalidateProfileLoads();clearFailSafe();window.removeEventListener('online',onOnline);listener.subscription.unsubscribe()
+    }
+  },[invalidateProfileLoads,loadProfile,role,setCurrentSession,sessionEpoch,supabase,t])
   useEffect(()=>{
     const userId=session?.user.id
     if(!userId)return
     let alive=true,reconnectTimer:number|undefined
-    const refresh=()=>{if(alive)void loadProfile(session).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos actualizar tu perfil.')})}
+    const refresh=()=>{if(alive)void loadProfile(session).catch(profileError=>{
+      if(alive){recordSessionDiagnostic(role,'profile','profile_load_failed',{error:profileError});setError(transientProfileError(profileError)?t('sharedUi.profileRecoveryFailed'):profileError instanceof Error?profileError.message:t('sharedUi.loadError'))}
+    })}
     const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setProfileChannelEpoch(value=>value+1)},1200)}
     const onOnline=()=>{refresh();reconnect()}
     const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
@@ -91,8 +267,36 @@ export function useRoleSession(role:UgoRole){
     channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
     channel.subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
-  },[loadProfile,profileChannelEpoch,profileChannelInstance,role,session,supabase])
-  const retryProfile=useCallback(async()=>{if(!session)return;setLoading(true);try{await loadProfile(session);setError('')}catch(e){setError(e instanceof Error?e.message:'No pudimos recuperar tu perfil.')}finally{setLoading(false)}},[loadProfile,session]);const signOut=useCallback(async()=>{await supabase.auth.signOut({scope:'local'});setProfile(null);setSession(null)},[supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut({scope:'local'})}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,profile,loading,error,setError,retryProfile,signOut,clearAccess}
+  },[loadProfile,profileChannelEpoch,profileChannelInstance,role,session,supabase,t])
+  const retrySession=useCallback(()=>{setError('');setLoading(true);setSessionEpoch(value=>value+1)},[])
+  const retryProfile=useCallback(async()=>{
+    if(!session)return
+    setLoading(true)
+    try{await loadProfile(session);setError('')}
+    catch(profileError){recordSessionDiagnostic(role,'profile','profile_load_failed',{error:profileError});setError(transientProfileError(profileError)?t('sharedUi.profileRecoveryFailed'):profileError instanceof Error?profileError.message:t('sharedUi.loadError'))}
+    finally{setLoading(false)}
+  },[loadProfile,role,session,t])
+  const signOut=useCallback(async()=>{
+    recordSessionDiagnostic(role,'auth','explicit_sign_out_requested')
+    const{error:signOutError}=await supabase.auth.signOut({scope:'local'})
+    if(signOutError){recordSessionDiagnostic(role,'auth','explicit_sign_out_failed',{error:signOutError});throw signOutError}
+    profileGeneration.current++;profileUserId.current=null;sessionRef.current=null
+    setProfile(null);setSession(null);setSessionChecked(true);setError('')
+    recordSessionDiagnostic(role,'auth','explicit_sign_out_completed')
+  },[role,supabase])
+  const clearAccess=useCallback(async()=>{
+    recordSessionDiagnostic(role,'auth','explicit_sign_out_requested')
+    try{
+      const{error:signOutError}=await supabase.auth.signOut({scope:'local'})
+      if(signOutError)throw signOutError
+      recordSessionDiagnostic(role,'auth','explicit_sign_out_completed')
+    }catch(signOutError){recordSessionDiagnostic(role,'auth','explicit_sign_out_failed',{error:signOutError})}
+    finally{
+      profileGeneration.current++;profileUserId.current=null;sessionRef.current=null
+      window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setSessionChecked(true);setError('')
+    }
+  },[role,supabase])
+  return{supabase,session,sessionChecked,profile,loading,error,setError,retrySession,retryProfile,signOut,clearAccess}
 }
 
 export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:UgoRole;supabase:SupabaseClient;error:string;onError:(v:string)=>void;onResetAccess?:()=>Promise<void>}){

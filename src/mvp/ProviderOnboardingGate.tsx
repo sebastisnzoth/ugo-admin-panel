@@ -1,7 +1,8 @@
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
+import type{Session}from'@supabase/supabase-js'
 import{useLocale,LocalizedText}from'../i18n/locale'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
-import{getRoleSupabase}from'../lib/roleSupabase'
+import{getRoleSupabase,recordSessionDiagnostic}from'../lib/roleSupabase'
 import{LoadingScreen}from'./shared'
 import'./provider-onboarding.css'
 
@@ -12,17 +13,119 @@ type Sub={id:string;categoria_id:string;nombre:string}
 type Doc={id:string;tipo:string;estado:string;notas_rechazo:string|null;url_storage:string}
 type ProviderOnboardingGateProps={onVerified?:()=>void|Promise<void>}
 const nowMs=()=>Date.now()
+function terminalSessionError(value:unknown){const error=value&&typeof value==='object'?value as Record<string,unknown>:{};const name=String(error.name||''),code=String(error.code||'').toLowerCase(),text=value instanceof Error?value.message.toLowerCase():String(error.message||value||'').toLowerCase();return['AuthSessionMissingError','AuthInvalidTokenResponseError'].includes(name)||['invalid_grant','refresh_token_not_found','refresh_token_already_used','session_not_found'].includes(code)||/invalid refresh token|refresh token (?:was )?(?:not found|already used|revoked|expired)/.test(text)}
 const TERMS_VERSION='2026-09-04'
 const STEPS=[{name:'stepData',icon:'👤',title:'stepDataTitle',copy:'basicsTitle'},{name:'stepService',icon:'🛠️',title:'servicesTitle',copy:'servicesHelp'},{name:'stepProfile',icon:'✨',title:'introTitle',copy:'introHelp'},{name:'stepDocuments',icon:'🪪',title:'identityTitle',copy:'identityHelp'},{name:'stepPayout',icon:'◆',title:'payoutTitle',copy:'payoutHelp'},{name:'stepReview',icon:'✓',title:'reviewTitle',copy:'reviewHelp'}]
 
 export function ProviderOnboardingGate({onVerified}:ProviderOnboardingGateProps){const{t}=useLocale();
  const sb=useMemo(()=>getRoleSupabase('provider'),[])
- const[session,setSession]=useState<any>(null),[user,setUser]=useState<U|null>(null),[p,setP]=useState<P|null>(null),[cats,setCats]=useState<Cat[]>([]),[subs,setSubs]=useState<Sub[]>([]),[selectedSubs,setSelectedSubs]=useState<string[]>([]),[docs,setDocs]=useState<Doc[]>([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[terms,setTerms]=useState(false),[step,setStep]=useState(1)
+ const[session,setSession]=useState<Session|null>(null),[sessionChecked,setSessionChecked]=useState(false),[sessionCheckFailed,setSessionCheckFailed]=useState(false),[user,setUser]=useState<U|null>(null),[p,setP]=useState<P|null>(null),[cats,setCats]=useState<Cat[]>([]),[subs,setSubs]=useState<Sub[]>([]),[selectedSubs,setSelectedSubs]=useState<string[]>([]),[docs,setDocs]=useState<Doc[]>([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[msg,setMsg]=useState(''),[terms,setTerms]=useState(false),[step,setStep]=useState(1)
+ const sessionRef=useRef<Session|null>(null),loadGeneration=useRef(0),profileUserId=useRef<string|null>(null),loadingProfileUserId=useRef<string|null>(null)
+ const[sessionEpoch,setSessionEpoch]=useState(0)
  const[form,setForm]=useState({nombre:'',apellido:'',telefono:'',endereco:'',zona:'',ciudad:'Florianópolis',cpf:'',pix_tipo:'cpf',pix_chave:'',bio:'',experiencia:'',especialidades:'',idiomas:'Português',horarios:'',radio:'15',categoria:''})
- const load=useCallback(async(s:any)=>{if(!s){setSession(null);setLoading(false);return}setSession(s);const[{data:u,error:ue},{data:pp,error:pe},{data:c},{data:d}]=await Promise.all([sb.from('usuarios').select('id,nombre,apellido,foto_url,pais,zona,endereco,tipo').eq('id',s.user.id).maybeSingle(),sb.from('perfiles_proveedor').select('usuario_id,estado_verificacion,motivo_rechazo,onboarding_paso,telefono_profesional,ciudad_base,categoria_principal_id,cpf,pix_chave,pix_tipo,termos_aceitos_at,termos_versao,bio,experiencia_anos,especialidades,idiomas,disponibilidad_horaria,zona_radio_km').eq('usuario_id',s.user.id).maybeSingle(),sb.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre'),sb.from('documentos').select('id,tipo,estado,notas_rechazo,url_storage').eq('usuario_id',s.user.id)]);if(ue)throw ue;if(pe)throw pe;if(!u){setMsg(t('providerOnboarding.noProfile'));setLoading(false);return}if(u.tipo!=='proveedor'){setMsg(t('providerOnboarding.notProvider'));setLoading(false);return}let prof=pp as P|null;if(!prof){const{data:newP,error}=await sb.from('perfiles_proveedor').insert({usuario_id:s.user.id,estado_verificacion:'registrado',onboarding_paso:1}).select('*').single();if(error)throw error;prof=newP as P}setUser(u as U);setP(prof);setCats((c||[])as Cat[]);setDocs((d||[])as Doc[]);setTerms(Boolean(prof?.termos_aceitos_at));setForm({nombre:u.nombre||'',apellido:u.apellido||'',telefono:prof?.telefono_profesional||'',endereco:u.endereco||'',zona:u.zona||'',ciudad:prof?.ciudad_base||'Florianópolis',cpf:prof?.cpf||'',pix_tipo:prof?.pix_tipo||'cpf',pix_chave:prof?.pix_chave||'',bio:prof?.bio||'',experiencia:prof?.experiencia_anos==null?'':String(prof.experiencia_anos),especialidades:prof?.especialidades||'',idiomas:prof?.idiomas||'Português',horarios:prof?.disponibilidad_horaria||'',radio:String(prof?.zona_radio_km||15),categoria:prof?.categoria_principal_id||''});if(prof?.categoria_principal_id){const{data:srows}=await sb.from('subcategorias').select('id,categoria_id,nombre').eq('categoria_id',prof.categoria_principal_id).eq('activa',true).order('nombre');setSubs((srows||[])as Sub[])}const{data:ps}=await sb.from('proveedor_subcategorias').select('subcategoria_id').eq('proveedor_id',s.user.id).eq('activa',true);setSelectedSubs((ps||[]).map((x:any)=>x.subcategoria_id));setLoading(false)},[sb])
- useEffect(()=>{let active=true;sb.auth.getSession().then(({data})=>load(data.session).catch(e=>{if(active){setMsg(e.message);setLoading(false)}}));const{data:l}=sb.auth.onAuthStateChange((event,s)=>{if(!active)return;if(event==='SIGNED_OUT'){window.setTimeout(()=>{if(!active)return;void sb.auth.getSession().then(({data})=>{if(!active)return;if(data.session){setSession(data.session);return}setSession(null);setUser(null);setP(null)}).catch(()=>{})},0);return}if(s)setSession(s);if(event==='TOKEN_REFRESHED')return;if(!s)return;window.setTimeout(()=>{if(!active)return;void load(s).catch(e=>{if(active)setMsg(e instanceof Error?e.message:String(e))})},0)});return()=>{active=false;l.subscription.unsubscribe()}},[load,sb])
+ const load=useCallback(async(nextSession:Session|null)=>{
+  const generation=++loadGeneration.current
+  if(!nextSession){
+   sessionRef.current=null;profileUserId.current=null;loadingProfileUserId.current=null;setSession(null);setUser(null);setP(null);setCats([]);setSubs([]);setSelectedSubs([]);setDocs([]);setLoading(false)
+   return
+  }
+  const previousUserId=sessionRef.current?.user.id||null,userId=nextSession.user.id
+  sessionRef.current=nextSession;setSession(nextSession)
+  if(previousUserId!==userId){profileUserId.current=null;loadingProfileUserId.current=null;setUser(null);setP(null);setCats([]);setSubs([]);setSelectedSubs([]);setDocs([]);setLoading(true)}
+  loadingProfileUserId.current=userId
+  const[{data:u,error:ue},{data:pp,error:pe},{data:c},{data:d}]=await Promise.all([
+   sb.from('usuarios').select('id,nombre,apellido,foto_url,pais,zona,endereco,tipo').eq('id',userId).maybeSingle(),
+   sb.from('perfiles_proveedor').select('usuario_id,estado_verificacion,motivo_rechazo,onboarding_paso,telefono_profesional,ciudad_base,categoria_principal_id,cpf,pix_chave,pix_tipo,termos_aceitos_at,termos_versao,bio,experiencia_anos,especialidades,idiomas,disponibilidad_horaria,zona_radio_km').eq('usuario_id',userId).maybeSingle(),
+   sb.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre'),
+   sb.from('documentos').select('id,tipo,estado,notas_rechazo,url_storage').eq('usuario_id',userId),
+  ])
+  if(generation!==loadGeneration.current)return
+  if(ue)throw ue
+  if(pe)throw pe
+  if(!u){profileUserId.current=null;loadingProfileUserId.current=null;setUser(null);setP(null);setMsg(t('providerOnboarding.noProfile'));setLoading(false);return}
+  if(u.tipo!=='proveedor'){profileUserId.current=null;loadingProfileUserId.current=null;setUser(u as U);setP(null);setMsg(t('providerOnboarding.notProvider'));setLoading(false);return}
+  let prof=pp as P|null
+  if(!prof){const{data:newP,error}=await sb.from('perfiles_proveedor').insert({usuario_id:userId,estado_verificacion:'registrado',onboarding_paso:1}).select('*').single();if(generation!==loadGeneration.current)return;if(error)throw error;prof=newP as P}
+  if(generation!==loadGeneration.current)return
+  setUser(u as U);setP(prof);setCats((c||[])as Cat[]);setDocs((d||[])as Doc[]);setTerms(Boolean(prof.termos_aceitos_at));setForm({nombre:u.nombre||'',apellido:u.apellido||'',telefono:prof.telefono_profesional||'',endereco:u.endereco||'',zona:u.zona||'',ciudad:prof.ciudad_base||'Florianópolis',cpf:prof.cpf||'',pix_tipo:prof.pix_tipo||'cpf',pix_chave:prof.pix_chave||'',bio:prof.bio||'',experiencia:prof.experiencia_anos==null?'':String(prof.experiencia_anos),especialidades:prof.especialidades||'',idiomas:prof.idiomas||'Português',horarios:prof.disponibilidad_horaria||'',radio:String(prof.zona_radio_km||15),categoria:prof.categoria_principal_id||''})
+  if(prof.categoria_principal_id){const{data:srows}=await sb.from('subcategorias').select('id,categoria_id,nombre').eq('categoria_id',prof.categoria_principal_id).eq('activa',true).order('nombre');if(generation!==loadGeneration.current)return;setSubs((srows||[])as Sub[])}else setSubs([])
+  const{data:ps}=await sb.from('proveedor_subcategorias').select('subcategoria_id').eq('proveedor_id',userId).eq('activa',true)
+  if(generation!==loadGeneration.current)return
+  setSelectedSubs((ps||[]).map((item:{subcategoria_id:string})=>item.subcategoria_id));profileUserId.current=userId;loadingProfileUserId.current=null;setLoading(false)
+ },[sb,t])
+ const invalidateLoads=useCallback(()=>{loadGeneration.current++;loadingProfileUserId.current=null},[])
+ const retrySession=useCallback(()=>{setMsg('');setSessionChecked(false);setSessionCheckFailed(false);setLoading(true);setSessionEpoch(value=>value+1)},[])
+ const retryProfile=useCallback(()=>{if(!session)return;const userId=session.user.id;setMsg('');setLoading(true);void load(session).catch(error=>{if(sessionRef.current?.user.id!==userId)return;if(loadingProfileUserId.current===userId)loadingProfileUserId.current=null;recordSessionDiagnostic('provider','profile','profile_load_failed',{error});setMsg(error instanceof Error?error.message:t('providerOnboarding.profileFailed'));setLoading(false)})},[load,session,t])
+ useEffect(()=>{
+  let active=true,authEventVersion=0
+  const failSessionCheck=(sessionError:unknown,expectedVersion:number)=>{
+   if(!active||expectedVersion!==authEventVersion)return
+   const terminal=terminalSessionError(sessionError)
+   recordSessionDiagnostic('provider','auth',terminal?'session_invalidated':'session_check_failed',{error:sessionError})
+   setSessionCheckFailed(!terminal);setMsg(terminal?t('sharedUi.sessionInvalidated'):t('sharedUi.sessionCheckFailed'))
+   if(terminal){invalidateLoads();sessionRef.current=null;profileUserId.current=null;setSession(null);setUser(null);setP(null);setCats([]);setSubs([]);setSelectedSubs([]);setDocs([]);setSessionChecked(true)}
+   else setSessionChecked(false)
+   setLoading(false)
+  }
+  const failProfileLoad=(profileError:unknown,expectedVersion:number,userId:string)=>{
+   if(!active||expectedVersion!==authEventVersion||sessionRef.current?.user.id!==userId)return
+   if(loadingProfileUserId.current===userId)loadingProfileUserId.current=null
+   recordSessionDiagnostic('provider','profile','profile_load_failed',{error:profileError})
+   setMsg(profileError instanceof Error?profileError.message:t('providerOnboarding.profileFailed'));setLoading(false)
+  }
+  const{data:listener}=sb.auth.onAuthStateChange((event,next)=>{
+   if(!active)return
+   if(event==='INITIAL_SESSION'&&!next){recordSessionDiagnostic('provider','auth','initial_session_empty_ignored',{event});return}
+   authEventVersion++
+   const version=authEventVersion
+   if(event==='SIGNED_OUT'){
+    recordSessionDiagnostic('provider','auth','signed_out_received',{event});invalidateLoads()
+    window.setTimeout(()=>{
+     if(!active||version!==authEventVersion)return
+     void sb.auth.getSession().then(({data,error})=>{
+      if(!active||version!==authEventVersion)return
+      if(error){failSessionCheck(error,version);return}
+      setSessionCheckFailed(false);setSessionChecked(true);setMsg('')
+      if(data.session){const restoredSession=data.session;void load(restoredSession).catch(profileError=>failProfileLoad(profileError,version,restoredSession.user.id));recordSessionDiagnostic('provider','auth','session_preserved_after_signed_out',{event});return}
+      invalidateLoads();sessionRef.current=null;profileUserId.current=null;setSession(null);setUser(null);setP(null);setCats([]);setSubs([]);setSelectedSubs([]);setDocs([]);setLoading(false)
+      recordSessionDiagnostic('provider','auth','signed_out_confirmed',{event})
+     }).catch(error=>failSessionCheck(error,version))
+    },0)
+    return
+   }
+   if(event==='TOKEN_REFRESHED'){
+    recordSessionDiagnostic('provider','auth','token_refreshed',{event})
+    if(next){
+     sessionRef.current=next;setSession(next);setSessionChecked(true);setSessionCheckFailed(false)
+     if(profileUserId.current!==next.user.id&&loadingProfileUserId.current!==next.user.id){window.setTimeout(()=>{if(!active||version!==authEventVersion)return;void load(next).catch(profileError=>failProfileLoad(profileError,version,next.user.id))},0)}
+    }
+    return
+   }
+   if(next){
+    recordSessionDiagnostic('provider','auth','auth_event',{event});setSessionChecked(true);setSessionCheckFailed(false)
+    window.setTimeout(()=>{if(!active||version!==authEventVersion)return;void load(next).catch(profileError=>failProfileLoad(profileError,version,next.user.id))},0)
+   }
+  })
+  const bootstrapVersion=authEventVersion
+  if(bootstrapVersion===0)void sb.auth.getSession().then(({data,error})=>{
+   if(!active||authEventVersion!==bootstrapVersion)return
+   if(error){failSessionCheck(error,bootstrapVersion);return}
+   setSessionCheckFailed(false);setSessionChecked(true);setMsg('')
+   if(!data.session){invalidateLoads();sessionRef.current=null;profileUserId.current=null;setSession(null);setUser(null);setP(null);setLoading(false);recordSessionDiagnostic('provider','auth','session_unavailable');return}
+   const restoredSession=data.session
+   recordSessionDiagnostic('provider','auth','session_restored');void load(restoredSession).catch(profileError=>failProfileLoad(profileError,bootstrapVersion,restoredSession.user.id))
+  }).catch(error=>failSessionCheck(error,bootstrapVersion))
+  return()=>{active=false;invalidateLoads();listener.subscription.unsubscribe()}
+ },[invalidateLoads,load,sb,sessionEpoch,t])
  const[channelEpoch,setChannelEpoch]=useState(0)
- useEffect(()=>{if(!session?.user?.id)return;const ch=sb.channel(`provider-onboarding-${session.user.id}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${session.user.id}`},()=>load(session).catch(e=>setMsg(e instanceof Error?e.message:t('providerOnboarding.verifyFailed'))));const dispose=subscribeRealtimeChannel(ch,sb,{onSync:()=>load(session).catch(e=>setMsg(e instanceof Error?e.message:t('providerOnboarding.verifyFailed'))),onReconnect:()=>setChannelEpoch(v=>v+1)});return()=>{dispose()}},[load,sb,session,channelEpoch])
+ useEffect(()=>{
+  if(!session?.user?.id)return
+  let active=true
+  const refresh=()=>{if(active)void load(session).catch(error=>{if(active){if(loadingProfileUserId.current===session.user.id)loadingProfileUserId.current=null;recordSessionDiagnostic('provider','profile','provider_snapshot_failed',{error});setMsg(error instanceof Error?error.message:t('providerOnboarding.verifyFailed'))}})}
+  const ch=sb.channel(`provider-onboarding-${session.user.id}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${session.user.id}`},refresh)
+  const dispose=subscribeRealtimeChannel(ch,sb,{onSync:refresh,onReconnect:()=>{if(active)setChannelEpoch(value=>value+1)}})
+  return()=>{active=false;dispose()}
+ },[load,sb,session,channelEpoch,t])
  useEffect(()=>{if(p?.estado_verificacion==='verificado'&&onVerified)void onVerified()},[onVerified,p?.estado_verificacion])
  useEffect(()=>{if(!form.categoria){setSubs([]);return}sb.from('subcategorias').select('id,categoria_id,nombre').eq('categoria_id',form.categoria).eq('activa',true).order('nombre').then(({data})=>setSubs((data||[])as Sub[]))},[form.categoria,sb])
  const doc=(t:string)=>docs.find(d=>d.tipo===t&&d.estado!=='rechazado')||docs.find(d=>d.tipo===t)
@@ -35,11 +138,12 @@ export function ProviderOnboardingGate({onVerified}:ProviderOnboardingGateProps)
  function back(){setMsg('');setStep(v=>Math.max(1,v-1));window.scrollTo({top:0,behavior:'smooth'})}
  const upload=(type:string,title:string,required=false)=>{const d=doc(type),state=d?.estado?t('status.'+d.estado):t('providerOnboarding.notUploaded');return <label className="ugo-provider-upload"><input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={busy} onChange={e=>e.target.files?.[0]&&uploadDoc(type,e.target.files[0])}/><span className="ugo-provider-upload-copy"><b>{title}{required?' *':''}</b><span>{d?.notas_rechazo||t('providerOnboarding.fileTypes')}</span></span><span className={`ugo-provider-upload-badge ${state}`}>{state}</span></label>}
  if(loading)return <LoadingScreen label={t('providerOnboarding.loading')}/>
- if(!session)return <div className="ugo-provider-state"><h2>{t('providerOnboarding.required')}</h2><p>{t('providerOnboarding.loginHelp')}</p><button className="primary" onClick={()=>window.location.replace(`${window.location.pathname}?app=provider`)}>{t('providerOnboarding.back')}</button></div>
- if(!p||!user)return <div className="ugo-provider-state"><h2>{t('providerOnboarding.registration')}</h2><p>{msg||t('providerOnboarding.profileFailed')}</p><button className="secondary" onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.signout')}</button></div>
+ if(!session&&!sessionChecked)return <div className="ugo-provider-state" role="alert"><h2>{t('providerRuntime.sessionTitle')}</h2><p>{msg||t('sharedUi.sessionCheckFailed')}</p><button className="secondary" onClick={retrySession}>{t('sharedUi.retry')}</button></div>
+ if(!session)return <div className="ugo-provider-state"><h2>{t('providerOnboarding.required')}</h2><p>{msg||t('providerOnboarding.loginHelp')}</p><button className="primary" onClick={()=>window.location.replace(`${window.location.pathname}?app=provider`)}>{t('providerOnboarding.back')}</button></div>
+ if(!p||!user)return <div className="ugo-provider-state"><h2>{t('providerOnboarding.registration')}</h2><p>{msg||t('providerOnboarding.profileFailed')}</p>{sessionCheckFailed&&<button className="secondary" onClick={retrySession}>{t('sharedUi.retry')}</button>}<button className="secondary" onClick={retryProfile}>{t('sharedUi.retry')}</button><button className="secondary" onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.signout')}</button></div>
  if(p.estado_verificacion==='verificado')return <LoadingScreen label={t('providerOnboarding.activating')}/>
  if(p.estado_verificacion==='suspendido')return <div className="ugo-provider-state"><h2>{t('providerOnboarding.suspended')}</h2><p>{t('providerOnboarding.suspendedHelp')}</p><button className="secondary" onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.signout')}</button></div>
- if(p.estado_verificacion==='pendiente')return <div className="ugo-provider-state"><div style={{fontSize:42}}>⏳</div><h1>{t('providerOnboarding.review')}</h1><p>{t('providerOnboarding.reviewHelp')}</p>{msg&&<p>{msg}</p>}<div className="ugo-provider-state-actions"><button className="secondary" onClick={()=>{setP({...p,estado_verificacion:'registrado'});setStep(1)}}>{t('providerOnboarding.reviewData')}</button><button className="secondary" onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.signout')}</button></div></div>
+ if(p.estado_verificacion==='pendiente')return <div className="ugo-provider-state"><div style={{fontSize:42}}>⏳</div><h1>{t('providerOnboarding.review')}</h1><p>{t('providerOnboarding.reviewHelp')}</p>{msg&&<p>{msg}</p>}{sessionCheckFailed&&<button className="secondary" onClick={retrySession}>{t('sharedUi.retry')}</button>}<div className="ugo-provider-state-actions"><button className="secondary" onClick={()=>{setP({...p,estado_verificacion:'registrado'});setStep(1)}}>{t('providerOnboarding.reviewData')}</button><button className="secondary" onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.signout')}</button></div></div>
  const rejected=p.estado_verificacion==='rechazado',meta=STEPS[step-1]
  return <main className="ugo-provider-onboarding"><div className="ugo-provider-onboarding-card"><header className="ugo-provider-onboarding-head"><div className="ugo-provider-brand"><small>{t('providerOnboarding.brand')}</small><span>🛠️</span></div><h1>{t('providerOnboarding.registration')}</h1><p>{t('providerOnboarding.setup')}</p></header>{rejected&&<div className="ugo-provider-rejected"><b>{t('providerOnboarding.rejected')}</b><div>{p.motivo_rechazo||t('providerOnboarding.reviewAgain')}</div></div>}<div className="ugo-provider-progress"><div className="ugo-provider-progress-top"><b>{t('providerOnboarding.step')}{step} {t('providerOnboarding.of')}{t('providerOnboarding.'+meta.name)}</b><span>{Math.round(step/6*100)}{t('providerOnboarding.percent')}</span></div><div className="ugo-provider-progress-track"><i style={{width:`${step/6*100}%`}}/></div><div className="ugo-provider-steps">{STEPS.map((s,i)=><button type="button" key={s.name} data-step={i+1} className={i+1===step?'active':i+1<step?'done':''} onClick={()=>i+1<step&&setStep(i+1)}>{t('providerOnboarding.'+s.name)}</button>)}</div></div><section className="ugo-provider-step"><div className="ugo-provider-step-title"><span className="ugo-provider-step-icon">{meta.icon}</span><div><h2>{t('providerOnboarding.'+meta.title)}</h2><p>{t('providerOnboarding.'+meta.copy)}</p></div></div>
  {step===1&&<><div className="ugo-provider-grid"><label className="ugo-provider-field">{t('providerOnboarding.name')}<input autoComplete="given-name" value={form.nombre} onChange={e=>setForm({...form,nombre:e.target.value})}/></label><label className="ugo-provider-field">{t('providerOnboarding.surname')}<input autoComplete="family-name" value={form.apellido} onChange={e=>setForm({...form,apellido:e.target.value})}/></label></div><label className="ugo-provider-field">{t('providerOnboarding.email')}<input value={session.user.email||''} readOnly/></label><label className="ugo-provider-field">{t('providerOnboarding.phone')}<input inputMode="tel" value={form.telefono} onChange={e=>setForm({...form,telefono:e.target.value})} placeholder="+55…"/></label><label className="ugo-provider-field">{t('providerOnboarding.address')}<input autoComplete="street-address" value={form.endereco} onChange={e=>setForm({...form,endereco:e.target.value})} placeholder={t('providerOnboarding.streetPlaceholder')}/></label><div className="ugo-provider-grid"><label className="ugo-provider-field">{t('providerOnboarding.area')}<input value={form.zona} onChange={e=>setForm({...form,zona:e.target.value})}/></label><label className="ugo-provider-field">{t('providerOnboarding.city')}<input value={form.ciudad} onChange={e=>setForm({...form,ciudad:e.target.value})}/></label></div></>}
@@ -48,5 +152,5 @@ export function ProviderOnboardingGate({onVerified}:ProviderOnboardingGateProps)
  {step===4&&<><div className="ugo-provider-privacy"><b>{t('providerOnboarding.privateDocs')}</b><br/>{t('providerOnboarding.docsHelp')}</div>{upload('identidad_frente',t('providerOnboarding.documentFront'),true)}{upload('identidad_dorso',t('providerOnboarding.documentBack'))}{upload('selfie',t('providerOnboarding.selfie'))}{upload('comprobante_domicilio',t('providerOnboarding.proofAddress'))}<label className="ugo-provider-field">CPF<input inputMode="numeric" value={form.cpf} onChange={e=>setForm({...form,cpf:e.target.value})} placeholder="000.000.000-00"/></label></>}
  {step===5&&<><div className="ugo-provider-privacy"><b>{t('providerOnboarding.payout')}</b><br/>{t('providerOnboarding.payoutHelp')}</div><div className="ugo-provider-grid"><label className="ugo-provider-field">{t('providerOnboarding.pixType')}<select value={form.pix_tipo} onChange={e=>setForm({...form,pix_tipo:e.target.value})}><option value="cpf">CPF</option><option value="email">{t('providerOnboarding.emailOption')}</option><option value="telefone">{t('providerOnboarding.phoneOption')}</option><option value="aleatoria">{t('providerOnboarding.random')}</option></select></label><label className="ugo-provider-field">{t('providerOnboarding.pixKey')}<input value={form.pix_chave} onChange={e=>setForm({...form,pix_chave:e.target.value})} placeholder={t('providerOnboarding.pixPlaceholder')}/></label></div></>}
  {step===6&&<><div className="ugo-provider-review"><div className="ugo-provider-review-row"><span>{t('providerOnboarding.professional')}</span><b>{form.nombre} {form.apellido}</b></div><div className="ugo-provider-review-row"><span>{t('providerOnboarding.mainService')}</span><b>{categoryName}</b></div><div className="ugo-provider-review-row"><span>{t('providerOnboarding.areaShort')}</span><b>{form.zona||form.ciudad}</b></div><div className="ugo-provider-review-row"><span>{t('providerOnboarding.experienceShort')}</span><b>{form.experiencia?`${form.experiencia} ${t('providerOnboarding.years')}`:t('providerOnboarding.notSpecified')}</b></div><div className="ugo-provider-review-row"><span>{t('providerOnboarding.document')}</span><b>{doc('identidad_frente')?.estado?t('status.'+doc('identidad_frente')!.estado):t('providerOnboarding.notUploaded')}</b></div><div className="ugo-provider-review-row"><span><LocalizedText id="screen.client_payment.6"/></span><b>{form.pix_chave?t('providerOnboarding.configured'):t('providerOnboarding.pending')}</b></div></div><label className="ugo-provider-terms"><input type="checkbox" checked={terms} onChange={e=>setTerms(e.target.checked)}/><span>{t('providerOnboarding.terms')}{TERMS_VERSION}.</span></label><div className="ugo-provider-privacy">{t('providerOnboarding.submitHelp')}<b>{t('providerOnboarding.pending')}</b>{t('providerOnboarding.afterReview')}</div></>}
- </section>{msg&&<div className={`ugo-provider-message ${/no se|ingresá|elegí|completá|cargá|tenés/i.test(msg)?'error':''}`} role="status">{msg}</div>}<footer className="ugo-provider-actions">{step>1?<button type="button" className="ugo-provider-back" disabled={busy} onClick={back}>{t('providerOnboarding.backStep')}</button>:<button type="button" className="ugo-provider-back" disabled={busy} onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.exit')}</button>}<button type="button" className="ugo-provider-save" disabled={busy} onClick={()=>save(false)}>{busy?t('providerOnboarding.saving'):t('providerOnboarding.save')}</button>{step<6?<button type="button" className="ugo-provider-next" disabled={busy} onClick={next}>{t('providerOnboarding.continue')}</button>:<button type="button" className="ugo-provider-submit" disabled={busy||!terms} onClick={()=>save(true)}>{busy?t('providerOnboarding.sending'):t('providerOnboarding.submitReview')}</button>}</footer></div></main>
+ </section>{msg&&<div className={`ugo-provider-message ${/no se|ingresá|elegí|completá|cargá|tenés/i.test(msg)?'error':''}`} role="status">{msg}</div>}{sessionCheckFailed&&<button type="button" className="secondary" onClick={retrySession}>{t('sharedUi.retry')}</button>}<footer className="ugo-provider-actions">{step>1?<button type="button" className="ugo-provider-back" disabled={busy} onClick={back}>{t('providerOnboarding.backStep')}</button>:<button type="button" className="ugo-provider-back" disabled={busy} onClick={()=>sb.auth.signOut({scope:'local'})}>{t('providerOnboarding.exit')}</button>}<button type="button" className="ugo-provider-save" disabled={busy} onClick={()=>save(false)}>{busy?t('providerOnboarding.saving'):t('providerOnboarding.save')}</button>{step<6?<button type="button" className="ugo-provider-next" disabled={busy} onClick={next}>{t('providerOnboarding.continue')}</button>:<button type="button" className="ugo-provider-submit" disabled={busy||!terms} onClick={()=>save(true)}>{busy?t('providerOnboarding.sending'):t('providerOnboarding.submitReview')}</button>}</footer></div></main>
 }

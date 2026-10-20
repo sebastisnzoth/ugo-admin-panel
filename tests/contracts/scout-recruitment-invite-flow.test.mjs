@@ -21,6 +21,15 @@ test('recruitment landing validates invite, creates provider account and continu
  assert.match(src,/t\('recruit\.step\.documents'\)/)
 })
 
+test('recruitment auth waits for a confirmed empty session and exposes retry on transient checks',async()=>{
+ const src=await read('src/mvp/ProviderRecruitmentLanding.tsx')
+ assert.match(src,/useRoleSession\('provider'\)/)
+ assert.match(src,/if\(!auth\.sessionChecked\)/)
+ assert.match(src,/onAction=\{auth\.retrySession\}/)
+ assert.doesNotMatch(src,/sb\.auth\.onAuthStateChange/)
+ assert.doesNotMatch(src,/sb\.auth\.getSession/)
+})
+
 test('growth migration contains campaign, timeline, invite, dedupe and conversion primitives',async()=>{
  const sql=await read('supabase/migrations/20260921230000_scout_recruitment_growth_engine.sql')
  assert.match(sql,/create table if not exists public\.scout_campaigns/)

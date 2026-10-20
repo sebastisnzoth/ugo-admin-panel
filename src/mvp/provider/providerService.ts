@@ -1,5 +1,6 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{reportSentinelIncident}from'../../lib/sentinel'
+import{recordSessionDiagnostic}from'../../lib/roleSupabase'
 import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{PROVIDER_ACTIVE_STATES,type Offer,type Payment,type ProviderProfile,type Service}from'../shared'
 
@@ -57,23 +58,25 @@ async function persistedProviderAvailability(supabase:SupabaseClient,userId:stri
  try{const{data,error}=await supabase.from('perfiles_proveedor').select('disponible,online').eq('usuario_id',userId).maybeSingle();if(error)return null;if(!data)return false;return data.disponible===online&&data.online===online}catch{return null}
 }
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){
- let mutationError:unknown
+ let mutationError:unknown,phase:'gps'|'availability'=online?'gps':'availability'
  try{
   if(online){
    const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
    if(!acceptablePosition(position))throw new Error('UGO necesita una ubicación GPS reciente y precisa antes de ponerte Online.')
    const capturedAt=new Date(Number(position.timestamp)).toISOString(),accuracy=Number(position.coords.accuracy)
+   phase='availability'
    const{error}=await supabase.rpc('activar_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:capturedAt,p_accuracy_m:accuracy})
-   if(!error)return
+   if(!error){recordSessionDiagnostic('provider','availability','online_saved');return}
    mutationError=error
   }else{
    const{error}=await supabase.from('perfiles_proveedor').update({disponible:false,online:false}).eq('usuario_id',userId)
-   if(!error)return
+   if(!error){recordSessionDiagnostic('provider','availability','offline_saved');return}
    mutationError=error
   }
  }catch(error){mutationError=error}
  const persisted=await persistedProviderAvailability(supabase,userId,online)
- if(persisted===true)return
+ if(persisted===true){recordSessionDiagnostic('provider','availability','availability_recovered',{error:mutationError});return}
+ recordSessionDiagnostic('provider',phase,phase==='gps'?'gps_error':'availability_failed',{error:mutationError})
  if(persisted===false){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(mutationError,online?'No pudimos activar tu disponibilidad con una ubicación válida.':'No se pudo actualizar la disponibilidad.'),error:mutationError,role:'provider',severity:'P1',action:'provider.availability',checklistCode:'MATCH-ONLINE'})}
  else{void reportSentinelIncident({eventType:'provider_availability_recovery_unverified',message:'No pudimos confirmar el estado online/offline persistido. El radar volverá a leer la disponibilidad real.',error:mutationError,role:'provider',severity:'P2',action:'provider.availability.recovery'})}
  throw new Error(messageOf(mutationError,online?'No pudimos activar tu disponibilidad. Revisá el permiso y la precisión GPS y reintentá.':'No pudimos desactivar tu disponibilidad. Reintentá.'))
