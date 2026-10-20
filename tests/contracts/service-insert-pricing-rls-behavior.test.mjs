@@ -35,7 +35,7 @@ test('priced client request passes unchanged INSERT RLS; forged settlements and 
   await db.exec(await read('supabase/migrations/20260912203500_service_insert_integrity_guard.sql'))
   await db.exec(await read('supabase/migrations/20260920071000_lock_tariff_snapshot_end_to_end.sql'))
   const files=await fs.readdir('supabase/migrations')
-  for(const file of files.filter(file=>file.endsWith('_defer_insert_settlement_until_assignment.sql')))await db.exec(await read('supabase/migrations/'+file))
+  for(const file of files.filter(file=>file.endsWith('_defer_insert_settlement_until_assignment.sql')||file.endsWith('_preserve_assigned_insert_pricing.sql')).sort())await db.exec(await read('supabase/migrations/'+file))
   await db.exec('set role authenticated')
   const insert=(owner,fields='')=>db.exec(`insert into public.servicios(cliente_id,estado,tarifa,metadata${fields?',comision_ugo,ganancia_proveedor':''}) values('${owner}','buscando',120,'{"tariff_quote":{"precio_referencia":120}}'${fields})`)
   const owner='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1'
@@ -43,10 +43,16 @@ test('priced client request passes unchanged INSERT RLS; forged settlements and 
   await db.exec(`insert into public.servicios(cliente_id,estado,tarifa) values('${owner}','buscando',120)`)
   await assert.rejects(insert(owner,',1,119'),/row.level security/i)
   await assert.rejects(insert('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2'),/row.level security/i)
+  await assert.rejects(db.exec(`insert into public.servicios(cliente_id,proveedor_id,estado,tarifa) values('${owner}','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2','asignado',120)`),/row.level security/i)
   await db.exec('reset role')
   const created=(await db.query('select tarifa,comision_ugo,ganancia_proveedor from public.servicios')).rows
   assert.equal(created.length,2);assert.equal(Number(created[0].tarifa),120)
   assert.equal(created[0].comision_ugo,null);assert.equal(created[0].ganancia_proveedor,null)
+  // Trusted Admin/QA can still create an already assigned service atomically.
+  await db.exec(`insert into public.servicios(cliente_id,proveedor_id,estado,tarifa) values('${owner}','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2','asignado',120)`)
+  const direct=(await db.query('select comision_ugo,ganancia_proveedor from public.servicios where estado=\'asignado\'')).rows[0]
+  assert.equal(Number(direct.comision_ugo),18,'trusted assigned INSERT must retain server settlement')
+  assert.equal(Number(direct.ganancia_proveedor),102)
   await db.exec("update public.servicios set proveedor_id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'")
   const assigned=(await db.query('select tarifa,comision_ugo,ganancia_proveedor from public.servicios')).rows[0]
   assert.equal(Number(assigned.tarifa),120);assert.equal(Number(assigned.comision_ugo),18);assert.equal(Number(assigned.ganancia_proveedor),102)

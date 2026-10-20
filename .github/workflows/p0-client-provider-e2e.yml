@@ -13,6 +13,7 @@ on:
       - "src/mvp/AdminGate.tsx"
       - "src/lib/roleSupabase.ts"
       - "supabase/migrations/*_defer_insert_settlement_until_assignment.sql"
+      - "supabase/migrations/*_preserve_assigned_insert_pricing.sql"
       - "tests/contracts/service-insert-pricing-rls-behavior.test.mjs"
       - "tests/contracts/role-session-concurrency-behavior.test.mjs"
       - "src/features/client/request/**"

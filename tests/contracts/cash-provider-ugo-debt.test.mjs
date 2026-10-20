@@ -4,7 +4,7 @@ import assert from'node:assert/strict'
 import fs from'node:fs'
 
 const debt=fs.readFileSync('supabase/migrations/20260920070000_cash_provider_ugo_debt_ledger.sql','utf8')
-const pricing=fs.readFileSync('supabase/migrations/20261019233520_defer_insert_settlement_until_assignment.sql','utf8')
+const pricing=fs.readFileSync('supabase/migrations/20261020000050_preserve_assigned_insert_pricing.sql','utf8')
 const freeze=fs.readFileSync('supabase/migrations/20260920075500_freeze_ugo_quote_and_hide_debt_blocked_offers.sql','utf8')
 const blocking=fs.readFileSync('supabase/migrations/20260920073500_provider_ugo_debt_order_block.sql','utf8')
 const cashUi=fs.readFileSync('src/features/client/payments/ClientPaymentChoice.tsx','utf8')
