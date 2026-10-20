@@ -14,7 +14,7 @@ for(let attempt=1;attempt<=3;attempt++){
   if(!error)break;
   const status=Number(error.status||0);
   const message=String(error.message||'');
-  const gatewayFailure=[502,503,504].includes(status)||/^(Bad Gateway|Service Unavailable|Gateway Timeout)$/i.test(message)||/<html[\s>]|<!DOCTYPE html/i.test(message);
+  const gatewayFailure=[502,503,504].includes(status)||/^(Bad Gateway|Service Unavailable|Gateway Timeout)$/i.test(message)||/<html[\s>]|<!DOCTYPE html/i.test(message)||/^(?:TypeError: )?fetch failed$/i.test(message)&&/UND_ERR_HEADERS_TIMEOUT|HeadersTimeoutError|fetch failed/i.test(String(error.details||error.hint||message));
   if(!gatewayFailure||attempt===3)break;
   console.warn('UGO_TEST_GATEWAY_TEMPORARY_UNAVAILABLE',JSON.stringify({attempt,status}));
   await new Promise(resolve=>setTimeout(resolve,attempt*2000));
