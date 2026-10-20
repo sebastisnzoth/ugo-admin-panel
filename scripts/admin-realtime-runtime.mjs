@@ -45,7 +45,7 @@ assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
 const fixtureToken=sha.slice(0,8)+'-'+Date.now()
 const fixtureEmail=`ugo-admin-realtime-provider-${fixtureToken}@example.test`
 const fixturePassword='UGO-Test-'+fixtureToken+'-A9!'
-const {data:createdProvider,error:providerCreateError}=await setupWithTransientRetry(()=>root.auth.admin.createUser({email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}}),'fixture create user')
+const {data:createdProvider,error:providerCreateError}=await root.auth.admin.createUser({email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}})
 assert.ifError(providerCreateError)
 assert.ok(createdProvider.user?.id,'PROVIDER_PROFILE_FIXTURE_REQUIRED')
 const providerId=createdProvider.user.id
