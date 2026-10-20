@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {createTestUser,withTransientRetry} from './lib/transient-retry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -44,7 +45,7 @@ assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
 const fixtureToken=sha.slice(0,8)+'-'+Date.now()
 const fixtureEmail=`ugo-admin-realtime-provider-${fixtureToken}@example.test`
 const fixturePassword='UGO-Test-'+fixtureToken+'-A9!'
-const {data:createdProvider,error:providerCreateError}=await root.auth.admin.createUser({email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}})
+const {data:createdProvider,error:providerCreateError}=await createTestUser(root,{email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}},{label:'admin-realtime-fixture'})
 assert.ifError(providerCreateError)
 assert.ok(createdProvider.user?.id,'PROVIDER_PROFILE_FIXTURE_REQUIRED')
 const providerId=createdProvider.user.id

@@ -1,13 +1,14 @@
 import assert from'node:assert/strict'
 import fs from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
+import{withTransientRetry}from'./lib/transient-retry.mjs'
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',serviceRole=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 const email=process.env.UGO_TEST_PROVIDER_EMAIL||'',password=process.env.UGO_TEST_PROVIDER_PASSWORD||'',sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY');assert.ok(anon&&serviceRole&&email&&password&&sha,'PROFILE_PHOTO_RUNTIME_INPUTS_REQUIRED')
 const provider=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 const admin=createClient(url,serviceRole,{auth:{persistSession:false,autoRefreshToken:false}})
-const{data:login,error:loginError}=await provider.auth.signInWithPassword({email,password});assert.ifError(loginError);assert.ok(login.user?.id)
+const{data:login,error:loginError}=await withTransientRetry(()=>provider.auth.signInWithPassword({email,password}),{label:'profile-photo-signin'});assert.ifError(loginError);assert.ok(login.user?.id)
 const uid=login.user.id
 const{data:before,error:beforeError}=await admin.from('perfiles_proveedor').select('foto_perfil_path').eq('usuario_id',uid).single();assert.ifError(beforeError)
 const oldPath=before?.foto_perfil_path||null

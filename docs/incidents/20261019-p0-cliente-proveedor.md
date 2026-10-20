@@ -82,3 +82,22 @@ Cambios de causa raíz:
 - `scripts/admin-realtime-runtime.mjs` y `scripts/hugo-provider-actions-runtime.mjs`: al agotarse la espera se publica una anotación con el estado real de la pantalla (URL, formulario de login, spinners, alertas, botones de reintento, texto visible) para identificar la causa exacta sin depender de logs inaccesibles.
 
 Estado: cambios preparados y probados localmente (18 contratos focales PASS, `tsc -b` limpio). La verificación en CI del SHA exacto queda pendiente en este ciclo.
+
+### Causa raíz de la intermitencia en runtimes TEST (20/10/2026)
+
+La anotación del check `UGO Hugo Provider Actions Runtime TEST` sobre `8f65639` capturó el error exacto:
+
+```
+AuthRetryableFetchError: Gateway Timeout
+    at async GoTrueAdminApi.createUser (.../GoTrueAdminApi.js:392:20)
+```
+
+Es decir: **Supabase Auth devuelve 504 Gateway Timeout** cuando ~20 workflows simultáneos crean usuarios e inician sesión contra el mismo proyecto TEST desde la misma IP de runner. No es un defecto de la app ni del flujo Cliente/Proveedor: es contención de infraestructura que se manifestaba como timeout de UI ("no aparece `.ugo-admin2-status`" / "no aparece TRABAJO ACTIVO") porque la prueba nunca llegaba a autenticarse.
+
+Corrección aplicada (sólo harness de pruebas, sin tocar comportamiento del producto):
+
+- `scripts/lib/transient-retry.mjs`: reintento acotado con espera creciente **sólo** para errores transitorios de infraestructura (429/502/503/504, timeouts, red). Credenciales inválidas, RLS o violaciones de contrato **no** se reintentan.
+- `createTestUser`: ante un timeout del gateway comprueba si la cuenta se creó antes de reintentar, para no duplicar usuarios ni fallar por "already registered".
+- Adoptado en `hugo-provider-actions-runtime`, `admin-realtime-runtime`, `provider-operating-zone-runtime`, `provider-profile-photo-runtime`, y el inicio de sesión de administrador.
+
+Esto no relaja ninguna aserción: cada reintento se anota como `::warning` y el agotamiento se publica como `::error` con el código y mensaje reales.
