@@ -16,6 +16,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # Uses the shared designated UGO TEST provider (proveedor.ugo.test): concurrent
+  # runs from two branches clobbered foto_perfil_path and failed the cleanup
+  # assert (evidence 2026-10-20). Serialize with every other workflow that
+  # mutates that fixture.
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
+
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
@@ -41,7 +49,20 @@ jobs:
       - name: Runtime
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node scripts/provider-profile-photo-runtime.mjs
+        run: |
+          set -o pipefail
+          node scripts/provider-profile-photo-runtime.mjs 2>&1 | tee /tmp/ugo-provider-profile-photo-runtime.log
+      - name: Runtime failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-provider-profile-photo-runtime.log ]; then
+            tail -n 10 /tmp/ugo-provider-profile-photo-runtime.log | while IFS= read -r line; do
+              line="${line//%/%25}"
+              line="${line//$'\r'/%0D}"
+              printf '::error title=Provider Profile Photo failure::%s\n' "$line"
+            done
+          fi
       - name: Judge
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}

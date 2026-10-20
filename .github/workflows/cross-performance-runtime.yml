@@ -27,7 +27,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-performance-${{ github.ref }}
+  # Single-flight REPO-WIDE: latency thresholds (< seconds vs fallback windows)
+  # are meaningless while another branch's suite saturates UGO TEST (504/522
+  # evidence 2026-10-20). Serialize these timing proofs across all branches.
+  group: ugo-runtime-timing-singleflight
   cancel-in-progress: false
 
 env:
@@ -86,7 +89,18 @@ jobs:
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
-          node scripts/cross-performance-runtime.mjs
+          node scripts/cross-performance-runtime.mjs 2>&1 | tee /tmp/ugo-cross-performance-runtime.log
+      - name: Runtime failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-cross-performance-runtime.log ]; then
+            tail -n 10 /tmp/ugo-cross-performance-runtime.log | while IFS= read -r line; do
+              line="${line//%/%25}"
+              line="${line//$'\r'/%0D}"
+              printf '::error title=Cross Performance failure::%s\n' "$line"
+            done
+          fi
       - name: Upload runtime evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -38,7 +38,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-role-ui-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Single-flight REPO-WIDE: role fixtures create users through GoTrue; under
+  # parallel suites GoTrue answered 504/fetch-failed (evidence 2026-10-20).
+  # One timing/browser proof at a time across all branches keeps it honest.
+  group: ugo-runtime-timing-singleflight
   cancel-in-progress: false
 
 env:
@@ -105,7 +108,19 @@ jobs:
           fi
           curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:4174/__health
           node scripts/i18n-login-runtime.mjs
-          node scripts/role-ui-runtime.mjs
+          set -o pipefail
+          node scripts/role-ui-runtime.mjs 2>&1 | tee /tmp/ugo-role-ui-runtime.log
+      - name: Cross-role failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-role-ui-runtime.log ]; then
+            tail -n 10 /tmp/ugo-role-ui-runtime.log | while IFS= read -r line; do
+              line="${line//%/%25}"
+              line="${line//$'\r'/%0D}"
+              printf '::error title=Cross-role UI failure::%s\n' "$line"
+            done
+          fi
       - name: Upload UI runtime evidence
         if: always()
         uses: actions/upload-artifact@v4

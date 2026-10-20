@@ -2,6 +2,7 @@ import assert from'node:assert/strict'
 import fs from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
 import{chromium}from'playwright'
+import{createUserWithRetry,retrySupabaseResult}from'./lib/transient-retry.mjs'
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY');assert.ok(serviceKey&&sha,'HUGO_PROVIDER_ACTIONS_RUNTIME_INPUTS_REQUIRED')
@@ -11,9 +12,9 @@ const pe=`ugo-hugo-provider-${token}@example.test`,ce=`ugo-hugo-client-${token}@
 let providerId=null,clientId=null,serviceId=null,browser=null
 async function cleanup(){if(serviceId){await admin.from('pagos').delete().eq('servicio_id',serviceId);await admin.from('ofertas_servicio').delete().eq('servicio_id',serviceId);await admin.from('servicios').delete().eq('id',serviceId)}for(const id of[providerId,clientId]){if(!id)continue;await admin.from('notificaciones').delete().eq('usuario_id',id);await admin.from('perfiles_proveedor').delete().eq('usuario_id',id);await admin.from('usuarios').delete().eq('id',id);await admin.auth.admin.deleteUser(id)}if(browser)await browser.close()}
 try{
- const p=await admin.auth.admin.createUser({email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Provider Runtime',tipo:'proveedor'}});if(p.error)throw p.error;providerId=p.data.user.id
- const c=await admin.auth.admin.createUser({email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Client Runtime',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
- const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId});assert.ifError(prep.error);serviceId=prep.data.service_id;assert.equal(prep.data.state,'asignado')
+ const p=await createUserWithRetry(admin,{email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Provider Runtime',tipo:'proveedor'}},{label:'hugo-provider-actions.createUser(provider)'});if(p.error)throw p.error;providerId=p.data.user.id
+ const c=await createUserWithRetry(admin,{email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Client Runtime',tipo:'cliente'}},{label:'hugo-provider-actions.createUser(client)'});if(c.error)throw c.error;clientId=c.data.user.id
+ const prep=await retrySupabaseResult(()=>admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId}),{label:'hugo-provider-actions.prepare_provider_active_job'});assert.ifError(prep.error);serviceId=prep.data.service_id;assert.equal(prep.data.state,'asignado')
  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},permissions:['geolocation'],geolocation:{latitude:-27.5949,longitude:-48.5482,accuracy:12}});const page=await context.newPage()
  await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.addInitScript(()=>{window.__ugoToolResponses=[];window.UGOVoiceBridge={isAvailable:()=>true,startListening:async()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})
