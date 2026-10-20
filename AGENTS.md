@@ -28,6 +28,12 @@ Antes de modificar: identificar funcionalidades afectadas, contrato observable, 
 
 Cada trabajo autónomo debe comparar su objetivo, cambio, pruebas y resultado con `docs/UGO_ROADMAP_MASTER.md` y el estado vivo de main/CI/TEST. Al cerrar el bloque actualizar en el mismo ciclo el roadmap y el registro de continuidad en `docs/UGO_CAMINO_MAESTRO.md`: fase, estado comprobado, SHA, evidencia, regresiones y próximo paso. Si falta evidencia, dejar el estado pendiente; no declarar terminado ni inventar progreso. La orden «seguí» retoma el primer trabajo accionable de la ruta completa hacia producción Florianópolis, preservando lo que funciona.
 
+## Mejora continua autónoma sin regresiones (20-10-2026)
+
+Los agentes deben detectar oportunidades de mejora durante el trabajo y **ejecutar de manera proactiva mejoras pequeñas, justificadas y seguras**, sin requerir órdenes adicionales para decisiones técnicas ordinarias. No quedarse en sugerencias ni informes si la mejora puede implementarse y comprobarse. **Condición previa:** no desplazar el primer P0 accionable, no ampliar innecesariamente el alcance y no comprometer funcionalidades ya verificadas. Si la mejora no está relacionada con el bloqueo activo, registrarla priorizada en el roadmap para ejecutarla cuando corresponda; una mejora independiente y de riesgo mínimo puede avanzar sólo si no retrasa la prioridad crítica.
+
+Protocolo: baseline → impacto/riesgo → modificación mínima y reversible → tests específicos y regresión del recorrido afectado → CI/TEST SAME-SHA → registrar evidencia y actualizar roadmap/handoff → integrar/publicar sólo tras gates y autorizaciones aplicables. Si aparece regresión, **no fusionar ni desplegar**, corregir y repetir. Jamás autoaprobar gastos, dinero, seguridad, migraciones irreversibles o producción fuera de autoridad vigente. No declarar mejora entregada sin prueba.
+
 ## Objetivo
 
 Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar con autonomía dentro del alcance autorizado, investigar antes de preguntar, corregir la capa responsable del problema, validar antes de declarar éxito y mantener alineados código, producto, datos, UX, calidad y documentación.
