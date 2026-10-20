@@ -78,23 +78,13 @@ jobs:
           and write the verified blocker and next action in your final response.
           PROMPT
           export UGO_ISSUE_FILE="$RUNNER_TEMP/ugo-issue-543.json"
-          # Fail closed if the gateway is unavailable; never fall back to OpenAI billing.
-          test -n "$UGO_FREEAPI_API_KEY"
-          export UGO_FREEAPI_API_KEY
-          cat > "$RUNNER_TEMP/freeapi-provider.toml" <<EOF
-          model_provider = "ugo_freeapi"
-          model = "openai/gpt-oss-120b"
-          model_providers.ugo_freeapi.name = "UGO FreeLLMAPI (Render)"
-          model_providers.ugo_freeapi.base_url = "$UGO_FREEAPI_BASE_URL"
-          model_providers.ugo_freeapi.env_key = "UGO_FREEAPI_API_KEY"
-          model_providers.ugo_freeapi.wire_api = "responses"
-          EOF
-          model="${CODEX_MODEL:-openai/gpt-oss-120b}"
-          CODEX_HOME="$RUNNER_TEMP/ugo-codex-home"
-          export CODEX_HOME
-          mkdir -p "$CODEX_HOME"
-          cp "$RUNNER_TEMP/freeapi-provider.toml" "$CODEX_HOME/config.toml"
-          codex exec --full-auto --sandbox workspace-write --model "$model" - < "$RUNNER_TEMP/ugo-task.txt"
+          # The runner uses only our OpenAI-compatible FreeLLMAPI proxy.
+          # No automatic fallback to paid OpenAI.
+          export OPENAI_API_KEY="$UGO_FREEAPI_API_KEY"
+          export OPENAI_API_BASE="$UGO_FREEAPI_BASE_URL"
+          model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
+          python -m aider --model "$model" --yes-always --no-auto-commits --no-gitignore \
+            --message-file "$RUNNER_TEMP/ugo-task.txt"
       - name: Validate no protected paths changed
         shell: bash
         run: |
