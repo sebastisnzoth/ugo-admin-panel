@@ -11,6 +11,11 @@ const runtimeRevision =
 
 const devPort = Number(process.env.PORT || 4173)
 
+// Clickjacking guard: production must not be frameable.
+// Arena preview needs an embedded iframe, so we keep an explicit opt-in
+// instead of unconditional ALLOWALL (previous default).
+const allowEmbed = process.env.UGO_ALLOW_EMBED === 'true'
+
 export default defineConfig({
   define: {
     'import.meta.env.VITE_APP_REVISION': JSON.stringify(runtimeRevision),
@@ -48,13 +53,14 @@ export default defineConfig({
     },
     // Allow Arena preview proxy host (e.g. 4173-xxx.e2b.app)
     cors: true,
-    headers: {
-      'X-Frame-Options': 'ALLOWALL',
-    },
+    headers: allowEmbed
+      ? { 'X-Frame-Options': 'ALLOWALL' }
+      : { 'X-Frame-Options': 'SAMEORIGIN' },
   },
   preview: {
     host: '0.0.0.0',
     port: devPort,
     cors: true,
+    headers: { 'X-Frame-Options': 'SAMEORIGIN' },
   },
 })

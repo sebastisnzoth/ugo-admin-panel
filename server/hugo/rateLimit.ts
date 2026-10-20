@@ -5,6 +5,19 @@ const buckets=new Map<string,Bucket>()
 const WINDOW_MS=60_000
 const MAX_BUCKETS=2_048
 
+/**
+ * Hugo rate limits — defense-in-depth, per-isolate only.
+ *
+ * IMPORTANT: these buckets live in memory per Vercel isolate (or Deno isolate
+ * in Edge). They reset on cold start and do NOT provide a distributed global
+ * quota. A platform WAF / KV (Upstash Redis) is the correct layer for a real
+ * global quota and for cost control on Gemini/OpenRouter. Current limits are
+ * best-effort: IP 120/min, chat 45/min, tts 20/min (all override via env).
+ *
+ * Monitoring: log on 429 with Retry-After; alert on sustained 429 spikes via
+ * Vercel Log Drains → Datadog/Sentry. Cost alert: set Gemini budget cap in
+ * provider dashboard, not only here.
+ */
 function positiveInt(value:string|undefined,fallback:number){
  const parsed=Number(value)
  return Number.isInteger(parsed)&&parsed>0?parsed:fallback

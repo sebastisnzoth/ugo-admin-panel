@@ -49,13 +49,23 @@ These remain in repo root as evidence snapshots. Read via this index — do not 
 
 > New evidence docs must go to `docs/evidence/<YYYY-MM-DD>-topic.md` or `docs/readiness/*`, not repo root. Root stays ≤10 MDs.
 
-## New contracts added in this PR (audit 2026-10-20)
+## New contracts added (audit 2026-10-20)
+### Batch 1 — payments + tests/docs index
 - `tests/contracts/payment-webhook-hardening.test.mjs` — POST-only + x-signature + uniform 200 + timingSafeEqual
-- `tests/contracts/rls-table-coverage.test.mjs` — 22 critical tables require `ENABLE ROW LEVEL SECURITY` in migrations
+- `tests/contracts/rls-table-coverage.test.mjs` — 19 critical tables require `ENABLE ROW LEVEL SECURITY`/`CREATE POLICY` in migrations
 - `tests/contracts/realtime-helper-usage.test.mjs` — S-02 `subscribeRealtimeChannel` is canonical; flags raw 1500ms admin path
 - `tests/contracts/no-global-fetch-override.test.mjs` — only `lib/apiRuntime.ts` + `DemoSebastianPaymentBridge.tsx` (TEST-gated, demo=false) may patch `window.fetch`
 - `api/pagos/webhook.ts` hardened: `MERCADO_PAGO_WEBHOOK_SECRET` (HMAC `id:{id};request-id:{id};ts:{ts};`), 405 on non-POST, uniform `{received:true}`
 - `.env.example` documents `MERCADO_PAGO_WEBHOOK_SECRET` bootstrap mode
+
+### Batch 2 — security P0 (stale project + CORS + clickjacking + WhatsApp)
+- `tests/contracts/security-p0-hardening.test.mjs` (9) — proxy CORS allowlist (no `*`), AdminPanel/AdvancedSections single-source `supabaseProject`, vite `SAMEORIGIN` guard, WhatsApp header secret + inbound 429, rateLimit KB
+- `api/proxy.js` — `Access-Control-Allow-Origin: *` → explicit allowlist (`sebastisnzoth.github.io`, `ugo-admin-panel.vercel.app`, `UGO_ALLOWED_BROWSER_ORIGINS`) + `Vary: Origin` + 403 on unknown browser origin
+- `src/components/AdminPanel.tsx` + `AdvancedSections.tsx` — `byajcqrgetloavrgyqak.supabase.co` + legacy anon key → `UGO_SUPABASE_URL`/`UGO_SUPABASE_PUBLISHABLE_KEY`/`UGO_SUPABASE_PROJECT_REF` (single source)
+- `vite.config.ts` — unconditional `ALLOWALL` → conditional `UGO_ALLOW_EMBED=true` → `ALLOWALL` else `SAMEORIGIN` (preview + build), documents anti-clickjacking default
+- `api/whatsapp/send.js` — secret via `x-webhook-secret`/`x-hub-signature` header preferred (query `?hook=` deprecated + warning), inbound per-phone 20/min `429`, reduced `listUsers` `1000→200`
+- `server/hugo/rateLimit.ts` — documents per-isolate best-effort + durable KV/WAF guidance
+- `.env.example` — `UGO_WHATSAPP_WEBHOOK_SECRET` (header, not query) + `UGO_ALLOW_EMBED`
 
 ## How to retire a doc
 1. Move to `docs/archive/<year>/` (git mv, keep history)
