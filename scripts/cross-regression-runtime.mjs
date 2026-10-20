@@ -35,7 +35,8 @@ const sourceChecks=[
  ['supabase/migrations/20261002115500_matching_requires_service_location.sql',/Falta una ubicación válida para buscar profesionales/],
  ['supabase/migrations/20261002121500_notification_retirement_indexes.sql',/notificaciones_servicio_pending_lifecycle_idx/],
  ['supabase/migrations/20261002140000_scheduled_worker_proof_queue_isolation.sql',/pg_advisory_xact_lock/],
- ['src/features/client/request/ClientPostConfirmFlow.tsx',/Reintentar pedido/],
+ ['src/features/client/request/ClientPostConfirmFlow.tsx',/onClick=\{\(\)=>void restartMatching\(service\.id,true\)\}/],
+ ['src/features/client/request/ClientPostConfirmFlow.tsx',/t\('clientMatch\.searchNow'\)/],
  ['src/lib/dispatch/supabaseDispatch.ts',/recoverAcceptedDispatch/]
 ]
 for(const[file,pattern]of sourceChecks){
