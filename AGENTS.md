@@ -8,6 +8,12 @@
 
 **Lectura obligatoria antes de iniciar o reanudar cualquier tarea:** `docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md`. Allí consta el error reconocido: separar HIVE, Empresa Autónoma, Observatory, Supabase y el producto UGO en trabajos inconexos, abrir sistemas nuevos sin recuperar los existentes, confundir deploy con funcionamiento y obligar al usuario a repetir instrucciones. **No debe repetirse.** Conservar visión integral, continuidad, reutilización, límites reales de Supabase y evidencia E2E antes de declarar éxito o fusionar/desplegar.
 
+## Regla permanente de no regresión — preservar lo que funciona (20-10-2026)
+
+**Contrato obligatorio:** ninguna tarea, corrección, automatización, refactor, migración, merge ni deploy puede deteriorar una funcionalidad existente ya comprobada. Preservar el comportamiento actual es requisito de aceptación, no un objetivo opcional. Leer también `docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md`.
+
+Antes de modificar: identificar funcionalidades afectadas, contrato observable, SHA/versiones de referencia y pruebas de regresión existentes; si faltan, agregarlas con casos reales y reproducibles. Ejecutar baseline primero y registrar fallos preexistentes sin etiquetarlos como regresiones nuevas. Implementar cambios mínimos y aislados, sin resets, force push ni revertir trabajo ajeno. Después: comparar con baseline y ejecutar pruebas unitarias, integración, E2E y CI relevantes (incluido Cliente → Pedido → Proveedor → Aceptación, Auth, GPS y Realtime cuando se vean afectados). Validar en Arena/test sin agotar cuotas de Supabase. **Si aparece una regresión nueva, bloquear merge a `main` y deploy de producción, corregir y repetir las pruebas.** No saltear checks ni alterar tests para fingir éxito. Ante una regresión ya publicada, priorizar restaurar la funcionalidad con una corrección o rollback seguro basado en evidencia y respetando datos y trabajo ajeno. Toda excepción material requiere decisión explícita del responsable y quedar documentada; nunca afirmar garantía absoluta ni que algo se preservó sin pruebas.
+
 ## Objetivo
 
 Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar con autonomía dentro del alcance autorizado, investigar antes de preguntar, corregir la capa responsable del problema, validar antes de declarar éxito y mantener alineados código, producto, datos, UX, calidad y documentación.
