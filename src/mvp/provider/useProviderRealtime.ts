@@ -15,7 +15,7 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
   let alive=true
   let reconnectTimer:number|undefined
   const resync=()=>{if(alive)void onChangeRef.current()}
-  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
+  const reconnect=()=>{if(!alive||reconnectTimer!==undefined)return;reconnectTimer=window.setTimeout(()=>{reconnectTimer=undefined;if(alive)setChannelEpoch(value=>value+1)},1500)}
   const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}}
   const onFocus=()=>resync()
   window.addEventListener('online',resync)
