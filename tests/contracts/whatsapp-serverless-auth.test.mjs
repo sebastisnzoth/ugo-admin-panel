@@ -24,7 +24,10 @@ test('direct outbound WhatsApp cannot use same-origin as an authorization bypass
 })
 
 test('Meta inbound webhook fails closed when the private hook secret is absent or wrong',()=>{
- assert.match(source,/function hookAllowed\(req\)\{return Boolean\(WA_HOOK_SECRET\)&&String\(req\.query\?\.hook\|\|''\)===WA_HOOK_SECRET\}/)
+ assert.match(source,/function hookAllowed\\(req\\)\\{/)
+ assert.match(source,/if \\(!WA_HOOK_SECRET\\) return false/)
+ assert.match(source,/headerSecret && headerSecret === WA_HOOK_SECRET/)
+ assert.match(source,/querySecret && querySecret === WA_HOOK_SECRET/)
  assert.match(source,/if\(!WA_HOOK_SECRET\)return res\.status\(503\)\.json\(\{received:false,error:'Webhook secret no configurado\.'\}\)/)
  assert.match(source,/if\(!hookAllowed\(req\)\)return res\.status\(403\)\.json\(\{received:false\}\)/)
 })
