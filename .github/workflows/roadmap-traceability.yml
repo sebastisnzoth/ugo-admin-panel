@@ -3,6 +3,14 @@ name: UGO Roadmap Traceability
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'AGENTS.md'
+      - 'docs/UGO_ROADMAP_MASTER.md'
+      - 'docs/UGO_CAMINO_MAESTRO.md'
+      - 'docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md'
+      - '.github/workflows/roadmap-traceability.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +38,7 @@ jobs:
           test -s docs/UGO_CAMINO_MAESTRO.md
           test -s docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md
           if [ "$EVENT_NAME" != "pull_request" ]; then
-            echo "Manual verification: authoritative documents are present."
+            echo "Main/manual verification: authoritative documents are present; functional-change traceability is enforced for pull requests only."
             exit 0
           fi
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" > /tmp/ugo-changed-files
