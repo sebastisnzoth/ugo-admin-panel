@@ -8,8 +8,9 @@ const tracker=readFileSync(new URL('../../src/mvp/ProviderLocationTracker.tsx',i
 
 test('production GPS bridge exposes exactly the RPC contracts used by provider',()=>{
  for(const name of ['activar_disponibilidad_proveedor','publicar_ubicacion_disponibilidad_proveedor']){
-  assert.match(sql,new RegExp('CREATE OR REPLACE FUNCTION public\\.'+name+'\\('))
+  assert.match(sql,new RegExp('CREATE FUNCTION public\\.'+name+'\\('))
   assert.match(sql,new RegExp('REVOKE ALL ON FUNCTION public\\.'+name))
+  assert.match(sql,new RegExp("to_regprocedure\\('public\\."+name))
   assert.match(sql,new RegExp('GRANT EXECUTE ON FUNCTION public\\.'+name+'.*TO authenticated'))
  }
  assert.match(provider,/rpc\('activar_disponibilidad_proveedor'/)
