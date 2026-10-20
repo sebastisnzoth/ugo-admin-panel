@@ -246,3 +246,8 @@ El usuario seleccionó HU0/HU1 y preparación HU2/HU3 como alcance del bloque. S
 
 
 Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles idénticos a PR revisados; revalidación18PASS y19PASS/1SKIP. Backend/inferenciaOFF; Pages observado aún7931173. Ver checkpoint vigente en docs/ugo-hive/IMPLEMENTATION_STATUS.md; CI del merge omitido para no ejecutar probes/modelos/GHCR, CI del PR documentado.
+
+
+### 20/10/2026 — Proveedor Auth: recuperación tras SIGNED_OUT transitorio
+
+Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`710744f`): cuando el SDK emite SIGNED_OUT pero `getSession()` confirma una sesión válida, se recupera también el perfil y se finaliza la carga; antes sólo se restauraba el objeto de sesión y podía quedar la interfaz esperando indefinidamente. La condición de autenticación verdadera sigue respetada. **Estado: IMPLEMENTADO; falta CI del SHA integrado, smoke autenticado de Online/GPS/refresh y E2E cliente-proveedor.** No confundir con validación de producción. Próxima ejecución: pruebas exact-SHA y corregir cualquier regresión observada antes de publicar.
