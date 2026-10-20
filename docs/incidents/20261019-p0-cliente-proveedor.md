@@ -68,3 +68,17 @@ Instrucción del usuario (20/10): publicar en **ambos canales** — GitHub Pages
 `TASK_ID | STATUS | REPO | BRANCH | SOURCE_SHA | RESULT_SHA | TESTS | RUN_ID | EVIDENCE | JUDGE | SENTINEL | COST | BLOCKER | NEXT_TASK`
 
 `P0-CLIENT-PROVIDER | CI_PASS_BLOCKED_HUMAN | ugo-admin-panel | arena/607fd3ca-ugo-admin-panel | fa93929 | 28b3e42 | 1465 tests (1457 PASS / 8 SKIP / 0 FAIL); P0 real PASS; 22 checks verdes | 39349396206 / 39349396215 / 39349396279 | PR #530 + artefacto p0-client-provider-e2e | 5 etapas Judge/Sentinel PASS | 1 atestiguado | prueba TEST sin costo | migración TEST sin aplicar | aplicar migración, mergear y verificar Pages + Vercel con el mismo SHA`
+
+---
+
+## Ciclo 2 — 20/10/2026 (PR #533: Admin Realtime y Hugo Provider Actions)
+
+Problema: `Admin estados operativos ↔ Realtime UGO TEST` no encontraba `.ugo-admin2-status` y `UGO Hugo Provider Actions Runtime TEST` no encontraba `TRABAJO ACTIVO`; el PR #533 había añadido clics de recuperación en los tests sin corregir la causa.
+
+Cambios de causa raíz:
+
+- `src/features/client/onboarding/ClientOnboardingGate.tsx` y `src/mvp/provider/providerData.tsx`: un bootstrap lento ya no se presenta como fallo. Se mantiene la pantalla de carga hasta que el chequeo resuelve y la tarjeta de reintento sólo aparece con error real (la tarjeta tampoco afirma que la sesión esté activa si nunca se confirmó).
+- `src/mvp/provider/providerService.ts`: `loadProviderSnapshot` reintenta errores **transitorios** (red, `57014`, timeouts, 502/503/504) con espera corta 0/400/1200 ms; un error permanente falla de inmediato y sigue reportándose a Sentinel. Así una consulta lenta no deja el espacio del Proveedor sin servicio activo.
+- `scripts/admin-realtime-runtime.mjs` y `scripts/hugo-provider-actions-runtime.mjs`: al agotarse la espera se publica una anotación con el estado real de la pantalla (URL, formulario de login, spinners, alertas, botones de reintento, texto visible) para identificar la causa exacta sin depender de logs inaccesibles.
+
+Estado: cambios preparados y probados localmente (18 contratos focales PASS, `tsc -b` limpio). La verificación en CI del SHA exacto queda pendiente en este ciclo.

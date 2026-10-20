@@ -106,7 +106,22 @@ try{
  await page.getByPlaceholder(/Usuario o email/i).fill(email)
  await page.getByPlaceholder(/Contraseña/i).fill(password)
  await page.getByRole('button',{name:/Ingresar/i}).click()
- await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+ try{
+  await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+ }catch(adminGateTimeout){
+  const state=await page.evaluate(()=>({
+   url:location.href,
+   lang:document.documentElement.lang,
+   adminShell:document.querySelectorAll('.ugo-admin2').length,
+   loginForm:document.querySelectorAll('form input[type=password]').length,
+   loading:document.querySelectorAll('.mvp-loading').length,
+   alerts:Array.from(document.querySelectorAll('[role=alert],.mvp-error')).map(node=>node.textContent?.trim()).filter(Boolean).slice(0,4),
+   retryButtons:Array.from(document.querySelectorAll('button')).map(node=>node.textContent?.trim()).filter(text=>text&&/reintentar|retry|tentar/i.test(text)).slice(0,4),
+   body:(document.body.innerText||'').slice(0,600)
+  })).catch(()=>({probe:'unavailable'}))
+  console.log('::error title=ADMIN_REALTIME_UI_STATE::'+JSON.stringify({events:pageErrors,state}).replaceAll('%','%25').replaceAll('\n','%0A').slice(0,6000))
+  throw adminGateTimeout
+ }
  const before=await readOnlineKpi()
  const expected=before+(targetOnline?1:-1)
  const direct=eventSignal()

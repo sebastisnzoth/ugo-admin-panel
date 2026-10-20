@@ -32,9 +32,20 @@ export function pickActionableProviderService(rows:ProviderService[],now=Date.no
  return rows.find(service=>PASSIVE_SERVICE_STATES.has(service.estado))||null
 }
 
+// A transient read failure (network hiccup, statement timeout under load) must not blank the
+// provider workspace: it is retried with a short backoff. Permanent errors fail immediately so a
+// real permission/contract problem is never hidden.
+const SNAPSHOT_RETRY_DELAYS=[0,400,1200] as const
+function transientSnapshotError(error:unknown){
+ const text=messageOf(error,'')
+ return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst|502|503|504/i.test(text)
+}
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
  let failedPart:SnapshotPart|null=null
- try{
+ let lastError:unknown=null
+ for(let attempt=0;attempt<SNAPSHOT_RETRY_DELAYS.length;attempt++){
+  if(SNAPSHOT_RETRY_DELAYS[attempt])await new Promise(resolve=>setTimeout(resolve,SNAPSHOT_RETRY_DELAYS[attempt]))
+  try{
   const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae},{data:debts,error:debtError}]=await Promise.all([
    supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
    supabase.rpc('obtener_ofertas_proveedor'),
@@ -46,11 +57,15 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
   if(pe){failedPart='profile';throw pe}if(oe){failedPart='offers';throw oe}if(se){failedPart='services';throw se}if(pae){failedPart='payments';throw pae}if(debtError){failedPart='debts';throw debtError}
   const services=(s||[])as ProviderService[]
   return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[],debts:(debts||[])as ProviderDebt[]}
- }catch(error){
-  const fallback='No se pudo cargar el estado operativo del proveedor.'
-  void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(error,fallback),error,role:'provider',severity:'P1',action:'provider.snapshot.load',metadata:{component:failedPart,errorCode:errorCode(error)}})
-  throw error
+  }catch(error){
+   lastError=error
+   failedPart=failedPart||'profile'
+   if(!transientSnapshotError(error))break
+  }
  }
+ const fallback='No se pudo cargar el estado operativo del proveedor.'
+ void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(lastError,fallback),error:lastError,role:'provider',severity:'P1',action:'provider.snapshot.load',metadata:{component:failedPart,errorCode:errorCode(lastError)}})
+ throw lastError
 }
 
 async function persistedProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean):Promise<boolean|null>{
