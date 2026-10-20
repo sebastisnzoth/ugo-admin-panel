@@ -135,6 +135,48 @@ Iteración 2 aplicada sobre esta evidencia (mismo PR #535):
 - `provider-operating-zone`: **plazo por intento de 45 s** (`CLIENT_DEADLINE_45000MS`, SQLSTATE 57014)
   + 4 intentos/4 s → falla temprano y legible en lugar de colgar 10 min.
 
+### 3.3 Batches 3 y 4 en repositorio totalmente idle → causa final: servicio Auth del proyecto
+
+Corridas `c0b1b5cd` (02:56:11Z) y `18a6ad32` (03:10:55Z), **sin ninguna otra sesión ni worker activo**
+(sólo `skipped` de `main`): misma foto — Auth Isolation y Hugo Timeout en verde (ambos son guards
+estáticos: grep/contratos, **no llaman a GoTrue**), y TODAS las corridas con auth real en rojo:
+
+| Run (batch3 `c0b1b5cd`) | Final | Error final |
+| --- | --- | --- |
+| Admin Realtime `39361598171` | 02:56:14→03:02:16 FAIL | `{status:504,__isAuthError:true}` en `signInWithPassword` tras 6 reintentos |
+| Hugo Provider Actions `39361598189` | →03:00:50 FAIL | 504 en `createUser` tras 6 reintentos |
+| Profile Photo `39361598238` | →03:00:57 FAIL | 504 en `signInWithPassword` |
+| Cross-role `39361598242` | →03:02:16 FAIL | 504 en `createUser` (`role-ui-fixtures`) |
+| Cross Performance `39361598244` | →03:05:57 FAIL | su propio login de **10 intentos / ~5 min** agotado con 504 |
+| Operating Zone `39361598341` | 02:56:19→02:59:30 FAIL | `CLIENT_DEADLINE_45000MS` ×4 (el RPC nunca respondió en 45 s) |
+
+Batch4 `18a6ad32`: Operating Zone aborta limpio a los 45 s (hint `Request was aborted…`) y las mismas
+corridas de auth siguen en 504 → **la primera versión del deadline abandonaba la petición sin cancelarla
+en el servidor**; corregido con `AbortController` + `.abortSignal()` (PostgREST cancela la consulta y
+libera la conexión).
+
+**Prueba de servidor independiente de CI** (sólo lectura, sin credenciales, desde esta sesión, ~03:2xZ):
+
+- `GET https://tmossnqfwfwjrtzwcbmm.supabase.co/auth/v1/health?apikey=<publishable pública>` →
+  **`{"message":"Gateway Timeout"}`** — el servicio Auth (GoTrue) no responde tras el kong.
+- `GET …/auth/v1/health` sin key y `GET …/rest/v1/` sin key → respuestas JSON instantáneas
+  (kong y PostgREST **sí** viven).
+- Estado de plataforma global: `status.supabase.com` operativo → incidente **del proyecto**, no de Supabase.
+
+Cronología inferida con evidencia: auth real funcionó en el batch `1cdd4c19` (Profile Photo y P0 en
+verde hacia 01:36–01:43Z) y ya devolvía 504 en `53a31017` (Hugo Provider Actions, 01:50–01:57Z); sigue
+en 504 a las 03:15Z+. La sesión vecina lo registró igualmente (commit `375cdb459` de
+`arena/607fd3ca`: «reintentar sólo fallos transitorios de Supabase Auth y documentar el 504 real»).
+
+**Conclusión de causa raíz (dos capas, ambas con evidencia):**
+1. **Capa proyecto (bloqueante, externa al código):** el servicio Auth de `tmossnqfwfwjrtzwcbmm` devuelve
+   *Gateway Timeout* de forma sostenida desde ≈01:50Z. Ningún fix de repo puede verdecer la suite hasta
+   que Auth recupere; no es contención de las suites (los batches 3/4 corrieron aislados).
+2. **Capa de contención (real y corregible en repo, ya implementada):** la tormenta de 2–3 suites +
+   workers explicaba los fallos previos a ~01:50Z (522/statement timeout/504 intermitentes) y agrava
+   cualquier degradación: single-flight por workflow, grupos de fixture correctos, reintentos acotados
+   sólo-transitorios, abort real de consultas atascadas y anotaciones `::error` quedan en pie.
+
 ## 4. Validación local (misma sesión, misma base `cbd671b6`)
 
 - `npm run build` (`verify:test-env` + `tsc -b` + `vite build`) → **PASS**.
@@ -174,4 +216,10 @@ Iteración 2 aplicada sobre esta evidencia (mismo PR #535):
 
 `TASK_ID | STATUS | REPO | BRANCH | SOURCE_SHA | RESULT_SHA | TESTS | RUN_ID | EVIDENCE | JUDGE | SENTINEL | COST | BLOCKER | NEXT_TASK`
 
-`CI-TEST-CONTENTION | FIXED_LOCAL_PENDING_CI | ugo-admin-panel | arena/5516cefe-ugo-admin-panel | cbd671b6 | (ver commit de este checkpoint) | 1440 contratos: 1438 PASS/0 FAIL/2 SKIP; focal 31/31; build PASS; eslint 0 | diagnóstico sobre runs 393555904xx/393564003xx de PR533 (SHA 53a31017 y 73177464) | este documento + diff de 6 workflows y 6 scripts | no ejecutado (runtime requiere CI) | no consultable desde el sandbox (red/403) | US$0; sin despliegues | rerun/dispatch 403 y Supabase 403 en la sesión | abrir PR de la rama y verificar los 6 workflows en verde en un SHA exacto`
+`CI-TEST-CONTENTION | FIXED_LOCAL_BLOCKED_AUTH_SERVICE | ugo-admin-panel | arena/5516cefe-ugo-admin-panel | cbd671b6 | 18a6ad324 (batch4 03:10:55Z) | 1440 contratos: 1438 PASS/0 FAIL/2 SKIP; build PASS; eslint 0 | diagnóstico: PR533 runs 393555904xx/393564003xx (53a31017, 73177464); batches propios 39359617xxx (81879a6f), 39359897xxx (4b474bacc), 39361598xxx (c0b1b5cdd), 3936293xxx (18a6ad324); probe auth/v1/health = Gateway Timeout ×2 (~03:2xZ) | este documento + PR #535 (commits 0606075c4, 81879a6f8, 4b474bacc, c0b1b5cdd, 18a6ad324) | no ejecutado (runtime requiere CI) | Sentinel read-only bloqueado (red/403, service role ausente) | US$0; sin despliegues | servicio Auth del proyecto TEST en Gateway Timeout sostenido; conector Supabase 403; rerun/dispatch 403 | recuperar Auth en tmossnqfwfwjrtzwcbmm (dashboard/permisos), reabrir PR #535 para re-disparar y verificar los 6 workflows verdes en un SHA exacto`
+
+**Acción manual única requerida:** revisar en el dashboard de Supabase el servicio **Auth** del proyecto
+`tmossnqfwfwjrtzwcbmm` (responde *Gateway Timeout* en `/auth/v1/health` desde 03:2xZ) o corregir los
+permisos de la cuenta conectada al conector de Arena (hoy `list_projects` vacío y `403` en
+`get_auth_config`/`get_project_health`). En cuanto Auth responda 200, reabrir PR #535
+(`gh pr close 535 && gh pr reopen 535` o cualquier push a la rama) re-dispara la suite completa.
