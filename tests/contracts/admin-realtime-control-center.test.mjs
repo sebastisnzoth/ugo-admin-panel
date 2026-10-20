@@ -130,5 +130,8 @@ test('admin global realtime channel rebuilds on CLOSED, online and visibility re
 test('admin authenticates Realtime with the authorized session before mounting subscriptions',async()=>{
  const gate=await read('src/mvp/AdminGate.tsx')
  assert.match(gate,/await supabase\.realtime\.setAuth\(session\.access_token\)/)
- assert.match(gate,/if\(allowed\)await supabase\.realtime\.setAuth\(session\.access_token\);return allowed/)
+ assert.match(gate,/if\(allowed\)\{setSessionActive\(false\);await supabase\.realtime\.setAuth\(session\.access_token\)\}/)
+ // Realtime must be authenticated strictly after the role check, never before it.
+ const authorize=gate.slice(gate.indexOf('async function authorizeSession'),gate.indexOf('async function verify'))
+ assert.ok(authorize.indexOf('const allowed=')<authorize.indexOf('realtime.setAuth'),'ADMIN_REALTIME_AUTH_BEFORE_ROLE_CHECK')
 })

@@ -191,3 +191,56 @@ Consulta Sentinel/readiness de sólo lectura: ningún incidente observado para l
 `PUBLISH-PAGES | BLOCKED_EXTERNAL | ugo-admin-panel | main | 4191978 | no publicado observado | HTTP200/source_sha7931173 | último Pages39168233907 | status.json público | no ejecutado | no runtime nuevo | no gasto contratado | schedule pendiente/dispatch no disponible en conector | Run workflow UGO GitHub Pages/main y comprobar source_sha`
 
 Rollback de integración: nuevo commit revert revisado que revierta exclusivamente estos merges (parentmain), conservando trabajo concurrente; nunca reset/force. Reversión no elimina datos porque no se aplicaron migraciones remotas. Mantener bloqueos de inferencia y no restaurar cuotas desde SQLite.
+
+
+## 2026-10-19/20 — PR #533, integración P0 Cliente/Proveedor
+
+- PR: https://github.com/sebastisnzoth/ugo-admin-panel/pull/533 (rama `integration/arena-green-provider-gps-20261020`; **sin fusionar**).
+- Base verde Arena `28b3e42e8653445529e3d2bfd574f7011e80d8e5`: 13 workflows exitosos. Cambios transportados desde #532: adquisición GPS paralela en `ProviderLocationTracker.tsx` y dos pruebas de contrato GPS. SHA de integración inicial `bcd78349806805e2d508f7ec79a62ab406c34ca0`.
+- Evidencia CI sobre `bcd7834`: 12 de 13 workflows exitosos; matching E2E Cliente→Proveedor, Admin Realtime, Provider Actions, seguridad, CI base y cobertura GPS pasan. Ejecución fallida UI multirrol: https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39350771531 (móvil Cliente, `PROFILE_QUERY_TIMEOUT`, página muestra recuperación de sesión sin expulsar al usuario). **No afirmar 13/13 ni E2E completo** hasta la nueva ejecución exitosa.
+- Acción 2026-10-19/20: reejecución del job fallido `118394162168` aceptada por GitHub. Resultado aún pendiente al redactar este checkpoint; verificar CI antes de fusionar.
+- Política: sin cambios a producción ni a los datos de usuarios; no simular prueba GPS en dispositivo físico. Se requiere aceptación humana para esta última prueba.
+
+## Regla permanente: NO QUEDAR PARADO SIN TRABAJAR
+
+Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **continuar trabajando**. Esperar CI, revisiones, respuestas externas o pruebas humanas **no equivale a detener toda la ejecución**:
+
+1. Si una acción queda `WAITING` o `BLOCKED`, registrar dependencia exacta, evidencia y condición de reanudación.
+2. Elegir inmediatamente la siguiente tarea independiente del camino crítico: revisar logs, reproducir fallos, corregir código, escribir pruebas, validar contratos, documentar o preparar evidencia sin afectar producción.
+3. Evitar trabajos repetidos, commits vacíos, reintentos ilimitados, refactors irrelevantes o nuevos PR innecesarios para aparentar actividad.
+4. Tras cada modificación, ejecutar las verificaciones posibles, preservar el mismo SHA para las conclusiones y actualizar esta bitácora con hechos reales.
+5. Cuando un bloqueo se libere, retomar el frente prioritario. No cerrar por haber abierto PR, iniciado CI o escrito un diagnóstico.
+6. Si ya no hay acciones ejecutables, comunicar únicamente la dependencia concreta; **no afirmar trabajo en segundo plano** sin una automatización o ejecutor persistente configurado.
+
+**Definición de continuidad:** progreso técnico real dentro de la sesión y las herramientas disponibles. GitHub Actions puede ejecutar pruebas de forma asíncrona, pero no sustituye un agente que corrija fallos automáticamente. Para trabajo entre sesiones se requiere configurar explícitamente esa automatización.
+
+### Continuación PR #533 — 19/10/2026, gateway TEST
+
+- Revalidado HEAD previo `731774643093bf533a13c233accc80eebdfbd8e6`: 13 workflows completados, 7 FAILED / 6 PASS. El retry individual de Provider Operating Zone también falló, devolviendo HTML de gateway de infraestructura; logs del job `118413950925` en https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39356400361.
+- Supabase TEST `tmossnqfwfwjrtzwcbmm` informó proyecto `ACTIVE_HEALTHY` en la consulta administrativa, que **no certifica** disponibilidad contínua de Auth/PostgREST bajo carga.
+- Corrección específica `e0b32739ddf6a5076660176adc33166eec1199e3`: en `scripts/provider-operating-zone-runtime.mjs` se agrega como máximo 3 intentos SOLO frente a fallos HTTP 502/503/504, y no se reintenta timeout interno de PostgreSQL (`57014`). Se preservan todas las aserciones funcionales y la condición TEST. **Estado: código implementado, aún sin CI del SHA documental final**.
+- Próximo paso: verificar pruebas del commit final de esta intervención. Si continúa 504, revisar infraestructura/Auth/PostgREST TEST y limitar solapamiento de trabajos antes de alterar consultas de producción.
+
+
+### 2026-10-20 — P0 CI navegación Proveedor
+
+- HEAD anterior: `2b49b72a181ff66764a673cf1edcd6655e169442`; GitHub Actions 9 PASS / 4 FAIL sobre ese SHA.
+- Cross Performance (`39492425031`) falló al esperar navegación Proveedor. Se añadió una recuperación explícita únicamente cuando aparece el control real de reintento del perfil, sin convertir el timeout en éxito: `scripts/cross-performance-runtime.mjs`, commit `1bc370ff2ec7a1ab628fee26a4b37d8f4bcee6c3`. Se registra `provider_profile_recovery_required` para conservar señal de degradación.
+- NO VERIFIED hasta resultado de CI del SHA actualizado. Admin Realtime (`39492425114`) sigue fallando esperando `.ugo-admin2-status`. Provider Operating Zone (`39492424989`) y Hugo Provider Actions (`39492425080`) fallan por `statement timeout` en TEST y requieren corrección de consulta/contención, no incremento arbitrario de tiempos.
+- No hubo fusión ni despliegue; siguiente acción: leer resultados exact-SHA y resolver el primer error causal restante.
+
+
+### 20/10/2026 — Auth Proveedor: no reinicializar sesión al volver Internet
+
+- Commit `8432584693e978cf080fd211941875d75180a2f3`, `src/mvp/shared.tsx`: eliminado el listener de `window.online` que forzaba `sessionEpoch` y desmontaba/rehacía la comprobación Auth. Conservar la sesión vigente al reconectar; Realtime ya tiene su propio callback de reconexión. La recuperación manual sigue disponible.
+- Alcance: Cliente/Proveedor comparten `useRoleSession`; el cambio aplica a ambos. No se alteraron permisos, signOut explícito ni control de roles. Es una corrección de condición de carrera, **no prueba todavía que todos los deslogueos estén eliminados**.
+- Verificar CI SAME-SHA, especialmente pruebas de login y Provider UI. En navegador real probar Online/Offline, permisos GPS y persistencia durante refresh del token; no simular esa aceptación humana.
+
+
+### 2026-10-20 — Prueba de interfaz APROBADA (evidencia SAME-SHA)
+
+- Revisión validada: `d2af10d194bbcbc04a86395af73aaf27f514afdf`.
+- **UGO Cross-role UI Runtime TEST: PASS**, GitHub Actions run [`39499161577`](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39499161577), `conclusion=success`.
+- Además aprobaron 11 workflows del mismo SHA, incluidos Matching E2E, Auth Isolation, Core CI, Provider Operating Zone y Cross Performance.
+- **La suite global todavía NO es 13/13**: Admin Realtime Runtime TEST [`39499161595`](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39499161595) tiene `conclusion=failure`.
+- Se registra la aprobación de Cross-role UI como VERIFICADA sólo para la revisión/entorno indicados. El cambio de modo de Empresa Autónoma pudo quedar SKIPPED si TEST no estaba en OFF; no extrapolar a un control de transición validado. No se fusionó ni desplegó producción.

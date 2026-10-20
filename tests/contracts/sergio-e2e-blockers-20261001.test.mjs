@@ -26,9 +26,10 @@ test('client payment choice reacts immediately while backend persistence complet
  assert.match(src,/if\(persisted===false\)setOptimisticMethod\(''\)/)
 })
 
-test('provider Hugo visual surface stays detached and its copy uses locale keys',async()=>{
+test('provider root mounts the provider Hugo bridge and never the admin orb',async()=>{
  const[root,bridge]=await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/provider/ProviderHugoBridge.tsx')])
- assert.doesNotMatch(root,/ProviderHugoBridge/)
+ // The provider Hugo surface is the bridge orb only; the admin ConversationalOrb must stay out.
+ assert.match(root,/<ProviderHugoBridge\/>/)
  assert.doesNotMatch(root,/ConversationalOrb/)
  assert.match(bridge,/t\('voice\.providerTool\./)
  assert.match(bridge,/PROVIDER_VOICE_CONNECT_TIMEOUT_MS=16_000/)

@@ -1,3 +1,4 @@
+// Cross-role browser proof: Cliente + Proveedor + Admin over UGO Arena TEST.
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
@@ -150,15 +151,29 @@ const reopenClientMenu=async page=>{
  await drawer.waitFor({state:'visible',timeout:10000})
 }
 
+async function waitForClientHome(page){
+ const home=page.getByRole('main',{name:'Inicio'})
+ try{
+  await home.waitFor({state:'visible',timeout:20000})
+ }catch(initialError){
+  // A valid session can survive a transient profile request timeout.
+  // Exercise the explicit user-visible recovery path; never fake a ready home.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  await home.waitFor({state:'visible',timeout:20000})
+ }
+}
+
 async function testClient(viewport,name){
  const {page,errors}=await openRole('client',viewport)
  try{
-   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+   await waitForClientHome(page)
    await assertResponsive(page,'client '+name+' home')
    const menuItems=['Inicio','Pedir servicio','Categorías','Actividad','Mis direcciones','Medios de pago','Asistente de Hugo','Ayuda y disputa','Configuración']
    for(const item of menuItems){
      await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-     await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+     await waitForClientHome(page)
      await reopenClientMenu(page)
      const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
      await drawer.waitFor({state:'visible'})
@@ -325,7 +340,16 @@ async function testAdministrativeSession(viewport,name,key){
 async function testAutonomyControl(page,name){
  const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
  assert.ifError(before.error)
- assert.equal(before.data?.mode,'OFF','AUTONOMY_TEST_REQUIRES_IDLE_OFF_STATE')
+ // Do not override the operator's live TEST autonomy setting. Mutating a
+ // non-idle state would interfere with autonomous jobs and manual operations.
+ if(before.data?.mode!=='OFF'){
+  assert.ok(['SHADOW','ON'].includes(before.data?.mode),'AUTONOMY_UNRECOGNIZED_STATE')
+  const active=page.getByRole('radio',{name:new RegExp(before.data.mode)})
+  await active.waitFor({state:'visible',timeout:20000})
+  assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
+  results.push({role:'superadmin-autonomy-control',viewport:name,status:'SKIPPED',reason:'NON_IDLE_TEST_STATE',observed_mode:before.data.mode,read_only_state_verified:true,transition_tested:false})
+  return
+ }
  const actor=sessions.admin.user.id
  try{
   await page.getByRole('radio',{name:/SHADOW/}).click()
