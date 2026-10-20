@@ -39,3 +39,15 @@ Una tarea funcional está terminada únicamente cuando el comportamiento esperad
 ## Compromiso de continuidad
 
 **Antes de cada tarea:** leer estas reglas y contrastarlas con la realidad actual. **Durante la tarea:** no crear otra realidad paralela. **Al cerrar:** registrar qué se cambió, qué se verificó y qué queda pendiente sin pedir al usuario que repita su objetivo.
+
+## Regla irrenunciable: lo que funciona no se rompe
+
+**Principio:** todo avance comprobado es patrimonio del producto y debe permanecer operativo después de cualquier cambio. No se permite sacrificar funcionalidades ya verificadas para completar otras tareas. Esta regla se aplica al código, a migraciones de datos, autenticación, GPS, matching, Realtime, flujos de pedidos, pagos, interfaces y automatizaciones.
+
+- Antes del cambio: comprobar y registrar baseline del SHA y entorno exactos, funcionalidades involucradas y fallos preexistentes. Crear o mantener pruebas de regresión para el contrato afectado.
+- Después del cambio: comparar resultados de las mismas pruebas, más casos de integración y E2E afectados. Preservar contratos, datos, permisos y comportamiento.
+- Si algo antes operativo falla por el cambio: **NO MERGE / NO DEPLOY**. Corregir la regresión y volver a probar. No maquillar checks, resultados ni estados.
+- Si una regresión llegó a producción: priorizar recuperación segura y validación, evitando resets y pérdidas de datos.
+- El estado «verificado» debe indicar pruebas, fecha, commit y entorno. No es garantía absoluta de ausencia de errores futuros; el objetivo operativo es impedir regresiones mediante gates ejecutables.
+
+Esta regla debe consultarse en cada sesión a través de `AGENTS.md`, y convertirse en pruebas automatizadas y protecciones de CI para los flujos críticos de UGO.
