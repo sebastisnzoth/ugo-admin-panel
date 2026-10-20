@@ -246,3 +246,12 @@ El usuario seleccionó HU0/HU1 y preparación HU2/HU3 como alcance del bloque. S
 
 
 Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles idénticos a PR revisados; revalidación18PASS y19PASS/1SKIP. Backend/inferenciaOFF; Pages observado aún7931173. Ver checkpoint vigente en docs/ugo-hive/IMPLEMENTATION_STATUS.md; CI del merge omitido para no ejecutar probes/modelos/GHCR, CI del PR documentado.
+
+
+### 2026-10-20 — P0 GPS Proveedor, compatibilidad API productiva (PR #545)
+
+- Estado: **IMPLEMENTADO EN RAMA / NO APLICADO EN PRODUCCIÓN**. La app `main` usa `activar_disponibilidad_proveedor` y `publicar_ubicacion_disponibilidad_proveedor`, RPC ausentes en UGO producción y presentes en Arena TEST.
+- Cambio: migración aditiva `20261020223000_production_provider_gps_rpc_compat.sql` con 2 columnas GPS ausentes y RPC autenticadas, autorización de proveedor y rechazo de GPS viejo/inexacto, sin sustituir matching ni políticas o triggers.
+- Evidencia pendiente: ejecución en clon del esquema productivo, pruebas runtime de seguridad y E2E Cliente → Proveedor → Oferta, aprobación de migración productiva. No declarar VERIFIED hasta completar la validación.
+- CI SHA de PR #545: `60dbe330e61f78e00809ca7f9b887ddee58f068a`; roadmap gate exige esta actualización. Core CI muestra `npm audit` Vite high preexistente y debe remediarse o verificarse sin obviar seguridad.
+- Próximo paso: validar contra esquema real sin datos personales, resolver CI, y sólo entonces evaluar promover a `main` y desplegar migración con verificación y rollback.
