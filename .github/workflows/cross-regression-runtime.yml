@@ -1,6 +1,11 @@
 name: UGO Cross Regression TEST
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/cross-regression-*.mjs'
+      - '.github/workflows/cross-regression-runtime.yml'
   workflow_dispatch:
   push:
     branches: [main]

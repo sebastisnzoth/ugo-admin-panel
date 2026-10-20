@@ -264,3 +264,9 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Evidencia pendiente: ejecución en clon del esquema productivo, pruebas runtime de seguridad y E2E Cliente → Proveedor → Oferta, aprobación de migración productiva. No declarar VERIFIED hasta completar la validación.
 - CI SHA de PR #545: `60dbe330e61f78e00809ca7f9b887ddee58f068a`; roadmap gate exige esta actualización. Core CI muestra `npm audit` Vite high preexistente y debe remediarse o verificarse sin obviar seguridad.
 - Próximo paso: validar contra esquema real sin datos personales, resolver CI, y sólo entonces evaluar promover a `main` y desplegar migración con verificación y rollback.
+
+
+### 2026-10-20 — Recuperación Cross Regression tras GPS PROD
+- Incidente: workflow de push `39514154593` (merge SHA `48f49214`) falló porque `scripts/cross-regression-runtime.mjs` exigía el literal retirado `Reintentar pedido`; UI actual usa `t('clientMatch.searchNow')` con `restartMatching(service.id,true)`.
+- Corrección mínima: actualizar solo el guard para exigir el handler real y la clave i18n; no alterar acciones del producto. Rama `fix/p0-cross-regression-retry-label-20261020`.
+- Estado: IMPLEMENTADO; antes de DONE exigir Cross Regression TEST same-SHA PASS, resto CI, y preservar P0 GPS/Proveedor prueba física todavía pendiente.
