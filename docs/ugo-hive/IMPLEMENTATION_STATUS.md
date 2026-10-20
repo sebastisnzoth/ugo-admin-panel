@@ -150,3 +150,16 @@ Rollback de integración: nuevo commit revert revisado que revierta exclusivamen
 - Evidencia CI sobre `bcd7834`: 12 de 13 workflows exitosos; matching E2E Cliente→Proveedor, Admin Realtime, Provider Actions, seguridad, CI base y cobertura GPS pasan. Ejecución fallida UI multirrol: https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39350771531 (móvil Cliente, `PROFILE_QUERY_TIMEOUT`, página muestra recuperación de sesión sin expulsar al usuario). **No afirmar 13/13 ni E2E completo** hasta la nueva ejecución exitosa.
 - Acción 2026-10-19/20: reejecución del job fallido `118394162168` aceptada por GitHub. Resultado aún pendiente al redactar este checkpoint; verificar CI antes de fusionar.
 - Política: sin cambios a producción ni a los datos de usuarios; no simular prueba GPS en dispositivo físico. Se requiere aceptación humana para esta última prueba.
+
+## Regla permanente: NO QUEDAR PARADO SIN TRABAJAR
+
+Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **continuar trabajando**. Esperar CI, revisiones, respuestas externas o pruebas humanas **no equivale a detener toda la ejecución**:
+
+1. Si una acción queda `WAITING` o `BLOCKED`, registrar dependencia exacta, evidencia y condición de reanudación.
+2. Elegir inmediatamente la siguiente tarea independiente del camino crítico: revisar logs, reproducir fallos, corregir código, escribir pruebas, validar contratos, documentar o preparar evidencia sin afectar producción.
+3. Evitar trabajos repetidos, commits vacíos, reintentos ilimitados, refactors irrelevantes o nuevos PR innecesarios para aparentar actividad.
+4. Tras cada modificación, ejecutar las verificaciones posibles, preservar el mismo SHA para las conclusiones y actualizar esta bitácora con hechos reales.
+5. Cuando un bloqueo se libere, retomar el frente prioritario. No cerrar por haber abierto PR, iniciado CI o escrito un diagnóstico.
+6. Si ya no hay acciones ejecutables, comunicar únicamente la dependencia concreta; **no afirmar trabajo en segundo plano** sin una automatización o ejecutor persistente configurado.
+
+**Definición de continuidad:** progreso técnico real dentro de la sesión y las herramientas disponibles. GitHub Actions puede ejecutar pruebas de forma asíncrona, pero no sustituye un agente que corrija fallos automáticamente. Para trabajo entre sesiones se requiere configurar explícitamente esa automatización.
