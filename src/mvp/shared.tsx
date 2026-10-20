@@ -1,7 +1,7 @@
 import{LanguageSelector}from'../i18n/LanguageSelector'
 import{LocalizedText,useLocale}from'../i18n/locale'
 /* eslint-disable react-refresh/only-export-components -- design system barrel: exporta primitivas, constantes y hooks junto a los componentes (patrón intencional UGO) */
-import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ButtonHTMLAttributes, InputHTMLAttributes, HTMLAttributes } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { getRoleSupabase, type UgoRole } from '../lib/roleSupabase'
