@@ -24,6 +24,10 @@ Antes de modificar: identificar funcionalidades afectadas, contrato observable, 
 
 **Objetivo final e irrenunciable: que UGO funcione realmente de extremo a extremo.** Cliente, Proveedor, Admin y los flujos críticos deben operar sin deslogueos inesperados, con pedidos que lleguen, autenticación estable, GPS y Realtime efectivos. HUGO/voz debe funcionar cuando corresponda a los requisitos del producto. **UGO Maestro 24/7, Empresa Autónoma, HIVE y GitHub Observatory son medios de apoyo, nunca objetivos que desplacen la reparación y validación del producto.** No abrir infraestructura ni automatizaciones nuevas mientras los bloqueos P0 del producto sigan sin resolver, salvo dependencia técnica imprescindible. Toda decisión debe priorizar corregir, probar y entregar funcionalidad real preservando la que ya funciona.
 
+## Contraste obligatorio con roadmap (20/10/2026)
+
+Cada trabajo autónomo debe comparar su objetivo, cambio, pruebas y resultado con `docs/UGO_ROADMAP_MASTER.md` y el estado vivo de main/CI/TEST. Al cerrar el bloque actualizar en el mismo ciclo el roadmap y el registro de continuidad en `docs/UGO_CAMINO_MAESTRO.md`: fase, estado comprobado, SHA, evidencia, regresiones y próximo paso. Si falta evidencia, dejar el estado pendiente; no declarar terminado ni inventar progreso. La orden «seguí» retoma el primer trabajo accionable de la ruta completa hacia producción Florianópolis, preservando lo que funciona.
+
 ## Objetivo
 
 Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar con autonomía dentro del alcance autorizado, investigar antes de preguntar, corregir la capa responsable del problema, validar antes de declarar éxito y mantener alineados código, producto, datos, UX, calidad y documentación.
