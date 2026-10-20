@@ -42,7 +42,9 @@ async function persist(){ await fs.writeFile('artifacts/readiness-cross-performa
 async function login(role,email,password){
   const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
   let lastError=null
-  const attempts=7
+  // Autenticación con presupuesto ampliado: la ventana de 504 de GoTrue
+  // observada en CI el 2026-10-20 superó los 7 intentos previos (~71 s).
+  const attempts=10
   for(let attempt=1;attempt<=attempts;attempt++){
     const started=performance.now()
     try{
@@ -61,7 +63,7 @@ async function login(role,email,password){
       result.auth[role]={status:'RETRY',attempt,latency_ms:latency,error:String(error?.message||error)}
     }
     await persist()
-    if(attempt<attempts) await new Promise(resolve=>setTimeout(resolve,Math.min(20000,1000*(2**(attempt-1)))))
+    if(attempt<attempts) await new Promise(resolve=>setTimeout(resolve,Math.min(30000,1000*(2**(attempt-1)))))
   }
   result.auth[role]={...(result.auth[role]||{}),status:'FAIL',error:String(lastError?.message||lastError||'AUTH_FAILED')}
   await persist()

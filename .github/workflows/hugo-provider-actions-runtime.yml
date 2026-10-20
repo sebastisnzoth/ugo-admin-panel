@@ -17,7 +17,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-hugo-provider-actions-${{ github.event.pull_request.number || github.ref_name }}
+  # Single-flight REPO-WIDE: createUser/GoTrue + the Hugo UI flow against the
+  # shared UGO TEST project; parallel suites produced AuthRetryableFetchError
+  # 504 (evidence 2026-10-20). Serialize across all branches.
+  group: ugo-runtime-timing-singleflight-${{ github.workflow }}
   cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
@@ -53,7 +56,19 @@ jobs:
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
-          node scripts/hugo-provider-actions-runtime.mjs
+          set -o pipefail
+          node scripts/hugo-provider-actions-runtime.mjs 2>&1 | tee /tmp/ugo-hugo-provider-actions-runtime.log
+      - name: Runtime failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-hugo-provider-actions-runtime.log ]; then
+            tail -n 10 /tmp/ugo-hugo-provider-actions-runtime.log | while IFS= read -r line; do
+              line="${line//%/%25}"
+              line="${line//$'\r'/%0D}"
+              printf '::error title=Hugo Provider Actions failure::%s\n' "$line"
+            done
+          fi
       - name: Judge
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}

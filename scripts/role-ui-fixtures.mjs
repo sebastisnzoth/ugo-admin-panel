@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
+import {createUserWithRetry, retrySupabaseResult} from './lib/transient-retry.mjs'
 
 export async function createRoleUiFixtures(db,sha){
  const identities=[]
@@ -20,18 +21,18 @@ export async function createRoleUiFixtures(db,sha){
  try{
   for(const [key,role] of [['client','cliente'],['provider','proveedor'],['admin','superadmin'],['operator','admin']]){
    const email=`role-ui-${sha.slice(0,8)}-${key}-${randomUUID().slice(0,8)}@example.com`,password='TestAa1!'+randomUUID()
-   const created=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{tipo:role}})
+   const created=await createUserWithRetry(db,{email,password,email_confirm:true,user_metadata:{tipo:role}},{label:`role-ui-fixtures.createUser(${key})`})
    assert.ifError(created.error)
    const id=created.data.user.id
    identities.push({id,key,email,password})
-   const profile=await db.from('usuarios').upsert({id,email,nombre:'QA '+key,apellido:'UI',tipo:role,activo:true,es_demo:true,pais:'BR',zona:'UGO TEST'})
+   const profile=await retrySupabaseResult(()=>db.from('usuarios').upsert({id,email,nombre:'QA '+key,apellido:'UI',tipo:role,activo:true,es_demo:true,pais:'BR',zona:'UGO TEST'}),{label:`role-ui-fixtures.usuarios.upsert(${key})`})
    assert.ifError(profile.error)
    if(key==='client'){
-    const result=await db.from('perfiles_cliente').upsert({usuario_id:id,ciudad:'Florianópolis',telefono:'48999999999',direccion:'Rua QA TEST',barrio:'TEST',termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',idioma_preferido:'es',onboarding_completo_at:new Date().toISOString()})
+    const result=await retrySupabaseResult(()=>db.from('perfiles_cliente').upsert({usuario_id:id,ciudad:'Florianópolis',telefono:'48999999999',direccion:'Rua QA TEST',barrio:'TEST',termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',idioma_preferido:'es',onboarding_completo_at:new Date().toISOString()}),{label:'role-ui-fixtures.perfiles_cliente.upsert'})
     assert.ifError(result.error)
    }
    if(key==='provider'){
-    const result=await db.from('perfiles_proveedor').upsert({usuario_id:id,estado_verificacion:'verificado',ciudad_base:'Florianópolis',online:false,disponible:false,onboarding_completo_at:new Date().toISOString()})
+    const result=await retrySupabaseResult(()=>db.from('perfiles_proveedor').upsert({usuario_id:id,estado_verificacion:'verificado',ciudad_base:'Florianópolis',online:false,disponible:false,onboarding_completo_at:new Date().toISOString()}),{label:'role-ui-fixtures.perfiles_proveedor.upsert'})
     assert.ifError(result.error)
    }
   }

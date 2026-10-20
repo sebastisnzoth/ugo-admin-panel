@@ -14,6 +14,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # This runtime drives the fixed QA fixture through a Postgres advisory lock
+  # (autonomous_qa_provider_operating_radius). Two branches running it at once
+  # made the second waiter exceed the statement timeout (evidence 2026-10-20),
+  # so serialize this workflow across ALL branches (group without a ref).
+  group: ugo-provider-operating-zone-runtime
+  cancel-in-progress: false
+
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
@@ -36,7 +44,20 @@ jobs:
       - name: Runtime
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node scripts/provider-operating-zone-runtime.mjs
+        run: |
+          set -o pipefail
+          node scripts/provider-operating-zone-runtime.mjs 2>&1 | tee /tmp/ugo-provider-operating-zone-runtime.log
+      - name: Runtime failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-provider-operating-zone-runtime.log ]; then
+            tail -n 10 /tmp/ugo-provider-operating-zone-runtime.log | while IFS= read -r line; do
+              line="${line//%/%25}"
+              line="${line//$'\r'/%0D}"
+              printf '::error title=Provider Operating Zone failure::%s\n' "$line"
+            done
+          fi
       - name: Judge
         env:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}

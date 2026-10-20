@@ -29,7 +29,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-runtime-${{ github.head_ref || github.ref_name }}
+  # Single-flight REPO-WIDE: this proof asserts Realtime < 7s vs 8s polling.
+  # Parallel suites from other branches saturate the shared UGO TEST project
+  # (504/522/statement timeout evidence 2026-10-20) and break timing asserts.
+  group: ugo-runtime-timing-singleflight-${{ github.workflow }}
   cancel-in-progress: false
 
 env:
@@ -86,7 +89,19 @@ jobs:
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
-          node scripts/admin-realtime-runtime.mjs
+          set -o pipefail
+          node scripts/admin-realtime-runtime.mjs 2>&1 | tee /tmp/ugo-admin-realtime-runtime.log
+      - name: Runtime failure details
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f /tmp/ugo-admin-realtime-runtime.log ]; then
+            tail -n 10 /tmp/ugo-admin-realtime-runtime.log | while IFS= read -r line; do
+              line="${line//%/%25}"
+              line="${line//$'\r'/%0D}"
+              printf '::error title=Admin Realtime failure::%s\n' "$line"
+            done
+          fi
       - name: Judge
         run: node scripts/admin-realtime-judge.mjs
       - name: Sentinel

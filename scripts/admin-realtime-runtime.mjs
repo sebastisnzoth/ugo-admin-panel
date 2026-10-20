@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {createUserWithRetry, retrySupabaseResult} from './lib/transient-retry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -16,10 +17,10 @@ assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_ADMIN_REALTIME_INPUTS
 
 const root=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
-const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await retrySupabaseResult(()=>user.auth.signInWithPassword({email,password}),{label:'admin-realtime.signInWithPassword'})
 assert.ifError(loginError)
 assert.ok(login.user&&login.session,'UGO_TEST_ADMIN_SESSION_REQUIRED')
-const {data:profile,error:profileError}=await root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
+const {data:profile,error:profileError}=await retrySupabaseResult(()=>root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single(),{label:'admin-realtime.adminProfileRead'})
 assert.ifError(profileError)
 assert.ok(['admin','superadmin'].includes(profile.tipo),'ADMIN_ROLE_REQUIRED')
 assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
@@ -27,17 +28,17 @@ assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
 const fixtureToken=sha.slice(0,8)+'-'+Date.now()
 const fixtureEmail=`ugo-admin-realtime-provider-${fixtureToken}@example.test`
 const fixturePassword='UGO-Test-'+fixtureToken+'-A9!'
-const {data:createdProvider,error:providerCreateError}=await root.auth.admin.createUser({email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}})
+const {data:createdProvider,error:providerCreateError}=await createUserWithRetry(root,{email:fixtureEmail,password:fixturePassword,email_confirm:true,user_metadata:{nombre:'UGO Admin Realtime Fixture',tipo:'proveedor'}},{label:'admin-realtime.createUser(provider)'})
 assert.ifError(providerCreateError)
 assert.ok(createdProvider.user?.id,'PROVIDER_PROFILE_FIXTURE_REQUIRED')
 const providerId=createdProvider.user.id
 let providerFixtureCreated=false
 try{
- const {error:userError}=await root.from('usuarios').upsert({id:providerId,nombre:'UGO Admin Realtime Fixture',tipo:'proveedor',activo:true,es_demo:true,online:false},{onConflict:'id'})
+ const {error:userError}=await retrySupabaseResult(()=>root.from('usuarios').upsert({id:providerId,nombre:'UGO Admin Realtime Fixture',tipo:'proveedor',activo:true,es_demo:true,online:false},{onConflict:'id'}),{label:'admin-realtime.usuarios.upsert'})
  assert.ifError(userError)
- const {data:category,error:categoryError}=await root.from('categorias').select('id').eq('activa',true).limit(1).single()
+ const {data:category,error:categoryError}=await retrySupabaseResult(()=>root.from('categorias').select('id').eq('activa',true).limit(1).single(),{label:'admin-realtime.categorias.read'})
  assert.ifError(categoryError)
- const {error:providerError}=await root.from('perfiles_proveedor').upsert({usuario_id:providerId,estado_verificacion:'verificado',online:false,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100},{onConflict:'usuario_id'})
+ const {error:providerError}=await retrySupabaseResult(()=>root.from('perfiles_proveedor').upsert({usuario_id:providerId,estado_verificacion:'verificado',online:false,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100},{onConflict:'usuario_id'}),{label:'admin-realtime.perfiles_proveedor.upsert'})
  assert.ifError(providerError)
  providerFixtureCreated=true
 }catch(error){
