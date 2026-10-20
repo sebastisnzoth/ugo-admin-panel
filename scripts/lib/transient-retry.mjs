@@ -13,7 +13,7 @@ export function transientInfrastructureError(error) {
   return /429|502|503|504|gateway|timeout|timed out|rate.?limit|over_request_rate_limit|fetch failed|network|ECONN|ETIMEDOUT|EAI_AGAIN|socket hang up/i.test(`${code} ${message}`)
 }
 
-export async function withTransientRetry(operation, { label = 'ugo-test', attempts = 5, baseDelayMs = 1500 } = {}) {
+export async function withTransientRetry(operation, { label = 'ugo-test', attempts = 6, baseDelayMs = 2000 } = {}) {
   let lastError = null
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {

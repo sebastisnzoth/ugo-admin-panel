@@ -1,3 +1,4 @@
+import{createTestUser,withTransientRetry}from'./lib/transient-retry.mjs'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {randomUUID} from 'node:crypto'
@@ -212,15 +213,15 @@ async function acceptOfferInUi(ui){
 
 try{
   // 0 · catalog prerequisites ---------------------------------------------
-  const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
+  const categories=must(await withTransientRetry(()=>admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),{label:'p0-catalog'}),'read categories').data||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
   categoryId=categories[0].id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
 
   // 1 · isolated TEST identities -----------------------------------------
-  const createdClient=must(await admin.auth.admin.createUser({email:clientEmail,password,email_confirm:true,user_metadata:{nombre:'UGO P0 Client',tipo:'cliente'}}),'create client auth user')
+  const createdClient=must(await createTestUser(admin,{email:clientEmail,password,email_confirm:true,user_metadata:{nombre:'UGO P0 Client',tipo:'cliente'}}),'create client auth user')
   clientId=createdClient.data.user.id
-  const createdProvider=must(await admin.auth.admin.createUser({email:providerEmail,password,email_confirm:true,user_metadata:{nombre:'UGO P0 Provider',tipo:'proveedor'}}),'create provider auth user')
+  const createdProvider=must(await createTestUser(admin,{email:providerEmail,password,email_confirm:true,user_metadata:{nombre:'UGO P0 Provider',tipo:'proveedor'}}),'create provider auth user')
   providerId=createdProvider.data.user.id
   must(await admin.from('usuarios').upsert({id:clientId,email:clientEmail,nombre:'UGO P0 Client',apellido:'E2E',tipo:'cliente',activo:true,es_demo:false,pais:'BR',zona:'UGO TEST E2E'}),'insert client profile')
   must(await admin.from('usuarios').upsert({id:providerId,email:providerEmail,nombre:'UGO P0 Provider',apellido:'E2E',tipo:'proveedor',activo:true,es_demo:false,pais:'BR',zona:'UGO TEST E2E'}),'insert provider profile')
@@ -316,7 +317,7 @@ try{
     must(await provider.rpc('aceptar_oferta',{p_oferta_id:offerId}),'aceptar_oferta')
   }
 
-  const servicesAfter=must(await admin.from('servicios').select('id,estado,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,aceptado_at').eq('id',serviceId).single(),'read service after acceptance')
+  const servicesAfter=must(await withTransientRetry(()=>admin.from('servicios').select('id,estado,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,aceptado_at').eq('id',serviceId).single(),{label:'p0-service-after'}),'read service after acceptance')
   const offersAfter=must(await admin.from('ofertas_servicio').select('id,estado,respondida_at').eq('servicio_id',serviceId),'read offers after acceptance').data||[]
   stage('accept_persisted',{service:servicesAfter.data,offers:offersAfter})
   assert.equal(servicesAfter.data.estado,'asignado','P0_SERVICE_NOT_ASSIGNED')
