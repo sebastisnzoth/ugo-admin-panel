@@ -41,7 +41,7 @@ concurrency:
   # Single-flight REPO-WIDE: role fixtures create users through GoTrue; under
   # parallel suites GoTrue answered 504/fetch-failed (evidence 2026-10-20).
   # One timing/browser proof at a time across all branches keeps it honest.
-  group: ugo-runtime-timing-singleflight
+  group: ugo-runtime-timing-singleflight-${{ github.workflow }}
   cancel-in-progress: false
 
 env:

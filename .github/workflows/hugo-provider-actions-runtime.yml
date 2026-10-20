@@ -20,7 +20,7 @@ concurrency:
   # Single-flight REPO-WIDE: createUser/GoTrue + the Hugo UI flow against the
   # shared UGO TEST project; parallel suites produced AuthRetryableFetchError
   # 504 (evidence 2026-10-20). Serialize across all branches.
-  group: ugo-runtime-timing-singleflight
+  group: ugo-runtime-timing-singleflight-${{ github.workflow }}
   cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co

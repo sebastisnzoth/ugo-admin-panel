@@ -30,7 +30,7 @@ concurrency:
   # Single-flight REPO-WIDE: latency thresholds (< seconds vs fallback windows)
   # are meaningless while another branch's suite saturates UGO TEST (504/522
   # evidence 2026-10-20). Serialize these timing proofs across all branches.
-  group: ugo-runtime-timing-singleflight
+  group: ugo-runtime-timing-singleflight-${{ github.workflow }}
   cancel-in-progress: false
 
 env:

@@ -32,7 +32,7 @@ concurrency:
   # Single-flight REPO-WIDE: this proof asserts Realtime < 7s vs 8s polling.
   # Parallel suites from other branches saturate the shared UGO TEST project
   # (504/522/statement timeout evidence 2026-10-20) and break timing asserts.
-  group: ugo-runtime-timing-singleflight
+  group: ugo-runtime-timing-singleflight-${{ github.workflow }}
   cancel-in-progress: false
 
 env:

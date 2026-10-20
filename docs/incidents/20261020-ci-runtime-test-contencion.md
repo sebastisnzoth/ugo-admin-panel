@@ -87,14 +87,25 @@ Cambios mínimos, **sin relajar ningún assert, sin tocar seguridad, sin migraci
    `provider-operating-zone-runtime.mjs` (RPC con 5 intentos), `provider-profile-photo-runtime.mjs`
    (signIn, lecturas, upload con tolerancia a 409 tras reintento, fetch público, cleanup).
 4. **Workflows** (6):
-   - `admin-realtime`, `cross-performance`, `role-ui`, `hugo-provider-actions` → grupo **repo-wide**
-     `ugo-runtime-timing-singleflight` (una prueba timing a la vez en todo el repositorio, todas las ramas).
+   - `admin-realtime`, `cross-performance`, `role-ui`, `hugo-provider-actions` → grupo **repo-wide por
+     workflow** `ugo-runtime-timing-singleflight-${{ github.workflow }}` (cada proof timing corre una vez
+     a la vez en todo el repositorio, todas las ramas, sin cancelarse entre workflows distintos).
    - `provider-operating-zone` → grupo nuevo `ugo-provider-operating-zone-runtime` (serializa el advisory
      lock del fixture QA entre ramas).
    - `provider-profile-photo` → grupo `ugo-test-shared-provider-fixture` (igual que gps/debt/arrival/ui:
      correcto para el proveedor designado compartido).
    - Los 6 workflows vuelcan el runtime con `tee` y publican las últimas 10 líneas como
      `::error` en `if: failure()` → futuros fallos quedan visibles en anotaciones sin descargar logs.
+
+### 3.1 Iteración detectada en la primera corrida del fix (02:34:02Z, PR #535)
+
+Al compartir **un mismo grupo entre workflows distintos**, GitHub cancela los runs *pending* del grupo
+en cuanto entra otro run nuevo («any previously pending job or workflow in the concurrency group will be
+canceled»): en el primer batch los grupos `ugo-runtime-timing-singleflight` cancelaron
+`UGO Admin Realtime` (`39359617505`) y `UGO Cross-role UI` (`39359617493`). Corrección inmediata: el
+grupo pasó a `ugo-runtime-timing-singleflight-${{ github.workflow }}` — **single-flight por workflow en
+todo el repo (todas las ramas)**, sin colisión entre workflows distintos. Este es el motivo exacto por el
+que los grupos originales del repo siempre incluían `github.workflow` o un prefijo propio.
 
 ## 4. Validación local (misma sesión, misma base `cbd671b6`)
 
