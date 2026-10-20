@@ -1103,7 +1103,7 @@ export function AdminPanel() {
           </div>
         ))}
         <div style={{marginTop:8,fontSize:10,color:'var(--muted)'}}>
-          <LocalizedText id="adminForms.baseUrl"/> <span style={{fontFamily:'monospace'}}>{UGO_SUPABASE_URL}/functions/v1/</span>
+          <LocalizedText id="adminForms.baseUrl"/> <span style={{fontFamily:'monospace'}}>{`${UGO_SUPABASE_URL}/functions/v1/`}</span>
           <br/>Auth: Header <span style={{fontFamily:'monospace'}}>Authorization: Bearer {'<supabase_session_token>'}</span>
         </div>
       </div>
