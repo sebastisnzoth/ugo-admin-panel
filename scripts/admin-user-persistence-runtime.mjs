@@ -46,6 +46,9 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
   assert.ifError(restored.error)
   await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Personas/i}).click()
   await page.getByRole('group',{name:'Personas'}).getByRole('button',{name:/Usuarios/i}).click()
+  // Locate this ephemeral fixture through the real server-side search, independent of pagination.
+  await page.locator('.ugo-admin-users-panel button').filter({hasText:'↺'}).click()
+  await page.locator('.ugo-admin-users-panel input[type="search"]').fill(email)
   const card=page.locator('article').filter({hasText:email})
   await card.waitFor({state:'visible',timeout:20000})
   await card.getByRole('button',{name:/Editar/}).click()
@@ -100,6 +103,9 @@ export async function verifyAdminUserPersistence({page,db,client,sha,session}) {
   await page.reload({waitUntil:'domcontentloaded'})
   await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Personas/i}).click()
   await page.getByRole('group',{name:'Personas'}).getByRole('button',{name:/Usuarios/i}).click()
+  // Locate this ephemeral fixture through the real server-side search, independent of pagination.
+  await page.locator('.ugo-admin-users-panel button').filter({hasText:'↺'}).click()
+  await page.locator('.ugo-admin-users-panel input[type="search"]').fill(email)
   await card.getByText('proveedor',{exact:true}).waitFor({state:'visible',timeout:20000})
   await card.getByRole('button',{name:/Editar/}).click()
   dialog=page.getByRole('dialog',{name:'Editar usuario',exact:true})

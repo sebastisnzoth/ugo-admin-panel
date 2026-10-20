@@ -449,7 +449,9 @@ La migración también recupera los cobros en efectivo históricos ya confirmado
 
 ## Snapshot de tarifa
 
-Cuando el pedido contiene `metadata.tariff_quote.precio_referencia`, `private.apply_service_pricing_snapshot` congela ese importe en `servicios.tarifa`, calcula comisión/neto y lo vuelve a aplicar en el momento de asignación. Esto evita que `tarifa_ofrecida` o `perfiles_proveedor.tarifa_base` reemplacen silenciosamente la cotización que vio el cliente.
+Cuando el pedido contiene `metadata.tariff_quote.precio_referencia`, `private.apply_service_pricing_snapshot` congela ese importe en `servicios.tarifa` al insertar y lo vuelve a aplicar al asignar. Comisión y neto se calculan en el UPDATE de asignación, no en el INSERT: `servicios_insert` exige ambos NULL para impedir settlement financiero falsificado por el cliente. El Cliente envía tarifa/cotización y omite esos campos; el trigger tampoco borra valores falsificados, para que RLS los rechace. Esto evita tanto el rechazo 42501 de pedidos válidos con precio como el reemplazo silencioso de la cotización por `tarifa_ofrecida` o `perfiles_proveedor.tarifa_base`.
+
+Corrección P0 de 19/10/2026, PR #531: migración `20261019233520_defer_insert_settlement_until_assignment.sql` aplicada sólo a Arena TEST. RLS, matching, porcentaje y datos existentes permanecen sin cambios. Pruebas PostgreSQL: pedido propio con tarifa y con quote permitido; importe económico preservado; comisión/neto NULL antes de asignar y 15%/85% después; settlement falsificado y cliente ajeno rechazados. Runtime/publicación se registran por SHA en el PR y en el maestro de testing.
 
 
 # 24. Límite de deuda UGO del Proveedor · 20/09/2026

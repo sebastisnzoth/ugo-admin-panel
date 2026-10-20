@@ -23,27 +23,43 @@ function usableBrowserPosition(pos:GeolocationPosition){
  return Number.isFinite(latitude)&&Number.isFinite(longitude)&&!(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)&&Number.isFinite(accuracy)&&accuracy>0&&accuracy<=MAX_ACCEPTABLE_ACCURACY_M&&age<=MAX_POSITION_AGE_MS
 }
 function oneBrowserPosition(options:PositionOptions):Promise<GeolocationPosition>{return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
-async function getFreshBrowserPosition(){
- let compatibleError:GeolocationPositionError|null=null
- try{const compatible=await oneBrowserPosition(GEO_COMPATIBLE_OPTIONS);if(usableBrowserPosition(compatible))return compatible}catch(error){compatibleError=error as GeolocationPositionError;if(compatibleError.code===1)throw compatibleError}
- try{
-  const high=await oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)
-  if(usableBrowserPosition(high))return high
- }catch(error){
-  const highError=error as GeolocationPositionError
-  if(highError.code===1)throw highError
-  compatibleError=compatibleError||highError
- }
- return await new Promise<GeolocationPosition>((resolve,reject)=>{
+async function getFreshBrowserPosition():Promise<GeolocationPosition>{
+ // Run compatible, high accuracy and watch concurrently. Sequential timeouts can
+ // otherwise leave the provider without matching GPS for >30 seconds.
+ return new Promise((resolve,reject)=>{
   let settled=false
-  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer)window.clearTimeout(timer)}
-  const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
-  const fail=(error:GeolocationPositionError)=>{if(settled)return;settled=true;cleanup();reject(error)}
-  const timer:number|undefined=window.setTimeout(()=>fail((compatibleError||{code:2,message:'No valid browser position'}) as GeolocationPositionError),15_000)
-  const watchId:number|undefined=navigator.geolocation.watchPosition(position=>{if(usableBrowserPosition(position))finish(position)},error=>{if(error.code===1)fail(error)},{enableHighAccuracy:true,maximumAge:0,timeout:10_000})
+  let watchId:number|null=null
+  let deadline:number|null=null
+  let lastError:GeolocationPositionError|null=null
+  const cleanup=()=>{
+   if(watchId!==null)navigator.geolocation.clearWatch(watchId)
+   if(deadline!==null)window.clearTimeout(deadline)
+  }
+  const accept=(position:GeolocationPosition)=>{
+   if(settled||!usableBrowserPosition(position))return
+   settled=true;cleanup();resolve(position)
+  }
+  const fail=(error:GeolocationPositionError)=>{
+   if(settled)return
+   lastError=error
+   if(error.code===1){settled=true;cleanup();reject(error)}
+  }
+  deadline=window.setTimeout(()=>{
+   if(settled)return
+   settled=true;cleanup()
+   reject(lastError||{code:3,message:'GPS acquisition timed out'} as GeolocationPositionError)
+  },16_000)
+  try{
+   watchId=navigator.geolocation.watchPosition(accept,fail,{enableHighAccuracy:true,maximumAge:0,timeout:12_000})
+   // A fast compatible fix is accepted immediately while a precise fix may
+   // arrive later. Both must still satisfy freshness and accuracy limits.
+   void oneBrowserPosition(GEO_COMPATIBLE_OPTIONS).then(accept,fail)
+   void oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS).then(accept,fail)
+  }catch(error){
+   if(!settled){settled=true;cleanup();reject(error)}
+  }
  })
 }
-
 
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
