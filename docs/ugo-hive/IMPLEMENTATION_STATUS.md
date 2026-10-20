@@ -141,3 +141,12 @@ Consulta Sentinel/readiness de sólo lectura: ningún incidente observado para l
 `PUBLISH-PAGES | BLOCKED_EXTERNAL | ugo-admin-panel | main | 4191978 | no publicado observado | HTTP200/source_sha7931173 | último Pages39168233907 | status.json público | no ejecutado | no runtime nuevo | no gasto contratado | schedule pendiente/dispatch no disponible en conector | Run workflow UGO GitHub Pages/main y comprobar source_sha`
 
 Rollback de integración: nuevo commit revert revisado que revierta exclusivamente estos merges (parentmain), conservando trabajo concurrente; nunca reset/force. Reversión no elimina datos porque no se aplicaron migraciones remotas. Mantener bloqueos de inferencia y no restaurar cuotas desde SQLite.
+
+
+## 2026-10-19/20 — PR #533, integración P0 Cliente/Proveedor
+
+- PR: https://github.com/sebastisnzoth/ugo-admin-panel/pull/533 (rama `integration/arena-green-provider-gps-20261020`; **sin fusionar**).
+- Base verde Arena `28b3e42e8653445529e3d2bfd574f7011e80d8e5`: 13 workflows exitosos. Cambios transportados desde #532: adquisición GPS paralela en `ProviderLocationTracker.tsx` y dos pruebas de contrato GPS. SHA de integración inicial `bcd78349806805e2d508f7ec79a62ab406c34ca0`.
+- Evidencia CI sobre `bcd7834`: 12 de 13 workflows exitosos; matching E2E Cliente→Proveedor, Admin Realtime, Provider Actions, seguridad, CI base y cobertura GPS pasan. Ejecución fallida UI multirrol: https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39350771531 (móvil Cliente, `PROFILE_QUERY_TIMEOUT`, página muestra recuperación de sesión sin expulsar al usuario). **No afirmar 13/13 ni E2E completo** hasta la nueva ejecución exitosa.
+- Acción 2026-10-19/20: reejecución del job fallido `118394162168` aceptada por GitHub. Resultado aún pendiente al redactar este checkpoint; verificar CI antes de fusionar.
+- Política: sin cambios a producción ni a los datos de usuarios; no simular prueba GPS en dispositivo físico. Se requiere aceptación humana para esta última prueba.
