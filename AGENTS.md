@@ -20,6 +20,10 @@ Antes de modificar: identificar funcionalidades afectadas, contrato observable, 
 
 **La prioridad transversal sigue siendo UGO Maestro 24/7:** Empresa Autónoma + HIVE + Observatory + GPT + GitHub + Supabase y despliegues constituyen un proyecto unificado. Resolver los fallos existentes (como el deslogueo del Proveedor) dentro de este objetivo, sin perder continuidad ni abrir sistemas duplicados. Mantener las reglas antirregresión y los límites de Supabase.
 
+## Prioridad superior: UGO/HUGO funcionando (20-10-2026)
+
+**Objetivo final e irrenunciable: que UGO funcione realmente de extremo a extremo.** Cliente, Proveedor, Admin y los flujos críticos deben operar sin deslogueos inesperados, con pedidos que lleguen, autenticación estable, GPS y Realtime efectivos. HUGO/voz debe funcionar cuando corresponda a los requisitos del producto. **UGO Maestro 24/7, Empresa Autónoma, HIVE y GitHub Observatory son medios de apoyo, nunca objetivos que desplacen la reparación y validación del producto.** No abrir infraestructura ni automatizaciones nuevas mientras los bloqueos P0 del producto sigan sin resolver, salvo dependencia técnica imprescindible. Toda decisión debe priorizar corregir, probar y entregar funcionalidad real preservando la que ya funciona.
+
 ## Objetivo
 
 Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar con autonomía dentro del alcance autorizado, investigar antes de preguntar, corregir la capa responsable del problema, validar antes de declarar éxito y mantener alineados código, producto, datos, UX, calidad y documentación.
