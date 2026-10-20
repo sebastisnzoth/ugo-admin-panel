@@ -340,7 +340,16 @@ async function testAdministrativeSession(viewport,name,key){
 async function testAutonomyControl(page,name){
  const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
  assert.ifError(before.error)
- assert.equal(before.data?.mode,'OFF','AUTONOMY_TEST_REQUIRES_IDLE_OFF_STATE')
+ // Do not override the operator's live TEST autonomy setting. Mutating a
+ // non-idle state would interfere with autonomous jobs and manual operations.
+ if(before.data?.mode!=='OFF'){
+  assert.ok(['SHADOW','ON'].includes(before.data?.mode),'AUTONOMY_UNRECOGNIZED_STATE')
+  const active=page.getByRole('radio',{name:new RegExp(before.data.mode)})
+  await active.waitFor({state:'visible',timeout:20000})
+  assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
+  results.push({role:'superadmin-autonomy-control',viewport:name,status:'SKIPPED',reason:'NON_IDLE_TEST_STATE',observed_mode:before.data.mode,read_only_state_verified:true,transition_tested:false})
+  return
+ }
  const actor=sessions.admin.user.id
  try{
   await page.getByRole('radio',{name:/SHADOW/}).click()
