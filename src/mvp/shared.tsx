@@ -130,9 +130,10 @@ export function useRoleSession(role:UgoRole){
           .finally(()=>{if(active){window.clearTimeout(failSafe);setLoading(false)}})
       },0)
     })
-    const onOnline=()=>setSessionEpoch(value=>value+1)
-    window.addEventListener('online',onOnline)
-    return()=>{active=false;profileGeneration.current++;window.clearTimeout(failSafe);window.removeEventListener('online',onOnline);l.subscription.unsubscribe()}
+    // Going online must not remount the auth bootstrap or temporarily replace a valid
+    // provider session with a guest state. Realtime reconnection is handled below;
+    // failed session checks can still be retried explicitly by the user.
+    return()=>{active=false;profileGeneration.current++;window.clearTimeout(failSafe);l.subscription.unsubscribe()}
   },[loadProfile,role,sessionEpoch,supabase])
   useEffect(()=>{
     const userId=session?.user.id
