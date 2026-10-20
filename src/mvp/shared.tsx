@@ -110,7 +110,15 @@ export function useRoleSession(role:UgoRole){
           void supabase.auth.getSession().then(({data,error:sessionError})=>{
             if(!active||version!==authEventVersion)return
             if(sessionError){unavailable();return}
-            if(data.session){setSession(data.session);return}
+            if(data.session){
+              // A transient SIGNED_OUT during token recovery must restore the
+              // profile too; otherwise the Provider can remain on recovery UI.
+              setSession(data.session);setSessionChecked(true)
+              void loadProfile(data.session).then(()=>{if(active&&version===authEventVersion)setError('')})
+                .catch((e:Error)=>{if(active&&version===authEventVersion)setError(e.message)})
+                .finally(()=>{if(active&&version===authEventVersion){window.clearTimeout(failSafe);setLoading(false)}})
+              return
+            }
             profileGeneration.current++
             setSession(null);setProfile(null);setSessionChecked(true);setError('')
             diagnostic('login_confirmed_signed_out')

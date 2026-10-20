@@ -325,3 +325,7 @@ acción manual exacta sólo si es imprescindible
 ## Regla final
 
 > **Investigar antes de preguntar. Ejecutar lo autorizado. Corregir antes de maquillar. Validar por etapas. Consultar Centinela antes de parar. Mantener una sola realidad UGO. Si Centinela muestra un P0/P1 accionable, continuar; si el SHA actual falla CI, decirlo y corregirlo; si una revisión no está publicada, no fingir que lo está.**
+
+## Regla de cierre secuencial obligatorio (20/10/2026)
+
+**Cuando termine una tarea, no salto a otra por impulso. Sólo paso a la siguiente cuando la actual esté corregida, probada y registrada con evidencia real.** Antes de cambiar de tarea: comprobar aceptación y ausencia de regresiones; guardar commit/SHA, pruebas, entorno y resultado en `docs/UGO_ROADMAP_MASTER.md` y `docs/UGO_CAMINO_MAESTRO.md`. Si falta una prueba, el estado es **PENDIENTE / NO VERIFICADO**, nunca DONE, y el siguiente paso verificable queda registrado. Si existe un bloqueo externo genuino, mantener el trabajo abierto y pasar únicamente a otra tarea independiente permitida, sin ocultar ni cancelar la anterior. Esta regla alcanza **también todos los compromisos, mejoras y tareas previas pendientes**, incluidos los dos plugins, Auth/GPS/Realtime, HIVE, Empresa Autónoma, Observatory, y los gates de producción. Una nueva instrucción no borra pendientes anteriores; sólo una cancelación explícita modifica la cola. No extender un diagnóstico ni abandonar la reparación por reportar. No convertir falta de pruebas en éxito.
