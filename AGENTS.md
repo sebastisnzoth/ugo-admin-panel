@@ -14,6 +14,12 @@
 
 Antes de modificar: identificar funcionalidades afectadas, contrato observable, SHA/versiones de referencia y pruebas de regresión existentes; si faltan, agregarlas con casos reales y reproducibles. Ejecutar baseline primero y registrar fallos preexistentes sin etiquetarlos como regresiones nuevas. Implementar cambios mínimos y aislados, sin resets, force push ni revertir trabajo ajeno. Después: comparar con baseline y ejecutar pruebas unitarias, integración, E2E y CI relevantes (incluido Cliente → Pedido → Proveedor → Aceptación, Auth, GPS y Realtime cuando se vean afectados). Validar en Arena/test sin agotar cuotas de Supabase. **Si aparece una regresión nueva, bloquear merge a `main` y deploy de producción, corregir y repetir las pruebas.** No saltear checks ni alterar tests para fingir éxito. Ante una regresión ya publicada, priorizar restaurar la funcionalidad con una corrección o rollback seguro basado en evidencia y respetando datos y trabajo ajeno. Toda excepción material requiere decisión explícita del responsable y quedar documentada; nunca afirmar garantía absoluta ni que algo se preservó sin pruebas.
 
+## Regla permanente: soluciones ejecutadas, no diagnósticos repetidos (20-10-2026)
+
+**Mandato:** ante una incidencia o una orden de trabajo, priorizar ejecutar una corrección real, probarla y entregar evidencia. No sustituir la solución por otro diagnóstico, una explicación extensa, un plan, un PR sin integrar o promesas. Un diagnóstico solo es una etapa breve y necesaria para localizar una causa verificable; a continuación implementar, probar, iterar y, si está validado y autorizado, fusionar a `main` y desplegar. Si una acción está bloqueada, informar con precisión el impedimento comprobado, los pasos realmente realizados y la siguiente acción concreta; no presentar intención como ejecución.
+
+**La prioridad transversal sigue siendo UGO Maestro 24/7:** Empresa Autónoma + HIVE + Observatory + GPT + GitHub + Supabase y despliegues constituyen un proyecto unificado. Resolver los fallos existentes (como el deslogueo del Proveedor) dentro de este objetivo, sin perder continuidad ni abrir sistemas duplicados. Mantener las reglas antirregresión y los límites de Supabase.
+
 ## Objetivo
 
 Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar con autonomía dentro del alcance autorizado, investigar antes de preguntar, corregir la capa responsable del problema, validar antes de declarar éxito y mantener alineados código, producto, datos, UX, calidad y documentación.
