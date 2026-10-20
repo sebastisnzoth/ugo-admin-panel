@@ -665,6 +665,15 @@ Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles i
 **«Seguí»** = ejecutar el siguiente bloqueo priorizado y verificable sin perder el objetivo general; no implica trabajo continuo después de finalizar la ejecución del chat. No alterar producción ni datos sin gates; no romper funcionalidades previamente comprobadas. Actualizar también `docs/UGO_CAMINO_MAESTRO.md` para permitir retomar sin repetir instrucciones. Estados: PENDIENTE, IMPLEMENTADO, CI VALIDATED, RUNTIME VALIDATED, PUBLISHED, ACCEPTED.
 
 
+### 20/10/2026 — Proveedor Auth: recuperación tras SIGNED_OUT transitorio
+
+Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`710744f`): cuando el SDK emite SIGNED_OUT pero `getSession()` confirma una sesión válida, se recupera también el perfil y se finaliza la carga; antes sólo se restauraba el objeto de sesión y podía quedar la interfaz esperando indefinidamente. La condición de autenticación verdadera sigue respetada. **Estado: IMPLEMENTADO; falta CI del SHA integrado, smoke autenticado de Online/GPS/refresh y E2E cliente-proveedor.** No confundir con validación de producción. Próxima ejecución: pruebas exact-SHA y corregir cualquier regresión observada antes de publicar.
+
+## Regla de cierre secuencial obligatorio (20/10/2026)
+
+**Cuando termine una tarea, no salto a otra por impulso. Sólo paso a la siguiente cuando la actual esté corregida, probada y registrada con evidencia real.** Antes de cambiar de tarea: comprobar aceptación y ausencia de regresiones; guardar commit/SHA, pruebas, entorno y resultado en `docs/UGO_ROADMAP_MASTER.md` y `docs/UGO_CAMINO_MAESTRO.md`. Si falta una prueba, el estado es **PENDIENTE / NO VERIFICADO**, nunca DONE, y el siguiente paso verificable queda registrado. Si existe un bloqueo externo genuino, mantener el trabajo abierto y pasar únicamente a otra tarea independiente permitida, sin ocultar ni cancelar la anterior. Esta regla alcanza **también todos los compromisos, mejoras y tareas previas pendientes**, incluidos los dos plugins, Auth/GPS/Realtime, HIVE, Empresa Autónoma, Observatory, y los gates de producción. Una nueva instrucción no borra pendientes anteriores; sólo una cancelación explícita modifica la cola. No extender un diagnóstico ni abandonar la reparación por reportar. No convertir falta de pruebas en éxito.
+
+
 ### 2026-10-20 — P0 GPS Proveedor, compatibilidad API productiva (PR #545)
 
 - Estado: **IMPLEMENTADO EN RAMA / NO APLICADO EN PRODUCCIÓN**. La app `main` usa `activar_disponibilidad_proveedor` y `publicar_ubicacion_disponibilidad_proveedor`, RPC ausentes en UGO producción y presentes en Arena TEST.
