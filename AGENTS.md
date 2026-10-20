@@ -3,6 +3,11 @@
 **Versión:** 1.6 · 16 de septiembre de 2026  
 **Rama de verdad:** `main`
 
+
+## Regla permanente contra la fragmentación (20-10-2026)
+
+**Lectura obligatoria antes de iniciar o reanudar cualquier tarea:** `docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md`. Allí consta el error reconocido: separar HIVE, Empresa Autónoma, Observatory, Supabase y el producto UGO en trabajos inconexos, abrir sistemas nuevos sin recuperar los existentes, confundir deploy con funcionamiento y obligar al usuario a repetir instrucciones. **No debe repetirse.** Conservar visión integral, continuidad, reutilización, límites reales de Supabase y evidencia E2E antes de declarar éxito o fusionar/desplegar.
+
 ## Objetivo
 
 Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar con autonomía dentro del alcance autorizado, investigar antes de preguntar, corregir la capa responsable del problema, validar antes de declarar éxito y mantener alineados código, producto, datos, UX, calidad y documentación.
