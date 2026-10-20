@@ -1,0 +1,49 @@
+name: UGO Roadmap Traceability
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  roadmap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify roadmap and continuity records
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          test -s AGENTS.md
+          test -s docs/UGO_ROADMAP_MASTER.md
+          test -s docs/UGO_CAMINO_MAESTRO.md
+          test -s docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "Manual verification: authoritative documents are present."
+            exit 0
+          fi
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > /tmp/ugo-changed-files
+          if ! grep -Eq '^(src/|api/|server/|supabase/|scripts/|tests/|\.github/workflows/)' /tmp/ugo-changed-files; then
+            echo "Documentation-only change; no roadmap update required."
+            exit 0
+          fi
+          if ! grep -Eq '^docs/UGO_ROADMAP_MASTER.md$' /tmp/ugo-changed-files; then
+            echo "::error::Functional changes require updating docs/UGO_ROADMAP_MASTER.md with status, evidence, SHA or pending verification, and next task."
+            exit 1
+          fi
+          if ! grep -Eq '^docs/UGO_CAMINO_MAESTRO.md$' /tmp/ugo-changed-files; then
+            echo "::error::Functional changes require updating docs/UGO_CAMINO_MAESTRO.md continuity handoff."
+            exit 1
+          fi
+          echo "Roadmap and continuity files changed. Runtime evidence remains separately required."
