@@ -163,3 +163,10 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 6. Si ya no hay acciones ejecutables, comunicar únicamente la dependencia concreta; **no afirmar trabajo en segundo plano** sin una automatización o ejecutor persistente configurado.
 
 **Definición de continuidad:** progreso técnico real dentro de la sesión y las herramientas disponibles. GitHub Actions puede ejecutar pruebas de forma asíncrona, pero no sustituye un agente que corrija fallos automáticamente. Para trabajo entre sesiones se requiere configurar explícitamente esa automatización.
+
+### Continuación PR #533 — 19/10/2026, gateway TEST
+
+- Revalidado HEAD previo `731774643093bf533a13c233accc80eebdfbd8e6`: 13 workflows completados, 7 FAILED / 6 PASS. El retry individual de Provider Operating Zone también falló, devolviendo HTML de gateway de infraestructura; logs del job `118413950925` en https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39356400361.
+- Supabase TEST `tmossnqfwfwjrtzwcbmm` informó proyecto `ACTIVE_HEALTHY` en la consulta administrativa, que **no certifica** disponibilidad contínua de Auth/PostgREST bajo carga.
+- Corrección específica `e0b32739ddf6a5076660176adc33166eec1199e3`: en `scripts/provider-operating-zone-runtime.mjs` se agrega como máximo 3 intentos SOLO frente a fallos HTTP 502/503/504, y no se reintenta timeout interno de PostgreSQL (`57014`). Se preservan todas las aserciones funcionales y la condición TEST. **Estado: código implementado, aún sin CI del SHA documental final**.
+- Próximo paso: verificar pruebas del commit final de esta intervención. Si continúa 504, revisar infraestructura/Auth/PostgREST TEST y limitar solapamiento de trabajos antes de alterar consultas de producción.
