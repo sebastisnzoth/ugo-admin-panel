@@ -170,3 +170,11 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Supabase TEST `tmossnqfwfwjrtzwcbmm` informó proyecto `ACTIVE_HEALTHY` en la consulta administrativa, que **no certifica** disponibilidad contínua de Auth/PostgREST bajo carga.
 - Corrección específica `e0b32739ddf6a5076660176adc33166eec1199e3`: en `scripts/provider-operating-zone-runtime.mjs` se agrega como máximo 3 intentos SOLO frente a fallos HTTP 502/503/504, y no se reintenta timeout interno de PostgreSQL (`57014`). Se preservan todas las aserciones funcionales y la condición TEST. **Estado: código implementado, aún sin CI del SHA documental final**.
 - Próximo paso: verificar pruebas del commit final de esta intervención. Si continúa 504, revisar infraestructura/Auth/PostgREST TEST y limitar solapamiento de trabajos antes de alterar consultas de producción.
+
+
+### 2026-10-20 — P0 CI navegación Proveedor
+
+- HEAD anterior: `2b49b72a181ff66764a673cf1edcd6655e169442`; GitHub Actions 9 PASS / 4 FAIL sobre ese SHA.
+- Cross Performance (`39492425031`) falló al esperar navegación Proveedor. Se añadió una recuperación explícita únicamente cuando aparece el control real de reintento del perfil, sin convertir el timeout en éxito: `scripts/cross-performance-runtime.mjs`, commit `1bc370ff2ec7a1ab628fee26a4b37d8f4bcee6c3`. Se registra `provider_profile_recovery_required` para conservar señal de degradación.
+- NO VERIFIED hasta resultado de CI del SHA actualizado. Admin Realtime (`39492425114`) sigue fallando esperando `.ugo-admin2-status`. Provider Operating Zone (`39492424989`) y Hugo Provider Actions (`39492425080`) fallan por `statement timeout` en TEST y requieren corrección de consulta/contención, no incremento arbitrario de tiempos.
+- No hubo fusión ni despliegue; siguiente acción: leer resultados exact-SHA y resolver el primer error causal restante.
