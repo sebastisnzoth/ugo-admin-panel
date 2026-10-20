@@ -9,6 +9,8 @@ on:
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
       - "src/mvp/provider/**"
+      - "supabase/migrations/20261020223000_production_provider_gps_rpc_compat.sql"
+      - "tests/contracts/production-provider-gps-rpc-compat.test.mjs"
       - "src/features/client/request/**"
       - "src/lib/dispatch/**"
       - ".github/workflows/p0-client-provider-e2e.yml"

@@ -1,0 +1,20 @@
+name: UGO P0 Provider GPS SQL Contract
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261020223000_production_provider_gps_rpc_compat.sql'
+      - 'tests/contracts/production-provider-gps-rpc-compat.test.mjs'
+      - 'src/mvp/provider/providerService.ts'
+      - 'src/mvp/ProviderLocationTracker.tsx'
+      - '.github/workflows/p0-provider-gps-production-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify GPS production migration contract
+        run: node --test tests/contracts/production-provider-gps-rpc-compat.test.mjs

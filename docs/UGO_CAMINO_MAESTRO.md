@@ -255,3 +255,12 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 ## Regla de cierre secuencial obligatorio (20/10/2026)
 
 **Cuando termine una tarea, no salto a otra por impulso. Sólo paso a la siguiente cuando la actual esté corregida, probada y registrada con evidencia real.** Antes de cambiar de tarea: comprobar aceptación y ausencia de regresiones; guardar commit/SHA, pruebas, entorno y resultado en `docs/UGO_ROADMAP_MASTER.md` y `docs/UGO_CAMINO_MAESTRO.md`. Si falta una prueba, el estado es **PENDIENTE / NO VERIFICADO**, nunca DONE, y el siguiente paso verificable queda registrado. Si existe un bloqueo externo genuino, mantener el trabajo abierto y pasar únicamente a otra tarea independiente permitida, sin ocultar ni cancelar la anterior. Esta regla alcanza **también todos los compromisos, mejoras y tareas previas pendientes**, incluidos los dos plugins, Auth/GPS/Realtime, HIVE, Empresa Autónoma, Observatory, y los gates de producción. Una nueva instrucción no borra pendientes anteriores; sólo una cancelación explícita modifica la cola. No extender un diagnóstico ni abandonar la reparación por reportar. No convertir falta de pruebas en éxito.
+
+
+### 2026-10-20 — P0 GPS Proveedor, compatibilidad API productiva (PR #545)
+
+- Estado: **IMPLEMENTADO EN RAMA / NO APLICADO EN PRODUCCIÓN**. La app `main` usa `activar_disponibilidad_proveedor` y `publicar_ubicacion_disponibilidad_proveedor`, RPC ausentes en UGO producción y presentes en Arena TEST.
+- Cambio: migración aditiva `20261020223000_production_provider_gps_rpc_compat.sql` con 2 columnas GPS ausentes y RPC autenticadas, autorización de proveedor y rechazo de GPS viejo/inexacto, sin sustituir matching ni políticas o triggers.
+- Evidencia pendiente: ejecución en clon del esquema productivo, pruebas runtime de seguridad y E2E Cliente → Proveedor → Oferta, aprobación de migración productiva. No declarar VERIFIED hasta completar la validación.
+- CI SHA de PR #545: `60dbe330e61f78e00809ca7f9b887ddee58f068a`; roadmap gate exige esta actualización. Core CI muestra `npm audit` Vite high preexistente y debe remediarse o verificarse sin obviar seguridad.
+- Próximo paso: validar contra esquema real sin datos personales, resolver CI, y sólo entonces evaluar promover a `main` y desplegar migración con verificación y rollback.
