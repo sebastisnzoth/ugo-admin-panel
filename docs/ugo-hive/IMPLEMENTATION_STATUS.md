@@ -4,6 +4,41 @@ Solicitud: 18/10/2026. Alcance: ramas aisladas, pruebas locales, lectura remota;
 
 **Estado global: BLOCKED_HUMAN para publicar las ramas; IN_PROGRESS para HU1–HU3. Hive NO está operativo.** No hay autorización para inferencia ni Empresa Autónoma ON. Los resultados locales no acreditan almacenamiento remoto, facturación ni producción.
 
+## Registro operativo vigente — 19/10/2026 (BRT)
+
+**Misión permanente:** implementar UGO Hive de extremo a extremo, con resultados reales en TEST antes de cualquier promoción. Este archivo es el checkpoint histórico y operativo; el encabezado anterior describe únicamente el alcance de la solicitud del 18/10 y **no debe tratarse como estado actual**. Ningún commit, PR fusionado, prueba local o pantalla visible demuestra por sí solo una inferencia funcional.
+
+### Protocolo obligatorio de actualización (para cada intervención ejecutada)
+
+1. **ANTES:** releer `main`, PR/branch objetivo, configuración no sensible, estado actual y último evento. Registrar objetivo, riesgo, entorno y criterio de aceptación.
+2. **DURANTE:** por cada cambio técnico o descubrimiento que cambie la decisión, agregar una entrada fechada al final de este registro: `timestamp BRT | acción | repo/rama/SHA anterior→nuevo | entorno | resultado observado | prueba/run/enlace | bloqueo | siguiente acción`.
+3. **DESPUÉS:** actualizar la tabla de bloqueos, verificar que la evidencia corresponde al mismo SHA del código y conservar la causa raíz, no sólo el síntoma. Si la prueba falla, mantener estado FAIL/BLOCKED; si sólo se inicia, mantener RUNNING. No declarar VERIFIED sin evidencia runtime.
+4. **PERSISTENCIA:** publicar el checkpoint dentro de la misma intervención, preferentemente junto con el cambio en la rama/PR que lo origina. Si la rama todavía no debe fusionarse, dejar el registro allí y enlazarlo desde este documento en `main` después de la validación; no simular escrituras que no sucedieron.
+5. **SEGURIDAD:** nunca escribir API keys, JWT, emails de usuarios reales, datos personales, payloads sensibles o secretos. No borrar historial, no sobrescribir pruebas ajenas, no forzar merges. Revalidar producción, gasto, permisos y gates antes de cualquier acción de riesgo.
+6. **CONTINUIDAD:** el siguiente ejecutor debe leer las tres últimas entradas, retomar el primer bloqueo reproducible, corregirlo, ejecutar test focal + regresión SAME-SHA y repetir. El documento no ejecuta tareas por sí solo ni sustituye logs/CI; no implica ejecución automática en segundo plano.
+
+### Puertas de aceptación de implementación REAL (UGO TEST)
+
+| ID | Verificación obligatoria | Evidencia mínima | Estado a 19/10/2026 |
+|---|---|---|---|
+| HIVE-CONFIG | Endpoint backend/Render accesible con configuración correcta, sin exponer credenciales | Health + URL no sensible + SHA desplegado | NO VERIFICADO en esta actualización |
+| HIVE-PRIMARY | Solicitud autorizada a FreeLLMAPI con modelo/proveedor efectivamente servidos, resultado y política de cuota | Request ID, latencia, respuesta sanitizada, logs del router | NO VERIFICADO |
+| HIVE-FALLBACK | OpenRouter sólo cuando corresponde, conservando límites y trazabilidad | Prueba de primario indisponible + ruta de respaldo real | NO VERIFICADO |
+| HIVE-UI | Hive y Super Admin muestran ejecución real y no sólo configuración | Job ID correlacionado entre API, DB/ledger y UI | NO VERIFICADO |
+| HIVE-AUTONOMY | Empresa Autónoma procesa una misión TEST de forma segura y auditada | Job claim → worker → modelo → evidencia → Judge/Sentinel → UI | NO VERIFICADO |
+| HIVE-GATES | Negativas de auth/rol, kill switch, RLS, cuotas y rollback sin efecto sobre producción | Tests positivos/negativos y registros SAME-SHA | NO VERIFICADO |
+
+El PR [#515](https://github.com/sebastisnzoth/ugo-admin-panel/pull/515) y el PR [#524](https://github.com/sebastisnzoth/ugo-admin-panel/pull/524) están fusionados: **no volver a abrir tareas para fusionarlos**. El [PR #533](https://github.com/sebastisnzoth/ugo-admin-panel/pull/533) sigue abierto en borrador y es un frente independiente de estabilidad cross-role; no confundir sus PASS con Hive funcionando.
+
+### Bitácora de intervenciones recientes
+
+| Fecha (BRT) | Acción | Código/revisión | Evidencia | Resultado y siguiente bloqueo |
+|---|---|---|---|---|
+| 19/10/2026 | Se reemplazaron pasos obsoletos por verificaciones concretas en este archivo | `fe9e2617` en `main` | [Documento](./IMPLEMENTATION_STATUS.md) | DOC actualizado; aún sin nueva prueba de inferencia |
+| 19/10/2026 | Se definió y publicó el protocolo de registro de acciones y puertas de aceptación | commit de esta edición en `main` | Historial Git de este archivo | DOC actualizado; próximo bloqueo: confirmar endpoint/configuración de inferencia TEST y ejecutar una solicitud real autorizada |
+
+**Regla:** las entradas históricas siguientes no se eliminan. Si contradicen esta sección, prevalece el estado más reciente **verificado** con SHA y logs, no una declaración de intención.
+
 ## Fuente exacta y conservación de los PR
 
 | Repo | main revalidado | PR/base de trabajo | SHA fuente del PR | SHA de código local |
