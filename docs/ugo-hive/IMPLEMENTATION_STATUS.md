@@ -185,3 +185,12 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Commit `8432584693e978cf080fd211941875d75180a2f3`, `src/mvp/shared.tsx`: eliminado el listener de `window.online` que forzaba `sessionEpoch` y desmontaba/rehacía la comprobación Auth. Conservar la sesión vigente al reconectar; Realtime ya tiene su propio callback de reconexión. La recuperación manual sigue disponible.
 - Alcance: Cliente/Proveedor comparten `useRoleSession`; el cambio aplica a ambos. No se alteraron permisos, signOut explícito ni control de roles. Es una corrección de condición de carrera, **no prueba todavía que todos los deslogueos estén eliminados**.
 - Verificar CI SAME-SHA, especialmente pruebas de login y Provider UI. En navegador real probar Online/Offline, permisos GPS y persistencia durante refresh del token; no simular esa aceptación humana.
+
+
+### 2026-10-20 — Prueba de interfaz APROBADA (evidencia SAME-SHA)
+
+- Revisión validada: `d2af10d194bbcbc04a86395af73aaf27f514afdf`.
+- **UGO Cross-role UI Runtime TEST: PASS**, GitHub Actions run [`39499161577`](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39499161577), `conclusion=success`.
+- Además aprobaron 11 workflows del mismo SHA, incluidos Matching E2E, Auth Isolation, Core CI, Provider Operating Zone y Cross Performance.
+- **La suite global todavía NO es 13/13**: Admin Realtime Runtime TEST [`39499161595`](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39499161595) tiene `conclusion=failure`.
+- Se registra la aprobación de Cross-role UI como VERIFICADA sólo para la revisión/entorno indicados. El cambio de modo de Empresa Autónoma pudo quedar SKIPPED si TEST no estaba en OFF; no extrapolar a un control de transición validado. No se fusionó ni desplegó producción.
