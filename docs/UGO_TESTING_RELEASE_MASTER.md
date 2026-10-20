@@ -120,3 +120,17 @@ No disparar Vercel para documentación, para generar APK ni para sustituir QA An
 Profile editing now uses `admin_update_user_profile`: active Admin/Super Admin authorization, reserved target restriction, field allowlists, locked base/profile records and one audit append in a single transaction. Migration applied only to UGO TEST. UI reads persisted values independently after RPC. Exact-source runtime includes a real missing-profile rejection and unchanged base-record assertion; no human acceptance is inferred.
 
 Independent review findings (partial saves and competing autonomy probes) addressed. UI and scheduled proof share one autonomy-state concurrency group. The proof formerly ran hourly while readiness expires after 45 minutes, guaranteeing a stale window; cadence is now every 15 minutes. GitHub scheduling delays can still block readiness; no gate is bypassed. Equivalent auth/profile refreshes no longer remount the client onboarding gate. Review accepted source changes; same-SHA browser/CI and publication remain pending at this entry.
+
+### Restauración unificada Cliente → Proveedor — 20/10/2026
+
+Rama de reparación desde main `cbd671b6a71a238bdde661bfb23d5396b8901a85`, solicitada explícitamente por Sergio. Reutiliza selectivamente #533 (`a0512524`) y la protección Admin/evidencia #531 (`770ca5f3`); conserva las mejoras posteriores al 17/10. Sin fusión ni publicación autorizada.
+
+Hallazgos comprobados: main permite que la confirmación tardía de SIGNED_OUT borre una sesión nueva; el rechazo de rol Admin usa signOut global; el INSERT del Cliente envía liquidación incompatible con RLS. TEST ya tiene las migraciones `20261019233520` y `20261020000050`: no se reaplicaron. RLS activo y SELECT authenticated en las cinco tablas revisadas; servicios/ofertas/notificaciones/perfiles_proveedor están en supabase_realtime.
+
+La referencia 17/10 se inspeccionó por #491/#492 y commits 30b1780, 771116e, 8e593ae, 44f344c, 8e6a08a. Zonas agregan una restricción de 3 km y se revalidan al aceptar; banners sólo consideran eventos frescos de 90 s. No se eliminan estos controles. La descripción de #492 deja QA Realtime pendiente: no acredita funcionamiento completo de ese día.
+
+Evidencia previa reejecutada: https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39376942635 (intento 2, SHA 7f5daa0d) PASS, cleanup PASS. El intento 1 falló en bootstrap con PGRST002. Ese harness usa RPC para crear y recarga antes de aceptar: NO prueba alerta automática ni se atribuye a esta rama.
+
+Cambios: sesión pendiente separada de ausencia confirmada; generaciones para respuestas tardías; logout local de Admin; renovación GPS sin forzar Online; recuperación de perfil y Realtime; rechazo de canales creados después de desmontar tracking; precios calculados por backend al asignar. El E2E exige dos contextos, pedido creado desde Cliente, matching automático, IDs exactos de pedido/oferta/notificación y alerta DOM sin reload, aceptación UI y confirmación Cliente. GPS automatizado proviene de Playwright, nunca se presenta como sensor físico.
+
+Estado de esta revisión: código PREPARADO; TypeScript/lint/tests/build y E2E SAME-SHA PENDIENTES al escribir este checkpoint. No entorno de ejecución local disponible: validación mediante Actions. Producción `trfsjuseqjxlhrxuvdsm` no modificada, sin despliegues Vercel. Human GPS/two-device acceptance PENDIENTE.

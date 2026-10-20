@@ -53,7 +53,10 @@ test('quoted tariff is the canonical service amount end to end',()=>{
  assert.match(pricing,/new\.tarifa := v_total/)
  assert.match(pricing,/new\.comision_ugo := round\(v_total\*0\.15,2\)/)
  assert.match(client,/serviceAmount=requested>0\?requested:quoted>0\?quoted:null/)
- assert.match(client,/comision_ugo:commission/)
+ // Settlement is server-authoritative: the client INSERT must not forge commission fields;
+ // the assignment trigger computes the canonical 15% split.
+ assert.doesNotMatch(client,/comision_ugo:commission/)
+ assert.doesNotMatch(client,/ganancia_proveedor:providerNet/)
  assert.match(providerData,/estimatedValue:Number\(serviceData\?\.tarifa\|\|offer\.tarifa_ofrecida\|\|0\)/)
 })
 
