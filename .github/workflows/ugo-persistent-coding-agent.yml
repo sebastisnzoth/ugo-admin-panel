@@ -1,0 +1,106 @@
+name: UGO Persistent Coding Agent (gated)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 */6 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+concurrency:
+  group: ugo-persistent-coding-agent
+  cancel-in-progress: false
+
+jobs:
+  code:
+    if: ${{ vars.UGO_CODING_AGENT_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: test
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify credentials and control
+        env:
+          OPENAI_API_KEY: ${{ secrets.UGO_CODING_AGENT_OPENAI_API_KEY }}
+        shell: bash
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Missing UGO_CODING_AGENT_OPENAI_API_KEY; agent not started."
+            exit 1
+          fi
+      - name: Recover persisted task and constraints
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue view 543 --json title,body,state --repo "$GITHUB_REPOSITORY" > "$RUNNER_TEMP/ugo-issue-543.json"
+          test "$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).state)' "$RUNNER_TEMP/ugo-issue-543.json")" = OPEN
+      - name: Prepare isolated work branch
+        run: |
+          git config user.name "ugo-coding-agent[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "agent/ugo-cycle-$GITHUB_RUN_ID"
+      - name: Install coding agent
+        run: npm install --global @openai/codex
+      - name: Execute one bounded repair cycle
+        env:
+          OPENAI_API_KEY: ${{ secrets.UGO_CODING_AGENT_OPENAI_API_KEY }}
+          CODEX_MODEL: ${{ vars.UGO_CODING_AGENT_MODEL }}
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/ugo-task.txt" <<'PROMPT'
+          You are the UGO software engineer, working on an isolated GitHub Actions runner.
+          Canonical repository: sebastisnzoth/ugo-admin-panel. Pilot: Florianópolis, Faxina and Marido de Aluguel.
+          Read AGENTS.md, docs/UGO_ROADMAP_MASTER.md, docs/UGO_CAMINO_MAESTRO.md,
+          docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md and the persisted issue #543
+          (the issue JSON is at the path provided by UGO_ISSUE_FILE).
+          Identify the first currently actionable, product-critical P0; do not open unrelated fronts.
+          Execute a SMALL reversible fix, add regression tests, run applicable local checks,
+          and document exact test evidence and unresolved dependencies.
+          Preserve other people's changes. No reset, force push, deleting branches,
+          real payments, destructive migrations, secret disclosure, or deployments.
+          NEVER touch production. No fake human/E2E verification or claims.
+          Never declare a task DONE without real evidence; unresolved work stays pending.
+          Git commits and PR creation are handled by the workflow. Do not use git push.
+          If you cannot implement and test a change safely, leave no misleading code changes
+          and write the verified blocker and next action in your final response.
+          PROMPT
+          export UGO_ISSUE_FILE="$RUNNER_TEMP/ugo-issue-543.json"
+          if [ -n "$CODEX_MODEL" ]; then
+            codex exec --full-auto --sandbox workspace-write --model "$CODEX_MODEL" - < "$RUNNER_TEMP/ugo-task.txt"
+          else
+            codex exec --full-auto --sandbox workspace-write - < "$RUNNER_TEMP/ugo-task.txt"
+          fi
+      - name: Validate no protected paths changed
+        shell: bash
+        run: |
+          git diff --name-only
+          if git diff --name-only | grep -E '^(\.github/workflows/ugo-persistent-coding-agent.yml|\.env|\.env\.|supabase/migrations/)' ; then
+            echo "::error::Protected path changed. Manual review required."
+            exit 1
+          fi
+      - name: Create draft PR only for real changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No source changes; no PR created."
+            exit 0
+          fi
+          git add -A
+          git commit -m "fix(ugo): autonomous guarded P0 repair cycle"
+          git push --set-upstream origin "agent/ugo-cycle-$GITHUB_RUN_ID"
+          gh pr create --draft --base main --head "agent/ugo-cycle-$GITHUB_RUN_ID" \
+            --title "UGO autonomous P0 candidate — review and verify" \
+            --body "Candidate produced from issue #543 in UGO TEST. **Not verified in real devices, not approved for production, no auto-merge.** Verify exact-SHA CI, TEST runtime and regressions before integration."
