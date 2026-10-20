@@ -106,7 +106,15 @@ try{
  await page.getByPlaceholder(/Usuario o email/i).fill(email)
  await page.getByPlaceholder(/Contraseña/i).fill(password)
  await page.getByRole('button',{name:/Ingresar/i}).click()
- await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+ try{
+  await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+ }catch(initialError){
+  const profileRetry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+  if(await profileRetry.isVisible().catch(()=>false)){
+   await profileRetry.click()
+   await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
+  }else throw initialError
+ }
  const before=await readOnlineKpi()
  const expected=before+(targetOnline?1:-1)
  const direct=eventSignal()

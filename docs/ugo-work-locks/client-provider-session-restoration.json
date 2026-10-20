@@ -1,0 +1,34 @@
+{
+  "task_id": "client-provider-session-restoration",
+  "job_id": "UGO-P0-CLIENT-PROVIDER-20261020",
+  "title": "Restore automatic client-provider journey and persistent provider session",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-20T19:41:26.743Z",
+  "heartbeat_at": "2026-10-20T19:41:26.744Z",
+  "lease_expires_at": "2026-10-20T20:26:26.744Z",
+  "started_sha": "cbd671b6a71a238bdde661bfb23d5396b8901a85",
+  "owner": "UGO",
+  "department": "Ingeniería",
+  "assigned_agent": "Codex",
+  "skills": [
+    "ejecutar-software-con-evidencia",
+    "ugo-runtime-validation",
+    "ugo-github-ops"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-shell",
+    "provider-location",
+    "client-request-flow",
+    "notifications",
+    "ugo-test-p0"
+  ],
+  "current_step": "VERIFY",
+  "attempt": 1,
+  "evidence_ids": [
+    "github-actions:39376942635:attempt-2:historical-only"
+  ]
+}
