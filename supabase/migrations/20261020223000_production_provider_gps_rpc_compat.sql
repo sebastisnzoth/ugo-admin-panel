@@ -1,10 +1,14 @@
 -- P0 additive compatibility bridge for the existing production provider GPS API.
--- Does NOT replace matching, notification triggers, policies, or payment logic.
+-- Does NOT replace existing TEST RPC implementations, matching, notification triggers, policies, or payment logic.
 ALTER TABLE public.perfiles_proveedor
   ADD COLUMN IF NOT EXISTS ubicacion_updated_at timestamptz,
   ADD COLUMN IF NOT EXISTS ubicacion_accuracy_m double precision;
 
-CREATE OR REPLACE FUNCTION public.activar_disponibilidad_proveedor(
+DO $compat_activar_disponibilidad_proveedor$
+BEGIN
+ IF to_regprocedure('public.activar_disponibilidad_proveedor(double precision,double precision,timestamp with time zone,double precision)') IS NULL THEN
+  EXECUTE $definition$
+CREATE FUNCTION public.activar_disponibilidad_proveedor(
   p_lat double precision, p_lng double precision,
   p_captured_at timestamptz, p_accuracy_m double precision
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
@@ -48,9 +52,17 @@ BEGIN
   RETURN jsonb_build_object('status','online','captured_at',p_captured_at,'accuracy_m',p_accuracy_m);
 END;
 $$;
+$definition$;
+ END IF;
+END;
+$compat_activar_disponibilidad_proveedor$;
 
 -- The location tracker uses this API after the provider is Online.
-CREATE OR REPLACE FUNCTION public.publicar_ubicacion_disponibilidad_proveedor(
+DO $compat_publicar_ubicacion_disponibilidad_proveedor$
+BEGIN
+ IF to_regprocedure('public.publicar_ubicacion_disponibilidad_proveedor(double precision,double precision,timestamp with time zone,double precision)') IS NULL THEN
+  EXECUTE $definition$
+CREATE FUNCTION public.publicar_ubicacion_disponibilidad_proveedor(
   p_lat double precision, p_lng double precision,
   p_captured_at timestamptz, p_accuracy_m double precision
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
@@ -91,6 +103,10 @@ BEGIN
   RETURN jsonb_build_object('status','published','captured_at',p_captured_at,'accuracy_m',p_accuracy_m);
 END;
 $$;
+$definition$;
+ END IF;
+END;
+$compat_publicar_ubicacion_disponibilidad_proveedor$;
 
 REVOKE ALL ON FUNCTION public.activar_disponibilidad_proveedor(double precision,double precision,timestamptz,double precision) FROM PUBLIC,anon;
 REVOKE ALL ON FUNCTION public.publicar_ubicacion_disponibilidad_proveedor(double precision,double precision,timestamptz,double precision) FROM PUBLIC,anon;
