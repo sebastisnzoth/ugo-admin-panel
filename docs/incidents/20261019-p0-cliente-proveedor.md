@@ -38,6 +38,7 @@ Rama: `arena/607fd3ca-ugo-admin-panel` → PR #530. Base: `main` `fa93929`; `mai
 | `48b2f80` | PASS | Admin Realtime falló y se corrigió el gate Admin |
 | `f608e19` | PASS | cross-role falló en un punto distinto |
 | `28b3e42` | **PASS** (run `39349396206`) | **22 checks en verde**, incluido responsivo/browser (`39349396215`) y Admin Realtime (`39349396279`); sólo Netlify Header/Pages/Redirect fallan |
+| `ac70e82` (merge de `main` `fe9e261`, sólo docs) | PASS | 15 checks en verde; Admin Realtime (`39352660105`) falló una vez y se reejecuta sobre el mismo árbol de aplicación |
 
 Configuración de la corrida P0 (`39349396206`): login de Cliente y de Proveedor **en la UI** con recarga, proveedor online desde la UI (`aria-pressed=true`), GPS capturado y persistido, pedido creado por el cliente autenticado, `iniciar_matching` real, oferta persistida y visible al proveedor, aceptación desde la UI, servicio `asignado` y ambas sesiones vivas al final. El script falla con código distinto de cero si cualquiera de esas condiciones no se cumple. GitHub limita las anotaciones a 10 por check, así que la lista completa de etapas queda en el artefacto `p0-client-provider-e2e`.
 
