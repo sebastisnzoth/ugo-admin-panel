@@ -16,7 +16,7 @@ test('one invalid browser reading does not erase a still-fresh persisted fix',()
 })
 
 test('fresh browser acquisition validates both one-shot attempts and continues watching until usable',()=>{
-  assert.match(tracker,/if\(usableBrowserPosition\(high\)\)return high/)
-  assert.match(tracker,/watchPosition\(position=>\{if\(usableBrowserPosition\(position\)\)finish\(position\)\}/)
-  assert.doesNotMatch(tracker,/try\{return await oneBrowserPosition\(GEO_HIGH_ACCURACY_OPTIONS\)\}/)
+  assert.match(tracker,/if\(settled\|\|!usableBrowserPosition\(position\)\)return/)
+  assert.match(tracker,/watchPosition\(accept,fail/)
+  assert.match(tracker,/GPS acquisition timed out/)
 })
