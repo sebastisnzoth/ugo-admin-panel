@@ -151,15 +151,29 @@ const reopenClientMenu=async page=>{
  await drawer.waitFor({state:'visible',timeout:10000})
 }
 
+async function waitForClientHome(page){
+ const home=page.getByRole('main',{name:'Inicio'})
+ try{
+  await home.waitFor({state:'visible',timeout:20000})
+ }catch(initialError){
+  // A valid session can survive a transient profile request timeout.
+  // Exercise the explicit user-visible recovery path; never fake a ready home.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  await home.waitFor({state:'visible',timeout:20000})
+ }
+}
+
 async function testClient(viewport,name){
  const {page,errors}=await openRole('client',viewport)
  try{
-   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+   await waitForClientHome(page)
    await assertResponsive(page,'client '+name+' home')
    const menuItems=['Inicio','Pedir servicio','Categorías','Actividad','Mis direcciones','Medios de pago','Asistente de Hugo','Ayuda y disputa','Configuración']
    for(const item of menuItems){
      await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-     await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+     await waitForClientHome(page)
      await reopenClientMenu(page)
      const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
      await drawer.waitFor({state:'visible'})
