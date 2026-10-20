@@ -4,7 +4,7 @@ import assert from'node:assert/strict'
 import fs from'node:fs'
 
 const debt=fs.readFileSync('supabase/migrations/20260920070000_cash_provider_ugo_debt_ledger.sql','utf8')
-const pricing=fs.readFileSync('supabase/migrations/20260920071000_lock_tariff_snapshot_end_to_end.sql','utf8')
+const pricing=fs.readFileSync('supabase/migrations/20261020000050_preserve_assigned_insert_pricing.sql','utf8')
 const freeze=fs.readFileSync('supabase/migrations/20260920075500_freeze_ugo_quote_and_hide_debt_blocked_offers.sql','utf8')
 const blocking=fs.readFileSync('supabase/migrations/20260920073500_provider_ugo_debt_order_block.sql','utf8')
 const cashUi=fs.readFileSync('src/features/client/payments/ClientPaymentChoice.tsx','utf8')
@@ -53,7 +53,8 @@ test('quoted tariff is the canonical service amount end to end',()=>{
  assert.match(pricing,/new\.tarifa := v_total/)
  assert.match(pricing,/new\.comision_ugo := round\(v_total\*0\.15,2\)/)
  assert.match(client,/serviceAmount=requested>0\?requested:quoted>0\?quoted:null/)
- assert.match(client,/comision_ugo:commission/)
+ assert.doesNotMatch(client,/comision_ugo:commission|ganancia_proveedor:providerNet/)
+ assert.match(pricing,/if tg_op='INSERT' then[\s\S]*return new;/)
  assert.match(providerData,/estimatedValue:Number\(serviceData\?\.tarifa\|\|offer\.tarifa_ofrecida\|\|0\)/)
 })
 

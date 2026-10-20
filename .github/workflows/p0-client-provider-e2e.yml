@@ -1,0 +1,91 @@
+name: UGO P0 Client -> Provider Matching E2E TEST
+
+# Executes the P0 journey against UGO Arena TEST with isolated accounts:
+# authenticated client request -> real matching -> persisted offer ->
+# authenticated provider feed -> acceptance -> assigned service -> live sessions.
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/p0-client-provider-e2e.mjs"
+      - "src/mvp/provider/**"
+      - "src/mvp/shared.tsx"
+      - "src/mvp/AdminGate.tsx"
+      - "src/lib/roleSupabase.ts"
+      - "supabase/migrations/*_defer_insert_settlement_until_assignment.sql"
+      - "supabase/migrations/*_preserve_assigned_insert_pricing.sql"
+      - "tests/contracts/service-insert-pricing-rls-behavior.test.mjs"
+      - "tests/contracts/role-session-concurrency-behavior.test.mjs"
+      - "src/features/client/request/**"
+      - "src/lib/dispatch/**"
+      - ".github/workflows/p0-client-provider-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-p0-client-provider-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  e2e:
+    name: P0 Cliente -> Oferta -> Proveedor -> Asignado
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse missing TEST credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ugo-p0-browser" --no-save --package-lock=false playwright@1.56.1
+          ln -s "$RUNNER_TEMP/ugo-p0-browser/node_modules/playwright" node_modules/playwright
+          "$RUNNER_TEMP/ugo-p0-browser/node_modules/.bin/playwright" install --with-deps chromium
+          node --input-type=module -e "import fs from 'node:fs';const lock=JSON.parse(fs.readFileSync('package-lock.json'));for(const name of ['@supabase/supabase-js','@supabase/auth-js','vite']){const actual=JSON.parse(fs.readFileSync('node_modules/'+name+'/package.json')).version;if(actual!==lock.packages['node_modules/'+name].version)throw Error('LOCKFILE_DRIFT:'+name)}"
+      - name: P0 journey · client request -> matching -> provider UI -> assigned
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-p0-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 45); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          node scripts/p0-client-provider-e2e.mjs
+      - name: Upload P0 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p0-client-provider-e2e
+          path: |
+            artifacts/p0-*.json
+            artifacts/p0-*.png
+          if-no-files-found: warn
+          retention-days: 7

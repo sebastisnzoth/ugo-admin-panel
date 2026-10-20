@@ -449,7 +449,9 @@ La migración también recupera los cobros en efectivo históricos ya confirmado
 
 ## Snapshot de tarifa
 
-Cuando el pedido contiene `metadata.tariff_quote.precio_referencia`, `private.apply_service_pricing_snapshot` congela ese importe en `servicios.tarifa`, calcula comisión/neto y lo vuelve a aplicar en el momento de asignación. Esto evita que `tarifa_ofrecida` o `perfiles_proveedor.tarifa_base` reemplacen silenciosamente la cotización que vio el cliente.
+Cuando el pedido contiene `metadata.tariff_quote.precio_referencia`, `private.apply_service_pricing_snapshot` congela ese importe en `servicios.tarifa` al insertar y lo vuelve a aplicar al asignar. Comisión y neto se calculan en el UPDATE de asignación, no en el INSERT: `servicios_insert` exige ambos NULL para impedir settlement financiero falsificado por el cliente. El Cliente envía tarifa/cotización y omite esos campos; el trigger tampoco borra valores falsificados, para que RLS los rechace. Esto evita tanto el rechazo 42501 de pedidos válidos con precio como el reemplazo silencioso de la cotización por `tarifa_ofrecida` o `perfiles_proveedor.tarifa_base`.
+
+Corrección P0 de 19/10/2026, PR #531: migración `20261019233520_defer_insert_settlement_until_assignment.sql` aplicada sólo a Arena TEST. RLS, matching, porcentaje y datos existentes permanecen sin cambios. Pruebas PostgreSQL: pedido propio con tarifa y con quote permitido; importe económico preservado; comisión/neto NULL antes de asignar y 15%/85% después; settlement falsificado y cliente ajeno rechazados. Runtime/publicación se registran por SHA en el PR y en el maestro de testing.
 
 
 # 24. Límite de deuda UGO del Proveedor · 20/09/2026
@@ -622,3 +624,5 @@ Se reprodujo en TEST una divergencia de permisos: el frontend reservaba cuentas 
 Profile editing now uses `admin_update_user_profile`: active Admin/Super Admin authorization, reserved target restriction, field allowlists, locked base/profile records and one audit append in a single transaction. Migration applied only to UGO TEST. UI reads persisted values independently after RPC. Exact-source runtime includes a real missing-profile rejection and unchanged base-record assertion; no human acceptance is inferred.
 
 Independent review findings (partial saves and competing autonomy probes) addressed. UI and scheduled proof share one autonomy-state concurrency group. The proof formerly ran hourly while readiness expires after 45 minutes, guaranteeing a stale window; cadence is now every 15 minutes. GitHub scheduling delays can still block readiness; no gate is bypassed. Equivalent auth/profile refreshes no longer remount the client onboarding gate. Review accepted source changes; same-SHA browser/CI and publication remain pending at this entry.
+
+Seguimiento P0 20/10/2026: migración forward `20261020000050_preserve_assigned_insert_pricing.sql` aplicada sólo a Arena TEST. La deferral se limita a INSERT sin proveedor: un INSERT administrativo ya asignado conserva el cálculo original del servidor. Regresión reproducida (comisión 0 en vez de 18 para tarifa 120), luego prueba PostgreSQL positiva y negativa aprobada: Admin asignado 18/102; cliente que intenta asignarse proveedor sigue rechazado por RLS. No se modifican políticas ni registros existentes. Requiere nuevo runtime sobre el SHA definitivo antes de fusión/publicación.

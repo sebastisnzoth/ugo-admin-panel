@@ -320,3 +320,10 @@ Scout usa OAuth 2.0 server-side para conectar una cuenta Gmail operativa del pan
 
 El flujo canónico es: Scout/CRM → API autenticada → conexión Gmail server-only → Gmail API → auditoría `scout_email_envios` → actualización del prospecto (canal, intentos, último contacto y seguimiento). El envío directo reemplaza `mailto:` como canal principal; el borrador BCC queda sólo como respaldo manual.
 
+
+
+## Sesión Proveedor y aislamiento de revocación — P0 19/10/2026, PR #531
+
+`useRoleSession` distingue bootstrap sin resolver de ausencia de sesión confirmada. Un fallo de transporte no es evidencia de logout: la pantalla ofrece reintentar y no borra credenciales. Cada confirmación asíncrona de SIGNED_OUT comprueba su versión frente al evento Auth más reciente; las respuestas de perfil comprueban generación para no restaurar identidad tras logout/cambio de usuario. TOKEN_REFRESHED actualiza la sesión sin cancelar la primera carga pendiente del perfil ni forzar otra consulta de perfil por una renovación normal. SDK sigue siendo autoridad de persistencia/renovación; no se fabrican tokens ni se usan fallos GPS/Realtime/matching como autoridad para cerrar sesión.
+
+Storage de Cliente/Proveedor/Admin queda separado. Los rechazos automáticos de rol en AdminGate cierran sólo su sesión local: un logout global podría revocar refresh tokens del usuario en Proveedor aunque las storage keys fueran distintas. La comprobación de rol/cuenta activa permanece. `ugo:session-diagnostic` emite categorías de Auth/GPS/disponibilidad/Realtime y timestamps sin JWT, correo o ID personal. Pruebas de comportamiento ejecutan el hook y el verificador reales; el E2E de TEST exige también refresh real del Proveedor después de un intento Admin denegado con esa cuenta temporal. Evidencia same-SHA, criterio de publicación y bloqueos: maestro de testing y PR #531.

@@ -4,6 +4,7 @@ import{AuthScreen,ErrorState,LoadingScreen,timeAgo,money,useRoleSession,type Not
 import{ProviderOnboardingGate}from'../ProviderOnboardingGate'
 import{acceptProviderOpportunity,advanceProviderService,cancelProviderService,loadProviderSnapshot,rejectProviderOpportunity,saveProviderBaseLocation,setProviderAvailability,type ProviderAdvanceOptions,type ProviderDebt,type ProviderPayment,type ProviderProfileFull}from'./providerService'
 import{useProviderRealtime}from'./useProviderRealtime'
+import{recordSessionDiagnostic}from'../../lib/roleSupabase'
 import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{useLocale}from'../../i18n/locale'
 import type{DemandSignal,ProviderOpportunity}from'./providerTypes'
@@ -35,7 +36,26 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  useProviderRealtime(supabase,session?.user.id||null,handleRealtime)
  const providerReady=Boolean(provider),providerOnline=Boolean(provider?.online),providerAvailable=Boolean(provider?.disponible)
  useEffect(()=>{if(!session||!providerReady||typeof navigator==='undefined'||!navigator.geolocation)return;let alive=true;navigator.geolocation.getCurrentPosition(async position=>{if(!alive)return;const accuracy=Number(position.coords.accuracy),lat=Number(position.coords.latitude),lng=Number(position.coords.longitude);if(!Number.isFinite(lat)||!Number.isFinite(lng)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>250)return;const capturedAt=new Date(position.timestamp||Date.now()).toISOString();if(providerOnline&&providerAvailable){try{await setProviderAvailability(supabase,session.user.id,true);if(alive)setProvider(current=>current?{...current,ubicacion_updated_at:capturedAt,ubicacion_accuracy_m:accuracy}:current)}catch(e){if(alive)setNotice({type:'error',text:e instanceof Error?e.message:t('providerRuntime.locationRefreshFailed')})}}else if(alive)setNotice({type:'info',text:t('providerRuntime.locationEnabled')})},error=>{if(!alive)return;if(error.code===1)setNotice({type:'info',text:t('providerRuntime.locationPermission')});else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})},{enableHighAccuracy:false,maximumAge:0,timeout:15_000});return()=>{alive=false}},[provider?.usuario_id,providerOnline,providerAvailable,providerReady,session,supabase,t])
+ // Matching excludes GPS older than 90s. Keep the persisted GPS fresh while a provider remains online,
+ // not just when availability is toggled or the component first mounts.
+ useEffect(()=>{
+  if(!session||!providerOnline||!providerAvailable||provider?.estado_verificacion!=='verificado')return
+  let disposed=false,refreshing=false
+  const refreshLocation=async()=>{
+   if(disposed||refreshing||document.visibilityState!=='visible'||!navigator.onLine)return
+   refreshing=true
+   try{await setProviderAvailability(supabase,session.user.id,true)}
+   catch(error){if(!disposed)setNotice({type:'error',text:error instanceof Error?error.message:t('providerRuntime.locationRefreshFailed')})}
+   finally{refreshing=false}
+  }
+  const timer=window.setInterval(()=>void refreshLocation(),45_000)
+  const onVisible=()=>{if(document.visibilityState==='visible')void refreshLocation()}
+  document.addEventListener('visibilitychange',onVisible)
+  window.addEventListener('online',onVisible)
+  return()=>{disposed=true;window.clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);window.removeEventListener('online',onVisible)}
+ },[session,providerOnline,providerAvailable,provider?.estado_verificacion,supabase,t])
  if(auth.loading||loading)return <LoadingScreen label={t('providerRuntime.preparing')}/>
+ if(!session&&!auth.sessionChecked)return <main className="provider-screen"><ErrorState title={t('sharedUi.loadError')} description={auth.error} actionLabel={t('sharedUi.retry')} onAction={auth.retrySession}/></main>
  if(!session)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
  if(!profile)return auth.error?<main className="provider-screen"><ErrorState title={t('providerRuntime.sessionTitle')} description={auth.error} actionLabel={t('providerRuntime.retryProfile')} onAction={()=>void auth.retryProfile()}/></main>:<LoadingScreen label={t('providerRuntime.recovering')}/>
  if(!provider||provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate onVerified={reload}/>
@@ -63,7 +83,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const saveCurrentLocation=()=>run(()=>saveProviderBaseLocation(supabase),'Ubicación de trabajo actualizada. UGO ya puede usarla para el radar y las alertas.')
  const uploadProfilePhoto=(file:File)=>run(async()=>{const ext=PROFILE_PHOTO_EXT[file.type];if(!ext)throw new Error('Usá una imagen JPG, PNG o WebP.');if(file.size<=0||file.size>PROFILE_PHOTO_MAX_BYTES)throw new Error('La foto debe pesar hasta 5 MB.');const unique=typeof crypto!=='undefined'&&'randomUUID'in crypto?crypto.randomUUID():Math.random().toString(36).slice(2);const path=session.user.id+'/profile/'+Date.now()+'-'+unique+'.'+ext;const upload=await supabase.storage.from('provider-public').upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false});if(upload.error)throw upload.error;const update=await(supabase as any).from('perfiles_proveedor').update({foto_perfil_path:path}).eq('usuario_id',session.user.id);if(update.error){await supabase.storage.from('provider-public').remove([path]).catch(()=>{});throw update.error}},'Foto de perfil actualizada.')
  const changePassword=(password:string)=>run(async()=>{const{error}=await supabase.auth.updateUser({password});if(error)throw error},'Contraseña actualizada correctamente.')
- const signOut=async()=>{setBusy(true);const{error}=await supabase.auth.signOut({scope:'local'});setBusy(false);if(error){setNotice({type:'error',text:error.message});return}window.location.replace(window.location.pathname+'?app=provider')}
+ const signOut=async()=>{recordSessionDiagnostic('provider','auth','explicit_sign_out');setBusy(true);const{error}=await supabase.auth.signOut({scope:'local'});setBusy(false);if(error){setNotice({type:'error',text:error.message});return}window.location.replace(window.location.pathname+'?app=provider')}
  const value:ProviderData={name:profile.nombre,karma:Number(profile.karma||5),provider,offers,opportunities,demand,demandError,service,payments,debts,online:Boolean(provider.disponible&&provider.online),matchingReady,released,retained,cashReceived,ugoDebt,pendingDebtCount,debtBlocked,busy,notice,reload,toggleOnline,setOnline,acceptOpportunity,rejectOpportunity,advance,completeService,cancelService,funded,cashSelected,paymentPreferenceSelected,accessToken:session.access_token,profilePhotoUrl,saveProfile,saveCurrentLocation,uploadProfilePhoto,changePassword,signOut}
  return <C.Provider value={value}>{children}</C.Provider>
 }
