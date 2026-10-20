@@ -663,3 +663,12 @@ Hive preparación fusionada: PR515→4191978 y FreeAPI PR1→77daf32, árboles i
 **Secuencia hasta producción:** 0) estado y baseline; 1) Auth y deslogueo de Proveedor/Cliente; 2) permisos GPS y disponibilidad; 3) pedido→matching→alerta; 4) Realtime y reconexión; 5) aceptación, traslado, PIN/QR, ejecución y cierre; 6) chat; 7) agenda, programados y multipedidos; 8) PIX, efectivo, deuda y comisión; 9) perfiles, fotos y KYC; 10) HUGO voz/texto; 11) UX, accesibilidad y PT-BR; 12) Admin y Super Admin; 13) seguridad, rendimiento, CI y regresiones; 14) recuperar e integrar HIVE, Empresa Autónoma y Observatory; 15) continuidad autónoma, presupuestos y límites Supabase; 16) piloto Faxina/Marido de Aluguel; 17) E2E humano dos dispositivos y primer cliente; 18) lanzamiento gradual en Florianópolis; 19) operación repetible y mejoras.
 
 **«Seguí»** = ejecutar el siguiente bloqueo priorizado y verificable sin perder el objetivo general; no implica trabajo continuo después de finalizar la ejecución del chat. No alterar producción ni datos sin gates; no romper funcionalidades previamente comprobadas. Actualizar también `docs/UGO_CAMINO_MAESTRO.md` para permitir retomar sin repetir instrucciones. Estados: PENDIENTE, IMPLEMENTADO, CI VALIDATED, RUNTIME VALIDATED, PUBLISHED, ACCEPTED.
+
+
+### 2026-10-20 — P0 GPS Proveedor, compatibilidad API productiva (PR #545)
+
+- Estado: **IMPLEMENTADO EN RAMA / NO APLICADO EN PRODUCCIÓN**. La app `main` usa `activar_disponibilidad_proveedor` y `publicar_ubicacion_disponibilidad_proveedor`, RPC ausentes en UGO producción y presentes en Arena TEST.
+- Cambio: migración aditiva `20261020223000_production_provider_gps_rpc_compat.sql` con 2 columnas GPS ausentes y RPC autenticadas, autorización de proveedor y rechazo de GPS viejo/inexacto, sin sustituir matching ni políticas o triggers.
+- Evidencia pendiente: ejecución en clon del esquema productivo, pruebas runtime de seguridad y E2E Cliente → Proveedor → Oferta, aprobación de migración productiva. No declarar VERIFIED hasta completar la validación.
+- CI SHA de PR #545: `60dbe330e61f78e00809ca7f9b887ddee58f068a`; roadmap gate exige esta actualización. Core CI muestra `npm audit` Vite high preexistente y debe remediarse o verificarse sin obviar seguridad.
+- Próximo paso: validar contra esquema real sin datos personales, resolver CI, y sólo entonces evaluar promover a `main` y desplegar migración con verificación y rollback.
