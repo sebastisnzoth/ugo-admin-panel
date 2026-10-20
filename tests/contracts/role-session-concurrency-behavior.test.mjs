@@ -83,3 +83,15 @@ test('a profile response begun before sign-out cannot restore the old profile',a
  pending.resolve({data:{id:'provider-a',nombre:'QA',tipo:'proveedor',activo:true},error:null});await app.settle()
  assert.equal(app.value.session,null);assert.equal(app.value.profile,null)
 })
+
+
+test('transient SIGNED_OUT restores both provider profile and loading state',async()=>{
+ const app=mount();await app.settle()
+ app.event('SIGNED_OUT',null)
+ app.holdSession(()=>Promise.resolve(response(session('provider-a'))))
+ await app.settle()
+ assert.equal(app.value.session?.user.id,'provider-a')
+ assert.equal(app.value.profile?.id,'provider-a')
+ assert.equal(app.value.loading,false)
+ assert.equal(app.value.sessionChecked,true)
+})
