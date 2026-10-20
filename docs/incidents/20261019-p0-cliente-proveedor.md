@@ -101,3 +101,7 @@ Corrección aplicada (sólo harness de pruebas, sin tocar comportamiento del pro
 - Adoptado en `hugo-provider-actions-runtime`, `admin-realtime-runtime`, `provider-operating-zone-runtime`, `provider-profile-photo-runtime`, y el inicio de sesión de administrador.
 
 Esto no relaja ninguna aserción: cada reintento se anota como `::warning` y el agotamiento se publica como `::error` con el código y mensaje reales.
+
+### GPS: adquisición concurrente (portado de #533 / PR #532)
+
+`src/mvp/ProviderLocationTracker.tsx` deja de encadenar intentos secuenciales (compatible → alta precisión → watch, hasta ~30 s sin fix) y pide las tres fuentes en paralelo: la primera lectura que cumpla frescura (≤90 s) y precisión (1–250 m) gana. Un `watchPosition` sigue activo hasta el deadline de 16 s para capturar un fix tardío. Contratos actualizados: `provider-gps-invalid-reading-recovery` y `provider-live-gps-quality` (11 PASS). Se conserva el requisito de no inventar coordenadas ni relajar la ventana de 90 s.
