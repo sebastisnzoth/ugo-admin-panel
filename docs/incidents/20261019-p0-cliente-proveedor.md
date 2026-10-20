@@ -105,3 +105,20 @@ Esto no relaja ninguna aserción: cada reintento se anota como `::warning` y el 
 ### GPS: adquisición concurrente (portado de #533 / PR #532)
 
 `src/mvp/ProviderLocationTracker.tsx` deja de encadenar intentos secuenciales (compatible → alta precisión → watch, hasta ~30 s sin fix) y pide las tres fuentes en paralelo: la primera lectura que cumpla frescura (≤90 s) y precisión (1–250 m) gana. Un `watchPosition` sigue activo hasta el deadline de 16 s para capturar un fix tardío. Contratos actualizados: `provider-gps-invalid-reading-recovery` y `provider-live-gps-quality` (11 PASS). Se conserva el requisito de no inventar coordenadas ni relajar la ventana de 90 s.
+
+### Corte del proyecto TEST durante la verificación (20/10/2026, ~01:30 UTC)
+
+A partir de ~01:30 UTC las operaciones que dependen de Supabase en `tmossnqfwfwjrtzwcbmm` dejaron de responder de forma **sostenida**:
+
+| Workflow | SHA `e272d99` | Evidencia |
+|---|---|---|
+| Hugo Provider Actions | FAIL | `createUser` → `504 Gateway Timeout`; 6 reintentos con espera creciente (2→10 s) agotados |
+| Provider Profile Photo | FAIL | `signInWithPassword` → `504`; 6 reintentos agotados |
+| Admin Realtime | FAIL | `signInWithPassword` → `Gateway Timeout`; 4 reintentos agotados |
+| P0 Cliente→Proveedor | FAIL | lectura de catálogo devolvió HTML de Cloudflare **522: Connection timed out** de `supabase.co` |
+| Provider Operating Zone | FAIL | misma clase de fallo |
+| Core CI / Cross Security / Hugo Timeout / Hugo Voice / Auth Isolation / Cross Errors | PASS | no dependen de la API de TEST |
+
+Conclusión: **el proyecto TEST estuvo caído o saturado** (504 en Auth y 522 en PostgREST). Ninguna corrección de producto puede volver verde un check que no puede autenticarse. Los reintentos acotados no relajan aserciones: cada intento se publica como `::warning` y el agotamiento como `::error` con el código real.
+
+Mientras el proyecto no responda, la verificación remota está **BLOCKED_EXTERNAL**; el código sigue verificado localmente (1467 tests, 1459 PASS / 8 SKIP / 0 FAIL; `tsc -b` y lint sin errores).
