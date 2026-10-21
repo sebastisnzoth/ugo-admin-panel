@@ -15,6 +15,7 @@ DECLARE
 BEGIN
   -- No broad global write: operate on a bounded batch of unlocked services.
   -- Eligibility includes searching or offered requests once all offers expire.
+  -- Every attempt, including a zero-candidate attempt, is throttled to five minutes.
   -- Ignore assigned, cancelled and completed work.
   v_old_sub := current_setting('request.jwt.claim.sub', true);
   v_old_role := current_setting('request.jwt.claim.role', true);
@@ -23,7 +24,7 @@ BEGIN
       FROM public.servicios s
      WHERE s.estado IN ('buscando', 'ofrecido')
        AND s.proveedor_id IS NULL
-       AND s.updated_at <= now() - interval '1 minute'
+       AND s.updated_at <= now() - interval '5 minutes'
        AND (s.matching_expires_at IS NULL OR s.matching_expires_at <= now())
        AND NOT EXISTS (
          SELECT 1
