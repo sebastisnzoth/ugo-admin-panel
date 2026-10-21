@@ -1,0 +1,38 @@
+name: UGO Groq authenticated smoke (no writes)
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  groq-smoke:
+    if: ${{ github.event.pull_request.number == 546 || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify isolated authenticated inference
+        env:
+          HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
+          FREEAPI_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, json, urllib.request, urllib.error
+          hive=os.environ.get('HIVE_TOKEN','')
+          key=os.environ.get('FREEAPI_KEY','')
+          if not hive or not key:
+              raise SystemExit('FAIL: missing one or both GitHub Actions secrets')
+          body=json.dumps({'model':'openai/gpt-oss-120b','messages':[{'role':'user','content':'Respond with OK only'}],'max_tokens':16}).encode()
+          req=urllib.request.Request('https://ugo-hive-freeapi.onrender.com/v1/chat/completions',data=body,headers={'Content-Type':'application/json','Authorization':'Bearer '+key,'x-hive-token':hive},method='POST')
+          try:
+              with urllib.request.urlopen(req,timeout=90) as res:
+                  data=json.load(res)
+                  msg=((data.get('choices') or [{}])[0].get('message') or {}).get('content')
+                  if res.status!=200 or not isinstance(msg,str) or not msg.strip():
+                      raise SystemExit('FAIL: incomplete model completion')
+                  print('PASS: authenticated Groq model completion received, HTTP 200')
+          except urllib.error.HTTPError as e:
+              raise SystemExit('FAIL: FreeLLMAPI HTTP '+str(e.code))
+          except urllib.error.URLError:
+              raise SystemExit('FAIL: FreeLLMAPI network connection')
+          PY
