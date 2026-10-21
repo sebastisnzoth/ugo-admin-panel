@@ -253,6 +253,20 @@ try{
     const online=await attemptUiOnline(ui)
     const after=await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).maybeSingle()
     stage('ui_online_attempt',{...online,profile:after.data,profileError:describe(after.error),failedRequests:ui.failedRequests})
+    if(process.env.UGO_PROVE_SESSION_STABILITY==='1'){
+      // Exercise an actual browser Online/GPS session, not a regex-only contract.
+      // Recovery after a short browser network outage must not send a provider to login.
+      await ui.page.waitForTimeout(12000)
+      assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_LOGGED_OUT_WHILE_ONLINE')
+      assert.equal(await ui.page.locator('.ugo-provider-root').count(),1,'P0_PROVIDER_ONLINE_ROOT_MISSING')
+      await ui.context.setOffline(true)
+      await ui.page.waitForTimeout(900)
+      await ui.context.setOffline(false)
+      await ui.page.waitForTimeout(5000)
+      assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_LOGGED_OUT_ON_RECONNECT')
+      assert.equal(await ui.page.locator('.ugo-provider-root').count(),1,'P0_PROVIDER_ROOT_MISSING_ON_RECONNECT')
+      stage('provider_online_session_reconnect_proof',{secondsOnline:12,networkRecovery:true,authFormAbsent:true})
+    }
   }
 
   // 3b · authoritative API activation (captures the exact backend rejection)
