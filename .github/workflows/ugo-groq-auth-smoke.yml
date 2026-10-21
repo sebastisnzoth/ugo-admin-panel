@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Checkout PR files without persistent credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Python 3.11 for agent
         uses: actions/setup-python@v5
         with:
@@ -45,3 +49,39 @@ jobs:
           except urllib.error.URLError:
               raise SystemExit('FAIL: FreeLLMAPI network connection')
           PY
+      - name: Verify Aider edits and tests an isolated fixture
+        env:
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          workspace="$RUNNER_TEMP/ugo-agent-smoke"
+          mkdir -p "$workspace"
+          printf 'def add(a, b):\n    return a - b\n' > "$workspace/arithmetic.py"
+          cat > "$workspace/test_arithmetic.py" <<'PY'
+          from arithmetic import add
+          def test_add():
+              assert add(2, 3) == 5
+          PY
+          python -m pytest "$workspace/test_arithmetic.py" >/dev/null && {
+            echo "::error::Fixture must fail before agent repair"
+            exit 1
+          }
+          python scripts/ugo_freeapi_bridge.py &
+          bridge_pid=$!
+          trap 'kill "$bridge_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if (echo >/dev/tcp/127.0.0.1/18765) 2>/dev/null; then break; fi
+            sleep .2
+          done
+          (
+            cd "$workspace"
+            OPENAI_API_KEY=local-ugo-agent \
+            OPENAI_API_BASE=http://127.0.0.1:18765/v1 \
+            python -m aider --model openai/openai/gpt-oss-120b \
+              --yes-always --no-auto-commits --no-gitignore --no-show-model-warnings \
+              --message 'Correct arithmetic.py so add(a,b) returns their sum. Do not change test_arithmetic.py.' arithmetic.py
+          )
+          python -m pytest "$workspace/test_arithmetic.py" -q
+          echo 'PASS: Aider repaired the isolated fixture and the regression test passed'
