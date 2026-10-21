@@ -714,3 +714,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
 - Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
+
+### P0 · Radar Proveedor: ubicación base y GPS en vivo · 20/10/2026
+
+- PR #554, SHA de prueba `d795490189810177c9d0504519ddd3b4da2d38b5`, UGO Arena TEST.
+- Cambiado botón «Actualizar localización»: si el proveedor ya está Online y disponible, además de guardar ubicación base solicita/publica GPS de disponibilidad y actualiza fecha/precisión en la UI; si Offline no lo conecta automáticamente.
+- GitHub Actions P0 Cliente → Oferta → Proveedor → Asignado: PASS en run 39535701140 sobre el SHA mencionado, con GPS controlado del navegador y sesiones TEST independientes; no es prueba física ni verificación de alerta sin recarga en GitHub Pages.
+- Estado PENDING_VERIFICATION: CI del SHA final, browser cross-role, GPS físico y experiencia real de usuario; no fusionar ni publicar hasta cerrar gates.
