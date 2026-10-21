@@ -426,7 +426,8 @@ async function testAdmin(viewport,name){
 async function testTranslations(role,viewport,name){
  const {page,errors}=await openRole(role==='superadmin'?'admin':role,viewport)
  try{
-  const root=role==='client'?'.ugo-client-root':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
+  // Preserve authenticated Profile overlay after prior client flow; never accept login as a translation check.
+  const root=role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
   await page.locator(root).waitFor({state:'visible',timeout:30000})
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
