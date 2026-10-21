@@ -119,10 +119,27 @@ export function useRoleSession(role:UgoRole){
                 .finally(()=>{if(active&&version===authEventVersion){window.clearTimeout(failSafe);setLoading(false)}})
               return
             }
-            profileGeneration.current++
-            setSession(null);setProfile(null);setSessionChecked(true);setError('')
-            diagnostic('login_confirmed_signed_out')
-            window.clearTimeout(failSafe);setLoading(false)
+            // An SDK SIGNED_OUT event followed by one empty getSession can be
+            // transient during token/storage recovery. Keep the current provider
+            // screen until a second check confirms absence of a session.
+            window.setTimeout(()=>{
+              if(!active||version!==authEventVersion)return
+              void supabase.auth.getSession().then(({data:confirmed,error:confirmError})=>{
+                if(!active||version!==authEventVersion)return
+                if(confirmError){unavailable();return}
+                if(confirmed.session){
+                  setSession(confirmed.session);setSessionChecked(true)
+                  void loadProfile(confirmed.session).then(()=>{if(active&&version===authEventVersion)setError('')})
+                    .catch((e:Error)=>{if(active&&version===authEventVersion)setError(e.message)})
+                    .finally(()=>{if(active&&version===authEventVersion){window.clearTimeout(failSafe);setLoading(false)}})
+                  return
+                }
+                profileGeneration.current++
+                setSession(null);setProfile(null);setSessionChecked(true);setError('')
+                diagnostic('login_confirmed_signed_out')
+                window.clearTimeout(failSafe);setLoading(false)
+              }).catch(unavailable)
+            },1200)
           }).catch(unavailable)
         },0)
         return
