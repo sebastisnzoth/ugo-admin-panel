@@ -1,0 +1,92 @@
+name: UGO Provider Online GPS Realtime E2E TEST
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/mvp/provider/**'
+      - 'src/mvp/NotificationCenter.tsx'
+      - 'src/mvp/shared.tsx'
+      - 'src/lib/dispatch/**'
+      - 'scripts/p0-client-provider-e2e.mjs'
+      - 'scripts/provider-alerts-runtime.mjs'
+      - 'scripts/provider-alerts-judge.mjs'
+      - 'scripts/provider-alerts-sentinel.mjs'
+      - '.github/workflows/ugo-provider-online-realtime-e2e.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ugo-provider-online-proof-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+jobs:
+  provider-online-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Enforce isolated UGO Arena
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build candidate exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run build
+      - name: Relevant regression contracts
+        run: |
+          node --test tests/contracts/provider-calendar-no-auth-refresh-loop.test.mjs tests/contracts/provider-session-bootstrap-race.test.mjs tests/contracts/provider-auth-gps-permission.test.mjs tests/contracts/provider-offer-alert-lifecycle.test.mjs
+      - name: Install browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Browser Online GPS Realtime matching and independent alert proof
+        shell: bash
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+          UGO_PROVE_SESSION_STABILITY: '1'
+        run: |
+          set -euo pipefail
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-provider-proof-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 45); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          # Scenario A: isolated real actors; Online GPS, 12s stable session,
+          # network reconnect, customer request, matching and UI acceptance.
+          node scripts/p0-client-provider-e2e.mjs
+          # Scenario B: real foreground offer notification and independent DB
+          # persistence Judge / fixture Sentinel. Not mocked notification data.
+          node scripts/provider-alerts-runtime.mjs
+          node scripts/provider-alerts-judge.mjs
+          node scripts/provider-alerts-sentinel.mjs
+      - name: Upload immutable proof artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-provider-online-gps-realtime-proof
+          path: |
+            artifacts/p0-*.json
+            artifacts/p0-*.png
+            artifacts/provider-alerts-*
+            /tmp/ugo-provider-proof-vite.log
+          if-no-files-found: warn
+          retention-days: 30

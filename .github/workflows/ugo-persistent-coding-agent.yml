@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   code:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'agent/ugo-cycle-')) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && (startsWith(github.event.pull_request.head.ref, 'agent/ugo-cycle-') || github.event.pull_request.head.ref == 'fix/ugo-agent-pr-failure-signal-20261020')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: test
@@ -204,17 +204,16 @@ jobs:
             echo "::warning::BLOCKED_NO_SOURCE_CHANGES: agent ran but made no product repair. Not validated and not DONE."
             echo "### BLOCKED: no functional change in either focused attempt" >> "$GITHUB_STEP_SUMMARY"
             exit 1
-            echo "No source changes; no PR created."
-            exit 0
           fi
           git add -A
           git commit -m "fix(ugo): autonomous guarded P0 repair cycle"
           git push --set-upstream origin "agent/ugo-cycle-$GITHUB_RUN_ID"
           # Some repositories disallow GitHub Actions from opening PRs.
-          # Keep the candidate branch discoverable rather than fail the entire cycle.
+          # Report a hard failure so no monitoring system treats an orphan branch as completed work.
           if ! gh pr create --draft --base main --head "agent/ugo-cycle-$GITHUB_RUN_ID" \
             --title "UGO autonomous P0 candidate — review and verify" \
             --body "Candidate produced from issue #543 in UGO TEST. Not approved for production. Review exact-SHA CI and runtime before integration."; then
-            echo "::warning::GitHub Actions cannot open PRs in current repository settings; candidate branch preserved for review."
-            echo "Candidate branch: agent/ugo-cycle-$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::BLOCKED_PR_CREATION: GitHub rejected automated PR creation. Candidate branch preserved."
+            echo "### BLOCKED_PR_CREATION: branch agent/ugo-cycle-$GITHUB_RUN_ID requires recovery" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi

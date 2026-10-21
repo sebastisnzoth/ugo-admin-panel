@@ -297,3 +297,18 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
 - Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
+
+
+### 2026-10-20 — Agent PR creation failure signaling (PR #553)
+- Candidate commit `f5741e8df50f13b697a31f8658b7f4926956db64` changes `.github/workflows/ugo-persistent-coding-agent.yml` so GitHub PR creation rejection exits nonzero with `BLOCKED_PR_CREATION`, preserving the repair branch for recovery instead of reporting a false success.
+- Validation state: Core CI and TEST Auth Isolation succeeded at the initial SHA; Roadmap Traceability failed because these records were absent, hence this documentation update. Re-run checks on the new SHA. Netlify preview checks failed and Vercel was pending at inspection; root cause not yet established.
+- This is workflow failure signaling ONLY; no provider Online/Realtime/GPS or E2E alert repair is claimed, no merge or production promotion authorized by this entry.
+- Next action: independently validate the updated SHA and permissions, investigate failing checks, review PR #553, and only merge after applicable gates; then validate actual failed-PR-creation behavior in a controlled test. Continue PR #552 provider-session/live-alert runtime verification separately.
+
+
+### 2026-10-21 — Agente autónomo: promoción protegida y prueba TEST (PR #553)
+
+- Workflow de promoción `.github/workflows/ugo-autonomous-pr-promotion.yml`: selecciona exclusivamente PR del agente sobre `main`, verifica SHA y cinco workflows obligatorios, restringe archivos, exige prueba funcional específica Online/GPS/Realtime y revisión positiva independiente del SHA vigente. Las solicitudes de cambio no resueltas bloquean. Sólo entonces intenta merge por API con SHA esperado, comprueba respuesta y PR merged, y despacha siguiente ciclo mediante `workflow_dispatch`. No despliega producción.
+- Prueba nueva `.github/workflows/ugo-provider-online-realtime-e2e.yml`: Arena TEST solamente, compilación SHA exacto, sesión de Proveedor Online con GPS de navegador, 12 segundos de estabilidad, desconexión/reconexión del navegador, pedido Cliente → matching → aceptación en UI, y prueba funcional separada de alerta con Judge y Sentinel. No equivale a dos dispositivos físicos.
+- Estado: **IMPLEMENTADO EN PR, PENDING_VERIFICATION**. No afirmar merge/autonomía completados: faltan CI del SHA final, primer runtime real de nuevo workflow, revisión independiente, permisos de creación de PR desde Actions y validación de disparo de siguiente ciclo. Si el E2E detecta fallo, conservar FAIL y reparar sin promocionar.
+- Riesgo bloqueante conocido: GitHub ha rechazado previamente `gh pr create` desde el token Actions. No se eluden permisos ni protecciones. La creación automática de PR requiere permiso efectivo verificable; mientras no exista, `BLOCKED_PR_CREATION` se registra y no se declara autonomía funcional.

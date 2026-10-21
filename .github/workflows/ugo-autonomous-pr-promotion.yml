@@ -7,7 +7,10 @@ on:
       - UGO Cross Security Runtime TEST
       - UGO Cross-role UI Runtime TEST
       - UGO Roadmap Traceability
+      - UGO Provider Online GPS Realtime E2E TEST
     types: [completed]
+  pull_request_review:
+    types: [submitted]
 permissions:
   contents: write
   pull-requests: write
@@ -17,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   assess:
-    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request') || (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') }}
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -25,7 +28,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+          CANDIDATE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -63,9 +66,46 @@ jobs:
               *) echo "::notice::BLOCKED_PR_$pr: outside approved provider P0 scope: $file"; exit 0 ;;
             esac
           done <<<"$files"
-          # These checks do not yet establish the observed provider Online/Auth recovery.
-          # A human/runtime acceptance marker must come from a separate authorized gate.
-          # Fail CLOSED, rather than automatically merging a contract-only fix.
-          echo "::notice::PR_$pr static and existing runtime workflows green; dedicated provider logout/online proof is still required."
-          echo "### PR #$pr eligible checks passed, but provider-session runtime acceptance is not yet automated" >> "$GITHUB_STEP_SUMMARY"
-          echo "No PR state changed; no merge and no production deployment." >> "$GITHUB_STEP_SUMMARY"
+          # A successful CI job alone is never authorization to merge.
+          # Prove provider Online/Stable Auth/GPS/Realtime with a dedicated runtime
+          # workflow, on precisely this source SHA. Missing is a hard hold.
+          proof="UGO Provider Online GPS Realtime E2E TEST"
+          proof_state=$(jq -sr --arg n "$proof" --arg sha "$CANDIDATE_SHA" '[.[] | select(.name==$n and .head_sha==$sha)] | sort_by(.created_at,.run_attempt) | last | .conclusion // "missing"' <<<"$runs")
+          if [ "$proof_state" != success ]; then
+            echo "::notice::BLOCKED_RUNTIME_PROOF: $proof is $proof_state on $CANDIDATE_SHA"
+            exit 0
+          fi
+          if [ "$(jq -r .draft <<<"$info")" != false ]; then
+            echo "::notice::BLOCKED_DRAFT: candidate must be ready for independent review"
+            exit 0
+          fi
+          # Enforce independent review: only approvals by another actor,
+          # and a subsequent change_requested overrides earlier approval.
+          author=$(jq -r .user.login <<<"$info")
+          reviews=$(gh api --paginate "repos/$REPO/pulls/$pr/reviews?per_page=100" --jq '.[] | {login:.user.login,state,submitted_at,commit_id}')
+          approval=$(jq -sr --arg sha "$CANDIDATE_SHA" --arg author "$author" '[.[] | select(.login != $author and .commit_id == $sha)] | group_by(.login) | map(sort_by(.submitted_at)|last) | any(.state=="APPROVED")' <<<"$reviews")
+          if [ "$approval" != true ]; then
+            echo "::notice::BLOCKED_REVIEW: no current independent approval"
+            exit 0
+          fi
+          if jq -sr -e --arg sha "$CANDIDATE_SHA" --arg author "$author" '[.[]|select(.login != $author and .commit_id == $sha)]|group_by(.login)|map(sort_by(.submitted_at)|last)|any(.state=="CHANGES_REQUESTED")' <<<"$reviews" >/dev/null; then
+            echo "::notice::BLOCKED_REVIEW: outstanding change request"
+            exit 0
+          fi
+          # Re-fetch just before the atomic merge, including current base.
+          latest=$(gh api "repos/$REPO/pulls/$pr")
+          [ "$(jq -r .head.sha <<<"$latest")" = "$CANDIDATE_SHA" ] || { echo "::error::Head changed; refusing stale merge"; exit 1; }
+          [ "$(jq -r .base.ref <<<"$latest")" = main ] || exit 1
+          [ "$(jq -r .mergeable <<<"$latest")" = true ] || { echo "::notice::BLOCKED_MERGEABLE"; exit 0; }
+          # Github performs branch protection enforcement; never bypass it.
+          result=$(gh api -X PUT "repos/$REPO/pulls/$pr/merge" -f sha="$CANDIDATE_SHA" -f merge_method=merge)
+          [ "$(jq -r .merged <<<"$result")" = true ] || { echo "::error::GitHub did not merge candidate"; exit 1; }
+          merge_sha=$(jq -r .sha <<<"$result")
+          verify=$(gh api "repos/$REPO/pulls/$pr")
+          [ "$(jq -r .merged <<<"$verify")" = true ] || exit 1
+          [ "$(jq -r .merge_commit_sha <<<"$verify")" = "$merge_sha" ] || exit 1
+          echo "### PR #$pr merged: $merge_sha (exact candidate $CANDIDATE_SHA)" >> "$GITHUB_STEP_SUMMARY"
+          # workflow_dispatch is explicitly allowed to chain under GITHUB_TOKEN.
+          # Do not publish; this is only the next isolated coding cycle.
+          gh workflow run ugo-persistent-coding-agent.yml --repo "$REPO" --ref main
+          echo "Next coding cycle dispatched on main" >> "$GITHUB_STEP_SUMMARY"
