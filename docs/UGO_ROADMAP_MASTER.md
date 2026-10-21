@@ -707,3 +707,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Causa encontrada en código: `useProviderRealtime` dependía de callback `onChange` recreado en cada render, provocando unsubscribe/subscribe reiterados; el canal del perfil dependía del objeto completo `session` que cambia tras `TOKEN_REFRESHED`. Suscripción inestable alimenta exceso de reconexiones y carga Auth/Realtime. No confundir correlación con prueba definitiva de que es el único origen de logout.
 - Cambio P0 rama `fix/p0-provider-realtime-subscription-storm-20261020`: refs al callback y a sesión actual, dependencias por ID estable, dos tests de contrato; sin cambiar negocio GPS/matching.
 - Estado `PENDING_VERIFICATION`: ejecutar CI same-SHA, comprobar reducción de renovaciones y canales en navegador real, y retest humano; no declarar DONE sólo por contrato.
+
+
+### 2026-10-20 — P0 renovación de token en bucle: Calendar opcional
+- La nueva traza humana tras PR #550 muestra aproximadamente 35 `TOKEN_REFRESHED` en ~12s, sin tormenta `channel_ready` equivalente, y termina `SIGNED_OUT`/`login_confirmed_signed_out`. Auth **NO DONE**.
+- Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
+- Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
+- Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
