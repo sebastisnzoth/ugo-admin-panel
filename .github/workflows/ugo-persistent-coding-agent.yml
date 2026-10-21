@@ -32,10 +32,11 @@ jobs:
       - name: Verify credentials and control
         env:
           UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
         shell: bash
         run: |
-          if [ -z "$UGO_FREEAPI_API_KEY" ]; then
-            echo "::error::Missing UGO_CODING_AGENT_FREEAPI_KEY (FreeLLMAPI gateway token); agent not started."
+          if [ -z "$UGO_FREEAPI_API_KEY" ] || [ "${#UGO_HIVE_TOKEN}" -lt 32 ]; then
+            echo "::error::Missing FreeLLMAPI inference key or Hive token; agent not started."
             exit 1
           fi
       - name: Recover persisted task and constraints
@@ -55,6 +56,7 @@ jobs:
       - name: Execute one bounded repair cycle
         env:
           UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
           CODEX_MODEL: ${{ vars.UGO_CODING_AGENT_MODEL }}
           OPENAI_API_BASE: https://ugo-hive-freeapi.onrender.com/v1
           UGO_FREEAPI_BASE_URL: https://ugo-hive-freeapi.onrender.com/v1
@@ -80,8 +82,13 @@ jobs:
           export UGO_ISSUE_FILE="$RUNNER_TEMP/ugo-issue-543.json"
           # The runner uses only our OpenAI-compatible FreeLLMAPI proxy.
           # No automatic fallback to paid OpenAI.
-          export OPENAI_API_KEY="$UGO_FREEAPI_API_KEY"
-          export OPENAI_API_BASE="$UGO_FREEAPI_BASE_URL"
+          # Localhost-only relay injects both independent credentials.
+          # Never transmit the Groq upstream key to GitHub.
+          python scripts/ugo_freeapi_bridge.py &
+          bridge_pid=$!
+          trap 'kill "$bridge_pid" 2>/dev/null || true' EXIT
+          export OPENAI_API_KEY="local-ugo-agent"
+          export OPENAI_API_BASE="http://127.0.0.1:18765/v1"
           model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
           python -m aider --model "$model" --yes-always --no-auto-commits --no-gitignore \
             --message-file "$RUNNER_TEMP/ugo-task.txt"
