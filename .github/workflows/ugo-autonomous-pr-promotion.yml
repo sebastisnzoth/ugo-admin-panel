@@ -8,6 +8,8 @@ on:
       - UGO Cross-role UI Runtime TEST
       - UGO Roadmap Traceability
     types: [completed]
+  pull_request_review:
+    types: [submitted]
 permissions:
   contents: write
   pull-requests: write
@@ -17,7 +19,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   assess:
-    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request') || (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') }}
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -25,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+          CANDIDATE_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -79,13 +81,13 @@ jobs:
           # Enforce independent review: only approvals by another actor,
           # and a subsequent change_requested overrides earlier approval.
           author=$(jq -r .user.login <<<"$info")
-          reviews=$(gh api --paginate "repos/$REPO/pulls/$pr/reviews?per_page=100" --jq '.[] | {login:.user.login,state,submitted_at}')
-          approval=$(jq -sr --arg author "$author" '[.[] | select(.login != $author)] | group_by(.login) | map(sort_by(.submitted_at)|last) | any(.state=="APPROVED")' <<<"$reviews")
+          reviews=$(gh api --paginate "repos/$REPO/pulls/$pr/reviews?per_page=100" --jq '.[] | {login:.user.login,state,submitted_at,commit_id}')
+          approval=$(jq -sr --arg sha "$CANDIDATE_SHA" --arg author "$author" '[.[] | select(.login != $author and .commit_id == $sha)] | group_by(.login) | map(sort_by(.submitted_at)|last) | any(.state=="APPROVED")' <<<"$reviews")
           if [ "$approval" != true ]; then
             echo "::notice::BLOCKED_REVIEW: no current independent approval"
             exit 0
           fi
-          if jq -sr -e --arg author "$author" '[.[]|select(.login != $author)]|group_by(.login)|map(sort_by(.submitted_at)|last)|any(.state=="CHANGES_REQUESTED")' <<<"$reviews" >/dev/null; then
+          if jq -sr -e --arg sha "$CANDIDATE_SHA" --arg author "$author" '[.[]|select(.login != $author and .commit_id == $sha)]|group_by(.login)|map(sort_by(.submitted_at)|last)|any(.state=="CHANGES_REQUESTED")' <<<"$reviews" >/dev/null; then
             echo "::notice::BLOCKED_REVIEW: outstanding change request"
             exit 0
           fi
