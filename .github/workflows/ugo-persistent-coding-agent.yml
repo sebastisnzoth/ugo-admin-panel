@@ -1,0 +1,142 @@
+name: UGO Persistent Coding Agent (gated)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 */6 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+concurrency:
+  group: ugo-persistent-coding-agent
+  cancel-in-progress: false
+
+jobs:
+  code:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: test
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify credentials and control
+        env:
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$UGO_FREEAPI_API_KEY" ] || [ "${#UGO_HIVE_TOKEN}" -lt 32 ]; then
+            echo "::error::Missing FreeLLMAPI inference key or Hive token; agent not started."
+            exit 1
+          fi
+      - name: Recover persisted task and constraints
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue view 543 --json title,body,state --repo "$GITHUB_REPOSITORY" > "$RUNNER_TEMP/ugo-issue-543.json"
+          test "$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).state)' "$RUNNER_TEMP/ugo-issue-543.json")" = OPEN
+      - name: Prepare isolated work branch
+        run: |
+          git config user.name "ugo-coding-agent[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "agent/ugo-cycle-$GITHUB_RUN_ID"
+      - name: Install coding agent
+        run: python -m pip install --disable-pip-version-check 'aider-chat==0.86.1'
+      - name: Verify coding agent CLI
+        run: python -m aider --help >/dev/null
+      - name: Execute one bounded repair cycle
+        env:
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
+          CODEX_MODEL: ${{ vars.UGO_CODING_AGENT_MODEL }}
+          OPENAI_API_BASE: https://ugo-hive-freeapi.onrender.com/v1
+          UGO_FREEAPI_BASE_URL: https://ugo-hive-freeapi.onrender.com/v1
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/ugo-task.txt" <<'PROMPT'
+          You are the UGO software engineer, working on an isolated GitHub Actions runner.
+          Canonical repository: sebastisnzoth/ugo-admin-panel. Pilot: Florianópolis, Faxina and Marido de Aluguel.
+          Read AGENTS.md, docs/UGO_ROADMAP_MASTER.md, docs/UGO_CAMINO_MAESTRO.md,
+          docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md and the persisted issue #543
+          (the issue JSON is at the path provided by UGO_ISSUE_FILE).
+          Identify the first currently actionable, product-critical P0; do not open unrelated fronts.
+          Execute a SMALL reversible fix, add regression tests, run applicable local checks,
+          and document exact test evidence and unresolved dependencies.
+          Preserve other people's changes. No reset, force push, deleting branches,
+          real payments, destructive migrations, secret disclosure, or deployments.
+          NEVER touch production. No fake human/E2E verification or claims.
+          Never declare a task DONE without real evidence; unresolved work stays pending.
+          Git commits and PR creation are handled by the workflow. Do not use git push.
+          If you cannot implement and test a change safely, leave no misleading code changes
+          and write the verified blocker and next action in your final response.
+          PROMPT
+          export UGO_ISSUE_FILE="$RUNNER_TEMP/ugo-issue-543.json"
+          # The runner uses only our OpenAI-compatible FreeLLMAPI proxy.
+          # No automatic fallback to paid OpenAI.
+          # Localhost-only relay injects both independent credentials.
+          # Never transmit the Groq upstream key to GitHub.
+          python scripts/ugo_freeapi_bridge.py &
+          bridge_pid=$!
+          trap 'kill "$bridge_pid" 2>/dev/null || true' EXIT
+          export OPENAI_API_KEY="local-ugo-agent"
+          export OPENAI_API_BASE="http://127.0.0.1:18765/v1"
+          # Verify end-to-end authenticated inference before touching code.
+          python - <<'PY'
+          import json, urllib.request
+          req = urllib.request.Request('http://127.0.0.1:18765/v1/chat/completions', data=json.dumps({'model':'openai/gpt-oss-120b','messages':[{'role':'user','content':'Reply OK'}], 'max_tokens':24}).encode(), headers={'Content-Type':'application/json'})
+          import time
+          for _ in range(25):
+              try:
+                  with urllib.request.urlopen(req, timeout=90) as res:
+                      result=json.load(res)
+                      assert res.status == 200 and result.get('choices'), 'Empty completion'
+                  print('UGO agent: authenticated model smoke PASS')
+                  break
+              except OSError as exc:
+                  if isinstance(exc, ConnectionRefusedError):
+                      time.sleep(.2)
+                      continue
+                  raise
+          else:
+              raise SystemExit('Local relay not ready')
+          PY
+          # Bridge retains the credentials; prevent the code-editing agent from inheriting them.
+          unset UGO_FREEAPI_API_KEY UGO_HIVE_TOKEN
+          model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
+          python -m aider --model "$model" --yes-always --no-auto-commits --no-gitignore \
+            --message-file "$RUNNER_TEMP/ugo-task.txt"
+      - name: Validate no protected paths changed
+        shell: bash
+        run: |
+          # All modifications, including newly created/untracked files.
+          git status --porcelain
+          if git status --porcelain | sed 's/^...//' | grep -E '^(\.github/|\.env($|\.)|supabase/|infra/|vercel\.json$|\.vercel/)' ; then
+            echo "::error::Protected path changed. Manual review required."
+            exit 1
+          fi
+      - name: Create draft PR only for real changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No source changes; no PR created."
+            exit 0
+          fi
+          git add -A
+          git commit -m "fix(ugo): autonomous guarded P0 repair cycle"
+          git push --set-upstream origin "agent/ugo-cycle-$GITHUB_RUN_ID"
+          gh pr create --draft --base main --head "agent/ugo-cycle-$GITHUB_RUN_ID" \
+            --title "UGO autonomous P0 candidate — review and verify" \
+            --body "Candidate produced from issue #543 in UGO TEST. **Not verified in real devices, not approved for production, no auto-merge.** Verify exact-SHA CI, TEST runtime and regressions before integration."
