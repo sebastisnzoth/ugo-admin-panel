@@ -96,7 +96,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       <button class="btn" id="toggleTechnical" type="button">Ver detalle técnico</button>
     </div>
     <div class="command-summary-grid">
-      <article class="command-summary-card"><strong class="warn" id="summaryRemaining">—</strong><span>restantes reales</span></article>
+      <article class="command-summary-card"><strong class="warn" id="summaryRemaining">—</strong><span>controles de auditoría pendientes</span></article>
       <article class="command-summary-card"><strong class="ok" id="summaryRunnable">—</strong><span>puedo ejecutar ahora</span></article>
       <article class="command-summary-card"><strong class="bad" id="summaryBlocked">—</strong><span>bloqueados / esperando</span></article>
       <article class="command-summary-card"><strong class="warn" id="summaryHuman">—</strong><span>pruebas humanas/físicas</span></article>
@@ -139,9 +139,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         <div class="sub" id="liveDetail">Consultando actividad de UGO.</div>
       </div>
       <div class="monitor-box">
-        <strong>Trabajo solicitado</strong>
+        <strong>Solicitudes del navegador / locks verificados</strong>
         <div id="sentTask">Ninguna tarea solicitada desde este navegador.</div>
-        <div class="tiny" id="sentTaskMeta"></div>
+        <div class="tiny" id="sentTaskMeta"></div><div class="tiny">Una solicitud guardada localmente NO significa que el agente esté trabajando.</div>
       </div>
       <div class="monitor-box">
         <strong>Último movimiento</strong>
@@ -251,7 +251,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       <div>
         <span class="badge">DONE CONTROL</span>
         <h2>Camino exacto hasta DONE</h2>
-        <p class="sub" id="doneSummary">Calculando cierre autoritativo…</p>
+        <p class="sub" id="doneSummary">Calculando cierre autoritativo…</p><p class="tiny">Este contador corresponde al mapa funcional. Puede diferir del total de controles de auditoría de la vista ejecutiva.</p>
       </div>
       <div style="text-align:right">
         <div class="done-score" id="donePercent">—%</div>
@@ -805,14 +805,14 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   const renderDispatch = () => {
     const list = getDispatches()
     const serverLocks = statusSnapshot?.active_locks || []
-    const active = [...list.filter(d => !serverLocks.some(l => l.task_id === d.step_id)), ...serverLocks.map(l => ({step_id:l.task_id,title:l.title || l.task_id,sent_at:l.started_at,source_sha:l.started_sha,server:true}))]
+    const active = [...serverLocks.map(l => ({step_id:l.task_id,title:'LOCK: ' + (l.title || l.task_id),sent_at:l.started_at,source_sha:l.started_sha,server:true})), ...list.filter(d => !serverLocks.some(l => l.task_id === d.step_id)).map(d => ({...d,title:'SOLICITADO (sin evidencia): ' + (d.title || d.step_id)}))]
     if (!active.length) {
-      document.getElementById('sentTask').textContent = 'Ninguna tarea activa.'
+      document.getElementById('sentTask').textContent = 'Sin solicitudes locales ni locks activos confirmados.'
       document.getElementById('sentTaskMeta').textContent = ''
       return
     }
     document.getElementById('sentTask').innerHTML = active.map(d => '<div><b>' + esc(d.title || d.step_id) + '</b></div>').join('')
-    document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
+    document.getElementById('sentTaskMeta').textContent = serverLocks.length + ' lock(s) persistido(s) · ' + list.length + ' solicitud(es) locales (no prueban ejecución)'
   }
   const openReadinessWithUgoMaster = async (item, group) => {
     if (!item || !actionableGateStates.includes(item.gate_state)) return
@@ -1071,6 +1071,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     const human=Number(audit.human_required || 0)+Number(audit.human_deferred || 0)
     const blocked=pending.filter(x=>['BLOCKED_DEPENDENCY','WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY','STALE_LOCK','FAILED_REQUIRES_REVIEW','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING','RETRY_BACKOFF'].includes(x.gate_state)).length
     document.getElementById('summaryRemaining').textContent=remaining
+    document.getElementById('summaryRemaining').title='Fuente: audit_snapshot.remaining; no es necesariamente igual al mapa funcional DONE.'
     document.getElementById('summaryRunnable').textContent=runnable
     document.getElementById('summaryBlocked').textContent=blocked
     document.getElementById('summaryHuman').textContent=human
