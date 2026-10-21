@@ -131,6 +131,33 @@ jobs:
           test -f "$target" || { echo "::error::Missing bounded P0 source: $target"; exit 1; }
           AIDER_CHECK_UPDATE=false timeout 240 python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --map-tokens 0 --no-auto-lint --no-suggest-shell-commands \
             --message 'P0 provider unexpectedly returns to login when switching Online. Inspect ONLY the supplied providerData.tsx for a proven incorrect auth/session or availability-state transition. Distinguish role session from GPS/Realtime faults, never sign out because availability or location fails. Make a minimal code fix only if demonstrable; otherwise return a clear diagnosis without edits. Do not scan other files or claim human E2E verification.' "$target"
+      - name: Second focused repair attempt when first produced no changes
+        if: success()
+        env:
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
+          OPENAI_API_BASE: https://ugo-hive-freeapi.onrender.com/v1
+          UGO_FREEAPI_BASE_URL: https://ugo-hive-freeapi.onrender.com/v1
+        shell: bash
+        run: |
+          rm -f .aider.chat.history.md .aider.input.history
+          find . -maxdepth 1 -name '.aider.tags.cache*' -exec rm -rf -- {} +
+          if [ -n "$(git status --porcelain)" ]; then echo 'First attempt changed source; skipping second.'; exit 0; fi
+          target=src/mvp/provider/useProviderRealtime.ts
+          test -f "$target" || { echo "::warning::No Realtime target; documented as blocked"; exit 0; }
+          python scripts/ugo_freeapi_bridge.py &
+          bridge_pid=$!
+          trap 'kill "$bridge_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 60); do
+            if (echo >/dev/tcp/127.0.0.1/18765) 2>/dev/null; then break; fi
+            if ! kill -0 "$bridge_pid" 2>/dev/null; then exit 1; fi
+            sleep 1
+          done
+          unset UGO_FREEAPI_API_KEY UGO_HIVE_TOKEN
+          export OPENAI_API_KEY=local-ugo-agent
+          export OPENAI_API_BASE=http://127.0.0.1:18765/v1
+          AIDER_CHECK_UPDATE=false timeout 180 python -m aider --model openai/openai/gpt-oss-120b --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --map-tokens 0 --no-auto-lint \
+            --message 'Examine ONLY this provider Realtime hook for a reproducible fault leading to logout when switching Online or missing provider alerts. If a safe minimal fix is supported by the code, make it. Do not invent a cause or modify unrelated code.' "$target"
       - name: Check provider Calendar auth regressions
         shell: bash
         run: |
@@ -155,6 +182,9 @@ jobs:
           rm -f .aider.chat.history.md .aider.input.history
           find . -maxdepth 1 -name '.aider.tags.cache*' -exec rm -rf -- {} +
           if [ -z "$(git status --porcelain)" ]; then
+            echo "::warning::BLOCKED_NO_SOURCE_CHANGES: agent ran but made no product repair. Not validated and not DONE."
+            echo "### BLOCKED: no functional change in either focused attempt" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
             echo "No source changes; no PR created."
             exit 0
           fi
