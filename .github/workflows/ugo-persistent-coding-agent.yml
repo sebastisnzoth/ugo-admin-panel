@@ -68,7 +68,7 @@ jobs:
           cat > "$RUNNER_TEMP/ugo-task.txt" <<'PROMPT'
           You are the UGO software engineer, working on an isolated GitHub Actions runner.
           Canonical repository: sebastisnzoth/ugo-admin-panel. Pilot: Florianópolis, Faxina and Marido de Aluguel.
-          Read AGENTS.md, docs/UGO_ROADMAP_MASTER.md, docs/UGO_CAMINO_MAESTRO.md,
+          Read AGENTS.md, docs/UGO_CTO_AGENT_SKILLS.md, docs/UGO_ROADMAP_MASTER.md, docs/UGO_CAMINO_MAESTRO.md,
           docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md and the persisted issue #543
           (the issue JSON is at the path provided by UGO_ISSUE_FILE).
           Identify the first currently actionable, product-critical P0; do not open unrelated fronts.
