@@ -7,6 +7,7 @@ on:
       - UGO Cross Security Runtime TEST
       - UGO Cross-role UI Runtime TEST
       - UGO Roadmap Traceability
+      - UGO Provider Online GPS Realtime E2E TEST
     types: [completed]
   pull_request_review:
     types: [submitted]
