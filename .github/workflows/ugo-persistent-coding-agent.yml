@@ -1,11 +1,9 @@
 name: UGO Persistent Coding Agent (gated)
 on:
   workflow_dispatch:
-  push:
+  pull_request:
+    types: [closed]
     branches: [main]
-    paths: ['.github/workflows/ugo-persistent-coding-agent.yml']
-  schedule:
-    - cron: '43 */6 * * *'
 
 permissions:
   contents: write
@@ -18,7 +16,7 @@ concurrency:
 
 jobs:
   code:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'push' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'agent/ugo-cycle-')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: test
