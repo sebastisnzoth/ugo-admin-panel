@@ -1,16 +1,13 @@
-import{getRoleSupabase}from'../../lib/roleSupabase'
 export type ProviderCalendarStatus={configured:boolean;connected:boolean;email:string|null;calendarId:string|null;updatedAt:string|null}
 async function request<T>(accessToken:string,path:string,init:RequestInit={}){
- const call=async(token:string)=>{const response=await fetch('/api/calendar/'+path,{...init,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',...(init.headers||{})}}),payload=await response.json().catch(()=>({})) as Record<string,unknown>;return{response,payload}}
- let current=await call(accessToken)
- if(current.response.status===401){
-  const auth=getRoleSupabase('provider')
-  const refreshed=await auth.auth.refreshSession()
-  const freshToken=refreshed.data.session?.access_token||''
-  if(freshToken&&freshToken!==accessToken)current=await call(freshToken)
- }
- if(!current.response.ok)throw new Error(String(current.payload.error||'No se pudo comunicar con Google Calendar.'))
- return current.payload as T
+ const response=await fetch('/api/calendar/'+path,{...init,headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json',...(init.headers||{})}})
+ const payload=await response.json().catch(()=>({})) as Record<string,unknown>
+ // Do not call refreshSession() from a feature endpoint 401. In particular,
+ // Calendar is optional (and absent on Pages); repeated failures must never
+ // rotate the Provider session or trigger a request/refresh feedback loop.
+ if(response.status===401)throw new Error('Google Calendar no autorizó esta solicitud. Tu sesión UGO permanece activa.')
+ if(!response.ok)throw new Error(String(payload.error||'No se pudo comunicar con Google Calendar.'))
+ return payload as T
 }
 export const getProviderCalendarStatus=(token:string)=>request<ProviderCalendarStatus>(token,'status')
 export const startProviderCalendar=(token:string)=>request<{url:string}>(token,'start')
