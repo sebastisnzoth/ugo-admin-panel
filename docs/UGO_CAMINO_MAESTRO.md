@@ -270,3 +270,9 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Incidente: workflow de push `39514154593` (merge SHA `48f49214`) falló porque `scripts/cross-regression-runtime.mjs` exigía el literal retirado `Reintentar pedido`; UI actual usa `t('clientMatch.searchNow')` con `restartMatching(service.id,true)`.
 - Corrección mínima: actualizar solo el guard para exigir el handler real y la clave i18n; no alterar acciones del producto. Rama `fix/p0-cross-regression-retry-label-20261020`.
 - Estado: IMPLEMENTADO; antes de DONE exigir Cross Regression TEST same-SHA PASS, resto CI, y preservar P0 GPS/Proveedor prueba física todavía pendiente.
+
+
+### 2026-10-20 — P0 deslogueo transitorio Proveedor (pendiente de aceptación)
+- Reporte humano vigente: Proveedor sigue volviendo al login pese a la reparación GPS productiva PR #545. No marcar AUTH como resuelto.
+- Implementación rama `fix/p0-provider-transient-signed-out-grace-20261020`: confirmación de `SIGNED_OUT` vacío tras 1200ms, conservando pantalla y sesión mientras el SDK renueva token; el logout explícito continúa limpiando inmediatamente la sesión. Dos contratos de regresión para desaparición transitoria y confirmación auténtica.
+- Estado: IMPLEMENTADO EN RAMA, PENDING_VERIFICATION; requiere same-SHA CI, runtime con cuenta Proveedor y GPS, reconexión, dispositivo físico. Sin publicar hasta validar.

@@ -21,7 +21,7 @@ function mount(initial=response(session('provider-a'))){
  vm.runInNewContext(code,{...hooks,module,exports:module.exports,getRoleSupabase:()=>client,URL,Date,Error,console,recordSessionDiagnostic:(...args)=>events.push(args),OAUTH_ROLE_KEY:'oauth',document:{visibilityState:'visible',addEventListener(){},removeEventListener(){}},window:{location:{href:'https://test.invalid/?app=provider'},history:{replaceState(){}},localStorage:{getItem:()=>null,removeItem(){}},setTimeout:(fn,ms)=>{const id=++sequence;timers.set(id,{fn,ms});return id},clearTimeout:id=>timers.delete(id),addEventListener(){},removeEventListener(){}}})
  function render(){cursor=0;value=module.exports.useRoleSession('provider');while(effects.length)effects.shift()();return value}
  render()
- return{queries,events,get signouts(){return signouts},get value(){return render()},event:(event,next)=>{current=response(next);listener(event,next)},holdSession:fn=>{getSessionOverride=fn},holdProfile:fn=>{profileOverride=fn},async settle(){for(let i=0;i<20;i++){await new Promise(r=>setImmediate(r));for(const[id,timer]of timers){if(timer.ms===0){timers.delete(id);timer.fn()}}render()}},fireFailSafe(){for(const[id,timer]of timers){if(timer.ms===15000){timers.delete(id);timer.fn()}}}}
+ return{queries,events,get signouts(){return signouts},get value(){return render()},event:(event,next)=>{current=response(next);listener(event,next)},holdSession:fn=>{getSessionOverride=fn},holdProfile:fn=>{profileOverride=fn},async settle(){for(let i=0;i<20;i++){await new Promise(r=>setImmediate(r));for(const[id,timer]of timers){if(timer.ms===0){timers.delete(id);timer.fn()}}render()}},fireGrace(){for(const[id,timer]of timers){if(timer.ms===1200){timers.delete(id);timer.fn()}}},fireFailSafe(){for(const[id,timer]of timers){if(timer.ms===15000){timers.delete(id);timer.fn()}}}}
 }
 
 test('late SIGNED_OUT confirmation cannot erase a newer signed-in session',async()=>{
@@ -93,5 +93,30 @@ test('transient SIGNED_OUT restores both provider profile and loading state',asy
  assert.equal(app.value.session?.user.id,'provider-a')
  assert.equal(app.value.profile?.id,'provider-a')
  assert.equal(app.value.loading,false)
+ assert.equal(app.value.sessionChecked,true)
+})
+
+
+test('provider remains signed in when first SIGNED_OUT check is temporarily empty',async()=>{
+ const app=mount();await app.settle()
+ let checks=0
+ app.holdSession(()=>Promise.resolve(response(++checks===1?null:session('provider-a'))))
+ app.event('SIGNED_OUT',null)
+ await app.settle()
+ assert.equal(app.value.session?.user.id,'provider-a')
+ app.fireGrace();await app.settle()
+ assert.equal(app.value.session?.user.id,'provider-a')
+ assert.equal(app.value.profile?.id,'provider-a')
+ assert.equal(app.signouts,0)
+})
+
+test('provider shows login after repeated confirmed absence of session',async()=>{
+ const app=mount();await app.settle()
+ app.holdSession(()=>Promise.resolve(response(null)))
+ app.event('SIGNED_OUT',null);await app.settle()
+ assert.equal(app.value.session?.user.id,'provider-a')
+ app.fireGrace();await app.settle()
+ assert.equal(app.value.session,null)
+ assert.equal(app.value.profile,null)
  assert.equal(app.value.sessionChecked,true)
 })
