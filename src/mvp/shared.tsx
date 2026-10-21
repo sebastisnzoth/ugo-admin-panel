@@ -4,7 +4,7 @@ import{LocalizedText,useLocale}from'../i18n/locale'
 import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ButtonHTMLAttributes, InputHTMLAttributes, HTMLAttributes } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
-import { getRoleSupabase, recordSessionDiagnostic, type UgoRole } from '../lib/roleSupabase'
+import { getRoleSupabase, getProviderAuthTrace, recordSessionDiagnostic, type UgoRole } from '../lib/roleSupabase'
 import { CLIENT_ACTIVE_SERVICE_STATES, MARKETPLACE_STATUS_LABELS, PROVIDER_ACTIVE_SERVICE_STATES, PROVIDER_LIFECYCLE_ORDER } from '../lib/marketplace/lifecycle'
 
 export type Category = { id:string; slug:string; nombre:string; emoji:string }
@@ -244,6 +244,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
           <Button className="mvp-primary" loading={busy}>{mode==='login'?t('sharedUi.signIn'):mode==='register'?t('sharedUi.createAccount'):t('sharedUi.sendLink')}</Button>
           {mode==='recovery'&&<button type="button" className="mvp-auth-recovery-back" onClick={()=>changeMode('login')}>{t('sharedUi.backToSignIn')}</button>}
         </form>
+        {role==='provider'&&<button type="button" className="mvp-auth-text-action" onClick={()=>{const data=getProviderAuthTrace();void navigator.clipboard?.writeText(data).then(()=>setNotice('Diagnóstico técnico copiado. No contiene contraseñas ni tokens.')).catch(()=>setNotice(data))}}>{t('sharedUi.copySessionDiagnostic')}</button>}
         <p className="mvp-auth-footnote">{mode==='register'?t('sharedUi.finishProfile'):t('sharedUi.accessSecure')}</p>
       </section>
     </div>
