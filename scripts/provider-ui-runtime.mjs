@@ -55,7 +55,7 @@ async function runViewport(name,viewport){
   }else{
    const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
    await bottom.waitFor({state:'visible',timeout:10000})
-   for(const item of ['Inicio','Pedidos','Trabajo','Perfil'])await bottom.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+   for(const id of ['provider-mobile-home','provider-mobile-orders','provider-mobile-work','provider-mobile-profile'])await bottom.locator(`button[data-testid="${id}"]`).waitFor({state:'visible',timeout:10000})
   }
   const header=page.locator('.provider-client-topbar')
   await header.waitFor({state:'visible',timeout:10000})
