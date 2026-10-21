@@ -1,0 +1,71 @@
+name: UGO Autonomous PR Promotion (gated)
+on:
+  workflow_run:
+    workflows:
+      - UGO Core CI
+      - UGO P0 Client -> Provider Matching E2E TEST
+      - UGO Cross Security Runtime TEST
+      - UGO Cross-role UI Runtime TEST
+      - UGO Roadmap Traceability
+    types: [completed]
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+concurrency:
+  group: ugo-autonomous-promotion
+  cancel-in-progress: false
+jobs:
+  assess:
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - name: Verify exact SHA, all independent CI and safe scope before promotion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CANDIDATE_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Checking SHA $CANDIDATE_SHA; one successful workflow is never enough."
+          prs=$(gh api "repos/$REPO/pulls?state=open&per_page=100")
+          pr=$(jq -r --arg sha "$CANDIDATE_SHA" '[.[]|select(.head.sha==$sha and (.head.ref|startswith("agent/ugo-cycle-")) and .base.ref=="main")]|first|.number // empty' <<<"$prs")
+          if [ -z "$pr" ]; then echo "No eligible agent PR for this exact SHA."; exit 0; fi
+          # A merge is never based on data from a previous commit or another PR.
+          info=$(gh api "repos/$REPO/pulls/$pr")
+          test "$(jq -r .head.sha <<<"$info")" = "$CANDIDATE_SHA"
+          test "$(jq -r .base.ref <<<"$info")" = main
+          test "$(jq -r .state <<<"$info")" = open
+          # All required workflows MUST have finished successfully on the exact HEAD.
+          required=(
+            "UGO Core CI"
+            "UGO P0 Client -> Provider Matching E2E TEST"
+            "UGO Cross Security Runtime TEST"
+            "UGO Cross-role UI Runtime TEST"
+            "UGO Roadmap Traceability"
+          )
+          runs=$(gh api --paginate "repos/$REPO/actions/runs?head_sha=$CANDIDATE_SHA&per_page=100" --jq '.workflow_runs[] | {name,conclusion,status,head_sha,created_at,run_attempt}')
+          for name in "${required[@]}"; do
+            state=$(jq -sr --arg n "$name" --arg sha "$CANDIDATE_SHA" '[.[] | select(.name==$n and .head_sha==$sha)] | sort_by(.created_at,.run_attempt) | last | .conclusion // "missing"' <<<"$runs")
+            echo "$name: $state"
+            if [ "$state" != success ]; then
+              echo "::notice::BLOCKED_PR_$pr: $name is $state on $CANDIDATE_SHA."
+              exit 0
+            fi
+          done
+          files=$(gh api --paginate "repos/$REPO/pulls/$pr/files?per_page=100" --jq '.[].filename')
+          if [ -z "$files" ]; then echo "::error::No changed files"; exit 1; fi
+          while IFS= read -r file; do
+            case "$file" in
+              src/mvp/provider/*|tests/contracts/provider-*|docs/UGO_ROADMAP_MASTER.md|docs/UGO_CAMINO_MAESTRO.md) ;;
+              *) echo "::notice::BLOCKED_PR_$pr: outside approved provider P0 scope: $file"; exit 0 ;;
+            esac
+          done <<<"$files"
+          # These checks do not yet establish the observed provider Online/Auth recovery.
+          # A human/runtime acceptance marker must come from a separate authorized gate.
+          # Fail CLOSED, rather than automatically merging a contract-only fix.
+          echo "::notice::PR_$pr static and existing runtime workflows green; dedicated provider logout/online proof is still required."
+          echo "### PR #$pr eligible checks passed, but provider-session runtime acceptance is not yet automated" >> "$GITHUB_STEP_SUMMARY"
+          echo "No PR state changed; no merge and no production deployment." >> "$GITHUB_STEP_SUMMARY"
