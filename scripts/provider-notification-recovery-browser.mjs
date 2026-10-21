@@ -16,8 +16,9 @@ try{
  import React from '/node_modules/.vite/deps/react.js';
  import ReactDOM from '/node_modules/.vite/deps/react-dom_client.js';
  import {NotificationCenter} from '/src/mvp/NotificationCenter.tsx';
+ import {LocaleProvider} from '/src/i18n/locale.tsx';
  window.__root=ReactDOM.createRoot(document.getElementById('test-root'));
- window.__render=(enabled,offers)=>window.__root.render(React.createElement(NotificationCenter,{role:'provider',attentionEnabled:enabled,providerOffers:offers,onOpenNotice:notice=>window.__lastOpened=notice}));
+ window.__render=(enabled,offers)=>window.__root.render(React.createElement(LocaleProvider,null,React.createElement(NotificationCenter,{role:'provider',attentionEnabled:enabled,providerOffers:offers,onOpenNotice:notice=>window.__lastOpened=notice})));
  window.__render(true);
  </script>`}))
  await page.addInitScript(()=>{
