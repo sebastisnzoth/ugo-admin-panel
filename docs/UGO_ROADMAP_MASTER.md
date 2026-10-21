@@ -748,3 +748,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Sin cambios de SQL, matching, notificaciones, Auth, GPS, secretos ni Supabase PROD. Verificar la revisión exacta y el navegador antes de fusionar a `main`.
 
 - Revalidación del PR #564: `UGO Cross-role UI Runtime TEST` run 39678359088 falló sólo en `testTranslations()` después del recorrido desktop: esperaba `.ugo-client-root` tras reload, aunque artefacto `role-ui-client-desktop.png` demuestra Cliente autenticado en `Tu perfil` (`.ugo-client-profile-panel`). Se actualizó el locator para esperar sólo Home o Profile autenticados, sin admitir login; nuevo contrato de persistencia. Fase `FIXED IN PR / SAME-SHA BROWSER RETEST PENDING`. Core CI anterior PASS para las reparaciones de contraste/nav/API, pero el nuevo HEAD requiere CI nuevamente.
+
+
+### P0 2026-10-21 — Recuperación automática del matching (PR #566)
+- Preparada migración `20261021223000_safe_automatic_rematch_recovery.sql`: reintenta lotes de hasta 20 servicios `buscando`/`ofrecido` sin ofertas vigentes, omite asignados/cancelados, usa `FOR UPDATE SKIP LOCKED` y reutiliza controles existentes de autorización, GPS, deudas, categoría y horario.
+- Agregado contrato `tests/contracts/p0-safe-automatic-rematch.test.mjs`. `UGO Core CI` run 39695166059 PASS; verificación de trazabilidad falló por falta de estas entradas, corregida en este PR.
+- **No desplegado:** `pg_cron` de TEST sigue deshabilitado tras errores `job startup timeout`; producción no intervenida. Falta resolver PR #560, aplicar y validar migraciones TEST, verificar cancelación/aceptación simultáneas y E2E de ciclos de 5 minutos antes de activar cron o fusionar.
+- Estado: `IMPLEMENTED IN DRAFT PR / TEST E2E AND MIGRATION PENDING`. La aprobación de requisitos no es evidencia de 12 pruebas completas.
