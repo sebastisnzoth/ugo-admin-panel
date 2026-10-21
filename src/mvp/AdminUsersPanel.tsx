@@ -24,7 +24,10 @@ export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateO
  const[editDetails,setEditDetails]=useState<EditDetails>(emptyEditDetails),[editCategories,setEditCategories]=useState<{id:string;nombre:string;activa:boolean}[]>([])
  const[related,setRelated]=useState<{addresses:{id:string;label:string;address:string;complement:string|null;neighborhood:string|null;city:string|null;default:boolean}[];zones:{zone:string;primary:boolean}[];references:{name:string;relation:string;contactAuthorized:boolean}[]}|null>(null),[relatedError,setRelatedError]=useState('');const[editTab,setEditTab]=useState<'profile'|'account'|'additional'>('profile'),[editOriginal,setEditOriginal]=useState('');const[page,setPage]=useState(0),[totalCount,setTotalCount]=useState(0);const[editing,setEditing]=useState<Row|null>(null),[editName,setEditName]=useState(''),[editSurname,setEditSurname]=useState(''),[editCountry,setEditCountry]=useState(''),[editZone,setEditZone]=useState('');const[open,setOpen]=useState(true),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'|'superadmin'>(initialFilter),[activeFilter,setActiveFilter]=useState<'all'|'active'|'inactive'>('all'),[verificationFilter,setVerificationFilter]=useState<'all'|'registrado'|'pendiente'|'verificado'|'rechazado'|'suspendido'>('all'),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[createOpen,setCreateOpen]=useState(false),[form,setForm]=useState<CreateForm>(emptyCreate),[traceUser,setTraceUser]=useState<Row|null>(null)
  const{confirm,prompt,node:dialog}=useDialog()
+ // Superseded Realtime reads must never overwrite newer persisted Admin state.
+ const usersLoadRevision=React.useRef(0)
  const load=useCallback(async()=>{
+  const requestRevision=++usersLoadRevision.current
   const search=query.trim().replace(/[,()%]/g,'').slice(0,80)
   const userColumns='id,nombre,apellido,tipo,activo,email,telefono,categorias_ids,foto_url,pais,zona,karma,servicios_completados,created_at,updated_at'
   let usersQuery=(supabase as any).from('usuarios').select(userColumns+(verificationFilter==='all'?'':',perfiles_proveedor!inner(estado_verificacion)'),{count:'exact'}).order('created_at',{ascending:false}).order('id',{ascending:false})
@@ -36,14 +39,16 @@ export function AdminUsersPanel({initialFilter='todos',embedded=false,canCreateO
   if(search)usersQuery=usersQuery.or(['nombre','apellido','email','telefono'].map(key=>key+'.ilike.%'+search+'%').join(','))
   const {data:users,error:ue,count}=await usersQuery.range(page*50,page*50+49)
   if(ue)throw ue
-  setTotalCount(count??0)
   const ids=((users||[]) as UserRow[]).map(u=>u.id)
   const[{data:auth,error:ae},{data:clients,error:ce},{data:providers,error:pe},{data:categoryRows,error:categoryError}]=await Promise.all([
    (supabase as any).rpc('admin_get_auth_users_by_ids',{p_ids:ids}),
    ids.length?supabase.from('perfiles_cliente').select('usuario_id,telefono,direccion,barrio,ciudad,idioma_preferido,contacto_preferido,horarios_preferidos,instrucciones_acceso,preferencias_servicio,observaciones,onboarding_completo_at,foto_perfil_path').in('usuario_id',ids):Promise.resolve({data:[],error:null}),
    ids.length?supabase.from('perfiles_proveedor').select('usuario_id,telefono_profesional,ciudad_base,estado_verificacion,online,disponible,tarifa_base,zona_radio_km,especialidades,idiomas,disponibilidad_horaria,motivo_rechazo,onboarding_paso,ubicacion_updated_at,ubicacion_accuracy_m,foto_perfil_path,bio,experiencia_anos,categoria_principal_id,categoria:categorias!perfiles_proveedor_categoria_principal_id_fkey(nombre,emoji)').in('usuario_id',ids):Promise.resolve({data:[],error:null}),
    supabase.from('categorias').select('id,nombre,activa').order('nombre'),
-  ]);if(ae)throw ae;if(ce)throw ce;if(pe)throw pe;if(categoryError)throw categoryError;setEditCategories(categoryRows||[])
+  ]);if(ae)throw ae;if(ce)throw ce;if(pe)throw pe;if(categoryError)throw categoryError;
+  if(requestRevision!==usersLoadRevision.current)return
+  setTotalCount(count??0)
+  setEditCategories(categoryRows||[])
   const am=new Map<string,AuthRow>((auth||[]).map((x:AuthRow)=>[x.id,x])),cm=new Map<string,ClientProfile>((clients||[]).map((x:ClientProfile)=>[x.usuario_id,x])),pm=new Map<string,ProviderProfile>((providers||[]).map((x:ProviderProfile)=>[x.usuario_id,x]))
   setRows(((users||[]) as UserRow[]).map(u=>{const a=am.get(u.id),c=cm.get(u.id),p=pm.get(u.id);return{...u,clientProfile:c,providerProfile:p,email:a?.email||u.email||null,email_confirmed:Boolean(a?.email_confirmed),last_sign_in_at:a?.last_sign_in_at||null,telefono:p?.telefono_profesional||c?.telefono||u.telefono||null,ubicacion:p?.ciudad_base||[c?.direccion,c?.barrio,c?.ciudad].filter(Boolean).join(', ')||u.zona||null,verification:p?.estado_verificacion||null,online:Boolean(p?.online),foto_perfil_path:p?.foto_perfil_path||c?.foto_perfil_path||null,profilePhotoRole:p?.foto_perfil_path?'provider':'client',categoria:p?.categoria||null}}))
  },[page,filter,query,activeFilter,verificationFilter,initialEditUserId])
