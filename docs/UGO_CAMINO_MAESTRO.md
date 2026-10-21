@@ -304,6 +304,8 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Motivo: Arena TEST presenta timeouts y la carga redundante del panel puede agravarla. Sin cambios de base ni despliegue a producción.
 - Gate de salida: CI del SHA exacto y medición de peticiones; matching Cliente → Pedido → Proveedor sigue `BLOCKED/PENDING_VERIFICATION` hasta prueba real en TEST estable.
 
-- 2026-10-21: E2E de roles incorpora preflight de salud Auth TEST de 4 s antes de crear cuentas sintéticas; fallo explícito si no responde, sin falsos resultados verdes ni operaciones de fixtures durante caída. Pendiente verificar CI exacto y el flujo real.
+- 2026-10-21: E2E de roles incorpora preflight de salud Auth TEST de 10 s antes de crear cuentas sintéticas; fallo explícito si no responde, sin falsos resultados verdes ni operaciones de fixtures durante caída. Pendiente verificar CI exacto y el flujo real.
 
-- 2026-10-21: CI role-ui tiene preflight Auth TEST de 4 segundos antes de npm ci/build/Playwright/fixtures. Cuando falla, el job permanece rojo con causa explícita, no crea usuarios, no usa recursos de browser ni se declara E2E aprobado. PR #555 pendiente de checks SAME-SHA y estabilidad de Arena.
+- 2026-10-21: CI role-ui tiene preflight Auth TEST de 10 segundos antes de npm ci/build/Playwright/fixtures. Cuando falla, el job permanece rojo con causa explícita, no crea usuarios, no usa recursos de browser ni se declara E2E aprobado. PR #555 pendiente de checks SAME-SHA y estabilidad de Arena.
+
+- 2026-10-21: evidencia real del fallo E2E `39545686199`: Auth TEST `/auth/v1/health` agotó 4 s antes de crear fixtures. Ajustado a un único intento de 10 s en CI y runtime para evitar falsos negativos por latencia sin reintentos ni aprobar pruebas fallidas. PENDING_VERIFICATION del último SHA; si Auth sigue inaccesible, E2E permanece fallido y no se hace merge.
