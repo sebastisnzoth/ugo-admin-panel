@@ -74,7 +74,7 @@ jobs:
           try {
             const response = await fetch(url, {
               headers: {apikey: process.env.UGO_TEST_SUPABASE_ANON_KEY},
-              signal: AbortSignal.timeout(4000)
+              signal: AbortSignal.timeout(10000)
             })
             if (!response.ok) throw new Error('HTTP ' + response.status)
             console.log('UGO_TEST_AUTH_PREFLIGHT_OK')
