@@ -276,3 +276,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Reporte humano vigente: Proveedor sigue volviendo al login pese a la reparación GPS productiva PR #545. No marcar AUTH como resuelto.
 - Implementación rama `fix/p0-provider-transient-signed-out-grace-20261020`: confirmación de `SIGNED_OUT` vacío tras 1200ms, conservando pantalla y sesión mientras el SDK renueva token; el logout explícito continúa limpiando inmediatamente la sesión. Dos contratos de regresión para desaparición transitoria y confirmación auténtica.
 - Estado: IMPLEMENTADO EN RAMA, PENDING_VERIFICATION; requiere same-SHA CI, runtime con cuenta Proveedor y GPS, reconexión, dispositivo físico. Sin publicar hasta validar.
+
+
+### 2026-10-20 — P0 Proveedor: persiste logout tras PR #548
+- Estado **NO RESUELTO** por reporte de prueba humana inmediatamente posterior al despliegue `31c50d7`. No repetir parches de temporización sin conocer la causa.
+- Se inspeccionaron `useRoleSession`, guard de `providerData` y cliente Supabase. Lecturas vacías repetidas de `getSession` pueden representar pérdida real del refresh token y los tests de race no identifican esa causa.
+- Implementación en rama `fix/p0-provider-auth-trace-20261020`: registro acotado de 40 eventos de Auth (motivo, tipo, hora, sin JWT ni IDs) persistente después de reabrir login; botón para copiar diagnóstico en login Proveedor; test de privacidad.
+- Próxima acción: CI same-SHA, despliegue sólo si controles superados, reproducir con Proveedor real y recibir trace saneado. Verificar error Auth/refresh y reparar causa raíz. **No marcar P0 DONE ni aceptación piloto**.
