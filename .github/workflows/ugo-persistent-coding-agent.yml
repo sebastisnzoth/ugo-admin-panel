@@ -132,7 +132,8 @@ jobs:
         run: |
           # All modifications, including newly created/untracked files.
           # Aider metadata is not a product change and must never be committed.
-          rm -f .aider.chat.history.md .aider.input.history .aider.tags.cache.v3
+          rm -f .aider.chat.history.md .aider.input.history
+          find . -maxdepth 1 -name '.aider.tags.cache*' -exec rm -rf -- {} +
           git status --porcelain
           if git status --porcelain | sed 's/^...//' | grep -E '^(\.github/|\.env($|\.)|supabase/|infra/|vercel\.json$|\.vercel/)' ; then
             echo "::error::Protected path changed. Manual review required."
@@ -143,7 +144,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          rm -f .aider.chat.history.md .aider.input.history .aider.tags.cache.v3
+          rm -f .aider.chat.history.md .aider.input.history
+          find . -maxdepth 1 -name '.aider.tags.cache*' -exec rm -rf -- {} +
           if [ -z "$(git status --porcelain)" ]; then
             echo "No source changes; no PR created."
             exit 0
