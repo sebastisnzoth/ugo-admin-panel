@@ -125,12 +125,14 @@ jobs:
           # Bridge retains the credentials; prevent the code-editing agent from inheriting them.
           unset UGO_FREEAPI_API_KEY UGO_HIVE_TOKEN
           model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
-          python -m aider --model "$model" --yes-always --no-auto-commits --no-gitignore \
+          AIDER_CHECK_UPDATE=false python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream \
             --message-file "$RUNNER_TEMP/ugo-task.txt"
       - name: Validate no protected paths changed
         shell: bash
         run: |
           # All modifications, including newly created/untracked files.
+          # Aider metadata is not a product change and must never be committed.
+          rm -f .aider.chat.history.md .aider.input.history .aider.tags.cache.v3
           git status --porcelain
           if git status --porcelain | sed 's/^...//' | grep -E '^(\.github/|\.env($|\.)|supabase/|infra/|vercel\.json$|\.vercel/)' ; then
             echo "::error::Protected path changed. Manual review required."
@@ -141,6 +143,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          rm -f .aider.chat.history.md .aider.input.history .aider.tags.cache.v3
           if [ -z "$(git status --porcelain)" ]; then
             echo "No source changes; no PR created."
             exit 0
@@ -148,6 +151,11 @@ jobs:
           git add -A
           git commit -m "fix(ugo): autonomous guarded P0 repair cycle"
           git push --set-upstream origin "agent/ugo-cycle-$GITHUB_RUN_ID"
-          gh pr create --draft --base main --head "agent/ugo-cycle-$GITHUB_RUN_ID" \
+          # Some repositories disallow GitHub Actions from opening PRs.
+          # Keep the candidate branch discoverable rather than fail the entire cycle.
+          if ! gh pr create --draft --base main --head "agent/ugo-cycle-$GITHUB_RUN_ID" \
             --title "UGO autonomous P0 candidate — review and verify" \
-            --body "Candidate produced from issue #543 in UGO TEST. **Not verified in real devices, not approved for production, no auto-merge.** Verify exact-SHA CI, TEST runtime and regressions before integration."
+            --body "Candidate produced from issue #543 in UGO TEST. Not approved for production. Review exact-SHA CI and runtime before integration."; then
+            echo "::warning::GitHub Actions cannot open PRs in current repository settings; candidate branch preserved for review."
+            echo "Candidate branch: agent/ugo-cycle-$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+          fi
