@@ -92,6 +92,14 @@ jobs:
           python scripts/ugo_freeapi_bridge.py &
           bridge_pid=$!
           trap 'kill "$bridge_pid" 2>/dev/null || true' EXIT
+          # The localhost relay starts asynchronously; wait for its port before the smoke call.
+          ready=0
+          for i in $(seq 1 60); do
+            if (echo >/dev/tcp/127.0.0.1/18765) 2>/dev/null; then ready=1; break; fi
+            if ! kill -0 "$bridge_pid" 2>/dev/null; then echo '::error::FreeLLMAPI relay exited'; exit 1; fi
+            sleep 1
+          done
+          if [ "$ready" != 1 ]; then echo '::error::FreeLLMAPI relay did not start'; exit 1; fi
           export OPENAI_API_KEY="local-ugo-agent"
           export OPENAI_API_BASE="http://127.0.0.1:18765/v1"
           # Verify end-to-end authenticated inference before touching code.
