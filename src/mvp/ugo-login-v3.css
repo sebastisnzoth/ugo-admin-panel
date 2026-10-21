@@ -39,7 +39,7 @@
 }
 /* Dedicated, role-aware administrative logins; no simulated metrics or external assets. */
 .mvp-auth-page.ugo-admin-auth{
- --ugo-login-accent:#1677ef;
+ --ugo-login-accent:#075bb8;
  box-sizing:border-box;min-height:100dvh!important;display:grid!important;place-items:center;
  padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;
  background:radial-gradient(circle at 18% 18%,#152c4f,transparent 50%),#06111f!important;
