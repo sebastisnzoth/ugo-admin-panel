@@ -96,7 +96,7 @@ jobs:
           set -euo pipefail
           # The earlier fixture establishes editing capability. This pass uses
           # actual UGO source but NEVER pushes, deploys or merges.
-          files=$(git ls-files 'src/*' | grep -Ei 'provider.*(auth|session|realtime)|session.*provider' | grep -E '\.(ts|tsx)$' | head -2 || true)
+          files=$(printf '%s\n' src/lib/roleSupabase.ts src/lib/supabase.ts src/mvp/provider/useProviderRealtime.ts src/mvp/ProviderLocationTracker.tsx | while read -r f; do test -f "$f" && echo "$f"; done)
           if [ -z "$files" ]; then
             echo "::notice::No tightly scoped provider-auth source selected. No speculative edits."
             exit 0
@@ -115,7 +115,7 @@ jobs:
           AIDER_CHECK_UPDATE=false \
           timeout 300 python -m aider --model openai/openai/gpt-oss-120b \
             --no-check-update --yes-always --no-auto-commits --no-gitignore \
-            --message 'Inspect these real UGO provider files for a concrete unexpected sign-out on Online/GPS or Realtime. Make a SMALL safe fix ONLY if the root cause is evident in these files. Otherwise do not modify code. Do not touch production, GitHub workflow, or secrets.' $files
+            --message 'Inspect these real UGO auth, role clients, location and realtime files for a concrete unexpected sign-out on Online/GPS or Realtime. Examine interactions across files and distinguish auth signout from UI redirect. Make a SMALL safe fix ONLY if the root cause is evident in these files. Otherwise do not modify code. Do not touch production, GitHub workflow, or secrets.' $files
           if git diff --quiet; then
             echo "No real UGO source edit; no unverified fix claimed"
             exit 0
