@@ -163,6 +163,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     </div>
   </section>
 
+  <section class="card" id="ugoAgentLive" style="margin-top:14px" aria-live="polite">
+    <div class="row"><span><b>AGENTE UGO · actividad real de GitHub</b></span><span class="pill pending" id="ugoAgentState">CONSULTANDO</span></div>
+    <p class="sub" id="ugoAgentCurrent">Comprobando la última ejecución del agente; no equivale a producción validada.</p>
+    <div class="tiny" id="ugoAgentUpdated">Fuente: GitHub Actions · sin verificar</div>
+    <div class="actions"><a class="btn" id="ugoAgentRunLink" href="https://github.com/sebastisnzoth/ugo-admin-panel/actions">Ver evidencia en GitHub</a><a class="btn" href="https://github.com/sebastisnzoth/ugo-admin-panel/pull/546">Ver PR #546</a></div>
+  </section>
+
   <section class="card" id="liveReadinessBoard" style="margin-top:14px" aria-live="polite">
     <div class="row"><span><b>READINESS LIVE · UGO Arena</b></span><span class="pill pending" id="liveReadinessState">CARGANDO</span></div>
     <div class="metrics" style="margin-top:12px">
@@ -1691,6 +1698,46 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   setInterval(() => Promise.allSettled([loadCi(), loadMainHead()]), 60000)
   setInterval(loadLiveMonitor, 45000)
   setInterval(loadMainHead, 90000)
+})()
+</script>
+<script id="ugo-agent-observatory">
+(() => {
+  const endpoint = 'https://api.github.com/repos/sebastisnzoth/ugo-admin-panel'
+  const el = id => document.getElementById(id)
+  async function refreshAgent() {
+    const state = el('ugoAgentState'), detail = el('ugoAgentCurrent'), stamp = el('ugoAgentUpdated')
+    try {
+      const prRes = await fetch(endpoint + '/pulls/546', {cache:'no-store', headers:{Accept:'application/vnd.github+json'}})
+      if (!prRes.ok) throw new Error('GitHub PR HTTP ' + prRes.status)
+      const pr = await prRes.json()
+      const sha = pr.head && pr.head.sha
+      if (!sha) throw new Error('SHA del PR desconocido')
+      const runRes = await fetch(endpoint + '/actions/runs?head_sha=' + encodeURIComponent(sha) + '&per_page=50', {cache:'no-store', headers:{Accept:'application/vnd.github+json'}})
+      if (!runRes.ok) throw new Error('GitHub Actions HTTP ' + runRes.status)
+      const data = await runRes.json()
+      const runs = (data.workflow_runs || []).filter(r => /groq authenticated smoke|persistent coding agent/i.test(r.name || '')).sort((a,b) => Date.parse(b.created_at) - Date.parse(a.created_at))
+      const run = runs[0]
+      if (!run) {
+        state.textContent = 'SIN EJECUCIÓN RECIENTE'
+        detail.textContent = 'No hay una corrida del agente en el commit actual del PR #546. Una prueba anterior no demuestra actividad presente.'
+        stamp.textContent = 'GitHub verificado · PR ' + sha.slice(0,7)
+        return
+      }
+      const running = ['in_progress','queued','waiting','pending','requested'].includes(run.status)
+      state.textContent = running ? 'EJECUTÁNDOSE' : run.conclusion === 'success' ? 'ÚLTIMA PRUEBA APROBADA' : 'ÚLTIMA PRUEBA: ' + String(run.conclusion || 'SIN RESULTADO').toUpperCase()
+      state.className = 'pill ' + (running ? 'accent' : run.conclusion === 'success' ? 'ugo' : 'blocked')
+      detail.textContent = running ? 'GitHub Actions está ejecutando: ' + run.name : 'Última ejecución: ' + run.name + '. Finalizada; no significa que el agente trabaje continuamente ni que haya reparado UGO.'
+      stamp.textContent = 'GitHub Actions · ' + new Date(run.updated_at || run.created_at).toLocaleString('es-AR') + ' · commit ' + sha.slice(0,7)
+      el('ugoAgentRunLink').href = run.html_url
+    } catch (error) {
+      state.textContent = 'NO VERIFICABLE'
+      state.className = 'pill blocked'
+      detail.textContent = 'No se puede consultar el estado actual del agente. No se muestran datos anteriores como actividad en vivo.'
+      stamp.textContent = String(error.message || error)
+    }
+  }
+  refreshAgent()
+  setInterval(refreshAgent, 60000)
 })()
 </script>
 </body>
