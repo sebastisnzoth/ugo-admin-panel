@@ -8,5 +8,5 @@ test('provider auth history is bounded and does not include secrets',()=>{
  assert.match(trace,/list\.push\(\{at, origin, reason, event: event \|\| null\}\)/)
  assert.doesNotMatch(trace,/list\.push\(\{.*(?:token|session|userId|email)/)
  assert.match(auth,/getProviderAuthTrace\(\)/)
- assert.match(auth,/Copiar diagnóstico de sesión/)
+ assert.match(auth,/t\('sharedUi\.copySessionDiagnostic'\)/)
 })
