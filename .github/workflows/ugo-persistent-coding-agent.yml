@@ -125,8 +125,12 @@ jobs:
           # Bridge retains the credentials; prevent the code-editing agent from inheriting them.
           unset UGO_FREEAPI_API_KEY UGO_HIVE_TOKEN
           model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
-          AIDER_CHECK_UPDATE=false python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream \
-            --message-file "$RUNNER_TEMP/ugo-task.txt"
+          # Avoid whole-repository map (2477 files -> Groq HTTP 413/429).
+          # Target a short, known P0 source set with an explicitly limited context.
+          target=src/mvp/provider/useProviderRealtime.ts
+          test -f "$target" || { echo "::error::Missing bounded P0 source: $target"; exit 1; }
+          AIDER_CHECK_UPDATE=false timeout 240 python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --map-tokens 0 --no-auto-lint --no-suggest-shell-commands \
+            --message 'Inspect this provider Realtime hook for an evident, small P0 defect causing unexpected sign-out. Fix only if clearly supported by the code; otherwise do not edit. Add no unrelated files. Do not read the full repository.' "$target"
       - name: Validate no protected paths changed
         shell: bash
         run: |
