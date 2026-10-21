@@ -244,7 +244,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
           <Button className="mvp-primary" loading={busy}>{mode==='login'?t('sharedUi.signIn'):mode==='register'?t('sharedUi.createAccount'):t('sharedUi.sendLink')}</Button>
           {mode==='recovery'&&<button type="button" className="mvp-auth-recovery-back" onClick={()=>changeMode('login')}>{t('sharedUi.backToSignIn')}</button>}
         </form>
-        {role==='provider'&&<button type="button" className="mvp-auth-text-action" onClick={()=>{const data=getProviderAuthTrace();void navigator.clipboard?.writeText(data).then(()=>setNotice('Diagnóstico técnico copiado. No contiene contraseñas ni tokens.')).catch(()=>setNotice(data))}}>Copiar diagnóstico de sesión (sin credenciales)</button>}
+        {role==='provider'&&<button type="button" className="mvp-auth-text-action" onClick={()=>{const data=getProviderAuthTrace();void navigator.clipboard?.writeText(data).then(()=>setNotice('Diagnóstico técnico copiado. No contiene contraseñas ni tokens.')).catch(()=>setNotice(data))}}>{t('sharedUi.copySessionDiagnostic')}</button>}
         <p className="mvp-auth-footnote">{mode==='register'?t('sharedUi.finishProfile'):t('sharedUi.accessSecure')}</p>
       </section>
     </div>
