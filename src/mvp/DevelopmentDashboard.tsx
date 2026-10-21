@@ -29,8 +29,9 @@ export function DevelopmentDashboard(){
  const[items,setItems]=useState<ChecklistItem[]>([]),[events,setEvents]=useState<ChecklistEvent[]>([]),[incidents,setIncidents]=useState<SentinelIncident[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[live,setLive]=useState(false),[filter,setFilter]=useState('all')
 
  const loadInFlight=useRef(false)
+ const refreshPending=useRef(false)
  const load=useCallback(async()=>{
-  if(loadInFlight.current)return
+  if(loadInFlight.current){refreshPending.current=true;return}
   loadInFlight.current=true
   try{
   const client=supabase as any
@@ -41,7 +42,14 @@ export function DevelopmentDashboard(){
   ])
   if(itemError||eventError||incidentError){setError(itemError?.message||eventError?.message||incidentError?.message||t('development.error'));setLoading(false);return}
   setItems((itemData||[])as ChecklistItem[]);setEvents((eventData||[])as ChecklistEvent[]);setIncidents((incidentData||[])as SentinelIncident[]);setError('');setLoading(false)
-  }finally{loadInFlight.current=false}
+  }finally{
+   loadInFlight.current=false
+   if(refreshPending.current){
+    refreshPending.current=false
+    // Reconcile a signal received during the request, without overlapping queries.
+    void load()
+   }
+  }
  },[t])
 
  const[channelEpoch,setChannelEpoch]=useState(0)
