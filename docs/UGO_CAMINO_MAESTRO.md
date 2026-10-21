@@ -297,3 +297,9 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
 - Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
+
+
+### 2026-10-21 — Continuidad: alivio del panel sin cambios de base (PR #555)
+- Rama `fix/development-dashboard-refresh-load-20261021`: evita cargas superpuestas en DevelopmentDashboard y cambia polling de respaldo a 60 s; eventos Realtime continúan activos.
+- Motivo: Arena TEST presenta timeouts y la carga redundante del panel puede agravarla. Sin cambios de base ni despliegue a producción.
+- Gate de salida: CI del SHA exacto y medición de peticiones; matching Cliente → Pedido → Proveedor sigue `BLOCKED/PENDING_VERIFICATION` hasta prueba real en TEST estable.
