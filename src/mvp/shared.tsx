@@ -160,11 +160,14 @@ export function useRoleSession(role:UgoRole){
     // failed session checks can still be retried explicitly by the user.
     return()=>{active=false;profileGeneration.current++;window.clearTimeout(failSafe);l.subscription.unsubscribe()}
   },[loadProfile,role,sessionEpoch,supabase])
+  const profileSessionRef=useRef(session)
+  profileSessionRef.current=session
+  const profileUserId=session?.user.id
   useEffect(()=>{
-    const userId=session?.user.id
+    const userId=profileUserId
     if(!userId)return
     let alive=true,reconnectTimer:number|undefined
-    const refresh=()=>{if(alive)void loadProfile(session).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos actualizar tu perfil.')})}
+    const refresh=()=>{const current=profileSessionRef.current;if(alive&&current?.user.id===userId)void loadProfile(current).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos actualizar tu perfil.')})}
     const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setProfileChannelEpoch(value=>value+1)},1200)}
     const onOnline=()=>{refresh();reconnect()}
     const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
@@ -175,7 +178,7 @@ export function useRoleSession(role:UgoRole){
     channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
     channel.subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
-  },[loadProfile,profileChannelEpoch,profileChannelInstance,role,session,supabase])
+  },[loadProfile,profileChannelEpoch,profileChannelInstance,role,profileUserId,supabase])
   const retrySession=useCallback(()=>{setLoading(true);setSessionEpoch(value=>value+1)},[]);const retryProfile=useCallback(async()=>{if(!session)return;setLoading(true);try{await loadProfile(session);setError('')}catch(e){setError(e instanceof Error?e.message:'No pudimos recuperar tu perfil.')}finally{setLoading(false)}},[loadProfile,session]);const signOut=useCallback(async()=>{const{error:signOutError}=await supabase.auth.signOut({scope:'local'});if(signOutError)throw signOutError;profileGeneration.current++;recordSessionDiagnostic(role,'auth','explicit_sign_out');setSessionChecked(true);setProfile(null);setSession(null)},[role,supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut({scope:'local'})}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,sessionChecked,profile,loading,error,setError,retrySession,retryProfile,signOut,clearAccess}
 }
 
