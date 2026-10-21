@@ -283,3 +283,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Se inspeccionaron `useRoleSession`, guard de `providerData` y cliente Supabase. Lecturas vacías repetidas de `getSession` pueden representar pérdida real del refresh token y los tests de race no identifican esa causa.
 - Implementación en rama `fix/p0-provider-auth-trace-20261020`: registro acotado de 40 eventos de Auth (motivo, tipo, hora, sin JWT ni IDs) persistente después de reabrir login; botón para copiar diagnóstico en login Proveedor; test de privacidad.
 - Próxima acción: CI same-SHA, despliegue sólo si controles superados, reproducir con Proveedor real y recibir trace saneado. Verificar error Auth/refresh y reparar causa raíz. **No marcar P0 DONE ni aceptación piloto**.
+
+
+### 2026-10-20 — P0 Proveedor: tormenta de canales Realtime tras refresh
+- Evidencia humana traza saneada: 20+ `TOKEN_REFRESHED` y `channel_ready` alternados en ~20 segundos, termina `SIGNED_OUT` y `login_confirmed_signed_out`. Se ve en Vercel y Pages, ambos usando Supabase Arena TEST.
+- Causa encontrada en código: `useProviderRealtime` dependía de callback `onChange` recreado en cada render, provocando unsubscribe/subscribe reiterados; el canal del perfil dependía del objeto completo `session` que cambia tras `TOKEN_REFRESHED`. Suscripción inestable alimenta exceso de reconexiones y carga Auth/Realtime. No confundir correlación con prueba definitiva de que es el único origen de logout.
+- Cambio P0 rama `fix/p0-provider-realtime-subscription-storm-20261020`: refs al callback y a sesión actual, dependencias por ID estable, dos tests de contrato; sin cambiar negocio GPS/matching.
+- Estado `PENDING_VERIFICATION`: ejecutar CI same-SHA, comprobar reducción de renovaciones y canales en navegador real, y retest humano; no declarar DONE sólo por contrato.
