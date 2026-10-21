@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   code:
-    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_CODING_AGENT_ENABLED == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: test
@@ -111,6 +111,8 @@ jobs:
           else:
               raise SystemExit('Local relay not ready')
           PY
+          # Bridge retains the credentials; prevent the code-editing agent from inheriting them.
+          unset UGO_FREEAPI_API_KEY UGO_HIVE_TOKEN
           model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
           python -m aider --model "$model" --yes-always --no-auto-commits --no-gitignore \
             --message-file "$RUNNER_TEMP/ugo-task.txt"
