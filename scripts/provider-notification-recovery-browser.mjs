@@ -17,7 +17,7 @@ try{
  import ReactDOM from '/node_modules/.vite/deps/react-dom_client.js';
  import {NotificationCenter} from '/src/mvp/NotificationCenter.tsx';
  window.__root=ReactDOM.createRoot(document.getElementById('test-root'));
- window.__render=enabled=>window.__root.render(React.createElement(NotificationCenter,{role:'provider',attentionEnabled:enabled,onOpenNotice:notice=>window.__lastOpened=notice}));
+ window.__render=(enabled,offers)=>window.__root.render(React.createElement(NotificationCenter,{role:'provider',attentionEnabled:enabled,providerOffers:offers,onOpenNotice:notice=>window.__lastOpened=notice}));
  window.__render(true);
  </script>`}))
  await page.addInitScript(()=>{
@@ -66,6 +66,20 @@ try{
  await page.locator('.ugo-notification-live').click()
  await page.waitForFunction(()=>window.__lastOpened?.datos.oferta_id==='offer-only',{},{timeout:3000})
  evidence.checks.offer_only_banner_opens_exact_offer=true
+ // The persisted offer feed must recover an audible foreground alert even when
+ // the database notifier suppressed nueva_oferta and no Realtime INSERT was seen.
+ await page.evaluate(()=>{window.__noticeRows=[];window.__snapshotOffer={id:'snapshot-only',servicio_id:'service-snapshot-only',estado:'pendiente',expira_at:new Date(Date.now()+300000).toISOString()};window.__render(true,[window.__snapshotOffer])})
+ await page.waitForFunction(()=>window.__toneCount>0&&document.querySelector('.ugo-notification-live')?.textContent?.includes('Nuevo servicio en tu zona'),null,{timeout:3000})
+ await page.waitForFunction(()=>window.__lastOpened?.datos.oferta_id!=='snapshot-only')
+ const snapshotAttention=await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount}))
+ assert.ok(snapshotAttention.tone>offerAttention.tone&&snapshotAttention.vibrate>offerAttention.vibrate,'SNAPSHOT_OFFER_ALERT_REQUIRED')
+ await page.evaluate(()=>window.__render(true,[window.__snapshotOffer]))
+ await page.waitForTimeout(120)
+ assert.deepEqual(await page.evaluate(()=>({tone:window.__toneCount,vibrate:window.__vibrateCount})),snapshotAttention,'SNAPSHOT_ALERT_DEDUP_REQUIRED')
+ await page.locator('.ugo-notification-live').click()
+ await page.waitForFunction(()=>window.__lastOpened?.datos.oferta_id==='snapshot-only',null,{timeout:3000})
+ evidence.checks.persisted_offer_reconciles_missing_notice=true
+ evidence.checks.persisted_offer_recovery_deduplicated=true
  // Backend reactivation may reuse the offer UUID with a new expiry cycle.
  await page.evaluate(()=>{const n=window.__offer('renewed-cycle',600000);n.datos.oferta_id='offer-only';window.__emit(n)})
  await page.getByText('Offer renewed-cycle',{exact:true}).waitFor({timeout:3000})
