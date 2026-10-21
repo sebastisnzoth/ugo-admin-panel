@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   code:
-    if: ${{ vars.UGO_CODING_AGENT_ENABLED == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_CODING_AGENT_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: test
@@ -53,6 +53,8 @@ jobs:
           git switch -c "agent/ugo-cycle-$GITHUB_RUN_ID"
       - name: Install coding agent
         run: python -m pip install --disable-pip-version-check 'aider-chat==0.86.1'
+      - name: Verify coding agent CLI
+        run: python -m aider --help >/dev/null
       - name: Execute one bounded repair cycle
         env:
           UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
@@ -89,6 +91,26 @@ jobs:
           trap 'kill "$bridge_pid" 2>/dev/null || true' EXIT
           export OPENAI_API_KEY="local-ugo-agent"
           export OPENAI_API_BASE="http://127.0.0.1:18765/v1"
+          # Verify end-to-end authenticated inference before touching code.
+          python - <<'PY'
+          import json, urllib.request
+          req = urllib.request.Request('http://127.0.0.1:18765/v1/chat/completions', data=json.dumps({'model':'openai/gpt-oss-120b','messages':[{'role':'user','content':'Reply OK'}], 'max_tokens':24}).encode(), headers={'Content-Type':'application/json'})
+          import time
+          for _ in range(25):
+              try:
+                  with urllib.request.urlopen(req, timeout=90) as res:
+                      result=json.load(res)
+                      assert res.status == 200 and result.get('choices'), 'Empty completion'
+                  print('UGO agent: authenticated model smoke PASS')
+                  break
+              except OSError as exc:
+                  if isinstance(exc, ConnectionRefusedError):
+                      time.sleep(.2)
+                      continue
+                  raise
+          else:
+              raise SystemExit('Local relay not ready')
+          PY
           model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
           python -m aider --model "$model" --yes-always --no-auto-commits --no-gitignore \
             --message-file "$RUNNER_TEMP/ugo-task.txt"
