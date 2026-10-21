@@ -127,14 +127,14 @@ jobs:
           model="${CODEX_MODEL:-openai/openai/gpt-oss-120b}"
           # Avoid whole-repository map (2477 files -> Groq HTTP 413/429).
           # Target a short, known P0 source set with an explicitly limited context.
-          target=src/features/provider/hooks/useProviderCalendarAutoSync.ts
+          target=src/mvp/provider/providerData.tsx
           test -f "$target" || { echo "::error::Missing bounded P0 source: $target"; exit 1; }
           AIDER_CHECK_UPDATE=false timeout 240 python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --map-tokens 0 --no-auto-lint --no-suggest-shell-commands \
-            --message 'P0: The provider went through ~35 TOKEN_REFRESHED events in ~12 seconds followed by SIGNED_OUT. The previous PR #551 removed Calendar forced refresh on 401. Inspect this Calendar auto-sync hook for an independently demonstrable re-trigger loop on access-token changes. If found, implement the smallest fix only here, preserve auth state, do not call signOut or refreshSession, and do not claim real-device validation. If no evident bug, make no change. Do not open other files or scan the repo.' "$target"
+            --message 'P0 provider unexpectedly returns to login when switching Online. Inspect ONLY the supplied providerData.tsx for a proven incorrect auth/session or availability-state transition. Distinguish role session from GPS/Realtime faults, never sign out because availability or location fails. Make a minimal code fix only if demonstrable; otherwise return a clear diagnosis without edits. Do not scan other files or claim human E2E verification.' "$target"
       - name: Check provider Calendar auth regressions
         shell: bash
         run: |
-          node --test tests/contracts/provider-calendar-no-auth-refresh-loop.test.mjs tests/contracts/provider-calendar-sync-hook.test.mjs
+          node --test tests/contracts/provider-calendar-no-auth-refresh-loop.test.mjs tests/contracts/provider-calendar-sync-hook.test.mjs tests/contracts/provider-session-bootstrap-race.test.mjs tests/contracts/provider-auth-gps-permission.test.mjs
       - name: Validate no protected paths changed
         shell: bash
         run: |
