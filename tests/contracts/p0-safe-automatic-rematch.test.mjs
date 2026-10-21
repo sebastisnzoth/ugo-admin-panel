@@ -5,6 +5,7 @@ const sql = readFileSync(new URL('../../supabase/migrations/20261021223000_safe_
 test('rematch includes searching and offered but no terminal states', () => {
  assert.match(sql, /s\.estado IN \('buscando', 'ofrecido'\)/);
  assert.match(sql, /s\.proveedor_id IS NULL/);
+ assert.match(sql, /s\.updated_at <= now\(\) - interval '5 minutes'/);
  assert.match(sql, /matching_expires_at IS NULL OR s\.matching_expires_at <= now\(\)/);
 });
 test('retry skips live offers, limits work and serializes cancellation', () => {
