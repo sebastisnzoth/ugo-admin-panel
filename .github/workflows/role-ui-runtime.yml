@@ -65,6 +65,24 @@ jobs:
           set -euo pipefail
           test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Stop early if Arena TEST Auth is unavailable
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const url = 'https://tmossnqfwfwjrtzwcbmm.supabase.co/auth/v1/health'
+          try {
+            const response = await fetch(url, {
+              headers: {apikey: process.env.UGO_TEST_SUPABASE_ANON_KEY},
+              signal: AbortSignal.timeout(10000)
+            })
+            if (!response.ok) throw new Error('HTTP ' + response.status)
+            console.log('UGO_TEST_AUTH_PREFLIGHT_OK')
+          } catch (error) {
+            console.error('::error title=Arena TEST unavailable::Auth health preflight failed; fixtures and browser E2E were not started. ' + String(error.message))
+            process.exitCode = 1
+          }
+          NODE
       - run: npm ci --include=dev
       - run: npm run verify:test-env
       - name: Build exact SHA

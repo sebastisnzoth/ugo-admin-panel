@@ -1,5 +1,5 @@
 // Public Development dashboard: never query private development_* base tables from the browser.
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{supabase}from'../lib/supabase'
 import{useLocale,LocalizedText}from'../i18n/locale'
@@ -28,7 +28,12 @@ export function DevelopmentDashboard(){
  const statusLabel=(status:ChecklistStatus)=>t('development.status.'+status)
  const[items,setItems]=useState<ChecklistItem[]>([]),[events,setEvents]=useState<ChecklistEvent[]>([]),[incidents,setIncidents]=useState<SentinelIncident[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[live,setLive]=useState(false),[filter,setFilter]=useState('all')
 
+ const loadInFlight=useRef(false)
+ const refreshPending=useRef(false)
  const load=useCallback(async()=>{
+  if(loadInFlight.current){refreshPending.current=true;return}
+  loadInFlight.current=true
+  try{
   const client=supabase as any
   const[{data:itemData,error:itemError},{data:eventData,error:eventError},{data:incidentData,error:incidentError}]=await Promise.all([
    client.from('development_checklist_public').select('id,code,area,title,description,priority,status,weight,position,test_required,completed_at,updated_at,has_evidence').order('position',{ascending:true}),
@@ -37,13 +42,21 @@ export function DevelopmentDashboard(){
   ])
   if(itemError||eventError||incidentError){setError(itemError?.message||eventError?.message||incidentError?.message||t('development.error'));setLoading(false);return}
   setItems((itemData||[])as ChecklistItem[]);setEvents((eventData||[])as ChecklistEvent[]);setIncidents((incidentData||[])as SentinelIncident[]);setError('');setLoading(false)
+  }finally{
+   loadInFlight.current=false
+   if(refreshPending.current){
+    refreshPending.current=false
+    // Reconcile a signal received during the request, without overlapping queries.
+    void load()
+   }
+  }
  },[t])
 
  const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{
   document.title='UGO · '+t('development.title')
   load()
-  const interval=window.setInterval(load,15000)
+  const interval=window.setInterval(load,60000)
   const channel=(supabase as any).channel('ugo-development-public-signal').on('postgres_changes',{event:'UPDATE',schema:'public',table:'development_dashboard_signal',filter:'id=eq.1'},()=>load());const dispose=subscribeRealtimeChannel(channel,supabase,{onSync:load,onStatus:(s)=>setLive(s==='SUBSCRIBED'),onReconnect:()=>setChannelEpoch(v=>v+1)})
   return()=>{window.clearInterval(interval);dispose()}
  },[load,channelEpoch,t])

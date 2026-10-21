@@ -30,6 +30,18 @@ async function login(email,password){
  assert.ifError(lastError)
  throw lastError
 }
+// Do not create synthetic TEST users when Auth is unavailable. This gate never passes the E2E test.
+async function verifyTestAuthReachable(){
+ const target=new URL('/auth/v1/health',TEST_URL)
+ try{
+  const response=await fetch(target,{signal:AbortSignal.timeout(10000),headers:{apikey:anon}})
+  assert.ok(response.ok,'UGO_TEST_AUTH_UNAVAILABLE: HTTP '+response.status)
+ }catch(error){
+  throw new Error('UGO_TEST_AUTH_UNAVAILABLE: refusing fixture creation; retry after Arena TEST recovers',{cause:error})
+ }
+}
+await verifyTestAuthReachable()
+
 const privileged=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const fixtures=await createRoleUiFixtures(privileged,sha)
 try{

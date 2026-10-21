@@ -714,3 +714,17 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
 - Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
+
+
+### 2026-10-21 — Panel de desarrollo: refresco acotado (PR #555)
+- Se impide lanzar una segunda carga mientras la anterior sigue pendiente (`loadInFlight`) y se cambia el polling de 15 a 60 segundos. Realtime conserva las señales para recarga.
+- Objetivo: reducir solicitudes simultáneas y presión sobre Arena TEST sin tocar cron, RLS, índices, matching ni producción.
+- Estado: `PENDING_VERIFICATION`. Requiere TypeScript/build, contratos, comparación de solicitudes reales y posterior E2E Cliente → Pedido → Proveedor. No equivale a reparar Realtime ni matching.
+
+- 2026-10-21: E2E de roles incorpora preflight de salud Auth TEST de 10 s antes de crear cuentas sintéticas; fallo explícito si no responde, sin falsos resultados verdes ni operaciones de fixtures durante caída. Pendiente verificar CI exacto y el flujo real.
+
+- 2026-10-21: CI role-ui tiene preflight Auth TEST de 10 segundos antes de npm ci/build/Playwright/fixtures. Cuando falla, el job permanece rojo con causa explícita, no crea usuarios, no usa recursos de browser ni se declara E2E aprobado. PR #555 pendiente de checks SAME-SHA y estabilidad de Arena.
+
+- 2026-10-21: evidencia real del fallo E2E `39545686199`: Auth TEST `/auth/v1/health` agotó 4 s antes de crear fixtures. Ajustado a un único intento de 10 s en CI y runtime para evitar falsos negativos por latencia sin reintentos ni aprobar pruebas fallidas. PENDING_VERIFICATION del último SHA; si Auth sigue inaccesible, E2E permanece fallido y no se hace merge.
+
+- 2026-10-21: PR #555 conserva señal Realtime recibida durante fetch: `refreshPending` dispara una actualización posterior sin solicitudes simultáneas; corregida posible pérdida de actualizaciones introducida por deduplicación. Requiere CI y prueba browser same-SHA; E2E matching sigue BLOQUEADO.
