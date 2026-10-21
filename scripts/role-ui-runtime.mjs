@@ -346,6 +346,12 @@ async function testAutonomyControl(page,name){
   assert.ok(['SHADOW','ON'].includes(before.data?.mode),'AUTONOMY_UNRECOGNIZED_STATE')
   const active=page.getByRole('radio',{name:new RegExp(before.data.mode)})
   await active.waitFor({state:'visible',timeout:20000})
+  // Realtime can render the persisted mode after the radio becomes visible.
+  // Wait for convergence without weakening the persisted-state assertion.
+  await page.waitForFunction(mode=>{
+   const radio=[...document.querySelectorAll('[role="radio"]')].find(el=>el.textContent?.includes(mode))
+   return radio?.getAttribute('aria-checked')==='true'
+  },before.data.mode,{timeout:20000})
   assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
   results.push({role:'superadmin-autonomy-control',viewport:name,status:'SKIPPED',reason:'NON_IDLE_TEST_STATE',observed_mode:before.data.mode,read_only_state_verified:true,transition_tested:false})
   return
