@@ -129,7 +129,7 @@ jobs:
           # Target a short, known P0 source set with an explicitly limited context.
           target=src/mvp/provider/providerData.tsx
           test -f "$target" || { echo "::error::Missing bounded P0 source: $target"; exit 1; }
-          AIDER_CHECK_UPDATE=false timeout 240 python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --map-tokens 0 --no-auto-lint --no-suggest-shell-commands \
+          AIDER_CHECK_UPDATE=false timeout 240 python -m aider --model "$model" --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --edit-format diff --map-tokens 0 --no-auto-lint --no-suggest-shell-commands \
             --message 'P0 provider unexpectedly returns to login when switching Online. Inspect ONLY the supplied providerData.tsx for a proven incorrect auth/session or availability-state transition. Distinguish role session from GPS/Realtime faults, never sign out because availability or location fails. Make a minimal code fix only if demonstrable; otherwise return a clear diagnosis without edits. Do not scan other files or claim human E2E verification.' "$target"
       - name: Second focused repair attempt when first produced no changes
         if: success()
@@ -156,8 +156,29 @@ jobs:
           unset UGO_FREEAPI_API_KEY UGO_HIVE_TOKEN
           export OPENAI_API_KEY=local-ugo-agent
           export OPENAI_API_BASE=http://127.0.0.1:18765/v1
-          AIDER_CHECK_UPDATE=false timeout 180 python -m aider --model openai/openai/gpt-oss-120b --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --map-tokens 0 --no-auto-lint \
+          AIDER_CHECK_UPDATE=false timeout 180 python -m aider --model openai/openai/gpt-oss-120b --no-check-update --yes-always --no-auto-commits --no-gitignore --no-pretty --no-stream --edit-format diff --map-tokens 0 --no-auto-lint \
             --message 'Examine ONLY this provider Realtime hook for a reproducible fault leading to logout when switching Online or missing provider alerts. If a safe minimal fix is supported by the code, make it. Do not invent a cause or modify unrelated code.' "$target"
+      - name: Reject source truncation or placeholder rewrites
+        shell: bash
+        run: |
+          # Aider can emit a one-line placeholder in whole-file mode.
+          # Reject such rewrites even if tests happen not to catch them.
+          while IFS= read -r path; do
+            [ -f "$path" ] || continue
+            case "$path" in src/*.[tj]s|src/*.[tj]sx|src/**/*.[tj]s|src/**/*.[tj]sx)
+              original=$(git show "HEAD:$path" 2>/dev/null | wc -c)
+              current=$(wc -c < "$path")
+              if [ "$original" -gt 500 ] && [ "$current" -lt $(( original / 2 )) ]; then
+                echo "::error file=$path::Suspicious source truncation ($original bytes -> $current bytes). Rejecting candidate."
+                exit 1
+              fi
+              if grep -qE '<AuthScreen \.\.\. />|TODO: implement|\.\.\. existing code' "$path"; then
+                echo "::error file=$path::Generated placeholder detected; rejecting candidate."
+                exit 1
+              fi
+              ;;
+            esac
+          done < <(git diff --name-only)
       - name: Check provider Calendar auth regressions
         shell: bash
         run: |
