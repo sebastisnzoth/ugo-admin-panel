@@ -40,3 +40,33 @@
 @media(prefers-reduced-motion:reduce){
   .ugo-home-order-steps i{transition:none}
 }
+
+/* UGO Cliente — identidad compacta en el botón Inicio; no altera el layout. */
+.ugo-client-root .ugo-client-header-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 0;
+  min-width: 86px;
+  min-height: 42px;
+  padding: 5px 12px !important;
+  border: 0;
+  border-radius: 12px;
+  background: #0055bc !important;
+  box-shadow: 0 3px 9px rgba(0, 57, 137, .18);
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1;
+  letter-spacing: -.025em !important;
+  white-space: nowrap;
+}
+.ugo-client-root .ugo-client-header-logo .ugo-client-brand-u { color: #ff4855 !important; }
+.ugo-client-root .ugo-client-header-logo .ugo-client-brand-go { color: #fff !important; }
+.ugo-client-root .ugo-client-header-logo:focus-visible {
+  outline: 3px solid #ff4855;
+  outline-offset: 3px;
+}
+@media (max-width: 360px) {
+  .ugo-client-root .ugo-client-header-logo { min-width: 74px; min-height: 40px; padding-inline: 9px !important; font-size: 21px !important; }
+}
