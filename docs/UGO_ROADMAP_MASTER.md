@@ -714,3 +714,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
 - Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
+
+
+### PR #552 — Realtime Proveedor (2026-10-20, candidato sin validar)
+- Rama `agent/ugo-cycle-39531325977`, cambio `1e9ecd1`: unifica los dos listeners `online` en `useProviderRealtime.ts`, conservando `resync` y `reconnect` y su limpieza correspondiente.
+- Prueba contractual agregada en commit `8b3e434`: `tests/contracts/provider-realtime-online-recovery.test.mjs` verifica la presencia de un único listener, ausencia de signOut en el hook y suscripciones de ofertas/servicios. Es una prueba estática; **no prueba entrega real de notificaciones**.
+- Evidencia anterior: 12 contratos de Auth/Calendar/GPS aprobaron en Actions #39531325977 antes de incorporar el test Realtime. Los CI del PR deben validar el SHA actualizado.
+- Estado: `PENDING_VERIFICATION`; prohibido declarar P0 resuelto, fusionar o publicar hasta CI completo, verificación TEST de sesión Online + Realtime Cliente → Proveedor y revisión de regresiones. Netlify preview y trazabilidad presentaron fallos pendientes.
