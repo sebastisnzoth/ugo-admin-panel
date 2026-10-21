@@ -132,3 +132,19 @@
     padding-inline:24px!important;
   }
 }
+
+/* Manual trusted GPS recovery stays within the existing fixed radar notice. */
+.ugo-provider-root .provider-gps-retry-button{
+  display:block;
+  margin-top:8px;
+  min-height:44px;
+  width:100%;
+  border:1px solid currentColor;
+  border-radius:10px;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
+}
+.ugo-provider-root .provider-gps-retry-button:disabled{opacity:.65;cursor:wait}
