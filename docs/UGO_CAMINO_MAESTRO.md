@@ -309,3 +309,5 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - 2026-10-21: CI role-ui tiene preflight Auth TEST de 10 segundos antes de npm ci/build/Playwright/fixtures. Cuando falla, el job permanece rojo con causa explícita, no crea usuarios, no usa recursos de browser ni se declara E2E aprobado. PR #555 pendiente de checks SAME-SHA y estabilidad de Arena.
 
 - 2026-10-21: evidencia real del fallo E2E `39545686199`: Auth TEST `/auth/v1/health` agotó 4 s antes de crear fixtures. Ajustado a un único intento de 10 s en CI y runtime para evitar falsos negativos por latencia sin reintentos ni aprobar pruebas fallidas. PENDING_VERIFICATION del último SHA; si Auth sigue inaccesible, E2E permanece fallido y no se hace merge.
+
+- 2026-10-21: PR #555 conserva señal Realtime recibida durante fetch: `refreshPending` dispara una actualización posterior sin solicitudes simultáneas; corregida posible pérdida de actualizaciones introducida por deduplicación. Requiere CI y prueba browser same-SHA; E2E matching sigue BLOQUEADO.
