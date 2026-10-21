@@ -722,3 +722,5 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Estado: `PENDING_VERIFICATION`. Requiere TypeScript/build, contratos, comparación de solicitudes reales y posterior E2E Cliente → Pedido → Proveedor. No equivale a reparar Realtime ni matching.
 
 - 2026-10-21: E2E de roles incorpora preflight de salud Auth TEST de 4 s antes de crear cuentas sintéticas; fallo explícito si no responde, sin falsos resultados verdes ni operaciones de fixtures durante caída. Pendiente verificar CI exacto y el flujo real.
+
+- 2026-10-21: CI role-ui tiene preflight Auth TEST de 4 segundos antes de npm ci/build/Playwright/fixtures. Cuando falla, el job permanece rojo con causa explícita, no crea usuarios, no usa recursos de browser ni se declara E2E aprobado. PR #555 pendiente de checks SAME-SHA y estabilidad de Arena.
