@@ -34,7 +34,7 @@ async function login(email,password){
 async function verifyTestAuthReachable(){
  const target=new URL('/auth/v1/health',TEST_URL)
  try{
-  const response=await fetch(target,{signal:AbortSignal.timeout(4000),headers:{apikey:anon}})
+  const response=await fetch(target,{signal:AbortSignal.timeout(10000),headers:{apikey:anon}})
   assert.ok(response.ok,'UGO_TEST_AUTH_UNAVAILABLE: HTTP '+response.status)
  }catch(error){
   throw new Error('UGO_TEST_AUTH_UNAVAILABLE: refusing fixture creation; retry after Arena TEST recovers',{cause:error})
