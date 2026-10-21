@@ -720,3 +720,5 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Se impide lanzar una segunda carga mientras la anterior sigue pendiente (`loadInFlight`) y se cambia el polling de 15 a 60 segundos. Realtime conserva las señales para recarga.
 - Objetivo: reducir solicitudes simultáneas y presión sobre Arena TEST sin tocar cron, RLS, índices, matching ni producción.
 - Estado: `PENDING_VERIFICATION`. Requiere TypeScript/build, contratos, comparación de solicitudes reales y posterior E2E Cliente → Pedido → Proveedor. No equivale a reparar Realtime ni matching.
+
+- 2026-10-21: E2E de roles incorpora preflight de salud Auth TEST de 4 s antes de crear cuentas sintéticas; fallo explícito si no responde, sin falsos resultados verdes ni operaciones de fixtures durante caída. Pendiente verificar CI exacto y el flujo real.
