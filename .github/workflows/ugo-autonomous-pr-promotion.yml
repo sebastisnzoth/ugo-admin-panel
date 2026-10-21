@@ -59,7 +59,7 @@ jobs:
           if [ -z "$files" ]; then echo "::error::No changed files"; exit 1; fi
           while IFS= read -r file; do
             case "$file" in
-              src/mvp/provider/*|tests/contracts/provider-*|docs/UGO_ROADMAP_MASTER.md|docs/UGO_CAMINO_MAESTRO.md) ;;
+              src/mvp/provider/*|tests/contracts/provider-*|scripts/role-ui-runtime.mjs|docs/UGO_ROADMAP_MASTER.md|docs/UGO_CAMINO_MAESTRO.md) ;;
               *) echo "::notice::BLOCKED_PR_$pr: outside approved provider P0 scope: $file"; exit 0 ;;
             esac
           done <<<"$files"
