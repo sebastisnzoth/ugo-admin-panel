@@ -9,7 +9,7 @@ jobs:
   groq-smoke:
     if: ${{ github.event.pull_request.number == 546 || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout PR files without persistent credentials
         uses: actions/checkout@v4
@@ -87,3 +87,43 @@ jobs:
           )
           python -m pytest "$workspace/test_arithmetic.py" -q
           echo 'PASS: Aider repaired the isolated fixture and the regression test passed'
+      - name: Bounded real UGO code analysis and edit in disposable runner
+        env:
+          UGO_HIVE_TOKEN: ${{ secrets.UGO_CODING_AGENT_HIVE_TOKEN }}
+          UGO_FREEAPI_API_KEY: ${{ secrets.UGO_CODING_AGENT_FREEAPI_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The earlier fixture establishes editing capability. This pass uses
+          # actual UGO source but NEVER pushes, deploys or merges.
+          files=$(git ls-files 'src/*' | grep -Ei 'provider.*(auth|session|realtime)|session.*provider' | grep -E '\.(ts|tsx)$' | head -2 || true)
+          if [ -z "$files" ]; then
+            echo "::notice::No tightly scoped provider-auth source selected. No speculative edits."
+            exit 0
+          fi
+          echo "Selected bounded UGO provider source:"
+          printf '%s\n' "$files"
+          python scripts/ugo_freeapi_bridge.py &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 40); do
+            if (echo >/dev/tcp/127.0.0.1/18765) 2>/dev/null; then break; fi
+            sleep .2
+          done
+          OPENAI_API_KEY=local-ugo-agent \
+          OPENAI_API_BASE=http://127.0.0.1:18765/v1 \
+          AIDER_CHECK_UPDATE=false \
+          timeout 300 python -m aider --model openai/openai/gpt-oss-120b \
+            --no-check-update --yes-always --no-auto-commits --no-gitignore \
+            --message 'Inspect these real UGO provider files for a concrete unexpected sign-out on Online/GPS or Realtime. Make a SMALL safe fix ONLY if the root cause is evident in these files. Otherwise do not modify code. Do not touch production, GitHub workflow, or secrets.' $files
+          if git diff --quiet; then
+            echo "No real UGO source edit; no unverified fix claimed"
+            exit 0
+          fi
+          if git diff --name-only | grep -Ev '^src/.*\.(ts|tsx)$'; then
+            echo "::error::Non-source modifications rejected"
+            exit 1
+          fi
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run test:p0
+          echo "PASS: candidate real-source change passed P0 tests in disposable runner (not persisted)"
