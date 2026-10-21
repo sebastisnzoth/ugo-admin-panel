@@ -79,14 +79,18 @@ jobs:
           export UGO_RUNTIME_SHA="${{ github.sha }}"
           export VITE_APP_REVISION="${{ github.sha }}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          export VITE_API_BASE_URL="http://127.0.0.1:4174"
+          node scripts/admin-api-runtime-server.mjs > /tmp/ugo-cross-visual-api.log 2>&1 &
+          api_pid=$!
           npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-cross-visual-vite.log 2>&1 &
           vite_pid=$!
-          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          trap 'kill "$vite_pid" "$api_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
             if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:4174/__health >/dev/null
           node scripts/role-ui-runtime.mjs
       - name: Judge visual evidence
         env:

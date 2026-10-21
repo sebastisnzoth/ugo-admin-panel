@@ -737,3 +737,14 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Se agregó contrato `tests/contracts/provider-radar-gps-manual-retry-20261021.test.mjs`, traducciones pt-BR/es/en y control táctil 44 px; validar CI same SHA y Android real antes de declarar DONE. No se creó migración, no se aplicó SQL, ni se modificó Supabase PROD.
 - La migración en PR #560 (horario inmediato y deadline) sigue sin ejecutar en TEST por bloqueo de seguridad y conflicto con `main`; no fusionarla ni sustituir E2E real con contratos.
 - Objetivo medible: volver a publicar GPS reciente desde la alerta sin que se desloguee el Proveedor y comprobar nueva oferta + notificación + sonido + aceptación en dos sesiones. Estado `IMPLEMENTED / CI PENDING / HUMAN E2E PENDING`.
+
+
+### 2026-10-21 — CI exact-SHA: accesibilidad Admin y pruebas de navegador sin falsos bloqueos
+- Base de corrección: `main` `d0f501c7e2515d3a6094b34a4bac2f2b757f6084` (UGO TEST / Vercel READY); PR #564 `fix/ci-a11y-provider-visual-20261021`.
+- `UGO Cross Accessibility Runtime TEST` run 39676501503: AXE confirmó contraste insuficiente en `.mvp-kicker` y el submit del login de Admin. Corregido el kicker blanco/negro con prioridad CSS y botón Admin `#075bb8` para texto blanco WCAG AA. No cambia el color violeta de Super Admin.
+- `UGO Provider Readiness Batch TEST` run 39676501536: selector basado en nombre literal `Trabajo` fallaba porque el nombre accesible cambia a `Agenda` o estado del servicio. Se comprueban los cuatro `data-testid` existentes con `waitFor(state: visible)`, sin omitir controles.
+- `UGO Cross Visual Runtime TEST` run 39676501530: `ECONNREFUSED 127.0.0.1:4174` porque invocaba `role-ui-runtime.mjs` sin levantar el backend API de TEST. Se inicia el servidor local de la misma revisión (`scripts/admin-api-runtime-server.mjs`) con `UGO_TEST_ONLY`, `VITE_API_BASE_URL`, verificación `/__health` y cierre de procesos por trap. No se mockea la API.
+- Contratos en `tests/contracts/ci-a11y-provider-visual-20261021.test.mjs`. Mantener pruebas reales Auth/RLS, matching y alertas separadas. Fase `IMPLEMENTED / CI CHECK`; no declarar corregido lo que sólo tenga prueba estructural.
+- Sin cambios de SQL, matching, notificaciones, Auth, GPS, secretos ni Supabase PROD. Verificar la revisión exacta y el navegador antes de fusionar a `main`.
+
+- Revalidación del PR #564: `UGO Cross-role UI Runtime TEST` run 39678359088 falló sólo en `testTranslations()` después del recorrido desktop: esperaba `.ugo-client-root` tras reload, aunque artefacto `role-ui-client-desktop.png` demuestra Cliente autenticado en `Tu perfil` (`.ugo-client-profile-panel`). Se actualizó el locator para esperar sólo Home o Profile autenticados, sin admitir login; nuevo contrato de persistencia. Fase `FIXED IN PR / SAME-SHA BROWSER RETEST PENDING`. Core CI anterior PASS para las reparaciones de contraste/nav/API, pero el nuevo HEAD requiere CI nuevamente.
