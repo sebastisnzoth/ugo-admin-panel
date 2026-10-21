@@ -2,7 +2,7 @@ export type ProviderCalendarStatus={configured:boolean;connected:boolean;email:s
 async function request<T>(accessToken:string,path:string,init:RequestInit={}){
  const response=await fetch('/api/calendar/'+path,{...init,headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json',...(init.headers||{})}})
  const payload=await response.json().catch(()=>({})) as Record<string,unknown>
- // Do not call refreshSession() from a feature endpoint 401. In particular,
+ // Do not force an Auth token refresh from a feature endpoint 401. In particular,
  // Calendar is optional (and absent on Pages); repeated failures must never
  // rotate the Provider session or trigger a request/refresh feedback loop.
  if(response.status===401)throw new Error('Google Calendar no autorizó esta solicitud. Tu sesión UGO permanece activa.')
