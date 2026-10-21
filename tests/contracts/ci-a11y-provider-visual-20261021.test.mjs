@@ -33,3 +33,12 @@ test('Cross visual runtime serves real TEST Admin APIs instead of polling an una
  assert.match(server,/assert\.equal\(process\.env\.UGO_TEST_SUPABASE_URL,'https:\/\/tmossnqfwfwjrtzwcbmm\.supabase\.co','UGO_TEST_ONLY'\)/)
  assert.match(server,/api\/operations/)
 })
+
+
+test('Client locale regression accepts only authenticated home or profile after reload',async()=>{
+ const [script,profile]=await Promise.all([read('scripts/role-ui-runtime.mjs'),read('src/features/client/profile/ClientProfilePanel.tsx')])
+ assert.match(script,/role==='client'\?'\.ugo-client-root,\.ugo-client-profile-panel'/)
+ assert.match(profile,/className="ugo-client-profile-panel"/)
+ assert.match(script,/await page\.locator\(root\)\.waitFor\(\{state:'visible',timeout:30000\}\)/)
+ assert.doesNotMatch(script,/role==='client'\?'\.ugo-client-root,\.mvp-auth-page'/)
+})
