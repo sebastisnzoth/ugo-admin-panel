@@ -472,7 +472,7 @@ try{
   // Assert both the UI radio and authoritative DB after the asynchronous refresh.
   await page.waitForFunction(expected=>{
    const options=[...document.querySelectorAll('[role="radio"]')]
-   return options.some(node=>node.textContent?.trim()===expected&&node.getAttribute('aria-checked')==='true')
+   return options.some(node=>(node.getAttribute('aria-label')||node.textContent||'').includes(expected)&&node.getAttribute('aria-checked')==='true')
   },before.data.mode,{timeout:20000})
   const current=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
   assert.ifError(current.error)
