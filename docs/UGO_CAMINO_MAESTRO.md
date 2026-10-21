@@ -303,3 +303,5 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Rama `fix/development-dashboard-refresh-load-20261021`: evita cargas superpuestas en DevelopmentDashboard y cambia polling de respaldo a 60 s; eventos Realtime continúan activos.
 - Motivo: Arena TEST presenta timeouts y la carga redundante del panel puede agravarla. Sin cambios de base ni despliegue a producción.
 - Gate de salida: CI del SHA exacto y medición de peticiones; matching Cliente → Pedido → Proveedor sigue `BLOCKED/PENDING_VERIFICATION` hasta prueba real en TEST estable.
+
+- 2026-10-21: E2E de roles incorpora preflight de salud Auth TEST de 4 s antes de crear cuentas sintéticas; fallo explícito si no responde, sin falsos resultados verdes ni operaciones de fixtures durante caída. Pendiente verificar CI exacto y el flujo real.
