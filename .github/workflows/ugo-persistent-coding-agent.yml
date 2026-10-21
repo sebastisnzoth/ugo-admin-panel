@@ -1,6 +1,9 @@
 name: UGO Persistent Coding Agent (gated)
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/ugo-persistent-coding-agent.yml']
   schedule:
     - cron: '43 */6 * * *'
 
@@ -15,7 +18,7 @@ concurrency:
 
 jobs:
   code:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: test
