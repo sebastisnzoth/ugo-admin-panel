@@ -297,3 +297,11 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Ruta de código adicional encontrada: `src/mvp/provider/providerCalendar.ts` forzaba `auth.refreshSession()` por todo 401 de API Calendar; `ProviderCalendarIntegration.tsx` carga estado con `accessToken` como dependencia. Un 401 persistente puede crear lazo 401→refresh→token nuevo→status Calendar→401. No se ha comprobado que el usuario estuviera en esa pantalla; verificar vía nuevo test humano.
 - Reparación rama `fix/p0-provider-calendar-refresh-loop-20261020`: Calendar opcional no fuerza renovación Auth por 401; informa error sin cerrar sesión ni refrescar token; contratos para evitar regresión, sin tocar GPS o matching.
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
+
+
+### 2026-10-21 — P0 ubicación manual del Proveedor y matching
+- Baseline `main` `8c9e1276f4daf3ea3ba8e67efed610075c9bb41d` (Vercel READY); pedido real de Electricidad a las 16:45 de Florianópolis registrado `buscando`, sin oferta, con logs `provider_dispatch eligible_count=0`.
+- Root causes concurrentes: horario del proveedor Online 08:00–18:00 vs duración estimada 120 min (inicio 16:45 permitido, finalización fuera de horario), y GPS que puede caducar al pasar 90 s. Bloqueo RLS impide renovar `matching_expires_at` desde RPC invocadora.
+- Cambio aislado de esta rama: al elegir **Actualizar ubicación** estando Online/disponible, además de guardar ubicación base se publica una posición GPS fresca para matching y se actualiza snapshot local, sin activar Online a quien está Offline. Prueba de contrato `provider-manual-location-refresh-matching.test.mjs`. No modifica reglas de matching, ubicación confiable, horarios ni permisos.
+- El backend de horario + vencimiento se propone por separado en PR #560; el control de seguridad impidió aplicar la migración a UGO Arena TEST, por lo que **no se aplicó, no hay E2E backend y no debe fusionarse a ciegas**.
+- Estado de esta mejora UI: IMPLEMENTADA EN RAMA / CI Y VALIDACIÓN RUNTIME PENDIENTES, nunca marcar matching end-to-end como DONE por este cambio. Siguiente paso: CI same-SHA y validación no regresiva de botón GPS; resolver migración autorizada en TEST y verificar oferta/alerta real.
