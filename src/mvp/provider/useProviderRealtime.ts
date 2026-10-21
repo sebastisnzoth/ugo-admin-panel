@@ -1,14 +1,16 @@
-import{useEffect,useState}from'react'
+import{useEffect,useRef,useState}from'react'
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{recordSessionDiagnostic}from'../../lib/roleSupabase'
 
 export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,onChange:()=>void){
  const[channelEpoch,setChannelEpoch]=useState(0)
+ const onChangeRef=useRef(onChange)
+ onChangeRef.current=onChange
  useEffect(()=>{
   if(!userId)return
   let alive=true
   let reconnectTimer:number|undefined
-  const resync=()=>{if(alive)void onChange()}
+  const resync=()=>{if(alive)void onChangeRef.current()}
   const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
   const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}}
   const onFocus=()=>resync()
@@ -33,5 +35,5 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
    window.clearInterval(safetyTimer)
    void supabase.removeChannel(ch)
   }
- },[channelEpoch,onChange,supabase,userId])
+ },[channelEpoch,supabase,userId])
 }
