@@ -96,7 +96,8 @@ try{
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
   await page.locator('.ugo-superadmin-header h2').waitFor({state:'visible',timeout:20000});
   assert.equal(await page.locator('.ugo-superadmin').count(),1,'SUPERADMIN_AUTHORIZED_PANEL_REQUIRED');
-  await page.getByLabel('UGO ambiente de prueba').waitFor({state:'visible'});
+  // TEST project is asserted from the authenticated Supabase URL above; require the actual governance state bar.
+  await page.locator('.ugo-superadmin-statebar').waitFor({state:'visible',timeout:20000});
 
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
   await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
