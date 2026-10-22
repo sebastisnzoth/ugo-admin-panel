@@ -338,3 +338,5 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Agregado contrato `tests/contracts/p0-safe-automatic-rematch.test.mjs`. `UGO Core CI` run 39695166059 PASS; verificación de trazabilidad falló por falta de estas entradas, corregida en este PR.
 - **No desplegado:** `pg_cron` de TEST sigue deshabilitado tras errores `job startup timeout`; producción no intervenida. Falta resolver PR #560, aplicar y validar migraciones TEST, verificar cancelación/aceptación simultáneas y E2E de ciclos de 5 minutos antes de activar cron o fusionar.
 - Estado: `IMPLEMENTED IN DRAFT PR / TEST E2E AND MIGRATION PENDING`. La aprobación de requisitos no es evidencia de 12 pruebas completas.
+
+- Integración P0 2026-10-21: consolidación del PR #560 dentro del PR #566 de las migraciones de horario inmediato/deadline y paridad GPS 90 s de notificación, junto con contratos. HEAD de integración requiere SAME-SHA CI y pruebas sobre Arena TEST. **No se aplicó SQL ni habilitó cron; no fusionar hasta confirmar E2E sin regresiones.**
