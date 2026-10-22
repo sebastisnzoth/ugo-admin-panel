@@ -23,7 +23,7 @@ function usableBrowserPosition(pos:GeolocationPosition){
  return Number.isFinite(latitude)&&Number.isFinite(longitude)&&!(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)&&Number.isFinite(accuracy)&&accuracy>0&&accuracy<=MAX_ACCEPTABLE_ACCURACY_M&&age<=MAX_POSITION_AGE_MS
 }
 function oneBrowserPosition(options:PositionOptions):Promise<GeolocationPosition>{return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
-async function getFreshBrowserPosition():Promise<GeolocationPosition>{
+function acquireFreshBrowserPosition():Promise<GeolocationPosition>{
  // Run compatible, high accuracy and watch concurrently. Sequential timeouts can
  // otherwise leave the provider without matching GPS for >30 seconds.
  return new Promise((resolve,reject)=>{
@@ -59,6 +59,16 @@ async function getFreshBrowserPosition():Promise<GeolocationPosition>{
    if(!settled){settled=true;cleanup();reject(error)}
   }
  })
+}
+
+// Share a single acquisition across the manual retry and foreground heartbeats.
+// Every settled result clears this slot, allowing a genuine new retry.
+let pendingFreshPosition:Promise<GeolocationPosition>|null=null
+async function getFreshBrowserPosition():Promise<GeolocationPosition>{
+ if(pendingFreshPosition)return pendingFreshPosition
+ const request=acquireFreshBrowserPosition()
+ pendingFreshPosition=request
+ try{return await request}finally{if(pendingFreshPosition===request)pendingFreshPosition=null}
 }
 
 function distanceMeters(a:[number,number],b:[number,number]){
