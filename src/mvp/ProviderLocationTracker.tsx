@@ -137,7 +137,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   const setGeoError=(error:GeolocationPositionError)=>{
    if(!alive)return
    if(error.code===1){setLocationError(serviceId?translateRef.current('providerGps.permissionRoute'):translateRef.current('providerGps.permissionOnline'));return}
-   if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+   if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=(serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS))return
    setLocationError(error.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
   }
 
@@ -198,7 +198,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    }catch(error){
     if(!alive)return
     const geoError=error as GeolocationPositionError
-    if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+    if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MATCHING_POSITION_AGE_MS)return
     setLocationError(geoError.code===1?translateRef.current('providerGps.lostPermission'):geoError.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
    }finally{heartbeatBusy=false}
   }
