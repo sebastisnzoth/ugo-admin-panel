@@ -4,6 +4,20 @@
 **Rama de verdad:** `main`
 
 
+## Protocolo de ejecución vinculante — 22-10-2026 (corrección de reincidencias)
+
+**Problema observado:** acuerdos existentes se repitieron sin ejecutarse; PRs abiertos por rutina después de acordar no acumularlos; estados CI/deploy confundidos con servicio operativo; diagnósticos y handoffs sin cierre. Este protocolo prevalece cuando haya ambigüedad con instrucciones operativas anteriores.
+
+1. **Continuidad obligatoria:** consultar HEAD real, incidentes pendientes, último intento, estado de CI, runtime y despliegue antes de proponer trabajo; retomar el primer paso no verificado sin duplicar tareas ni volver a solicitar evidencia ya entregada.
+2. **No abrir PRs por defecto.** Trabajar sobre `main` para cambios pequeños, reversibles y no críticos cuando las protecciones lo permiten; ejecutar verificaciones previas y posteriores. Si las reglas de rama exigen PR, usar el PR existente o abrir uno *solo cuando sea técnicamente indispensable*, dejando constancia de la restricción. No anular protecciones para cumplir esta preferencia. Los cambios con impacto en dinero, seguridad, permisos, datos o migraciones requieren aislamiento y gates adecuados, aunque eso implique PR.
+3. **Puerta de escritura:** antes de modificar identificar baseline, impacto, rollback, pruebas relevantes y límites de producción. No escribir en Supabase producción ni activar Empresa Autónoma sin gate/autorización aplicables. No usar force push, resets destructivos ni relajar tests para un verde artificial.
+4. **Cierre medible:** una tarea no es `DONE` por commit, PR, merge, deploy iniciado, documentación o CI aislado. Requiere SHA en `main`, CI pertinente sobre ese SHA, publicación exitosa si aplica, smoke de la versión publicada, ausencia de regresiones y evidencia funcional del recorrido afectado. Si falta una prueba física, marcar `HUMAN_REQUIRED` y delimitar exactamente lo demostrado.
+5. **Un bloqueo P0 a la vez:** ejecutar inspección breve → reproducir → corregir → probar → integrar → comprobar publicación → registrar evidencia. Si bloqueado, registrar error y continuar únicamente un frente independiente que pueda cerrarse; no iniciar otra planificación general.
+6. **Comunicación verificable:** reportar acciones realmente ejecutadas con SHA/run/enlace y los límites precisos. Prohibido afirmar “resuelto”, “producción lista” o “autónomo operativo” basándose solo en inferencias, ejecución parcial o documentación.
+7. **Hive/Empresa Autónoma:** departamentos y agentes registrados no equivalen a autonomía. Mantener `OFF` hasta verificar en TEST un job real con input fiable, actor autorizado, permisos, verificador independiente, ledger, rollback/kill switch y límites de costo; luego habilitar capacidades gradualmente mediante sus gates.
+
+**Control de reincidencia:** antes de crear un PR, escribir una justificación técnica comprobable de por qué no puede integrarse por un camino seguro sin PR. Antes de cerrar, enumerar las evidencias de cada puerta; si falta alguna, la tarea sigue abierta. No sustituir ejecución por un nuevo prompt.
+
 ## Regla permanente contra la fragmentación (20-10-2026)
 
 **Lectura obligatoria antes de iniciar o reanudar cualquier tarea:** `docs/UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md`. Allí consta el error reconocido: separar HIVE, Empresa Autónoma, Observatory, Supabase y el producto UGO en trabajos inconexos, abrir sistemas nuevos sin recuperar los existentes, confundir deploy con funcionamiento y obligar al usuario a repetir instrucciones. **No debe repetirse.** Conservar visión integral, continuidad, reutilización, límites reales de Supabase y evidencia E2E antes de declarar éxito o fusionar/desplegar.
