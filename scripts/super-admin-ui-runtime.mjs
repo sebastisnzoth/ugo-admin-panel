@@ -222,7 +222,7 @@ try{
   await page.screenshot({path:'artifacts/ugo-empresas-runtime.png',fullPage:true});
 
   await page.getByTestId('autonomy-view-ledgers').click();
-  const search=page.getByPlaceholder('correlation_id, job id o serviceId');
+  const search=page.getByTestId('autonomy-correlation-search');
   await search.fill(String(before.correlated.correlation_id));
   await page.getByText(String(before.correlated.correlation_id),{exact:false}).first().waitFor({state:'visible'});
   const timelineText=await page.locator('.ugo-autonomous-content').textContent();
@@ -230,10 +230,10 @@ try{
   if(before.correlated.service_id)assert.ok((timelineText||'').includes(String(before.correlated.service_id)),'TIMELINE_SERVICE_ID_MISMATCH');
 
   await page.getByTestId('autonomy-view-launch').click();
-  await page.getByRole('button',{name:'Evaluar Launch Gate',exact:true}).click();
+  await page.getByTestId('autonomy-evaluate-launch-gate').click();
   await page.waitForTimeout(1200);
   const after=await snapshot();
-  await page.getByText('Launch Gate · '+after.launch,{exact:true}).waitFor({state:'visible',timeout:10000});
+  await page.waitForFunction(expected=>document.querySelector('[data-testid="autonomy-launch-gate-status"]')?.textContent?.trim()===expected,after.launch,{timeout:10000});
 
   await page.screenshot({path:'artifacts/super-admin-ui-runtime.png',fullPage:true});
   const evidence={
