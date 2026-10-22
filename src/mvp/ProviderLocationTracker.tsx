@@ -192,8 +192,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
 
   const startWatch=()=>{
    if(!alive)return
-   if(watchId!=null)navigator.geolocation.clearWatch(watchId)
-   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(startWatch,3_000)}},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
+   if(restartTimer!==undefined){window.clearTimeout(restartTimer);restartTimer=undefined}
+   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null}
+   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(()=>{restartTimer=undefined;startWatch()},3_000)}},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
   }
 
   const publishHeartbeat=async()=>{
