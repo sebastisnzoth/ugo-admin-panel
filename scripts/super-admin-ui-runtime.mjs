@@ -210,7 +210,12 @@ try{
   assert.ok(enterpriseDemand,'UGO_EMPRESAS_EVIDENCE_DEMAND_NOT_VISIBLE');
   assert.equal(String(enterpriseDemand.requirements?.sha||''),enterpriseRuntimeSha,'UGO_EMPRESAS_EVIDENCE_SHA_MISMATCH');
   if(before.empresas.readiness?.metrics?.correlation_id)assert.equal(String(enterpriseDemand.requirements?.correlation_id||''),String(before.empresas.readiness.metrics.correlation_id),'UGO_EMPRESAS_CORRELATION_MISMATCH');
-  const enterpriseSlots=before.empresas.slots.filter(s=>s.demand_id===enterpriseDemand.id);
+  // Check the target demand directly: a global .limit(100) can omit its slots.
+  const enterpriseSlotsQuery=await reader.from('ugo_empresas_slots')
+    .select('id,demand_id,status,validated_minutes')
+    .eq('demand_id',enterpriseDemand.id);
+  assert.ifError(enterpriseSlotsQuery.error);
+  const enterpriseSlots=enterpriseSlotsQuery.data||[];
   assert.equal(enterpriseSlots.length,enterpriseDemand.quantity,'UGO_EMPRESAS_SLOT_COUNT_MISMATCH');
   assert.ok(enterpriseSlots.every(s=>s.status==='VALIDATED'),'UGO_EMPRESAS_SLOT_STATE_MISMATCH');
   await page.getByText(enterpriseDemand.company_ref,{exact:false}).waitFor({state:'visible'});
