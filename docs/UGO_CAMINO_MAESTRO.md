@@ -358,3 +358,15 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 
 ### Handoff sin preguntas repetidas
 **Bloqueo activo:** cumplimiento operativo de la metodología, seguido de primer fallo del flujo completo Cliente → Proveedor. **Próximo agente:** 1) leer este bloque y `AGENTS.md`, issue #567, roadmap; 2) contrastar `main`, PR #568, CI, TEST, Sentinel/checklist y despliegues; 3) seleccionar primera transición P0 fallida y ejecutar corrección mínima con regresiones del proceso completo; 4) validar antes de integrar cambios de producto a `main`; 5) registrar commit, run, runtime y próximo bloqueo aquí, no crear una nueva cola ni contestar sólo con planes. **Intervención humana** sólo para prueba física indispensable o autorización material; no simularlas.
+
+### 21/10/2026 — Handoff de riesgos del método antes del piloto de Florianópolis
+
+**Orden más reciente del usuario:** examinar ventajas, contras, errores previos y fallos futuros de la ejecución automatizada; corregirlos, repetir pruebas y establecer una metodología **validada** antes del piloto. **Este chat NO ha validado todavía la automatización ni el piloto.** Consulta el registro de riesgos R1–R12 y sus pruebas de fallo en `docs/UGO_ROADMAP_MASTER.md`, sección “Revisión preventiva de metodología y piloto Florianópolis”. Ése es el checklist de riesgos; no duplicarlo en issues nuevos.
+
+**Avance real:** se escribió el análisis preventivo R1–R12 en `main`; sin ejecución de fallos inyectados ni modificaciones a worker/cola. Se prohíbe activar Empresa Autónoma ON, dar status DONE o declarar que se evitarán todos los incidentes sin las pruebas requeridas. Continuidad del PR #568: sigue siendo parche acotado sin CI/runtime confirmado; no asumir merge ni reemplazar la misión central por otro parche GPS.
+
+**Primer bloque técnico pendiente, accionable y medible:** inspeccionar el mecanismo existente de jobs/locks/worker/HIVE/Judge/Sentinel y baseline vigente (SHA/CI/TEST, costo, límites, estado de despliegue). Ensayar en TEST cuatro escenarios: **R1** reintento tras caída sin efecto duplicado; **R3** 429/timeout sin tormenta; **R5** fallo artificial bloquea DONE/merge; **R11** reinicio recupera cola sin falso 24/7. Si falla, corregir componente existente, volver a ejecutar las cuatro pruebas y documentar evidencias SHA/run. Si no hay posibilidad técnica de test, dejar BLOCKED con la dependencia exacta, nunca VERIFIED.
+
+**Después:** pruebas R2/R4/R6–R10/R12, luego E2E del primer servicio y aceptación física de dos dispositivos para Florianópolis. Los P0 reales de Cliente/Proveedor conservan prioridad cuando degradan operación; no interrumpir su solución con infraestructura que no sea indispensable. Registrar owner, estado probado, entorno, artefactos y próxima acción. No crear segunda cola o plataforma; reutilizar `development_checklist`, jobs y ledger canónicos.
+
+**Criterio de aceptación global:** metodología controlada por gates efectivos + un servicio completo real comprobado, sin regresiones nuevas, publicado en canal autorizado y revalidado. El simple guardado de documentos o creación de PR **no alcanza**.
