@@ -94,7 +94,8 @@ try{
   await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
-  await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000});
+  await page.locator('.ugo-superadmin-header h2').waitFor({state:'visible',timeout:20000});
+  assert.equal(await page.locator('.ugo-superadmin').count(),1,'SUPERADMIN_AUTHORIZED_PANEL_REQUIRED');
   await page.getByLabel('UGO ambiente de prueba').waitFor({state:'visible'});
 
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
