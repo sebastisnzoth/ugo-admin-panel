@@ -162,15 +162,19 @@ try{
   const firstIdText=((await firstRow.locator('td').nth(0).textContent())||'').trim();
   const firstDepartmentId=Number(firstIdText.replace(/^D/,''));
   assert.ok(Number.isInteger(firstDepartmentId),'DEPARTMENT_HISTORY_ID_REQUIRED');
-  await firstRow.getByRole('button',{name:'Ver historial'}).click();
-  const historyDialog=page.getByRole('dialog',{name:'Historial del departamento'});
+  await firstRow.locator('button').first().click();
+  const historyDialog=page.locator('.ugo-autonomous-content [role="dialog"]');
   await historyDialog.waitFor({state:'visible'});
   const historyText=(await historyDialog.textContent())||'';
-  assert.ok(/actualizado hace/i.test(historyText),'DEPARTMENT_FRESHNESS_MISSING');
+  const freshnessNode=historyDialog.getByTestId('department-history-freshness');
+  const refreshedAt=await freshnessNode.getAttribute('data-loaded-at');
+  const refreshedMs=Date.parse(refreshedAt||'');
+  assert.ok(Number.isFinite(refreshedMs)&&Math.abs(Date.now()-refreshedMs)<600000,'DEPARTMENT_FRESHNESS_MISSING_OR_STALE');
+  assert.ok(((await freshnessNode.textContent())||'').trim().length>0,'DEPARTMENT_FRESHNESS_LABEL_MISSING');
   const recentPersisted=await reader.from('autonomous_jobs').select('id').eq('department_id',firstDepartmentId).order('created_at',{ascending:false}).limit(10);
   assert.ifError(recentPersisted.error);
   if(recentPersisted.data?.length)assert.ok(recentPersisted.data.some(job=>historyText.includes(String(job.id))),'DEPARTMENT_HISTORY_NOT_BACKED_BY_PERSISTED_JOB');
-  await page.getByRole('button',{name:'Cerrar historial'}).click();
+  await historyDialog.locator('button[aria-label]').first().click();
   await page.screenshot({path:'artifacts/super-admin-ui-departments.png',fullPage:true});
 
   await page.getByTestId('autonomy-view-qa').click();
