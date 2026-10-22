@@ -370,3 +370,18 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 **Después:** pruebas R2/R4/R6–R10/R12, luego E2E del primer servicio y aceptación física de dos dispositivos para Florianópolis. Los P0 reales de Cliente/Proveedor conservan prioridad cuando degradan operación; no interrumpir su solución con infraestructura que no sea indispensable. Registrar owner, estado probado, entorno, artefactos y próxima acción. No crear segunda cola o plataforma; reutilizar `development_checklist`, jobs y ledger canónicos.
 
 **Criterio de aceptación global:** metodología controlada por gates efectivos + un servicio completo real comprobado, sin regresiones nuevas, publicado en canal autorizado y revalidado. El simple guardado de documentos o creación de PR **no alcanza**.
+
+
+---
+
+## Integración operativa con UGO Roadmap Master
+
+**Fuentes complementarias, no paralelas:** `docs/UGO_ROADMAP_MASTER.md` registra alcance, hitos y estados técnicos; este Camino Maestro determina prioridades, verificación y cierre. Ante discrepancias, consultar `main`, CI del SHA exacto, Arena TEST y la aplicación publicada antes de actualizar cualquiera de los dos. Los checkpoints históricos no prueban el estado actual.
+
+**Metodología vinculante por bloque:** recuperar antecedentes → reproducir el primer fallo → corregir lo mínimo necesario → probar funcionalidad, seguridad y regresiones → fusionar a `main` todo cambio independiente completamente verificado → comprobar el SHA de `main` y la publicación correspondiente → registrar evidencia y cerrar. Un commit, PR o test verde aislado no significa entrega funcional. Los cambios no validados permanecen identificados como abiertos, sin bloquear indefinidamente los cambios independientes seguros.
+
+**Incidente P0 en seguimiento (21/10/2026, sujeto a revalidación):** PR [#566](https://github.com/sebastisnzoth/ugo-admin-panel/pull/566), GPS de Proveedor y matching Cliente → Pedido → Oferta → Alerta → Aceptación → Asignación. El último control conversacional confirmó el PR abierto y sin fusionar; el estado de merge y las ejecuciones posteriores requieren consulta en vivo. Antecedente de Arena TEST: proveedor Online sin GPS vigente (umbral del motor: 90 s), pedido en búsqueda sin ofertas. No interpretar cron ejecutado, proveedor Online ni oferta insertada como evidencia de recepción real. Verificar primero el estado del pedido y la ubicación persistida, evitando reusar snapshots históricos como vigentes.
+
+**Cierre del P0:** reconciliar SHA y CI → resolver incompatibilidades con `main` preservando trabajo ajeno → validar GPS actualizado en backend y recuperación permitida por navegador → probar rematching sin duplicados/cancelaciones indebidas → comprobar alerta, aceptación y asignación en Arena TEST → integrar los cambios aprobados → verificar `main` y canal publicado. La prueba de GPS, sonido/vibración y flujo físico en dispositivos reales sigue diferenciada del E2E automatizado; no simular aceptación humana ni alterar Supabase producción sin los gates correspondientes.
+
+**Handoff obligatorio entre sesiones:** registrar en este Camino Maestro el bloqueo P0, SHA de `main` y del PR, ejecuciones y resultados exactos, entorno, evidencia, fusión efectuada o no, revisión publicada y siguiente paso accionable. Actualizar el Roadmap Master con el mismo hito y madurez (`IMPLEMENTED`, `CI VALIDATED`, `RUNTIME VALIDATED`, `PUBLISHED`) para evitar estados contradictorios. No pedir reiteradamente pruebas ya aportadas; marcar sólo las pruebas humanas realmente pendientes.
