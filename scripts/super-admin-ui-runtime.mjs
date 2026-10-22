@@ -110,7 +110,7 @@ try{
   assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
-  await page.getByRole('button',{name:'Departamentos',exact:true}).click();
+  await page.getByTestId('autonomy-view-departments').click();
   await page.getByText('Departamentos corporativos',{exact:true}).waitFor({state:'visible'});
   const departmentTable=page.locator('table').filter({hasText:'Jobs totales'}).first();
   await departmentTable.waitFor({state:'visible'});
@@ -173,17 +173,17 @@ try{
   await page.getByRole('button',{name:'Cerrar historial'}).click();
   await page.screenshot({path:'artifacts/super-admin-ui-departments.png',fullPage:true});
 
-  await page.getByRole('button',{name:'QA Lab',exact:true}).click();
+  await page.getByTestId('autonomy-view-qa').click();
   await assertCardCount('SIMULADORES',before.qa.simulators);
   await assertCardCount('ESCENARIOS',before.qa.scenarios);
   await assertCardCount('RUNS',before.qa.runs);
 
-  await page.getByRole('button',{name:'Model Router',exact:true}).click();
+  await page.getByTestId('autonomy-view-models').click();
   await assertCardCount('CANDIDATOS',before.models.candidates);
   await assertCardCount('RUTAS',before.models.routes);
   await assertCardCount('MÉTRICAS',before.models.metrics);
 
-  await page.getByRole('button',{name:'Riesgo & Auditoría',exact:true}).click();
+  await page.getByTestId('autonomy-view-audit').click();
   await assertCardCount('RIESGOS',before.risk.risks);
   await assertCardCount('CONTROLES',before.risk.controls);
   await assertCardCount('CHALLENGES D14',before.risk.challenges);
@@ -197,7 +197,7 @@ try{
   assert.ok(recentRiskEvidence.length===0||visibleRiskEvidence.length>0,'RISK_EVIDENCE_UI_BACKEND_NO_OVERLAP');
   await page.screenshot({path:'artifacts/super-admin-ui-risk-audit.png',fullPage:true});
 
-  await page.getByRole('button',{name:'UGO Empresas',exact:true}).click();
+  await page.getByTestId('autonomy-view-empresas').click();
   await page.getByText('UGO Empresas',{exact:true}).last().waitFor({state:'visible'});
   assert.equal(before.empresas.readiness?.status,'READY','UGO_EMPRESAS_RUNTIME_NOT_READY');
   const enterpriseRuntimeSha=String(before.empresas.readiness?.metrics?.runtime_sha||'');
@@ -212,7 +212,7 @@ try{
   await page.getByText(enterpriseDemand.company_ref,{exact:false}).waitFor({state:'visible'});
   await page.screenshot({path:'artifacts/ugo-empresas-runtime.png',fullPage:true});
 
-  await page.getByRole('button',{name:'Ledgers',exact:true}).click();
+  await page.getByTestId('autonomy-view-ledgers').click();
   const search=page.getByPlaceholder('correlation_id, job id o serviceId');
   await search.fill(String(before.correlated.correlation_id));
   await page.getByText(String(before.correlated.correlation_id),{exact:false}).first().waitFor({state:'visible'});
@@ -220,7 +220,7 @@ try{
   assert.ok((timelineText||'').includes(String(before.correlated.status)),'TIMELINE_STATUS_MISMATCH');
   if(before.correlated.service_id)assert.ok((timelineText||'').includes(String(before.correlated.service_id)),'TIMELINE_SERVICE_ID_MISMATCH');
 
-  await page.getByRole('button',{name:'Launch Gate',exact:true}).click();
+  await page.getByTestId('autonomy-view-launch').click();
   await page.getByRole('button',{name:'Evaluar Launch Gate',exact:true}).click();
   await page.waitForTimeout(1200);
   const after=await snapshot();
