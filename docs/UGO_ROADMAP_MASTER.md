@@ -811,3 +811,9 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Tras la integración P0 del PR #566 en `main` (`03b29a13`), el runtime multirrol falló en `AUTONOMY_UI_STATE_MISMATCH` por observar `aria-checked=false` antes de confirmar hidratación de la vista.
 - Cambio del PR #569: esperar selección efectiva de la radio, releer el modo de autonomía persistido y mantener aserción estricta de coincidencia; no activar ni modificar Empresa Autónoma ni su gate. Core CI y Cross-role UI aprobaron el commit `8d6fddec` en PR; nuevo SHA requiere repetir controles.
 - Cierre pendiente: Roadmap Traceability, demás controles del SHA final, fusión a `main`, comprobación postmerge; sin afirmar pruebas físicas GPS/oferta/sonido. Hugo Presence, RPC/RLS y Visual siguen como incidencias independientes.
+
+
+### 2026-10-22 — Postmerge PR #569: compatibilidad Playwright runner
+- En `main` be7377c8, Cross-role UI (run 39837869684) y Cross Visual (run 39837869745) fallaron antes de ejecutar Chromium: `Playwright 1.56.1 does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest`. No es evidencia de defecto de producto.
+- Corrección acotada: fijar `runs-on: ubuntu-24.04` en `.github/workflows/role-ui-runtime.yml` y `.github/workflows/cross-visual-runtime.yml`, sin relajar las aserciones, la seguridad ni modificar la app. Estado IMPLEMENTADO EN RAMA, pendiente CI/navegador del SHA final y verificación tras fusión.
+- Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
