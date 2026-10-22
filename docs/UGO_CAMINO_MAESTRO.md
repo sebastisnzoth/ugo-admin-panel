@@ -332,6 +332,60 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 
 - Revalidación del PR #564: `UGO Cross-role UI Runtime TEST` run 39678359088 falló sólo en `testTranslations()` después del recorrido desktop: esperaba `.ugo-client-root` tras reload, aunque artefacto `role-ui-client-desktop.png` demuestra Cliente autenticado en `Tu perfil` (`.ugo-client-profile-panel`). Se actualizó el locator para esperar sólo Home o Profile autenticados, sin admitir login; nuevo contrato de persistencia. Fase `FIXED IN PR / SAME-SHA BROWSER RETEST PENDING`. Core CI anterior PASS para las reparaciones de contraste/nav/API, pero el nuevo HEAD requiere CI nuevamente.
 
+## Continuidad 21/10/2026 — método y compromisos del chat (prioridad operativa)
+
+### Mandato del usuario: **resolver la manera de trabajar**
+La conversación insistió repetidamente en que UGO está desordenado porque se atienden incidentes aislados, se abre otro frente, y nunca se entrega un **proceso completo cerrado y verificado**. El usuario reclamó ejecutar todas las decisiones aprobadas, no sólo reconocerlas, explicar por qué falló, ofrecer otro prompt o crear un issue. No convertir ejemplos (como la ficha del trabajo) en un nuevo alcance separado cuando la instrucción trata de la metodología general. No pedir al usuario vigilancia continua ni hacerle repetir decisiones. Esta regla ya consta en `AGENTS.md` y `UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md`; aplicar, no duplicar sistemas.
+
+### Cola canónica de compromisos expresados y situación al corte (VERIFICAR LIVE AL RETOMAR)
+
+| Prioridad | Proceso completo / obligación | Evidencia disponible | Estado de entrega y puerta de salida |
+| --- | --- | --- | --- |
+| P0 transversal | **Metodología única**: un bloqueo activo, todos los pendientes previos conservados, continuidad entre chats, mejoras aprobadas ejecutadas, no interrupciones con arreglos sueltos, cierre con evidencia y sin regresión | `AGENTS.md` y este handoff; el propio chat denunció incumplimiento reiterado | **REGLA DOCUMENTADA; ADOPCIÓN OPERATIVA A VERIFICAR**. En cada sesión, reconciliar estado vivo + cola y demostrar trabajo real sobre el proceso priorizado |
+| P0 producto | **Cliente → pedido → matching → oferta → alerta/sonido → proveedor acepta → asignación**; respetar ubicación y horarios, sin pérdida/demora injustificada | Issue #567; recuperación foreground en commits previos; pruebas humanas de ofertas demoradas | **NO E2E VERIFICADO 21/10**. Identificar primer fallo con `serviceId`, validar backend, NotificationCenter, UI y Persistencia mismo SHA |
+| P0 producto | **Proveedor estable ONLINE**: no deslogueo, GPS autorizado y refresco automático confiable en Chrome Mac, radar real; diferenciar Online de elegibilidad; errores de Auth/Realtime sin tormenta | Incidentes y trazas en este documento; issue #567 | **NO RESUELTO CONFIRMADO**. Prueba real de renovación más allá de 90s y reconexión sin login |
+| P1 servicio | **Ficha y recorrido completo de trabajo**, UX ordenada: información cliente/dirección/horario/instrucciones y acciones coherentes (en camino, llegada, iniciar, terminar), sin botones inconexos ni etapas trancadas | Conversación sobre “ficha de trabajo”; el usuario aclaró que es un **ejemplo de problema de método**, no la prioridad por encima del sistema | **PENDIENTE evaluación E2E**. Verificar transiciones con ambos roles y persistencia |
+| P1 servicio | **Navegación** desde “Ir a mapa” hacia ubicación real del cliente en Android (Google Maps/Waze/fallback), no destino genérico | Issue #567; fallo humano en teléfono | **PENDIENTE** prueba Android real |
+| P1 agenda | **Dos trabajos programados compatibles**, agenda sin bloqueo indebido, poder proponer reprogramación con aceptación/rechazo/contraoferta del cliente y conservar hora original hasta acuerdo | Pedido #2509 22/10 y “consertar tomacorriente” 24/10, ambos aceptados tras demora | **PENDIENTE reprogramación**. Dos reservas simultáneas sí observadas; no inventar bloqueo total |
+| P1 agenda | **Modo disponible 24h** con validación UI/backend de medianoche, conflictos y descansos; no prometer push con navegador cerrado sin infraestructura | Issue #567, agenda actual con tramos que rechazan cruce de medianoche | **PENDIENTE** |
+| P0 release | Integrar a `main` TODO código validado con CI y runtime del SHA exacto, no publicar regresiones, distinguir documentado/implementado/validado/publicado, consultar Sentinel y checklist | AGENTS.md y múltiples órdenes directas del usuario | **REGLA VIGENTE**. Cualquier PR sin E2E queda abierto, no DONE |
+| P1 ecosistema | HIVE/Empresa Autónoma/Observatory, plugins, Admin, fotos, pagos, APK, diseño y traducciones se mantienen en el roadmap; no abrir infraestructura paralela ni darlos por finalizados | Roadmap, maestros y locks históricos | **CONSERVAR EN COLA**, priorizar sólo tras primer servicio P0 salvo dependencia crítica |
+
+### Acción y trazabilidad concreta de este chat
+- **Issue #567** https://github.com/sebastisnzoth/ugo-admin-panel/issues/567 creado como registro de síntomas, propuestas de producto y criterios de aceptación. **No es reparación.**
+- **PR #568** https://github.com/sebastisnzoth/ugo-admin-panel/pull/568 , HEAD `b56522638dc380a0791d637825d3fa53d1200819`. Se hizo **un parche parcial** sobre presentación de timeout de GPS (30s vs 90s de elegibilidad); se abrió mientras el usuario reclamaba metodología, ejemplo explícito de desviación. **NO VALIDADO, NO MERGED**, no soluciona adquisición GPS automática. Comprobar CI/diff/conflictos y priorizarlo sólo si contribuye al P0 completo; no fusionar a ciegas. El usuario NO autorizó tratarlo como resolución de metodología.
+- **Medida estructural aplicada**: ampliación de `AGENTS.md` y este registro canónico para que cualquier chat lea los mandatos antes de trabajar. **Esto es documentación efectiva, NO prueba de que el flujo operativo ya esté resuelto.**
+
+### Handoff sin preguntas repetidas
+**Bloqueo activo:** cumplimiento operativo de la metodología, seguido de primer fallo del flujo completo Cliente → Proveedor. **Próximo agente:** 1) leer este bloque y `AGENTS.md`, issue #567, roadmap; 2) contrastar `main`, PR #568, CI, TEST, Sentinel/checklist y despliegues; 3) seleccionar primera transición P0 fallida y ejecutar corrección mínima con regresiones del proceso completo; 4) validar antes de integrar cambios de producto a `main`; 5) registrar commit, run, runtime y próximo bloqueo aquí, no crear una nueva cola ni contestar sólo con planes. **Intervención humana** sólo para prueba física indispensable o autorización material; no simularlas.
+
+### 21/10/2026 — Handoff de riesgos del método antes del piloto de Florianópolis
+
+**Orden más reciente del usuario:** examinar ventajas, contras, errores previos y fallos futuros de la ejecución automatizada; corregirlos, repetir pruebas y establecer una metodología **validada** antes del piloto. **Este chat NO ha validado todavía la automatización ni el piloto.** Consulta el registro de riesgos R1–R12 y sus pruebas de fallo en `docs/UGO_ROADMAP_MASTER.md`, sección “Revisión preventiva de metodología y piloto Florianópolis”. Ése es el checklist de riesgos; no duplicarlo en issues nuevos.
+
+**Avance real:** se escribió el análisis preventivo R1–R12 en `main`; sin ejecución de fallos inyectados ni modificaciones a worker/cola. Se prohíbe activar Empresa Autónoma ON, dar status DONE o declarar que se evitarán todos los incidentes sin las pruebas requeridas. Continuidad del PR #568: sigue siendo parche acotado sin CI/runtime confirmado; no asumir merge ni reemplazar la misión central por otro parche GPS.
+
+**Primer bloque técnico pendiente, accionable y medible:** inspeccionar el mecanismo existente de jobs/locks/worker/HIVE/Judge/Sentinel y baseline vigente (SHA/CI/TEST, costo, límites, estado de despliegue). Ensayar en TEST cuatro escenarios: **R1** reintento tras caída sin efecto duplicado; **R3** 429/timeout sin tormenta; **R5** fallo artificial bloquea DONE/merge; **R11** reinicio recupera cola sin falso 24/7. Si falla, corregir componente existente, volver a ejecutar las cuatro pruebas y documentar evidencias SHA/run. Si no hay posibilidad técnica de test, dejar BLOCKED con la dependencia exacta, nunca VERIFIED.
+
+**Después:** pruebas R2/R4/R6–R10/R12, luego E2E del primer servicio y aceptación física de dos dispositivos para Florianópolis. Los P0 reales de Cliente/Proveedor conservan prioridad cuando degradan operación; no interrumpir su solución con infraestructura que no sea indispensable. Registrar owner, estado probado, entorno, artefactos y próxima acción. No crear segunda cola o plataforma; reutilizar `development_checklist`, jobs y ledger canónicos.
+
+**Criterio de aceptación global:** metodología controlada por gates efectivos + un servicio completo real comprobado, sin regresiones nuevas, publicado en canal autorizado y revalidado. El simple guardado de documentos o creación de PR **no alcanza**.
+
+
+---
+
+## Integración operativa con UGO Roadmap Master
+
+**Fuentes complementarias, no paralelas:** `docs/UGO_ROADMAP_MASTER.md` registra alcance, hitos y estados técnicos; este Camino Maestro determina prioridades, verificación y cierre. Ante discrepancias, consultar `main`, CI del SHA exacto, Arena TEST y la aplicación publicada antes de actualizar cualquiera de los dos. Los checkpoints históricos no prueban el estado actual.
+
+**Metodología vinculante por bloque:** recuperar antecedentes → reproducir el primer fallo → corregir lo mínimo necesario → probar funcionalidad, seguridad y regresiones → fusionar a `main` todo cambio independiente completamente verificado → comprobar el SHA de `main` y la publicación correspondiente → registrar evidencia y cerrar. Un commit, PR o test verde aislado no significa entrega funcional. Los cambios no validados permanecen identificados como abiertos, sin bloquear indefinidamente los cambios independientes seguros.
+
+**Incidente P0 en seguimiento (21/10/2026, sujeto a revalidación):** PR [#566](https://github.com/sebastisnzoth/ugo-admin-panel/pull/566), GPS de Proveedor y matching Cliente → Pedido → Oferta → Alerta → Aceptación → Asignación. El último control conversacional confirmó el PR abierto y sin fusionar; el estado de merge y las ejecuciones posteriores requieren consulta en vivo. Antecedente de Arena TEST: proveedor Online sin GPS vigente (umbral del motor: 90 s), pedido en búsqueda sin ofertas. No interpretar cron ejecutado, proveedor Online ni oferta insertada como evidencia de recepción real. Verificar primero el estado del pedido y la ubicación persistida, evitando reusar snapshots históricos como vigentes.
+
+**Cierre del P0:** reconciliar SHA y CI → resolver incompatibilidades con `main` preservando trabajo ajeno → validar GPS actualizado en backend y recuperación permitida por navegador → probar rematching sin duplicados/cancelaciones indebidas → comprobar alerta, aceptación y asignación en Arena TEST → integrar los cambios aprobados → verificar `main` y canal publicado. La prueba de GPS, sonido/vibración y flujo físico en dispositivos reales sigue diferenciada del E2E automatizado; no simular aceptación humana ni alterar Supabase producción sin los gates correspondientes.
+
+**Handoff obligatorio entre sesiones:** registrar en este Camino Maestro el bloqueo P0, SHA de `main` y del PR, ejecuciones y resultados exactos, entorno, evidencia, fusión efectuada o no, revisión publicada y siguiente paso accionable. Actualizar el Roadmap Master con el mismo hito y madurez (`IMPLEMENTED`, `CI VALIDATED`, `RUNTIME VALIDATED`, `PUBLISHED`) para evitar estados contradictorios. No pedir reiteradamente pruebas ya aportadas; marcar sólo las pruebas humanas realmente pendientes.
+
 
 ### P0 2026-10-21 — Recuperación automática del matching (PR #566)
 - Preparada migración `20261021223000_safe_automatic_rematch_recovery.sql`: reintenta lotes de hasta 20 servicios `buscando`/`ofrecido` sin ofertas vigentes, omite asignados/cancelados, usa `FOR UPDATE SKIP LOCKED` y reutiliza controles existentes de autorización, GPS, deudas, categoría y horario.
