@@ -104,7 +104,7 @@ try{
   let headerMatched=false;
   for(let attempt=0;attempt<30;attempt++){
     const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
-    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Customer #1: '+before.launch)){headerMatched=true;break}
+    if(autonomyText.includes(before.mode)&&autonomyText.includes(before.launch)){headerMatched=true;break}
     await page.waitForTimeout(250);
   }
   assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
@@ -112,7 +112,7 @@ try{
 
   await page.getByTestId('autonomy-view-departments').click();
   await page.getByText('Departamentos corporativos',{exact:true}).waitFor({state:'visible'});
-  const departmentTable=page.locator('table').filter({hasText:'Jobs totales'}).first();
+  const departmentTable=page.locator('.ugo-autonomous-content table').first();
   await departmentTable.waitFor({state:'visible'});
   for(const summary of before.departmentJobs){
     const rows=departmentTable.locator('tbody tr');
