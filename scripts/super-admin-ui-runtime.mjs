@@ -100,7 +100,7 @@ try{
   await page.locator('.ugo-superadmin-statebar').waitFor({state:'visible',timeout:20000});
 
   await page.locator('.ugo-superadmin-statebar button').first().click();
-  await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
+  await page.locator('.ugo-autonomous-content').waitFor({state:'visible',timeout:20000});
   let headerMatched=false;
   for(let attempt=0;attempt<30;attempt++){
     const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
