@@ -1,0 +1,30 @@
+name: UGO Hive Production Static Preflight
+on:
+  pull_request:
+    paths:
+      - 'docs/ugo-hive/PROD_AUTONOMY_HIVE_DEPENDENCY_CANDIDATES.json'
+      - 'scripts/ugo-hive-prod-dependency-audit.mjs'
+      - 'supabase/migrations/**'
+      - '.github/workflows/ugo-hive-production-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate dependency inventory without database access
+        run: node scripts/ugo-hive-prod-dependency-audit.mjs > hive-static-preflight.json
+      - name: Validate local-only backup harness syntax
+        run: bash -n scripts/ugo-production-private-backup-local-restore.sh
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hive-static-preflight
+          path: hive-static-preflight.json
+          if-no-files-found: warn
