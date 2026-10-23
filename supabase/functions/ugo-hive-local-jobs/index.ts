@@ -4,6 +4,10 @@ const json=(s:number,o:unknown)=>new Response(JSON.stringify(o),{status:s,header
 const allowed=['https://sebastisnzoth.github.io','http://localhost:5173','http://127.0.0.1:5173'];
 function headers(origin:string|null){return origin&&allowed.includes(origin)?{'access-control-allow-origin':origin,'access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'authorization,apikey,content-type,x-client-info','vary':'Origin'}:{};}
 const wrap=(s:number,o:unknown,origin:string|null)=>{const r=json(s,o);Object.entries(headers(origin)).forEach(([k,v])=>r.headers.set(k,v));return r};
+const agents=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const;
+type Agent=typeof agents[number];
+const scopes:Record<Agent,string>={Hugo:'general product analysis',Architect:'architecture analysis',Developer:'propose code changes without executing',QA:'test planning',Security:'defensive security assessment',DevOps:'deployment analysis only',Judge:'evaluate evidence',Sentinel:'flag safety and reliability risks',Research:'summarize provided information'};
+const jobRole=(prompt:string):Agent=>{const found=/^\[UGO HIVE TEST AGENT: ([A-Za-z]+) \| READ_ONLY\]\n/.exec(prompt);return found&&agents.includes(found[1] as Agent)?found[1] as Agent:'Hugo'};
 const hash=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,'0')).join('');
 Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin'),send=(s:number,o:unknown)=>wrap(s,o,origin);
@@ -67,9 +71,12 @@ Deno.serve(async(req:Request)=>{
  }
  if(body.action==='create'){
    if(typeof body.prompt!=='string'||body.prompt.trim().length<1||body.prompt.length>4000||
-      typeof body.idempotency_key!=='string'||!/^[0-9a-f-]{36}$/i.test(body.idempotency_key)||
-      Object.keys(body).some(k=>!['action','prompt','idempotency_key'].includes(k)))return send(400,{error:'INVALID_REQUEST'});
-   const {data,error}=await db.rpc('hive_local_create_job',{p_user_id:auth.user.id,p_prompt:body.prompt,p_key:body.idempotency_key});
+      (body.agent!==undefined&&!agents.includes(body.agent))||typeof body.idempotency_key!=='string'||!/^[0-9a-f-]{36}$/i.test(body.idempotency_key)||
+      Object.keys(body).some(k=>!['action','prompt','agent','idempotency_key'].includes(k)))return send(400,{error:'INVALID_REQUEST'});
+   const agent:Agent=body.agent??'Hugo';
+   const payload=`[UGO HIVE TEST AGENT: ${agent} | READ_ONLY]\nScope: ${scopes[agent]}. Analyze the user request only. No tools, SQL, shell, network access or claims of executing changes.\n${body.prompt.trim()}`;
+   if(payload.length>4000)return send(400,{error:'PROMPT_TOO_LONG'});
+   const {data,error}=await db.rpc('hive_local_create_job',{p_user_id:auth.user.id,p_prompt:payload,p_key:body.idempotency_key});
    if(error){
      if(error.message?.includes('HIVE_RATE_LIMITED'))return send(429,{error:'RATE_LIMITED'});
      return send(503,{error:'CREATE_UNAVAILABLE'});
@@ -78,8 +85,8 @@ Deno.serve(async(req:Request)=>{
  }
  if(body.action==='list'){
    if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_LIST'});
-   const {data,error}=await db.from('hive_local_inference_jobs').select('id,status,answer,model,error_code,created_at,updated_at').eq('user_id',auth.user.id).order('created_at',{ascending:false}).limit(20);
-   return error?send(503,{error:'LIST_UNAVAILABLE'}):send(200,{jobs:data??[]});
+   const {data,error}=await db.from('hive_local_inference_jobs').select('id,status,prompt,answer,model,error_code,created_at,updated_at').eq('user_id',auth.user.id).order('created_at',{ascending:false}).limit(20);
+   return error?send(503,{error:'LIST_UNAVAILABLE'}):send(200,{jobs:(data??[]).map(({prompt,...job})=>({...job,agent:jobRole(prompt)}))});
  }
  return send(400,{error:'UNKNOWN_ACTION'});
 });
