@@ -7,7 +7,7 @@ const wrap=(s:number,o:unknown,origin:string|null)=>{const r=json(s,o);Object.en
 const agents=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const;
 type Agent=typeof agents[number];
 const scopes:Record<Agent,string>={Hugo:'general product analysis',Architect:'architecture analysis',Developer:'propose code changes without executing',QA:'test planning',Security:'defensive security assessment',DevOps:'deployment analysis only',Judge:'evaluate evidence',Sentinel:'flag safety and reliability risks',Research:'summarize provided information'};
-const jobRole=(prompt:string):Agent=>{const found=/^\[UGO HIVE TEST AGENT: ([A-Za-z]+) \| READ_ONLY\]\n/.exec(prompt);return found&&agents.includes(found[1] as Agent)?found[1] as Agent:'Hugo'};
+const jobRole=(prompt:string):Agent|'Legacy'=>{const found=/^\[UGO HIVE TEST AGENT: ([A-Za-z]+) \| READ_ONLY\]\n/.exec(prompt);return found&&agents.includes(found[1] as Agent)?found[1] as Agent:'Legacy'};
 const hash=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,'0')).join('');
 Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin'),send=(s:number,o:unknown)=>wrap(s,o,origin);
