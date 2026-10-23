@@ -416,3 +416,8 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 - En `main` be7377c8, Cross-role UI (run 39837869684) y Cross Visual (run 39837869745) fallaron antes de ejecutar Chromium: `Playwright 1.56.1 does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest`. No es evidencia de defecto de producto.
 - Corrección acotada: fijar `runs-on: ubuntu-24.04` en `.github/workflows/role-ui-runtime.yml` y `.github/workflows/cross-visual-runtime.yml`, sin relajar las aserciones, la seguridad ni modificar la app. Estado IMPLEMENTADO EN RAMA, pendiente CI/navegador del SHA final y verificación tras fusión.
 - Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
+
+
+### PR #552 — Consolidated provider browser-online Realtime reconciliation (2026-10-23)
+- Rebased by a safe merge commit preserving newer main Realtime and auth code. A single `handleOnline` performs authoritative resync plus reconnect; its listener is removed on cleanup. Realtime offer, service, payment and debt subscriptions are unchanged.
+- Contract coverage was preserved and compared with current main. Branch E2E and CI must rerun at the new SHA; this does not replace human two-device matching verification.
