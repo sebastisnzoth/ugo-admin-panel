@@ -822,3 +822,8 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 ### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
 - Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
 - No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
+
+
+### PR #565 — Admin user Realtime order and autonomy mode proof (2026-10-23)
+- Preserve latest main plus AdminUsersPanel monotonic load revision: older concurrent Realtime reads cannot overwrite newer rows, category lists or total count.
+- Cross-role TEST now waits for UI radio selected state to converge with persisted mode; verifies backend unchanged, does not change non-OFF operator state and fails on mismatch. New contract covers both fixes. SAME-SHA CI and browser verification required before integration.

@@ -344,12 +344,15 @@ async function testAutonomyControl(page,name){
  // non-idle state would interfere with autonomous jobs and manual operations.
  if(before.data?.mode!=='OFF'){
   assert.ok(['SHADOW','ON'].includes(before.data?.mode),'AUTONOMY_UNRECOGNIZED_STATE')
-  const active=page.getByRole('radio',{name:new RegExp(before.data.mode)})
+  const active=page.getByRole('radio',{name:new RegExp('^'+before.data.mode+'$')})
   await active.waitFor({state:'visible',timeout:20000})
-  await page.waitForFunction(mode=>Array.from(document.querySelectorAll('[role="radio"]')).some(el=>el.textContent?.includes(mode)&&el.getAttribute('aria-checked')==='true'),before.data.mode,{timeout:20000}).catch(()=>{})
-  const confirmed=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
-  assert.ifError(confirmed.error)
-  assert.equal(confirmed.data?.mode,before.data.mode,'AUTONOMY_STATE_CHANGED_DURING_TEST')
+  await page.waitForFunction(expected=>{
+   const choices=Array.from(document.querySelectorAll('[role="radio"]'))
+   return choices.some(el=>el.textContent?.trim()===expected&&el.getAttribute('aria-checked')==='true')
+  },before.data.mode,{timeout:20000})
+  const current=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
+  assert.ifError(current.error)
+  assert.equal(current.data?.mode,before.data.mode,'AUTONOMY_TEST_MODE_CHANGED_DURING_PROOF')
   assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
   results.push({role:'superadmin-autonomy-control',viewport:name,status:'SKIPPED',reason:'NON_IDLE_TEST_STATE',observed_mode:before.data.mode,read_only_state_verified:true,transition_tested:false})
   return
