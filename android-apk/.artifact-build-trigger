@@ -1,3 +1,4 @@
 UGO Android APK artifact build trigger
 Source HEAD: f95bfe40a02403144152692b1958362daa92ba5c
 Purpose: trigger .github/workflows/android-apks.yml after the workflow was added to main.
+SDK setup fix run: a12d54c319716d48660cb64ec3ad333fe1b41912
