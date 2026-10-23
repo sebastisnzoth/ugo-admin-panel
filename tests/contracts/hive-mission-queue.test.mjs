@@ -50,3 +50,11 @@ test('mission creation requires a durable key and rejects mismatched replays',()
  assert.match(edge,/p_key:body\.idempotency_key/);
  assert.match(edge,/INVALID_MISSION/);
 });
+
+test('mission Console holds idempotency key across uncertain requests',()=>{
+ const source=fs.readFileSync('src/mvp/HiveConsole.tsx','utf8');
+ assert.match(source,/pendingMissionRef=React\.useRef/);
+ assert.match(source,/pendingMissionRef\.current\?\.signature!==signature/);
+ assert.match(source,/idempotency_key:pendingMissionRef\.current\.key/);
+ assert.match(source,/pendingMissionRef\.current=null/);
+});
