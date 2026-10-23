@@ -28,13 +28,22 @@ export function createLocalModelClient({ endpoint = process.env.HIVE_LOCAL_FREEA
           signal: AbortSignal.timeout(timeoutMs),
           redirect: 'error'
         });
-        if (response.status === 429) throw new Error('HIVE_FREEAPI_RATE_LIMITED: proveedor sin cuota temporal; no se reintenta automáticamente');
+        // Fail once, without an automatic upstream replay: a timeout may have completed remotely.
+        // Retry-After is advisory metadata only, not permission to duplicate a request.
+        if (response.status === 429 || response.status === 503) {
+          const header = response.headers?.get?.('retry-after');
+          const seconds = typeof header === 'string' && /^\d{1,5}$/.test(header.trim())
+            ? Math.min(3600, Number(header.trim())) : null;
+          const err = new Error(response.status === 429 ? 'HIVE_FREEAPI_RATE_LIMITED' : 'HIVE_PROVIDER_UNAVAILABLE');
+          err.retryAfterSeconds = seconds;
+          throw err;
+        }
         if (!response.ok) throw new Error('HIVE_PROVIDER_HTTP_' + response.status);
         const raw = await response.text();
         if (raw.length > 131072) throw new Error('HIVE_RESPONSE_TOO_LARGE');
-        const data = JSON.parse(raw);
+        let data; try { data = JSON.parse(raw); } catch { throw new Error('HIVE_INVALID_PROVIDER_RESPONSE'); }
         const answer = data?.choices?.[0]?.message?.content;
-        if (typeof answer !== 'string') throw new Error('HIVE_INVALID_PROVIDER_RESPONSE');
+        if (typeof answer !== 'string' || !answer.trim()) throw new Error('HIVE_INVALID_PROVIDER_RESPONSE');
         return { answer, model: data.model || model };
       } finally { inFlight = false; }
     }
