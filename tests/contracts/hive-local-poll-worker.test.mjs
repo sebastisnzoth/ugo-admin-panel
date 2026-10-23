@@ -17,7 +17,7 @@ test('reject unapproved or tool-capable jobs before model execution',async()=>{
 test('authorized inference acknowledges bounded result using lease',async()=>{
   const calls=[];
   const result=await processHivePoll({claim:async()=>valid,complete:async obj=>calls.push(obj),policy:{},
-    run:async ({task})=>{assert.equal(task.capability,'inference-only');assert.equal(task.model,'qwen3-coder-free');return {status:'COMPLETED_LOCAL_INFERENCE',answer:'UGO OK'}}});
+    run:async ({task})=>{assert.equal(task.capability,'inference-only');assert.equal(task.model,'qwen3-coder-free');return {status:'COMPLETED_LOCAL_INFERENCE',model:'qwen3-coder-free',answer:'UGO OK'}}});
   assert.equal(result.status,'SUCCEEDED');
   assert.equal(calls[0].lease,valid.lease);
   assert.equal(calls[0].answer,'UGO OK');
@@ -28,4 +28,24 @@ test('failed model call reports generic error without leaking detail',async()=>{
     run:async()=>{throw Error('secret exception')}});
   assert.deepEqual({status:calls[0].status,code:calls[0].code},{status:'FAILED',code:'HIVE_LOCAL_INFERENCE_FAILED'});
   assert.equal(JSON.stringify(calls).includes('secret'),false);
+});
+
+test('rejects malformed UUID claims before invoking model',async()=>{
+  let called=false;
+  await assert.rejects(processHivePoll({claim:async()=>({...valid,id:'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeee-g'}),
+    complete:async()=>{called=true},policy:{},run:async()=>{called=true}}),/HIVE_POLL_INVALID_JOB/);
+  assert.equal(called,false);
+});
+test('does not acknowledge malformed or oversized inference as successful',async()=>{
+  const bad=[null,{}, {status:'COMPLETED_LOCAL_INFERENCE',model:'unexpected',answer:'OK'},
+    {status:'COMPLETED_LOCAL_INFERENCE',model:'qwen3-coder-free',answer:''},
+    {status:'COMPLETED_LOCAL_INFERENCE',model:'qwen3-coder-free',answer:'x'.repeat(12001)}];
+  for(const result of bad){
+    const calls=[];
+    const state=await processHivePoll({claim:async()=>valid,complete:async obj=>calls.push(obj),policy:{},run:async()=>result});
+    assert.equal(state.status,'FAILED');
+    assert.equal(calls[0].status,'FAILED');
+    assert.equal(calls[0].code,'HIVE_INVALID_INFERENCE_RESULT');
+    assert.equal(Object.hasOwn(calls[0],'answer'),false);
+  }
 });
