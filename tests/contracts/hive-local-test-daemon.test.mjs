@@ -28,6 +28,16 @@ test('idle uses bounded 8 second polling interval',async()=>{
  await runHiveTestWorkerLoop({token,policy,poll:async()=>{called++;return {status:'IDLE'}},wait:async(ms)=>{delay=ms},shouldStop:()=>called>=2});
  assert.equal(delay,8000);assert.equal(called,2);
 });
+test('transient disconnect recovers with bounded polling and no credential rotation',async()=>{
+ let calls=0;const delays=[],events=[];
+ await runHiveTestWorkerLoop({token,policy,poll:async()=>{calls++;if(calls===1)throw Error('HIVE_TEST_TRANSPORT_UNREACHABLE');return {status:'IDLE'}},wait:async ms=>{delays.push(ms)},shouldStop:()=>calls>=2,onEvent:event=>events.push(event)});
+ assert.deepEqual(delays,[8000]);assert.deepEqual(events,['RETRY_WAIT','IDLE']);
+});
+test('engine unavailability is reported separately from a failed inference',async()=>{
+ const events=[];let calls=0;
+ await runHiveTestWorkerLoop({token,policy,poll:async()=>{calls++;return {status:'ENGINE_UNAVAILABLE'}},shouldStop:()=>calls>0,onEvent:event=>events.push(event)});
+ assert.deepEqual(events,['ENGINE_UNAVAILABLE']);
+});
 test('uncertain completion halts the worker without retrying a lease',async()=>{
  let calls=0;
  await assert.rejects(runHiveTestWorkerLoop({token,policy,poll:async()=>{calls++;throw Error('HIVE_COMPLETION_UNCERTAIN')},

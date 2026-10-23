@@ -299,6 +299,26 @@ jobs:
           test -s _site/preview/pr-518/index.html
           grep -q '/ugo-admin-panel/preview/pr-518/assets/' _site/preview/pr-518/index.html
 
+      # Isolated Hive TEST preview; canonical /app remains built from main.
+      - name: Build isolated Hive PR 571 preview
+        continue-on-error: true
+        env:
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin feat/hive-local-freellmapi-guarded-20261022
+          git worktree add --detach /tmp/ugo-preview-pr571 FETCH_HEAD
+          (
+            cd /tmp/ugo-preview-pr571
+            npm ci --include=dev
+            npm run build -- --base=/ugo-admin-panel/preview/pr-571/
+            node --test tests/contracts/hive-superadmin-console.test.mjs tests/contracts/hive-local-test-transport.test.mjs
+          )
+          mkdir -p _site/preview/pr-571
+          cp -a /tmp/ugo-preview-pr571/dist/. _site/preview/pr-571/
+          test -s _site/preview/pr-571/index.html
+          grep -q '/ugo-admin-panel/preview/pr-571/assets/' _site/preview/pr-571/index.html
+
       - name: Build main HEAD snapshot
         env:
           GH_TOKEN: ${{ github.token }}

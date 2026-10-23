@@ -18,6 +18,7 @@ test('Hive chat queues authenticated TEST inference with bounded fields and no c
  assert.match(consoleCode,/action:'list'/)
  assert.match(consoleCode,/action:'worker_status'/)
  assert.match(consoleCode,/crypto\.randomUUID\(\)/)
+ assert.match(consoleCode,/pendingChatRef\.current=\{signature,key:crypto\.randomUUID\(\)\}/)
  assert.match(consoleCode,/disabled=\{!chatVerified\|\|sending\|\|!prompt\.trim\(\)\}/)
  assert.doesNotMatch(consoleCode,/signInWithPassword\(|localStorage|OPENROUTER_API_KEY|FREEAPI_API_KEY/)
 })
@@ -49,6 +50,27 @@ test('TEST Edge validates nine agents server-side and attributes persisted jobs'
  assert.match(edge,/p_prompt:payload,p_key:body\.idempotency_key,p_agent:agent/)
  assert.match(edge,/SUPABASE_URL'\)!==URL/)
  assert.doesNotMatch(edge,/action==='execute'|action==='autonomy_on'/)
+})
+
+test('Worker enrollment avoids manual hashes and separates heartbeat, engine and persisted inference',()=>{
+ const edge=fs.readFileSync('supabase/functions/ugo-hive-local-jobs/index.ts','utf8')
+ assert.match(consoleCode,/crypto\.getRandomValues\(new Uint8Array\(32\)\)/)
+ assert.match(consoleCode,/action:'provision_worker',worker_token:token/)
+ assert.doesNotMatch(consoleCode,/token_hash|workerHashLabel/)
+ assert.match(edge,/body\.action==='engine_status'/)
+ assert.match(edge,/engine_available:connected&&data\?\.engine_status==='AVAILABLE'/)
+ assert.match(edge,/eq\('active',true\)\.eq\('token_hash',digest\)\.select\('id'\)/)
+ assert.match(edge,/const tokenHash=await hash\(body\.worker_token\)/)
+ assert.match(consoleCode,/tr\.engineStatus/)
+ assert.match(consoleCode,/tr\.inferenceStatus/)
+ assert.doesNotMatch(edge,/body\.token_hash/)
+})
+
+test('Agent idempotency rejects a changed prompt instead of returning an unrelated job',()=>{
+ const sql=fs.readFileSync('supabase/migrations/20261023100000_hive_local_agent_idempotency_prompt.sql','utf8')
+ assert.match(sql,/j\.prompt is distinct from p_prompt/)
+ assert.match(sql,/HIVE_IDEMPOTENCY_CONFLICT/)
+ assert.match(sql,/revoke all on function public\.hive_local_create_agent_job\(uuid,text,uuid,text\) from public,anon,authenticated/)
 })
 
 test('Hive TEST agent identity is structured, server-owned and rejects idempotency conflicts',()=>{

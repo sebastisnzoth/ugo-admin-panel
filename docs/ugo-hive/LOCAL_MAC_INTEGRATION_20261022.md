@@ -79,3 +79,20 @@ Do not deploy/migrate production or enable Empresa Autonoma. If the Mac cannot r
 - **Límite importante:** `FAILED` sigue cerrando el job actual. No afirmar resiliencia completa, espera persistente ni retry automático sin rediseñar cola/lease/idempotencia para no duplicar una inferencia de resultado incierto. En caso de 429 la interfaz debe comunicar fallo recuperable y permitir nueva consulta humana, sin fingir ejecución automática.
 - No se tocó Supabase TEST/PROD ni Render; no se activó Empresa Autónoma; no hubo claves nuevas.
 - Próximo trabajo: confirmar CI same-SHA; diseñar transición persistente `RETRY_WAIT` por clase de fallo y presupuestos de reintentos (sólo rechazos HTTP conocidos sin inferencia ejecutada, no timeouts inciertos); validar migración aditiva y prueba contra TEST antes de desplegar; comprobar los nueve perfiles.
+
+## 2026-10-23 — Instalador Keychain + LaunchAgent (candidato, prueba física pendiente)
+
+Estas instrucciones sustituyen el enrolamiento manual por hash para el nuevo árbol. No ejecutar hasta que el SHA candidato tenga CI verde y las migraciones/Edge compatibles estén efectivamente aplicados en TEST.
+
+1. En Super Admin → Hive, si no existe un worker válido, usar **Generar credencial TEST**. El navegador genera 32 bytes aleatorios y el Edge guarda sólo su SHA-256. Copiar el token mostrado una vez; no calcular ni pegar un hash. Si ya existe una credencial que funciona, no generar otra.
+2. En el worktree existente y con `git status --short` limpio, actualizar la rama de PR #571 sólo con `git pull --ff-only`. Desde la raíz ejecutar:
+   ```sh
+   node scripts/hive-local-macos-service.mjs install
+   node scripts/hive-local-macos-service.mjs status
+   ```
+   El instalador pide por entrada oculta sólo las credenciales ausentes. Reutiliza las válidas de login Keychain y no las incluye en argumentos, plist, logs o variables de entorno. Es idempotente; repetir `install` recarga el mismo LaunchAgent sin crear otro.
+3. El agente `com.ugo.hive.test.worker` inicia al iniciar sesión del usuario y sólo hace conexiones salientes a TEST y loopback FreeLLMAPI. FileVault/reinicio antes del login sigue requiriendo acción humana. Logs sanitizados: `~/Library/Logs/UGO/HiveTest/`.
+4. Para detener y desinstalar conservando credenciales: `node scripts/hive-local-macos-service.mjs uninstall`. La opción `--delete-credentials` es una revocación local destructiva explícita, no parte del flujo normal. Si el token fue revocado y el Super Admin genera otro, usar `install --replace-credentials` deliberadamente.
+5. Verificación física obligatoria: arranque tras reinicio+login, una sola instancia, corte/reconexión de red, revocación sin bucle, motor disponible mediante `/models`, una consulta real persistida `SUCCEEDED`, los nueve perfiles y una misión secuencial. Un catálogo disponible no prueba cuota ni inferencia; el panel muestra esos estados por separado.
+
+**Estado en esta sesión: contratos simulados PASS; macOS Catalina/Keychain/launchd reales NO EJECUTADOS (HUMAN_REQUIRED).** No abrir puertos, no exponer claves y mantener Empresa Autónoma OFF.

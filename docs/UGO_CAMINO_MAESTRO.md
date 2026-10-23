@@ -438,3 +438,45 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 - **Implementado en rama, aún no comprobado E2E:** `HiveConsole.tsx` envía solicitudes autenticadas, lista respuestas, registra hash de worker y muestra presencia por heartbeat; worker de Mac consulta saliente y ejecuta inferencia local autorizada.
 - **Bloqueo activo exacto:** credencial worker no registrada (0 activas en TEST), Mac aún no ejecuta daemon nuevo; CI same-SHA y navegador Super Admin no validados. No declarar terminado ni fusionar hasta superar gates. La inferencia local previa `UGO PUENTE OK` no sustituye este recorrido.
 - **Siguiente paso:** pasar Core CI y contratos; activar credencial mediante hash generado en Mac (nunca enviar token) con Super Admin en entorno TEST; iniciar worker explícitamente; ejecutar una solicitud real y recibir la respuesta del mismo job; validar reintento/reinicio y publicación segura a `main`.
+
+### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
+- Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
+- No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
+
+
+### 2026-10-23 — PR #572: integración incremental de Agent Skills en UGO
+- Objetivo: reforzar reparación P0, pruebas, revisión, seguridad, CI y publicación con 8 skills de ingeniería externas, preservando todas las skills propias `ugo-*` y el protocolo `AGENTS.md`.
+- Fuente auditada: `sebastisnzoth/agent-skills` commit `aeac41d4d005999432bb7312f7ff06383a91d59d` (MIT). Copias exactas en `.agents/skills/`, licencia incluida en `docs/third-party/agent-skills-LICENSE` y guía `docs/UGO_AGENT_SKILLS_INTEGRACION.md`.
+- Cambio de integración: enrutamiento de skills dentro de `AGENTS.md`, prueba `tests/contracts/agent-skills-integration.test.mjs` ejecutable desde Core CI; **ninguna modificación de lógica Cliente/Proveedor, Supabase, configuración productiva, secretos ni autonomía**.
+- Evidencia parcial: preflight comparó los 8 blobs origen/destino y validó enrutamiento/licencia; en el primer SHA de PR `145a9f1b` falló Roadmap Traceability por falta de estos registros (no por fallo funcional). Este commit agrega la trazabilidad faltante. Requerido: checks actualizados del nuevo SHA y merge seguro; no marcar DONE antes de verificarlos.
+- P0 Cliente → Pedido → Proveedor, Auth/GPS/Realtime y prueba humana siguen **pendientes de validación funcional**, no se declaran resueltos por importar instrucciones. No se habilita Empresa Autónoma.
+
+
+### 2026-10-23 — P0: prueba real de alerta sin recarga (skills: debugging, TDD, QA)
+- Se identificó un falso positivo estructural: `scripts/p0-client-provider-e2e.mjs` forzaba `page.reload()` inmediatamente antes de demostrar la oferta. Eso verificaba persistencia/RPC pero **no** alerta en vivo, que es el reclamo del piloto.
+- Cambio acotado: observador de alerta visible armado **antes** de crear el pedido; registra `offerId` y `serviceId` exactos del popup en la sesión del Proveedor; exige la coincidencia antes de aceptar, sin recargar. Se preserva prueba de sesión y aceptación. El popup expone esos IDs sólo al usuario autenticado para atribución determinista en UI TEST.
+- Runner de E2E fijado a `ubuntu-24.04` para Playwright 1.56.1 y contrato preventivo `tests/contracts/p0-live-offer-before-reload.test.mjs`.
+- No se cambian RPC, políticas RLS, bases, disponibilidad, deuda, GPS, backend de matching ni producción. **Pendiente** Core CI, browser E2E en TEST, validación de smoke postmerge y prueba de dos dispositivos (no declarar P0 resuelto hasta superar puertas). Si falla alerta, bloquear merge y usar esa traza para reparar el componente real.
+
+- **Incidencia CI confirmada (run 39935340702):** Provider Notifications Runtime completó sus 18 tests previos (18 PASS), pero la instalación de Chromium terminó con `Playwright does not support chromium on ubuntu26.04-x64`; era falla de infraestructura, NO prueba de defecto de alerta. Corrección mínima en el workflow de notificaciones: `runs-on: ubuntu-24.04`, mismo Playwright 1.56.1, sin deshabilitar checks ni modificar lógica. Reejecutar E2E y Judge/Sentinel sobre SHA actualizado para evaluar alerta de verdad.
+
+### 2026-10-23 — P0 postmerge: restaurar runners de pruebas de navegador
+- Evidencia reproducible exact SHA `6e0e8ab7`: Provider Alerts [run 39936811451] y Cross Accessibility [run 39936811417] terminaron FAIL **antes de ejecutar el navegador** por `Playwright does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest` con `playwright@1.56.1`. No adjudicar este fallo a Auth, GPS ni matching.
+- Reparación mínima: fijar `ubuntu-24.04` en workflows existentes Provider Alerts, Cross Accessibility, Provider UI y Client Notifications, conservando Playwright y aserciones; se añade contrato `tests/contracts/playwright-runner-compatibility-20261023.test.mjs` para prevenir regresión. Ni lógica de producto, ni SQL, ni secretos, ni bases de datos modificados.
+- Estado: **cambio pendiente de CI exact SHA, Judge/Sentinel y pruebas browser postmerge**. La prueba P0 de matching live sin recarga ya pasó para PR #573; no equivale a prueba humana de dos celulares, ni acredita que Cliente haya creado la solicitud desde su propia UI. No habilitar Empresa Autónoma ni declarar piloto READY.
+
+### 2026-10-23 — Core CI: remediación de Zod, candidato independiente
+- Baseline revalidado: `8c753669f8b9051c3926a5b29860bd70da293bcf`, también HEAD de `origin/main`. El run `40031488931` y `npm audit` local reprodujeron `GHSA-mrhx-c7xc-m3w5` (high) en `zod@4.4.3`; la dependencia es transitiva de desarrollo de `eslint-plugin-react-hooks@7.1.1`, directamente y mediante `zod-validation-error`.
+- `npm update zod --package-lock-only --ignore-scripts` regeneró únicamente la entrada de Zod en `package-lock.json` a `4.6.7`, versión disponible, corregida (`>=4.6.6`) y dentro de la gama `^3.25.0 || ^4.0.0` del consumidor. Sin `--force`, sin editar integridades, sin añadir dependencia directa y sin relajar el gate.
+- Verificación local del candidato: `npm ci` limpio y `npm audit --audit-level=high` con 0 vulnerabilidades; TypeScript/build PASS; contrato GPS focalizado e i18n PASS; suite 1508 PASS / 0 FAIL / 8 SKIP por credenciales TEST ausentes, igual que baseline; lint 0 errores y 986 warnings preexistentes. La verificación adicional de firmas no pudo contactar Sigstore y no se usa como evidencia.
+- Estado: **corrección local comprobada; CI del SHA exacto e integración pendientes**. No cambia lógica de producto, SQL, Supabase TEST/PROD, Empresa Autónoma ni publicación por sí solo. Siguiente puerta: Core CI remoto same-SHA y merge controlado; después continuar Hive/matching sin atribuirles este verde.
+
+### 2026-10-23 — PR #576 integrada: Zod corregido en main
+- PR #576 fusionada como `83d9a08ce2128463471ba14c78b958788efce762`. Core CI postmerge `40035456820` SUCCESS y GitHub Pages `40035456858` SUCCESS sobre ese SHA. El `status.json` público publica exactamente `83d9a08…`; PROD sigue protegido y `production_ready=false`.
+- Esta evidencia cierra la vulnerabilidad high de Zod en `main`; no prueba Hive, matching, roles ni Vercel. El check externo Supabase Preview del SHA aparece FAILURE y no se reetiqueta como PASS; queda separado de la corrección de dependencia.
+
+### 2026-10-23 — PR #571 reconciliada y recuperación Mac implementada, runtime aún bloqueado
+- Se incorporó la rama Hive a la rama Arena sin perder sus 118 commits. Los únicos conflictos eran los dos documentos maestros; se conservaron completas ambas historias. Hive NO se fusionó a `main`.
+- Se agregaron presencia de motor separada, enrolamiento Super Admin sin hash manual, token de una sola vista para Keychain, LaunchAgent Catalina idempotente, reutilización de credenciales, instancia única, recuperación de lock, backoff/reconexión, parada fail-closed y logs de códigos fijos. También se reforzó idempotencia prompt+agente y reintento incierto de Chat.
+- Prueba local del árbol: build/TypeScript PASS; 1590 tests = 1582 PASS / 0 FAIL / 8 SKIP por credenciales TEST ausentes; lint 0 errores / 987 warnings; i18n y diálogos PASS. Nueve migraciones Hive se ejercen en PGlite con datos sintéticos, replay como propietario, reinicio, handoff, cancelación, lease incierto, RLS/ACL y metadatos. PGlite no prueba concurrencia multi-sesión de TEST.
+- **No desplegado:** el conector Supabase actual no devolvió proyectos accesibles; no se aplicaron las nuevas migraciones ni se actualizó Edge TEST. No hay acceso al runtime Mac. Los nueve perfiles reales, misión E2E, Keychain/reinicio físico y TEST multi-sesión permanecen BLOCKED/HUMAN_REQUIRED. Siguiente: CI del SHA final y actualización controlada de PR #571, sin promoverla mientras falten estas puertas.

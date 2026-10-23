@@ -20,15 +20,24 @@ Deno.serve(async(req:Request)=>{
  const db=createClient(URL,key,{auth:{persistSession:false,autoRefreshToken:false}});
  const bearer=req.headers.get('authorization')||'';if(!bearer.startsWith('Bearer ')||bearer.length>4200)return send(401,{error:'AUTH_REQUIRED'});
  const token=bearer.slice(7);
- if(body.action==='claim'||body.action==='complete'){
+ if(body.action==='claim'||body.action==='complete'||body.action==='engine_status'){
    if(!/^[a-f0-9]{64}$/i.test(token))return send(401,{error:'WORKER_AUTH_REQUIRED'});
    const digest=await hash(token);
    const {data:credential,error:cError}=await db.from('hive_local_worker_credentials').select('token_hash,active').eq('id',1).maybeSingle();
    if(cError)return send(503,{error:'WORKER_AUTH_UNAVAILABLE'});
    if(!credential?.active||credential.token_hash!==digest)return send(403,{error:'WORKER_UNAUTHORIZED'});
+   if(body.action==='engine_status'){
+     const states=['UNKNOWN','AVAILABLE','MODEL_UNAVAILABLE','UNREACHABLE','AUTH_REJECTED','RATE_LIMITED','HTTP_ERROR','INVALID_CATALOG','CATALOG_TOO_LARGE'];
+     if(typeof body.status!=='string'||!states.includes(body.status)||Object.keys(body).some(k=>!['action','status'].includes(k)))return send(400,{error:'INVALID_ENGINE_STATUS'});
+     const {data:updated,error}=await db.from('hive_local_worker_credentials').update({last_seen_at:new Date().toISOString(),engine_status:body.status,engine_checked_at:new Date().toISOString()}).eq('id',1).eq('active',true).eq('token_hash',digest).select('id');
+     if(!error&&(!updated||updated.length===0))return send(403,{error:'WORKER_UNAUTHORIZED'});
+     return error?send(503,{error:'ENGINE_STATUS_UNAVAILABLE'}):send(200,{ok:true});
+   }
    if(body.action==='claim'){
-     await db.from('hive_local_worker_credentials').update({last_seen_at:new Date().toISOString()}).eq('id',1);
      if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_CLAIM'});
+     const {data:heartbeat,error:heartbeatError}=await db.from('hive_local_worker_credentials').update({last_seen_at:new Date().toISOString()}).eq('id',1).eq('active',true).eq('token_hash',digest).select('id');
+     if(!heartbeatError&&(!heartbeat||heartbeat.length===0))return send(403,{error:'WORKER_UNAUTHORIZED'});
+     if(heartbeatError)return send(503,{error:'WORKER_HEARTBEAT_UNAVAILABLE'});
      const {error:pumpError}=await db.rpc('hive_local_pump_missions');
      if(pumpError)return send(503,{error:'MISSION_PUMP_UNAVAILABLE'});
      const {data,error}=await db.rpc('hive_local_claim_job');
@@ -55,14 +64,21 @@ Deno.serve(async(req:Request)=>{
  if(profile?.activo!==true||String(profile.tipo).toLowerCase()!=='superadmin')return send(403,{error:'SUPERADMIN_REQUIRED'});
  if(body.action==='worker_status'){
    if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_STATUS'});
-   const {data,error}=await db.from('hive_local_worker_credentials').select('active,last_seen_at').eq('id',1).maybeSingle();
+   const {data,error}=await db.from('hive_local_worker_credentials').select('active,last_seen_at,engine_status,engine_checked_at').eq('id',1).maybeSingle();
    if(error)return send(503,{error:'STATUS_UNAVAILABLE'});
    const seen=data?.last_seen_at?Date.parse(data.last_seen_at):0;
-   return send(200,{enrolled:!!data?.active,connected:!!data?.active&&seen>0&&(Date.now()-seen)<45000,last_seen_at:data?.last_seen_at??null});
+   const checked=data?.engine_checked_at?Date.parse(data.engine_checked_at):0;
+   const connected=!!data?.active&&seen>0&&(Date.now()-seen)<45000;
+   return send(200,{enrolled:!!data?.active,connected,last_seen_at:data?.last_seen_at??null,
+     engine_status:data?.engine_status??'UNKNOWN',engine_checked_at:data?.engine_checked_at??null,
+     engine_available:connected&&data?.engine_status==='AVAILABLE'&&checked>0&&(Date.now()-checked)<90000});
  }
  if(body.action==='provision_worker'){
-   if(typeof body.token_hash!=='string'||!/^[a-f0-9]{64}$/.test(body.token_hash)||Object.keys(body).some(k=>!['action','token_hash'].includes(k)))return send(400,{error:'INVALID_WORKER_HASH'});
-   const {error}=await db.from('hive_local_worker_credentials').upsert({id:1,token_hash:body.token_hash,active:true,updated_at:new Date().toISOString()},{onConflict:'id'});
+   // The Super Admin browser generates a random token; only this trusted TEST Edge hashes it.
+   // No manual hash enrollment, persistent browser token storage or credential value in responses.
+   if(typeof body.worker_token!=='string'||!/^[a-f0-9]{64}$/.test(body.worker_token)||Object.keys(body).some(k=>!['action','worker_token'].includes(k)))return send(400,{error:'INVALID_WORKER_TOKEN'});
+   const tokenHash=await hash(body.worker_token);
+   const {error}=await db.from('hive_local_worker_credentials').upsert({id:1,token_hash:tokenHash,active:true,last_seen_at:null,engine_status:'UNKNOWN',engine_checked_at:null,updated_at:new Date().toISOString()},{onConflict:'id'});
    return error?send(503,{error:'WORKER_PROVISION_FAILED'}):send(200,{ok:true});
  }
  if(body.action==='disable_worker'){
@@ -77,6 +93,8 @@ Deno.serve(async(req:Request)=>{
      new Set(body.agents).size!==body.agents.length||body.agents.some((a:unknown)=>!agents.includes(a as Agent))||
      Object.keys(body).some(k=>!['action','objective','agents','idempotency_key'].includes(k)))return send(400,{error:'INVALID_MISSION'});
    const {data,error}=await db.rpc('hive_local_create_mission',{p_user_id:auth.user.id,p_objective:body.objective,p_agents:body.agents,p_key:body.idempotency_key});
+   if(error?.message?.includes('HIVE_MISSION_LIMIT'))return send(429,{error:'MISSION_LIMIT'});
+   if(error?.message?.includes('HIVE_IDEMPOTENCY_CONFLICT'))return send(409,{error:'IDEMPOTENCY_CONFLICT'});
    return error?send(503,{error:'MISSION_CREATE_UNAVAILABLE'}):send(200,{mission_id:data});
  }
  if(body.action==='advance_mission'||body.action==='cancel_mission'){
@@ -101,6 +119,7 @@ Deno.serve(async(req:Request)=>{
    const {data,error}=await db.rpc('hive_local_create_agent_job',{p_user_id:auth.user.id,p_prompt:payload,p_key:body.idempotency_key,p_agent:agent});
    if(error){
      if(error.message?.includes('HIVE_RATE_LIMITED'))return send(429,{error:'RATE_LIMITED'});
+     if(error.message?.includes('HIVE_IDEMPOTENCY_CONFLICT'))return send(409,{error:'IDEMPOTENCY_CONFLICT'});
      return send(503,{error:'CREATE_UNAVAILABLE'});
    }
    return data?.[0]?.id?send(200,{job:data[0]}):send(503,{error:'CREATE_NO_RESULT'});

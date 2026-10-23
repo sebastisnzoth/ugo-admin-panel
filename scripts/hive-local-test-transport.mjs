@@ -1,9 +1,10 @@
 // Explicit opt-in outbound TEST transport. No public Mac listener, no service_role key.
 // The server must independently authorize operator, lease ownership and state transitions.
 const TEST_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/ugo-hive-local-jobs';
+export const HIVE_ENGINE_STATES = new Set(['UNKNOWN','AVAILABLE','MODEL_UNAVAILABLE','UNREACHABLE','AUTH_REJECTED','RATE_LIMITED','HTTP_ERROR','INVALID_CATALOG','CATALOG_TOO_LARGE']);
 export function createHiveTestTransport({token, fetchImpl=globalThis.fetch, endpoint=TEST_URL}={}) {
   if (endpoint !== TEST_URL) throw Error('HIVE_TEST_ENDPOINT_REQUIRED');
-  if (typeof token !== 'string' || token.length < 32 || /\s/.test(token))
+  if (typeof token !== 'string' || !/^[a-f0-9]{64}$/i.test(token))
     throw Error('HIVE_WORKER_TOKEN_REQUIRED');
   if (typeof fetchImpl !== 'function') throw Error('HIVE_FETCH_REQUIRED');
   async function request(action, data={}) {
@@ -28,6 +29,12 @@ export function createHiveTestTransport({token, fetchImpl=globalThis.fetch, endp
     return decoded;
   }
   return {
+    reportEngine:async status=>{
+      if(!HIVE_ENGINE_STATES.has(status)) throw Error('HIVE_TEST_ENGINE_STATUS_INVALID');
+      const result=await request('engine_status',{status});
+      if(result.ok!==true) throw Error('HIVE_TEST_ENGINE_STATUS_REJECTED');
+      return result;
+    },
     claim:async()=>{
       const data=await request('claim');
       if(data.job===null) return null;

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHiveTestTransport} from '../../scripts/hive-local-test-transport.mjs';
-const token='t'.repeat(40);
+const token='a'.repeat(64);
 const reply=(value,status=200)=>({ok:status>=200&&status<300,status, text:async()=>JSON.stringify(value)});
 test('rejects arbitrary endpoints and missing credentials',()=>{
  assert.throws(()=>createHiveTestTransport({token,endpoint:'https://example.org'}),/HIVE_TEST_ENDPOINT_REQUIRED/);
@@ -23,6 +23,14 @@ test('never accepts unauthorized or malformed claim',async()=>{
   const transport=createHiveTestTransport({token,fetchImpl:async()=>response});
   await assert.rejects(transport.claim(),/HIVE_TEST_(CLAIM_INVALID|WORKER_UNAUTHORIZED)/);
  }
+});
+test('engine presence uses a fixed status allowlist without inference or secret payloads',async()=>{
+ const bodies=[];
+ const transport=createHiveTestTransport({token,fetchImpl:async(_url,options)=>{bodies.push(JSON.parse(options.body));return reply({ok:true})}});
+ await transport.reportEngine('AVAILABLE');
+ assert.deepEqual(bodies,[{action:'engine_status',status:'AVAILABLE'}]);
+ await assert.rejects(transport.reportEngine('SECRET_OR_INFERENCE_SUCCEEDED'),/HIVE_TEST_ENGINE_STATUS_INVALID/);
+ assert.equal(bodies.length,1);
 });
 test('completion requires explicit status and server acknowledgment',async()=>{
  let called=false;

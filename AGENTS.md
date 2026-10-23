@@ -155,6 +155,16 @@ pedido actual
 
 Si un documento contradice la integridad ejecutable o el estado persistido real, primero se corrige la contradicción; no se fuerza el código a cumplir documentación obsoleta.
 
+## Agent Skills externos integrados (23-10-2026)
+
+Se incorporaron 8 workflows de ingeniería de `sebastisnzoth/agent-skills` en `.agents/skills/`, fijados en el commit `aeac41d4d005999432bb7312f7ff06383a91d59d`. Ver `docs/UGO_AGENT_SKILLS_INTEGRACION.md` para procedencia, alcance, aplicación y límites.
+
+**Precedencia obligatoria:** el pedido vigente, este `AGENTS.md`, los maestros y gates de UGO, las skills `ugo-*` y los tests/contratos de UGO prevalecen ante cualquier recomendación genérica de las skills externas. Ninguna skill autoriza producción, pagos, cambios de RLS, bypass de CI, falsos estados DONE ni activación de Empresa Autónoma. No crear sistema/agent/router paralelo, ni cargar todas las skills a la vez.
+
+**Enrutamiento por incidencia:** retomar un P0 con `ugo-core`/`ugo-recovery`/`ugo-qa` y `context-engineering`; reproducir y localizar con `debugging-and-error-recovery`; corregir con prueba de regresión mediante `test-driven-development`; para Auth/RLS usar además `security-and-hardening`; para UI/Realtime usar `browser-testing-with-devtools` sólo cuando exista navegador/herramienta disponible. Antes de integrar, aplicar `code-review-and-quality`; si se modifica CI, `ci-cd-and-automation`; antes de producción, `shipping-and-launch`, preservando siempre las puertas UGO para SHA, TEST, E2E, Sentinel y rollback.
+
+**Disponibilidad real:** agentes con autodescubrimiento de `.agents/skills` pueden invocar las skills localmente. Ejecutores como Aider/HIVE/GitHub Actions que no las descubran por sí solos deben cargar explícitamente su `SKILL.md` pertinente; la existencia de un archivo no prueba que ese agente lo haya ejecutado.
+
 ## Routing mínimo de Skills
 
 Todo job pertenece a **Empresa Autónoma** y conserva `job_id`, departamento, agente asignado, Skills, recursos/locks y validadores. GitHub es un **canal de ejecución**, no un agente: cuando una acción es determinista y ya existe un workflow seguro, UGO debe preferir ejecución directa en GitHub antes que abrir una conversación GPT.

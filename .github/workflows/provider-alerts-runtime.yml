@@ -30,7 +30,7 @@ env:
 jobs:
   runtime-proof:
     name: Provider nueva oferta → alerta/sonido UGO TEST
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
