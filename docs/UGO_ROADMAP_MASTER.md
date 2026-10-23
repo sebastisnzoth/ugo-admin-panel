@@ -850,3 +850,8 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Corrección acotada generada con npm: lockfile actualizado a `zod@4.6.7`, compatible con la gama declarada y sin cambios en `package.json`, integridades manuales, `--force` ni security gate.
 - Evidencia local: instalación limpia `npm ci`; `npm audit --audit-level=high` = 0; build/TypeScript, contrato focalizado e i18n PASS; 1508 pruebas PASS / 0 FAIL / 8 SKIP; lint 0 errores con 986 warnings ya presentes en baseline `8c753669…`.
 - Madurez: **candidato local verificado, CI VALIDATED e INTEGRATED pendientes del SHA exacto**. No es evidencia runtime de Hive, matching ni roles y no modifica bases o canales publicados. Siguiente: Actions same-SHA, integración independiente y verificación postmerge.
+
+### PR #552 — Reconexión Realtime de Proveedor y prueba P0 reforzada (2026-10-23)
+- Se conservó el handler `online` con resync/reconnect y cleanup simétrico. Esa refactorización por sí sola no se considera recuperación demostrada: el E2E ahora fuerza `offline/online` en Chromium, exige un nuevo `channel_ready`, mantiene la sesión y entrega después la oferta Realtime en la misma página.
+- La prueba también exige una única oferta para el proveedor y repite `aceptar_oferta`: debe devolver el mismo servicio sin cambiar asignación, economics, timestamps ni ofertas. No se añadieron migraciones ni acceso a PROD.
+- Árbol integrado local: 1522 tests, 1514 PASS / 0 FAIL / 8 SKIP; build/TypeScript PASS; i18n JSX/keys PASS; lint 0 errores / 986 warnings preexistentes. Pendiente P0 E2E y Cross-role del SHA final antes de cualquier merge. GPS de Chromium no equivale a GPS físico.
