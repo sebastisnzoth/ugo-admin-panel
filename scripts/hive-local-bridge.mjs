@@ -36,7 +36,11 @@ export function createHiveLocalBridge({token, policy, run = runLocalHiveAgent} =
       const task={id:'hive-local-ui',prompt:parsed.prompt,model:'qwen3-coder-free',capability:'inference-only',requires_approval:false};
       const output=await run({task,policy});
       res.writeHead(200,headers);res.end(JSON.stringify(output));
-    } catch(err) {reject(422,err?.message==='HIVE_FREEAPI_RATE_LIMITED: proveedor sin cuota temporal; no se reintenta automáticamente'?'HIVE_FREEAPI_RATE_LIMITED':'HIVE_LOCAL_INFERENCE_FAILED');}
+    } catch(err) {
+      const code = err?.message === 'HIVE_FREEAPI_RATE_LIMITED: proveedor sin cuota temporal; no se reintenta automáticamente'
+        ? 'HIVE_FREEAPI_RATE_LIMITED' : 'HIVE_LOCAL_INFERENCE_FAILED';
+      reject(code === 'HIVE_FREEAPI_RATE_LIMITED' ? 429 : 503, code);
+    }
     finally {busy=false;}
   });
 }
