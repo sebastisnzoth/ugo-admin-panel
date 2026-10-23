@@ -67,3 +67,13 @@ test('failed completion acknowledgement blocks silent replay and hides transport
   /HIVE_COMPLETION_UNCERTAIN/);
  assert.equal(invokes,1);
 });
+
+test('TEST SQL claim forbids automatic replay after expired RUNNING lease',async()=>{
+ const fs=await import('node:fs');
+ const sql=fs.readFileSync('supabase/migrations/20261023060000_hive_local_expired_lease_fail_closed.sql','utf8');
+ assert.match(sql,/q\.status='RUNNING' and q\.lease_until<now\(\)/);
+ assert.match(sql,/error_code='RECONCILIATION_REQUIRED'/);
+ assert.match(sql,/where q\.status='PENDING' and q\.attempts<3/);
+ assert.doesNotMatch(sql,/or \(q\.status='RUNNING'/i);
+ assert.match(sql,/grant execute on function public\.hive_local_claim_job\(\) to service_role/);
+});
