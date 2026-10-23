@@ -14,8 +14,8 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
   const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
   const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}}
   const onFocus=()=>resync()
-  const handleOnline=()=>{resync();reconnect();}
-  window.addEventListener('online',handleOnline)
+  window.addEventListener('online',resync)
+  window.addEventListener('online',reconnect)
   window.addEventListener('focus',onFocus)
   document.addEventListener('visibilitychange',onVisibility)
   const safetyTimer=window.setInterval(()=>{if(document.visibilityState==='visible')resync()},20_000)
@@ -28,7 +28,8 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
   return()=>{
    alive=false
    if(reconnectTimer)window.clearTimeout(reconnectTimer)
-   window.removeEventListener('online',handleOnline)
+   window.removeEventListener('online',resync)
+   window.removeEventListener('online',reconnect)
    window.removeEventListener('focus',onFocus)
    document.removeEventListener('visibilitychange',onVisibility)
    window.clearInterval(safetyTimer)
