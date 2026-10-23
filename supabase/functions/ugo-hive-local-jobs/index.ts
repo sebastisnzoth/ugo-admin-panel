@@ -2,7 +2,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.108.1';
 const REF='tmossnqfwfwjrtzwcbmm', URL='https://'+REF+'.supabase.co';
 const json=(s:number,o:unknown)=>new Response(JSON.stringify(o),{status:s,headers:{'content-type':'application/json','cache-control':'no-store'}});
 const allowed=['https://sebastisnzoth.github.io','http://localhost:5173','http://127.0.0.1:5173'];
-function headers(origin:string|null){return origin&&allowed.includes(origin)?{'access-control-allow-origin':origin,'access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'authorization,apikey,content-type','vary':'Origin'}:{};}
+function headers(origin:string|null){return origin&&allowed.includes(origin)?{'access-control-allow-origin':origin,'access-control-allow-methods':'POST, OPTIONS','access-control-allow-headers':'authorization,apikey,content-type,x-client-info','vary':'Origin'}:{};}
 const wrap=(s:number,o:unknown,origin:string|null)=>{const r=json(s,o);Object.entries(headers(origin)).forEach(([k,v])=>r.headers.set(k,v));return r};
 const hash=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,'0')).join('');
 Deno.serve(async(req:Request)=>{
