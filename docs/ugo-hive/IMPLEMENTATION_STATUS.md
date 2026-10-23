@@ -310,3 +310,9 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Deployed exact verified branch source `ugo-hive-local-jobs` to TEST Edge v6 ACTIVE, retaining its existing custom worker and Super Admin bearer authentication (`verify_jwt=false`). Re-read deployed source and verified use of `hive_local_create_agent_job` and `agent_id`.
 - Historical rows are retained with null identity; no synthetic role attribution. No changes to production or Mac secrets.
 - **Still incomplete:** no authenticated end-to-end nine-agent Mac inference has been performed, and mission planner is currently a bounded library, not connected persistent orchestration. Need controlled tests for agent identity, supervisor UX, persistent mission execution, safe Retry-After scheduling, Mac reconnection and exact final SHA CI before merge.
+
+
+### 2026-10-23 — Bounded agent context handoff (branch-only)
+- PR #571 SHA preceding changes `6c946484ec886b292784598f5caebfb3616406e1`: Cross Security, Hugo Timeout, Roadmap PASS; Core CI and Cross-role UI still running at last baseline query; Groq smoke SKIPPED.
+- Added `buildHiveTaskContext` to `scripts/hive-analysis-mission-plan.mjs`: requires a previously SUCCEEDED dependency with nonempty answer, labels predecessor content as untrusted, and bounds inherited context at 1200 chars. Added contract covering rejection and bounding. This remains a pure read-only planning primitive: not yet connected to a persistent queue or live inference.
+- IMPORTANT: Do not count this as nine agents collaborating end-to-end. No deployment, DB migration or Mac access in this change; last TEST Edge v6 remains the validated baseline. Latest CI and full E2E are required.
