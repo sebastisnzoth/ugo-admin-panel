@@ -50,6 +50,21 @@ Deno.serve(async (req: Request) => {
     if (error instanceof Error && error.message === 'TOO_LARGE') return errorResponse(413, 'PAYLOAD_TOO_LARGE', id)
     return errorResponse(400, 'INVALID_JSON', id)
   }
+  if (payload.action === 'check_openrouter_key' && Object.keys(payload).length === 1) {
+    const apiKey = Deno.env.get('OPENROUTER_API_KEY') || ''
+    if (!apiKey) return errorResponse(503, 'OPENROUTER_KEY_NOT_CONFIGURED', id)
+    try {
+      const upstream = await fetch('https://openrouter.ai/api/v1/key', {
+        method: 'GET', redirect: 'error', signal: AbortSignal.timeout(12000),
+        headers: { Authorization: `Bearer ${apiKey}`, Accept: 'application/json' }
+      })
+      if (!upstream.ok) return errorResponse(upstream.status === 401 ? 401 : 502, upstream.status === 401 ? 'OPENROUTER_KEY_REJECTED' : 'OPENROUTER_KEY_CHECK_FAILED', id)
+      const json = await upstream.json()
+      if (!json?.data || typeof json.data !== 'object') return errorResponse(502, 'OPENROUTER_INVALID_KEY_RESPONSE', id)
+      return response(200, { ok: true, code: 'OPENROUTER_KEY_AUTHENTICATED', correlation_id: id,
+        inference_verified: false, provider: 'openrouter' })
+    } catch { return errorResponse(503, 'OPENROUTER_KEY_CHECK_UNREACHABLE', id) }
+  }
   if (payload.action !== 'draft_plan' || typeof payload.objective !== 'string' || payload.objective.length < 8 ||
       payload.objective.length > 1500 || Object.keys(payload).some(k => !['action', 'objective'].includes(k)))
     return errorResponse(400, 'INVALID_PLANNER_REQUEST', id)
