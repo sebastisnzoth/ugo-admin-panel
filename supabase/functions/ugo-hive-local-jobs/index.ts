@@ -68,6 +68,26 @@ Deno.serve(async(req:Request)=>{
    const {error}=await db.from('hive_local_worker_credentials').update({active:false,updated_at:new Date().toISOString()}).eq('id',1);
    return error?send(503,{error:'WORKER_DISABLE_FAILED'}):send(200,{ok:true});
  }
+ if(body.action==='create_mission'){
+   if(typeof body.objective!=='string'||body.objective.trim().length<1||body.objective.length>1800||
+     !Array.isArray(body.agents)||body.agents.length<1||body.agents.length>9||
+     new Set(body.agents).size!==body.agents.length||body.agents.some((a:unknown)=>!agents.includes(a as Agent))||
+     Object.keys(body).some(k=>!['action','objective','agents'].includes(k)))return send(400,{error:'INVALID_MISSION'});
+   const {data,error}=await db.rpc('hive_local_create_mission',{p_user_id:auth.user.id,p_objective:body.objective,p_agents:body.agents});
+   return error?send(503,{error:'MISSION_CREATE_UNAVAILABLE'}):send(200,{mission_id:data});
+ }
+ if(body.action==='advance_mission'||body.action==='cancel_mission'){
+   if(typeof body.mission_id!=='string'||!/^[0-9a-f-]{36}$/i.test(body.mission_id)||
+      Object.keys(body).some(k=>!['action','mission_id'].includes(k)))return send(400,{error:'INVALID_MISSION'});
+   const proc=body.action==='advance_mission'?'hive_local_advance_mission':'hive_local_cancel_mission';
+   const {data,error}=await db.rpc(proc,{p_id:body.mission_id,p_user_id:auth.user.id});
+   return error?send(503,{error:'MISSION_UPDATE_UNAVAILABLE'}):send(200,{result:data});
+ }
+ if(body.action==='list_missions'){
+   if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_MISSION_LIST'});
+   const {data,error}=await db.from('hive_local_missions').select('id,objective,agents,position,status,current_job_id,created_at,updated_at').eq('user_id',auth.user.id).order('created_at',{ascending:false}).limit(20);
+   return error?send(503,{error:'MISSION_LIST_UNAVAILABLE'}):send(200,{missions:data??[]});
+ }
  if(body.action==='create'){
    if(typeof body.prompt!=='string'||body.prompt.trim().length<1||body.prompt.length>4000||
       (body.agent!==undefined&&!agents.includes(body.agent))||typeof body.idempotency_key!=='string'||!/^[0-9a-f-]{36}$/i.test(body.idempotency_key)||
