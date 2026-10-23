@@ -51,3 +51,13 @@ Use only the existing local worktree, and do not paste any secret into chat or G
 6. In authenticated candidate Hive Console, verify Mac Connected comes from heartbeat, submit a manual prompt, confirm a newly persisted SUCCESS answer from FreeLLMAPI, reload and verify history, then disconnect and verify offline.
 
 Do not deploy/migrate production or enable Empresa Autonoma. If the Mac cannot run or lacks a credential, the release gate remains BLOCKED. Do not present a PR, green mock tests, or Active Edge status as delivered product.
+
+
+## 2026-10-23 — Agentes de análisis TEST, sin autonomía
+
+- Evidencia humana del mismo día: Mac worker registró `SUCCEEDED` y Chat IA devolvió una respuesta real correcta. La observación no valida aún todos los gates, arranque tras reinicio ni cuota de proveedor.
+- En PR #571 se agregó selector de nueve perfiles (`Hugo`, `Architect`, `Developer`, `QA`, `Security`, `DevOps`, `Judge`, `Sentinel`, `Research`) a `HiveConsole.tsx`. Cada selección prepara un prompt acotado de análisis de solo lectura y usa exclusivamente el `create` autenticado del mismo endpoint TEST ya probado. Se conserva el límite de 4000 caracteres y la restricción de inferencia; no se crean jobs autónomos ni permisos de DB, GitHub o Shell.
+- Nuevo contrato en `tests/contracts/hive-superadmin-console.test.mjs` comprueba selección, ruteo por cola ya existente y ausencia de acciones de ejecución/autonomía.
+- Código: commit de interfaz `8e0d5209b3afb618f758adfb0e30bb2522b8f23b` y pruebas `2bfdf3699e5d445aea275cd078134844609d8f02`. **Pruebas SAME-SHA y preview publicado pendientes de comprobar; no declarar nuevos agentes E2E verificados.**
+- Empresa Autónoma OFF; sin cambios de Supabase PROD, esquema SQL, claves ni matching. No confundir perfiles de análisis por prompt con agentes autónomos capaces de herramientas o colaboración multiagente.
+- Próximo gate: CI Core/contratos del HEAD; comprobar preview Pages del nuevo HEAD; probar cada rol con prompt real y límites; evaluar RBAC, cuotas, errores y métricas; solo después considerar merge a main.
