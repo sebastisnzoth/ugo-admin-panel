@@ -59,3 +59,11 @@ test('worker reports allowlisted 429/503/timeouts but never leaks arbitrary exce
   assert.equal(JSON.stringify(calls).includes('secret'),false);
  }
 });
+
+test('failed completion acknowledgement blocks silent replay and hides transport detail',async()=>{
+ let invokes=0;
+ await assert.rejects(processHivePoll({claim:async()=>valid,complete:async()=>{throw Error('network secret')},policy:{},
+  run:async()=>{invokes++;return {status:'COMPLETED_LOCAL_INFERENCE',model:'qwen3-coder-free',answer:'OK'}}}),
+  /HIVE_COMPLETION_UNCERTAIN/);
+ assert.equal(invokes,1);
+});
