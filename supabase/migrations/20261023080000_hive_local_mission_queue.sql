@@ -117,7 +117,7 @@ end $mission_pump$;
 revoke all on function public.hive_local_create_mission(uuid,text,text[],uuid) from public,anon,authenticated;
 revoke all on function public.hive_local_advance_mission(uuid,uuid) from public,anon,authenticated;
 revoke all on function public.hive_local_cancel_mission(uuid,uuid) from public,anon,authenticated;
-grant execute on function public.hive_local_create_mission(uuid,text,text[]) to service_role;
+grant execute on function public.hive_local_create_mission(uuid,text,text[],uuid) to service_role;
 grant execute on function public.hive_local_advance_mission(uuid,uuid) to service_role;
 grant execute on function public.hive_local_cancel_mission(uuid,uuid) to service_role;
 revoke all on function public.hive_local_pump_missions() from public,anon,authenticated;
