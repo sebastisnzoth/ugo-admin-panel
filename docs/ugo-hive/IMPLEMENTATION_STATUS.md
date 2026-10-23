@@ -302,3 +302,11 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Updated TEST Edge source to use structured `agent_id` instead of regex-prompt parsing for job listing and creation. Updated contract assertions.
 - Introduced `scripts/hive-analysis-mission-plan.mjs` with deterministic, sequential, bounded read-only mission task planning and dependency gating, with unit contract. This is **only a planning primitive**, not an active Hugo orchestrator; no autonomous dispatch, SQL, tools, or Mac commands were added.
 - **Deployment safety gate:** new identity migration has not been applied to Supabase TEST, and Edge TEST v5 remains on the older compatible implementation. CI on final SHA and E2E remain required before a TEST schema/Edge upgrade. Production and Mac secrets untouched; Empresa Autónoma OFF.
+
+
+### 2026-10-23 — Structured agent identity deployed to Supabase TEST
+- PR #571 baseline `a94bebbc29e69fe6adaa9dfcd6f5249c0b447e90`: Core CI, Cross-role UI, Cross Security, Hugo Timeout, Roadmap all PASS; optional Groq smoke SKIPPED.
+- Applied existing migration `hive_local_agent_identity` to TEST `tmossnqfwfwjrtzwcbmm` only. Verified `agent_column=true` and `create_agent_rpc=true` from the actual TEST database.
+- Deployed exact verified branch source `ugo-hive-local-jobs` to TEST Edge v6 ACTIVE, retaining its existing custom worker and Super Admin bearer authentication (`verify_jwt=false`). Re-read deployed source and verified use of `hive_local_create_agent_job` and `agent_id`.
+- Historical rows are retained with null identity; no synthetic role attribution. No changes to production or Mac secrets.
+- **Still incomplete:** no authenticated end-to-end nine-agent Mac inference has been performed, and mission planner is currently a bounded library, not connected persistent orchestration. Need controlled tests for agent identity, supervisor UX, persistent mission execution, safe Retry-After scheduling, Mac reconnection and exact final SHA CI before merge.
