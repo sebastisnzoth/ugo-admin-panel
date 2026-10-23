@@ -42,3 +42,11 @@ test('mission pump SQL body is delimited by a matching PostgreSQL dollar quote',
  assert.match(sql,/as \$mission_pump\$/);
  assert.match(sql,/end \$mission_pump\$;/);
 });
+
+test('mission creation requires a durable key and rejects mismatched replays',()=>{
+ assert.match(sql,/idempotency_key uuid not null/);
+ assert.match(sql,/unique\(user_id,idempotency_key\)/);
+ assert.match(sql,/HIVE_IDEMPOTENCY_CONFLICT/);
+ assert.match(edge,/p_key:body\.idempotency_key/);
+ assert.match(edge,/INVALID_MISSION/);
+});
