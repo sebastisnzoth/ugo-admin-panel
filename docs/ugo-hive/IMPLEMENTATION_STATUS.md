@@ -270,3 +270,12 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - **Still unsafe to declare recovered:** Supabase TEST claim RPC currently can auto-reclaim an expired RUNNING lease, even when inference outcome is unknown. Durable server-side `RECONCILIATION_REQUIRED` and safe lease semantics are not implemented yet. Do not automatically re-run unresolved jobs.
 - No Supabase TEST/PROD DB changes, no Edge redeploy, no changes to Mac encryption material; Empresa Autónoma OFF. PR remains draft and unmerged.
 - Next gate: review/test aditive TEST-only server fix to distinguish unstarted expired leases from potentially executed inference, then run exact-SHA CI + real Mac E2E. A client fail-stop alone cannot prevent server-side replay after restart.
+
+
+### 2026-10-23 — Expired lease replay prevention (PR #571)
+
+- Baseline SHA `487047d37cf46585e4bf99c2a2b6522da1b5bfdb`: Core CI, Cross Security, Cross-role UI, Hugo Timeout and Roadmap PASS; optional Groq smoke SKIPPED. This baseline is not an E2E certificate of all nine agents.
+- **Code added in branch only:** `20261023060000_hive_local_expired_lease_fail_closed.sql` replaces only Hive TEST claim RPC. Expired RUNNING leases become FAILED with `RECONCILIATION_REQUIRED` instead of being reclaimed; only PENDING jobs are claimable. Restrictive grants are retained. Contract test checks fail-closed predicate.
+- Conservatism: uncertain previous outcomes cannot be replayed automatically. This intentionally prioritizes at-most-once dispatch over automatic availability; manual operator reconciliation remains necessary and future robust status support is pending.
+- No SQL executed in TEST/PROD by this commit. No Edge deploy, Mac process change or credential rotation. Empresa Autónoma OFF.
+- Blockers: CI exact-SHA, TEST migration verification with controlled lease-expiry case, Edge TEST deployment, all-nine real E2E, regression proof, final main/Pages release.
