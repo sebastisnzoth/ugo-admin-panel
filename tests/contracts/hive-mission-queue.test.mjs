@@ -29,3 +29,11 @@ test('TEST Edge enforces Super Admin before protected mission operations',()=>{
  assert.match(edge,/p_user_id:auth\.user\.id,p_objective:body\.objective/);
  assert.doesNotMatch(edge,/action==='autonomy_on'/);
 });
+
+test('worker polling advances durable missions even with Hive Console closed',()=>{
+ assert.match(sql,/create or replace function public\.hive_local_pump_missions\(\)/);
+ assert.match(sql,/public\.hive_local_advance_mission\(item\.id,item\.user_id\)/);
+ assert.match(sql,/grant execute on function public\.hive_local_pump_missions\(\) to service_role/);
+ assert.match(edge,/db\.rpc\('hive_local_pump_missions'\)/);
+ assert.match(edge,/MISSION_PUMP_UNAVAILABLE/);
+});
