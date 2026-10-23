@@ -817,3 +817,7 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - En `main` be7377c8, Cross-role UI (run 39837869684) y Cross Visual (run 39837869745) fallaron antes de ejecutar Chromium: `Playwright 1.56.1 does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest`. No es evidencia de defecto de producto.
 - Corrección acotada: fijar `runs-on: ubuntu-24.04` en `.github/workflows/role-ui-runtime.yml` y `.github/workflows/cross-visual-runtime.yml`, sin relajar las aserciones, la seguridad ni modificar la app. Estado IMPLEMENTADO EN RAMA, pendiente CI/navegador del SHA final y verificación tras fusión.
 - Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
+
+
+### PR #568 — GPS transient error window reconciled (2026-10-23)
+- Current main GPS acquisition changes are preserved. During Online availability only, transient non-permission geolocation failures retain the last valid fix for the 90-second matching freshness window; en-route errors still use 30 seconds. This is presentation continuity, not fabricated location, not a bypass of GPS freshness for matching. Revalidated branch CI and physical runtime evidence remain required before main integration.
