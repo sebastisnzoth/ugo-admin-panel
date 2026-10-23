@@ -252,3 +252,13 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Super Admin UI y daemon de Mac implementados en rama; no hay credenciales worker activas ni conexión E2E verificada. No se desplegó el frontend ni se fusionó a main. CI del HEAD de rama pendiente.
 - La presencia solo vale con heartbeat autorizado menor que 45 s; sin heartbeat se muestra Mac offline. `verify_jwt=false` del endpoint permite bearer dedicado del worker, pero TODO acceso requiere validación interna explícita (JWT de Super Admin o hash de credencial específica).
 - **Gate de salida:** credencial worker provisionada por hash en TEST, Mac corriendo worker outbound, solicitud del Super Admin autenticado con respuesta real, pruebas negativas y CI same-SHA, integración main y verificación publicación. Empresa Autónoma OFF; Supabase PROD intacta.
+
+
+### 2026-10-23 — Server-owned Hive TEST agent routing (PR #571)
+
+- Validación humana anterior: un job real de Mac/FreeLLMAPI terminó SUCCEEDED en Chat TEST. No certifica los nueve perfiles.
+- Implementado en rama: el frontend envía `agent` separado de `prompt`; Edge TEST usa allowlist exacta de nueve roles, construye un prefijo de solo lectura del lado servidor, conserva cola/idempotencia/cuotas existente y devuelve `agent` calculado de trabajos guardados. No se agrega una tabla ni se realizan migraciones para estos perfiles.
+- Código de referencia: Edge `5de86b689fe0501f90ab5b9dc7579c0c46a7af78`, UI `d6143a35491e96486e3be6e6a1b7eedf936281e8`, contrato `89f8b2ea7e882827280a9aba439a2aa0a6357d79`.
+- **NO VALIDADO en runtime:** el Edge remoto aún no se redeployó a este SHA, la vista previa puede conservar revisión anterior, el CI del último SHA está pendiente y falta prueba E2E por rol. No declarar nueve agentes autónomos ni colaboración ejecutada.
+- Permisos: TEST-only guard existente, Super Admin JWT, worker con bearer dedicado, solo inferencia; Empresa Autónoma OFF; ninguna escritura a Supabase PROD, clientes, proveedores, matching o pagos.
+- Próximo gate: pasar CI exact-SHA; desplegar solo función Edge TEST verificada; confirmar hash del frontend en preview; ejecutar casos positivos/negativos con los nueve perfiles, errores y regresiones; solo entonces considerar promoción a main.
