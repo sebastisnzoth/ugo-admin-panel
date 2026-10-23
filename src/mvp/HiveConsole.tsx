@@ -14,7 +14,7 @@ const translations={
  docs:'Consultar documentação técnica ↗',conversation:'Conversa com Hugo',gateway:'Gateway de inferência indisponível até verificação e autorização.',
  offline:'OFFLINE',slow:'RESPOSTA LENTA',remoteError:'ERRO DE CONEXÃO',nochat:'Chat não conectado',nochatInfo:'Não existem respostas simuladas. Histórico e streaming dependem de backend seguro.',
  message:'Mensagem',placeholder:'Indisponível enquanto a inferência está desativada',send:'Enviar · indisponível',
- macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 do worker',enrollInfo:'TEST · Cadastre apenas o hash SHA-256 da chave local do worker.',enrollAction:'Cadastrar worker TEST',submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',legacy:'Histórico sem agente',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
+ macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 do worker',enrollInfo:'TEST · Cadastre apenas o hash SHA-256 da chave local do worker.',enrollAction:'Cadastrar worker TEST',submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',legacy:'Histórico sem agente',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.',missionTab:'Missões',missionTitle:'Missões TEST',missionCancel:'Cancelar',missionEnvironment:'Ambiente TEST'
  },
  'es':{
  brand:'U.GO · SUPER ADMIN',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligencia',disabled:'CHAT TEST · EJECUCIÓN MANUAL',
@@ -26,7 +26,7 @@ const translations={
  docs:'Consultar documentación técnica ↗',conversation:'Conversación con Hugo',gateway:'Gateway de inferencia no disponible hasta su verificación y autorización.',
  offline:'SIN CONEXIÓN',slow:'RESPUESTA LENTA',remoteError:'ERROR DE CONEXIÓN',nochat:'Chat no conectado',nochatInfo:'No hay respuestas simuladas. El historial y streaming requieren un backend seguro.',
  message:'Mensaje',placeholder:'No disponible mientras la inferencia esté desactivada',send:'Enviar · no disponible',
- macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 del worker',enrollInfo:'TEST · Registrá solamente el hash SHA-256 de la clave local del worker.',enrollAction:'Registrar worker TEST',submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',legacy:'Histórico sin agente',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
+ macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 del worker',enrollInfo:'TEST · Registrá solamente el hash SHA-256 de la clave local del worker.',enrollAction:'Registrar worker TEST',submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',legacy:'Histórico sin agente',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.',missionTab:'Misiones',missionTitle:'Misiones TEST',missionCancel:'Cancelar',missionEnvironment:'Entorno TEST'
  },
  'en':{
  brand:'U.GO · SUPER ADMIN',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',agents:'Agents',heading:'Intelligence center',disabled:'TEST CHAT · MANUAL ONLY',
@@ -38,7 +38,7 @@ const translations={
  docs:'Technical documentation ↗',conversation:'Chat with Hugo',gateway:'Inference gateway unavailable until verified and authorized.',
  offline:'OFFLINE',slow:'SLOW RESPONSE',remoteError:'CONNECTION ERROR',nochat:'Chat not connected',nochatInfo:'No simulated answers. History and streaming require a secure backend.',
  message:'Message',placeholder:'Unavailable while inference is disabled',send:'Send · unavailable',
- macOnline:'Mac connected',macOffline:'Mac disconnected',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Worker SHA-256 hash',enrollInfo:'TEST · Enter only the SHA-256 hash of the local worker key.',enrollAction:'Register TEST worker',submitReady:'Send',waiting:'Waiting for Mac response',activeChat:'TEST Chat',sendError:'Could not send',legacy:'Legacy unattributed',planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.'
+ macOnline:'Mac connected',macOffline:'Mac disconnected',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Worker SHA-256 hash',enrollInfo:'TEST · Enter only the SHA-256 hash of the local worker key.',enrollAction:'Register TEST worker',submitReady:'Send',waiting:'Waiting for Mac response',activeChat:'TEST Chat',sendError:'Could not send',legacy:'Legacy unattributed',planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.',missionTab:'Missions',missionTitle:'TEST Missions',missionCancel:'Cancel',missionEnvironment:'TEST environment'
  }
 } as const
 const HIVE_MODEL='qwen3-coder-free'
@@ -94,7 +94,7 @@ export function HiveConsole(){
    <button type="button" aria-current={tab==='overview'?'page':undefined} onClick={()=>setTab('overview')}>{tr.overview}</button>
    <button type="button" aria-current={tab==='chat'?'page':undefined} onClick={()=>setTab('chat')}>{tr.chat}</button>
    <button type="button" aria-current={tab==='agents'?'page':undefined} onClick={()=>setTab('agents')}>{tr.agents}</button>
-   <button type="button" aria-current={tab==='missions'?'page':undefined} onClick={()=>setTab('missions')}>{locale.startsWith('pt')?'Missões':locale.startsWith('es')?'Misiones':'Missions'}</button>
+   <button type="button" aria-current={tab==='missions'?'page':undefined} onClick={()=>setTab('missions')}>{tr.missionTab}</button>
   </nav>
   {tab==='overview'&&<div className="ugo-hive-stack"><div className="ugo-hive-cards">
    <article><small>{tr.router}</small><strong>{tr.prepared}</strong><p>{tr.routerInfo}</p></article>
@@ -114,8 +114,8 @@ export function HiveConsole(){
    <button type="button" disabled={!chatVerified||sending||!prompt.trim()} onClick={()=>void sendPrompt()}>{sending?tr.waiting:tr.submitReady}</button>
   </section>}
   {tab==='missions'&&<section className="ugo-hive-panel">
-   <h2>{locale.startsWith('pt')?'Missões TEST':locale.startsWith('es')?'Misiones TEST':'TEST Missions'}</h2>
-   <p>{tr.off} · TEST · {tr.macName}</p>
+   <h2>{tr.missionTitle}</h2>
+   <p>{tr.off} · {tr.missionEnvironment} · {tr.macName}</p>
    <label htmlFor="hive-mission-objective">{tr.message}</label>
    <textarea id="hive-mission-objective" rows={3} maxLength={1800} value={prompt} onChange={e=>setPrompt(e.target.value)}/>
    <fieldset><legend>{tr.agents}</legend>{catalog.map(name=><label key={name} style={{display:'inline-flex',gap:'0.35rem',margin:'0.4rem'}}><input type="checkbox" checked={missionFlow.includes(name)} onChange={e=>setMissionFlow(prev=>e.target.checked?[...prev,name]:prev.filter(x=>x!==name))}/>{name}</label>)}</fieldset>
@@ -124,7 +124,7 @@ export function HiveConsole(){
    <div role="status">{missions.map(m=><article key={m.id} style={{padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border,#ccc)'}}>
     <strong>{m.status} · {m.position}/{m.agents.length}</strong><p>{m.objective}</p>
     <small>{m.agents.join(' → ')} · {m.id}</small>
-    {(m.status==='RUNNING'||m.status==='PENDING')&&<button type="button" onClick={()=>void cancelMission(m.id)}>{locale.startsWith('pt')?'Cancelar':locale.startsWith('es')?'Cancelar':'Cancel'}</button>}
+    {(m.status==='RUNNING'||m.status==='PENDING')&&<button type="button" onClick={()=>void cancelMission(m.id)}>{tr.missionCancel}</button>}
    </article>)}</div>
   </section>}
   {tab==='agents'&&<section className="ugo-hive-panel"><h2>{tr.planned}</h2><p>{tr.plannedInfo}</p>
