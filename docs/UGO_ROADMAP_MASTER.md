@@ -749,10 +749,81 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 
 - Revalidación del PR #564: `UGO Cross-role UI Runtime TEST` run 39678359088 falló sólo en `testTranslations()` después del recorrido desktop: esperaba `.ugo-client-root` tras reload, aunque artefacto `role-ui-client-desktop.png` demuestra Cliente autenticado en `Tu perfil` (`.ugo-client-profile-panel`). Se actualizó el locator para esperar sólo Home o Profile autenticados, sin admitir login; nuevo contrato de persistencia. Fase `FIXED IN PR / SAME-SHA BROWSER RETEST PENDING`. Core CI anterior PASS para las reparaciones de contraste/nav/API, pero el nuevo HEAD requiere CI nuevamente.
 
+## 2026-10-21 — Revisión preventiva de metodología y piloto Florianópolis (NO VALIDADA)
 
-### 2026-10-21 — Después del PR #564: lecturas Realtime superpuestas y control de modo Super Admin
-- Baseline de publicación en `main` `0c6d47af3e0a3d4f724cf5873b5ea150e7e911fa`: Vercel/Pages READY, Core CI, accesibilidad, Provider Readiness, seguridad y Auth PASS.
-- `UGO Cross Visual Runtime TEST` run 39680795200 falló esperando el botón `Reactivar` de usuario efímero. El panel `AdminUsersPanel.tsx` permite cargas `load()` concurrentes desde eventos Realtime y desde una mutación confirmada; respuestas anteriores pueden sobreescribir el listado más reciente. Corrección reversible: `usersLoadRevision` monotónico; sólo la consulta más nueva actualiza filas, categorías y contador, sin tocar el backend, roles, RLS ni la mutación auditada.
-- `UGO Cross-role UI Runtime TEST` run 39680794844 falló en `AUTONOMY_UI_STATE_MISMATCH`: modo backend no OFF leído antes de que el radio marcado en UI lo reflejara, en entorno TEST compartido con el worker que reportó `SHADOW`. Corrección de prueba: esperar convergencia real de radio accesible marcado con el modo de la base y volver a leer backend; sigue fallando si UI permanece incorrecta o el backend cambia durante la prueba. Nunca cambiar modo del operador para pasar CI.
-- Archivo de contratos `tests/contracts/admin-user-realtime-order-and-autonomy-hydration.test.mjs`. Estado `IMPLEMENTED / RETEST SAME SHA PENDING`: no declarar corregidos los dos runtime hasta que sus pruebas autentificadas completas pasen.
-- Sin cambios a matching, GPS, deudas, pagos, Supabase PROD/TEST SQL, HIVE o infraestructura de pago. PR nuevo aislado `fix/admin-users-load-order-autonomy-test-20261021`. Siguiente: Core CI, navegador y validación de no regresión antes de integrar a `main`.
+**Pedido:** revisar pros, contras, errores históricos y futuros de conectar HIVE/Empresa Autónoma, cola, GitHub Actions, Judge/Sentinel y Command Center; corregir los riesgos antes de activar automatización y conservar un método comprobado para terminar el piloto. Este registro es un **análisis preventivo con controles propuestos**, NO un certificado de que esos controles ya funcionan. El análisis debe ejecutarse sobre piezas existentes, sin crear orquestador paralelo.
+
+### Beneficios sujetos a prueba
+- Cola persistente: continuidad de un chat a otro, priorización y un dueño por tarea.
+- Worker supervisado: reducir intervención repetitiva e incrementar trazabilidad.
+- CI+Judge+Sentinel: imposibilidad de cerrar o publicar por simples commits y alertas tempranas de regresión.
+- Command Center: visibilidad del mismo estado persistido, no tablero cosmético.
+
+### Riesgos y fallas futuras que deben cerrarse ANTES de autonomía o piloto
+
+| Riesgo/fallo probable | Control técnico concreto | Prueba de fallo obligatoria | Estado al 21/10 |
+| --- | --- | --- | --- |
+| R1 Trabajo duplicado/repetición tras reinicio | Idempotency key estable por trabajo/servicio, lease con TTL, fencing token, compare-and-swap, dedupe de side effects | Interrumpir worker en mitad de acción y reiniciar dos workers; exactamente un efecto de negocio | NO VERIFICADO |
+| R2 Cola detenida por único P0 bloqueado | Estados BLOCKED/HUMAN_REQUIRED, grafo de dependencias y selección de siguiente tarea independiente; dead letter/retry budget | Bloquear dependencia externa y comprobar avance independiente sin cerrar P0 | NO VERIFICADO |
+| R3 Autonomía infinita agota Free tier/API/DB | Limitar concurrencia, backoff+jitter, circuit breaker, cuotas y costo cero, heartbeat prudente, telemetría agregada | Forzar 429, timeout, 5xx y cuota agotada; sin tormenta de refresh/consultas | NO VERIFICADO |
+| R4 Realtime/Auth/GPS degradados por agentes | Aislar carga agente de Supabase transaccional, límites por rol y circuito, observabilidad por operación | Simular reconexión/timeout y sesión token refresh con Cliente/Proveedor; sin logout ni carga excesiva | NO VERIFICADO |
+| R5 False green CI o autoaprobarse | Judge lee evidencia persistida independiente, Sentinel no muta aprobación, protección branch/checks por SHA y contexto | Inyectar defecto y prueba negativa: no merge/no DONE incluso si agente reporta PASS | NO VERIFICADO |
+| R6 Carrera main/PR/deploy SHA distintos | Releer HEAD antes de escribir, CAS/fast-forward, CI exact SHA, artifact digest, runtime revision y publicación deliberada | Avanzar main durante prueba; resultado viejo jamás promueve commit nuevo | NO VERIFICADO |
+| R7 Migración o cambio productivo irreversible | TEST con contrato y datos sintéticos; backups restaurables; dry run/esquema, rollback/recovery, aprobación para operación de alto riesgo | Rechazar schema incompatible; ensayo rollback sin tocar datos productivos | NO VERIFICADO |
+| R8 Datos sensibles filtrados en evidencias/logs | Redacción de tokens, GPS, identidades/servicios, RLS, secretos solo servidor; escaneo de artefactos | Intentar leer recursos de otro rol y buscar secretos en logs/artifacts | NO VERIFICADO |
+| R9 E2E verde no refleja uso físico | Separar pruebas simuladas de GPS/cámara/sonido/push y de dos dispositivos Android reales; criterios humanos explícitos | Cliente/Proveedor reales: entrega, navegación, alertas, fotos, pago/cierre | NO VERIFICADO |
+| R10 Publicación rompe funcionalidad antigua | Baseline/contratos, smoke post-deploy, monitoreo por revisión, canary/rollback apropiado y detener ante regresión | Sembrar fallo en preview y comprobar bloqueo de producción | NO VERIFICADO |
+| R11 HIVE/worker/web sin continuidad real | Estado y ledger persistidos + supervisor, heartbeat y watchdog independientes, alerta de jobs atascados, modo OFF seguro | Matar worker/reiniciar servidor y reconstruir cola sin perder tareas ni fingir 24/7 | NO VERIFICADO |
+| R12 UI y tablero desconectados de backend | Una sola fuente de verdad: ledger/checklist/eventos; mostrar SHA/entorno/estado/evidencia en Command Center | Comparar tablero contra DB/CI y detectar estado stale/incoherente | NO VERIFICADO |
+
+### Puertas para corregir y volver a verificar
+1. **Baseline:** capturar main HEAD, CI, estado real TEST/PROD, locks/queue, Supabase IO, Sentinel, PR #568 y flujos de Cliente/Proveedor. No usar checkpoint histórico como actual.
+2. **Gates de metodología (antes de ON):** escribir y ejecutar fallos inyectados R1–R8, R11–R12. Implementar correcciones pequeñas sobre componentes que ya existen; repetir regresiones al mismo SHA. Tres mínimos: éxito confirmado, CI fallido bloquea DONE/merge y caída de worker recuperada sin duplicación.
+3. **Gates de producto:** P0 Auth/GPS/matching/alerta/aceptación, luego lifecycle, mapa, agenda, reprogramación, 24h, fotos y pagos. E2E por servicio con estado persistido y pruebas negativas.
+4. **Gates de publicación:** CI+TEST+Judge+Sentinel, verificación post-deploy del SHA, control rollback, aprobación humana requerida para producción y test físico en Florianópolis. No activar Empresa Autónoma antes de pruebas.
+5. **Cierre documental SOLO DESPUÉS:** registrar evidencia reproducible por R#, run, SHA, fecha, entorno, owner, fallo previo, corrección, nuevo resultado y regresiones. Marcar VALIDADO sólo lo pasado; cualquier fallo queda pendiente abierto.
+
+**Riesgos residuales inevitables:** pérdida de conectividad, GPS/background OS, límites de proveedores externos y fallos de dispositivos físicos. Diseñar recuperación y mensajes claros; no prometer ausencia total de fallos.
+
+**No ejecutado en este registro:** pruebas de fallas inyectadas, modificaciones al worker, activación HIVE, migraciones o despliegues. **Próximo trabajo de ingeniería:** inspeccionar el ejecutor/cola/locks existentes y correr pruebas de R1/R3/R5/R11 sobre TEST de forma contenida; corregir causas y conservar evidencia antes de ampliar.
+
+
+### P0 2026-10-21 — Recuperación automática del matching (PR #566)
+- Preparada migración `20261021223000_safe_automatic_rematch_recovery.sql`: reintenta lotes de hasta 20 servicios `buscando`/`ofrecido` sin ofertas vigentes, omite asignados/cancelados, usa `FOR UPDATE SKIP LOCKED` y reutiliza controles existentes de autorización, GPS, deudas, categoría y horario.
+- Agregado contrato `tests/contracts/p0-safe-automatic-rematch.test.mjs`. `UGO Core CI` run 39695166059 PASS; verificación de trazabilidad falló por falta de estas entradas, corregida en este PR.
+- **No desplegado:** `pg_cron` de TEST sigue deshabilitado tras errores `job startup timeout`; producción no intervenida. Falta resolver PR #560, aplicar y validar migraciones TEST, verificar cancelación/aceptación simultáneas y E2E de ciclos de 5 minutos antes de activar cron o fusionar.
+- Estado: `IMPLEMENTED IN DRAFT PR / TEST E2E AND MIGRATION PENDING`. La aprobación de requisitos no es evidencia de 12 pruebas completas.
+
+- Integración P0 2026-10-21: consolidación del PR #560 dentro del PR #566 de las migraciones de horario inmediato/deadline y paridad GPS 90 s de notificación, junto con contratos. HEAD de integración requiere SAME-SHA CI y pruebas sobre Arena TEST. **No se aplicó SQL ni habilitó cron; no fusionar hasta confirmar E2E sin regresiones.**
+
+- P0 GPS Pro 2026-10-21: captura de UGO Pro muestra proveedor Online fuera del radar, timeout GPS y estado Procesando. Se corrigió carrera comprobable en el código: refresco manual, primer heartbeat y refresco de foco podían iniciar capturas GPS simultáneas; ahora comparten una única adquisición en curso, con limpieza tras éxito/error, preservando validación de 90 s y precisión 250 m. Se agregó test contractual `provider-gps-singleflight-acquisition-20261021.test.mjs`. **PENDIENTE**: CI same-SHA, prueba navegador con GPS real, validación Auth/RLS, matching de alerta/aceptación/cancelación y merge; no afirmar recuperación E2E todavía.
+
+- 2026-10-21 P0: opción voluntaria «Recibir ofertas las 24 horas» en agenda de Proveedor (schedule.receive24h=false por defecto). Solamente elimina restricción horaria para ofertas inmediatas; trabajos programados, GPS fresco, Online, zonas, deuda, calendario de conflictos y autorización permanecen. SQL `20261022014500_provider_opt_in_24h_offers.sql`, contrato `provider-24h-offers-opt-in.test.mjs`. Pendiente CI SAME-SHA, instalación controlada TEST y E2E navegador; sin aplicar producción.
+
+- 2026-10-21 P0 opciones 24h: Core CI del SHA d4e2a9e falló en auditoría i18n JSX (una etiqueta literal de Proveedor). Corregido con `providerPortfolio.receive24h` localizado pt-BR/es/en en `extended.ts`, uso `t(...)` en UI y contrato actualizado. Matching E2E automatizado del SHA anterior SUCCESS, pero no equivale a prueba humana de aviso sonoro y aceptación. Esperar CI mismo SHA y prueba de dispositivo antes de merge.
+
+- 2026-10-21/22 P0 avance: migración `20261022020000_rematch_on_fresh_provider_gps.sql` instalada en Arena TEST: reintenta pedidos sin ofertas tras 60 s de cooldown si existe proveedor Online/disponible con GPS <=90 s y precisión <=250 m, sin esperar vencimiento 5 min; conserva SKIP LOCKED, 20 por lote y filtros de ofertas vigentes/cancelación/asignación. Contrato `provider-fresh-gps-early-rematch.test.mjs`. Cron observado 41 SUCCESS/1 FAIL (startup timeout 01:44 UTC). Pedido real f94bb5da... aún buscando a las 01:56 UTC; pendiente proveedor GPS real estable, confirmación oferta y alerta/aceptación. Mantener PROD sin cambios.
+
+- 2026-10-21 P0 GPS watcher: corregido reinicio de watchPosition con timeout pendiente: startWatch cancela restartTimer obsoleto y pone watchId=null tras clearWatch; callback descarta ID del timer; prueba `provider-gps-watch-restart-recovery.test.mjs`. En SHA 3d0cd6d Cross-role UI falló `AUTONOMY_UI_STATE_MISMATCH` (Super Admin), aunque Core y Matching E2E pasaron. Nuevo CI same SHA pendiente; GPS y alerta reales aún sin certificar. No fusionar ni producción.
+
+
+### 2026-10-22 — PR #569: sincronización de prueba UI de autonomía
+- Tras la integración P0 del PR #566 en `main` (`03b29a13`), el runtime multirrol falló en `AUTONOMY_UI_STATE_MISMATCH` por observar `aria-checked=false` antes de confirmar hidratación de la vista.
+- Cambio del PR #569: esperar selección efectiva de la radio, releer el modo de autonomía persistido y mantener aserción estricta de coincidencia; no activar ni modificar Empresa Autónoma ni su gate. Core CI y Cross-role UI aprobaron el commit `8d6fddec` en PR; nuevo SHA requiere repetir controles.
+- Cierre pendiente: Roadmap Traceability, demás controles del SHA final, fusión a `main`, comprobación postmerge; sin afirmar pruebas físicas GPS/oferta/sonido. Hugo Presence, RPC/RLS y Visual siguen como incidencias independientes.
+
+
+### 2026-10-22 — Postmerge PR #569: compatibilidad Playwright runner
+- En `main` be7377c8, Cross-role UI (run 39837869684) y Cross Visual (run 39837869745) fallaron antes de ejecutar Chromium: `Playwright 1.56.1 does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest`. No es evidencia de defecto de producto.
+- Corrección acotada: fijar `runs-on: ubuntu-24.04` en `.github/workflows/role-ui-runtime.yml` y `.github/workflows/cross-visual-runtime.yml`, sin relajar las aserciones, la seguridad ni modificar la app. Estado IMPLEMENTADO EN RAMA, pendiente CI/navegador del SHA final y verificación tras fusión.
+- Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
+
+
+### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
+- Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
+- No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
+
+
+### PR #565 — Admin user Realtime order and autonomy mode proof (2026-10-23)
+- Preserve latest main plus AdminUsersPanel monotonic load revision: older concurrent Realtime reads cannot overwrite newer rows, category lists or total count.
+- Cross-role TEST now waits for UI radio selected state to converge with persisted mode; verifies backend unchanged, does not change non-OFF operator state and fails on mismatch. New contract covers both fixes. SAME-SHA CI and browser verification required before integration.
