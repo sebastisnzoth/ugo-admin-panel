@@ -244,3 +244,11 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Además aprobaron 11 workflows del mismo SHA, incluidos Matching E2E, Auth Isolation, Core CI, Provider Operating Zone y Cross Performance.
 - **La suite global todavía NO es 13/13**: Admin Realtime Runtime TEST [`39499161595`](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39499161595) tiene `conclusion=failure`.
 - Se registra la aprobación de Cross-role UI como VERIFICADA sólo para la revisión/entorno indicados. El cambio de modo de Empresa Autónoma pudo quedar SKIPPED si TEST no estaba en OFF; no extrapolar a un control de transición validado. No se fusionó ni desplegó producción.
+
+
+## 2026-10-22 — Hive Mac ↔ TEST ↔ Super Admin (PR #571)
+- TEST `tmossnqfwfwjrtzwcbmm`: migraciones de cola y lease/presencia **APPLIED**; Edge `ugo-hive-local-jobs` v3 **ACTIVE**.
+- Seguridad SQL: RLS ON, sin permisos directos de `anon`/`authenticated` a la cola y credenciales. Probe transaccional claim+complete+rechazo lease ajeno+duplicado PASS; ROLLBACK.
+- Super Admin UI y daemon de Mac implementados en rama; no hay credenciales worker activas ni conexión E2E verificada. No se desplegó el frontend ni se fusionó a main. CI del HEAD de rama pendiente.
+- La presencia solo vale con heartbeat autorizado menor que 45 s; sin heartbeat se muestra Mac offline. `verify_jwt=false` del endpoint permite bearer dedicado del worker, pero TODO acceso requiere validación interna explícita (JWT de Super Admin o hash de credencial específica).
+- **Gate de salida:** credencial worker provisionada por hash en TEST, Mac corriendo worker outbound, solicitud del Super Admin autenticado con respuesta real, pruebas negativas y CI same-SHA, integración main y verificación publicación. Empresa Autónoma OFF; Supabase PROD intacta.
