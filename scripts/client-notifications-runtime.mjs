@@ -7,6 +7,7 @@ import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
 import {clientNotificationsReadinessMode} from './lib/clientNotificationsReadinessMode.mjs'
+import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const TEST_PROVIDER_ID='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
@@ -31,10 +32,10 @@ const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:fa
 const provider=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 const admin=createClient(url,serviceRole,{auth:{persistSession:false,autoRefreshToken:false}})
 
-const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await signInForTestWithBoundedRetry(auth.auth,{email,password})
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
-const {data:providerLogin,error:providerLoginError}=await provider.auth.signInWithPassword({email:providerEmail,password:providerPassword})
+const {data:providerLogin,error:providerLoginError}=await signInForTestWithBoundedRetry(provider.auth,{email:providerEmail,password:providerPassword})
 assert.ifError(providerLoginError)
 assert.ok(providerLogin.session&&providerLogin.user,'UGO_TEST_PROVIDER_SESSION_REQUIRED')
 assert.equal(providerLogin.user.id,TEST_PROVIDER_ID,'UGO_TEST_PROVIDER_ID_MISMATCH')
