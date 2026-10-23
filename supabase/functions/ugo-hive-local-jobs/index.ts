@@ -69,14 +69,12 @@ Deno.serve(async(req:Request)=>{
    if(typeof body.prompt!=='string'||body.prompt.trim().length<1||body.prompt.length>4000||
       typeof body.idempotency_key!=='string'||!/^[0-9a-f-]{36}$/i.test(body.idempotency_key)||
       Object.keys(body).some(k=>!['action','prompt','idempotency_key'].includes(k)))return send(400,{error:'INVALID_REQUEST'});
-   const {data:recent,error:rError}=await db.from('hive_local_inference_jobs').select('id').eq('user_id',auth.user.id).gte('created_at',new Date(Date.now()-60_000).toISOString()).limit(10);
-   if(rError)return send(503,{error:'RATE_CHECK_UNAVAILABLE'});
-   if((recent?.length||0)>=10)return send(429,{error:'RATE_LIMITED'});
-   const {data:insert,error:insertError}=await db.from('hive_local_inference_jobs').upsert({user_id:auth.user.id,prompt:body.prompt,idempotency_key:body.idempotency_key},{onConflict:'user_id,idempotency_key',ignoreDuplicates:true}).select('id,status').maybeSingle();
-   if(insertError)return send(503,{error:'CREATE_UNAVAILABLE'});
-   if(insert)return send(200,{job:insert});
-   const {data:existing,error:eError}=await db.from('hive_local_inference_jobs').select('id,status').eq('user_id',auth.user.id).eq('idempotency_key',body.idempotency_key).maybeSingle();
-   return eError||!existing?send(503,{error:'LOOKUP_UNAVAILABLE'}):send(200,{job:existing});
+   const {data,error}=await db.rpc('hive_local_create_job',{p_user_id:auth.user.id,p_prompt:body.prompt,p_key:body.idempotency_key});
+   if(error){
+     if(error.message?.includes('HIVE_RATE_LIMITED'))return send(429,{error:'RATE_LIMITED'});
+     return send(503,{error:'CREATE_UNAVAILABLE'});
+   }
+   return data?.[0]?.id?send(200,{job:data[0]}):send(503,{error:'CREATE_NO_RESULT'});
  }
  if(body.action==='list'){
    if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_LIST'});
