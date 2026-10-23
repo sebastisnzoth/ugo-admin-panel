@@ -50,6 +50,18 @@ jobs:
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
       - run: npm ci --include=dev
       - run: npm run verify:test-env
+      - name: Determine completed-readiness regression vs active lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          import {clientNotificationsReadinessMode} from './scripts/lib/clientNotificationsReadinessMode.mjs'
+          const lock=JSON.parse(fs.readFileSync('docs/ugo-work-locks/readiness-client-notifications.json','utf8'))
+          const mode=clientNotificationsReadinessMode(lock)
+          fs.appendFileSync(process.env.GITHUB_ENV,'UGO_CLIENT_NOTIFICATIONS_LOCK_STATUS='+mode+'\n')
+          console.log('CLIENT_NOTIFICATIONS_READINESS_MODE='+mode)
+          NODE
       - name: TypeScript and build
         env:
           VITE_APP_REVISION: ${{ github.sha }}
@@ -86,6 +98,7 @@ jobs:
           UGO_RUNTIME_SHA: ${{ github.sha }}
         run: node scripts/client-notifications-sentinel.mjs
       - name: Persist authoritative readiness closure
+        if: env.UGO_CLIENT_NOTIFICATIONS_LOCK_STATUS == 'IN_PROGRESS'
         shell: bash
         env:
           UGO_VALIDATED_SHA: ${{ github.sha }}

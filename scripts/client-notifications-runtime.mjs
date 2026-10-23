@@ -6,6 +6,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {clientNotificationsReadinessMode} from './lib/clientNotificationsReadinessMode.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const TEST_PROVIDER_ID='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
@@ -19,8 +20,9 @@ const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 const workLock=JSON.parse(await fs.readFile('docs/ugo-work-locks/readiness-client-notifications.json','utf8'))
-assert.equal(workLock.status,'IN_PROGRESS')
-assert.ok(Date.parse(workLock.lease_expires_at)>Date.now(),'ACTIVE_LEASE_REQUIRED')
+// Re-check every run against the persisted lock: a completed readiness task
+// may be regression-tested without re-acquiring its historical lease.
+const readinessMode=clientNotificationsReadinessMode(workLock)
 const PARALLEL_TEST_SESSIONS_MUST_NOT_BE_REVOKED=true
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&serviceRole&&email&&password&&providerEmail&&providerPassword&&sha,'CLIENT_NOTIFICATIONS_RUNTIME_INPUTS_REQUIRED')
@@ -391,6 +393,7 @@ const evidence={
  job_id:'UGO-READINESS-CLIENT-NOTIFICATIONS',
  correlation_id:process.env.UGO_CORRELATION_ID,
  lock_correlation_id:workLock.correlation_id,
+ readiness_mode:readinessMode,
  push_delivery_proven:false,
  evidence_paths:evidencePaths,
  payment:{method:'pix',state:'retenido',environment:'demo'},
