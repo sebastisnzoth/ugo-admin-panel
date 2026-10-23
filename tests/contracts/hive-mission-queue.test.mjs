@@ -37,3 +37,8 @@ test('worker polling advances durable missions even with Hive Console closed',()
  assert.match(edge,/db\.rpc\('hive_local_pump_missions'\)/);
  assert.match(edge,/MISSION_PUMP_UNAVAILABLE/);
 });
+
+test('mission pump SQL body is delimited by a matching PostgreSQL dollar quote',()=>{
+ assert.match(sql,/as \$mission_pump\$/);
+ assert.match(sql,/end \$mission_pump\$;/);
+});
