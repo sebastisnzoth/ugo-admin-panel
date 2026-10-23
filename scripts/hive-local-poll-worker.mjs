@@ -9,7 +9,7 @@ export async function processHivePoll({claim, complete, policy, run = runLocalHi
   const job = await claim();
   if (job == null) return {status:'IDLE'};
   if (typeof job !== 'object' || Array.isArray(job) ||
-      typeof job.id !== 'string' || !/^[0-9a-f-]{36}$/i.test(job.id) ||
+      typeof job.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(job.id) ||
       typeof job.lease !== 'string' || job.lease.length < 32 ||
       typeof job.prompt !== 'string' || !job.prompt.trim() || job.prompt.length > 4000 ||
       job.capability !== 'inference-only' || job.authorized !== true ||
@@ -22,9 +22,12 @@ export async function processHivePoll({claim, complete, policy, run = runLocalHi
       id:'hive-local-poll',prompt:job.prompt,model:'qwen3-coder-free',
       capability:'inference-only',requires_approval:false
     },policy});
-    outcome = result.status === 'COMPLETED_LOCAL_INFERENCE'
-      ? {status:'SUCCEEDED',answer:String(result.answer).slice(0,12000),model:'qwen3-coder-free'}
-      : {status:'FAILED',code:'HIVE_INFERENCE_BLOCKED'};
+    const validAnswer = result?.status === 'COMPLETED_LOCAL_INFERENCE' &&
+      result.model === 'qwen3-coder-free' && typeof result.answer === 'string' &&
+      result.answer.trim().length > 0 && result.answer.length <= 12000;
+    outcome = validAnswer
+      ? {status:'SUCCEEDED',answer:result.answer,model:'qwen3-coder-free'}
+      : {status:'FAILED',code:'HIVE_INVALID_INFERENCE_RESULT'};
   } catch {
     outcome = {status:'FAILED',code:'HIVE_LOCAL_INFERENCE_FAILED'};
   }
