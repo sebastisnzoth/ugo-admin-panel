@@ -832,3 +832,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Nuevas pruebas `tests/contracts/hive-local-test-transport.test.mjs` cubren endpoint fijo, autenticación, claims inválidos, rechazo de completions y fallos de red. Son contratos simulados, **no** prueba E2E.
 - No se ha creado ni activado el endpoint remoto, ni implementado el daemon/encendido automático, ni conectado HiveConsole. Nunca considerar el transporte por sí mismo como integración operativa.
 - Antes de habilitar: autorización de roles y worker separadas, leases y deduplicación transaccionales en TEST, comprobación de RLS, reinicios y reintentos, pruebas CI y E2E desde Mac, regresión de app. Empresa Autónoma OFF, producción intacta.
+
+
+### 2026-10-22 — Hive local: backend real desplegado SOLO TEST, no E2E
+- PR #571: migraciones `20261022235500_hive_local_inference_test_queue.sql` y `20261022235900_hive_local_retry_and_presence.sql` aplicadas en Arena TEST `tmossnqfwfwjrtzwcbmm`. RLS habilitado; `anon`/`authenticated` sin SELECT ni EXECUTE sobre RPC claim. Migraciones NO aplicadas a producción.
+- Edge `ugo-hive-local-jobs` desplegada en TEST, versión 3 ACTIVE (deploy no equivale a E2E). Funciones: create/list Super Admin autenticado, claim/complete con token dedicado, registro por hash, heartbeat y disable; solo inferencia, Empresa Autónoma OFF.
+- Contrato SQL con ROLLBACK aprobado: lease válido completa, lease falso y doble completion rechazados. No quedaron datos de prueba.
+- UI HiveConsole y worker opt-in implementados en rama, **CI del SHA final y prueba real de Mac pendientes**. Aún no existe worker credencial activa; panel NO debe afirmar Mac conectada. No fusionar hasta mismo SHA CI, seguridad, prueba Super Admin real, despliegue de código de cliente y smoke. No tocar matching/GPS/pagos.
