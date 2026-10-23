@@ -819,6 +819,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
 
 
-### PR #552 — Consolidated provider browser-online Realtime reconciliation (2026-10-23)
-- Rebased by a safe merge commit preserving newer main Realtime and auth code. A single `handleOnline` performs authoritative resync plus reconnect; its listener is removed on cleanup. Realtime offer, service, payment and debt subscriptions are unchanged.
-- Contract coverage was preserved and compared with current main. Branch E2E and CI must rerun at the new SHA; this does not replace human two-device matching verification.
+### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
+- Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
+- No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
+
+
+### PR #552 — Provider browser Realtime restored on current main (2026-10-23)
+- One `online` handler now handles both authoritative state resync and reconnect, with matched cleanup; offer/job/payment subscriptions preserved. Exact branch CI, security, role UI, and authenticated Client→Provider matching E2E previously PASS. Ubuntu runner pinned to 24.04 for Playwright 1.56.1 compatibility. Reverify same SHA before merge and post-merge application.
