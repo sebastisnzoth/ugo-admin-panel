@@ -14,7 +14,7 @@ const translations={
  docs:'Consultar documentação técnica ↗',conversation:'Conversa com Hugo',gateway:'Gateway de inferência indisponível até verificação e autorização.',
  offline:'OFFLINE',slow:'RESPOSTA LENTA',remoteError:'ERRO DE CONEXÃO',nochat:'Chat não conectado',nochatInfo:'Não existem respostas simuladas. Histórico e streaming dependem de backend seguro.',
  message:'Mensagem',placeholder:'Indisponível enquanto a inferência está desativada',send:'Enviar · indisponível',
- macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 do worker',enrollInfo:'TEST · Cadastre apenas o hash SHA-256 da chave local do worker.',enrollAction:'Cadastrar worker TEST',submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
+ macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 do worker',enrollInfo:'TEST · Cadastre apenas o hash SHA-256 da chave local do worker.',enrollAction:'Cadastrar worker TEST',submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',legacy:'Histórico sem agente',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
  },
  'es':{
  brand:'U.GO · SUPER ADMIN',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligencia',disabled:'CHAT TEST · EJECUCIÓN MANUAL',
@@ -26,7 +26,7 @@ const translations={
  docs:'Consultar documentación técnica ↗',conversation:'Conversación con Hugo',gateway:'Gateway de inferencia no disponible hasta su verificación y autorización.',
  offline:'SIN CONEXIÓN',slow:'RESPUESTA LENTA',remoteError:'ERROR DE CONEXIÓN',nochat:'Chat no conectado',nochatInfo:'No hay respuestas simuladas. El historial y streaming requieren un backend seguro.',
  message:'Mensaje',placeholder:'No disponible mientras la inferencia esté desactivada',send:'Enviar · no disponible',
- macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 del worker',enrollInfo:'TEST · Registrá solamente el hash SHA-256 de la clave local del worker.',enrollAction:'Registrar worker TEST',submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
+ macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 del worker',enrollInfo:'TEST · Registrá solamente el hash SHA-256 de la clave local del worker.',enrollAction:'Registrar worker TEST',submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',legacy:'Histórico sin agente',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
  },
  'en':{
  brand:'U.GO · SUPER ADMIN',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',agents:'Agents',heading:'Intelligence center',disabled:'TEST CHAT · MANUAL ONLY',
@@ -38,7 +38,7 @@ const translations={
  docs:'Technical documentation ↗',conversation:'Chat with Hugo',gateway:'Inference gateway unavailable until verified and authorized.',
  offline:'OFFLINE',slow:'SLOW RESPONSE',remoteError:'CONNECTION ERROR',nochat:'Chat not connected',nochatInfo:'No simulated answers. History and streaming require a secure backend.',
  message:'Message',placeholder:'Unavailable while inference is disabled',send:'Send · unavailable',
- macOnline:'Mac connected',macOffline:'Mac disconnected',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Worker SHA-256 hash',enrollInfo:'TEST · Enter only the SHA-256 hash of the local worker key.',enrollAction:'Register TEST worker',submitReady:'Send',waiting:'Waiting for Mac response',activeChat:'TEST Chat',sendError:'Could not send',planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.'
+ macOnline:'Mac connected',macOffline:'Mac disconnected',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Worker SHA-256 hash',enrollInfo:'TEST · Enter only the SHA-256 hash of the local worker key.',enrollAction:'Register TEST worker',submitReady:'Send',waiting:'Waiting for Mac response',activeChat:'TEST Chat',sendError:'Could not send',legacy:'Legacy unattributed',planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.'
  }
 } as const
 const HIVE_MODEL='qwen3-coder-free'
@@ -82,7 +82,7 @@ export function HiveConsole(){
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
    <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.macName} · {tr.off}</p></div><span>{workerConnected?tr.macOnline:workerEnrolled?tr.macOffline:tr.offline}</span></div>
-   <div className="ugo-hive-chat-empty" role="status">{jobs.length===0?<p>{tr.nochatInfo}</p>:jobs.map(job=><article key={job.id} style={{overflowWrap:'anywhere',padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border, #ccc)'}}><small>{job.status} · {job.agent??'Legacy'} · {job.model??HIVE_MODEL} · {new Date(job.created_at).toLocaleString()}</small><p>{job.answer||(job.status==='FAILED'?job.error_code:tr.waiting)}</p></article>)}</div>
+   <div className="ugo-hive-chat-empty" role="status">{jobs.length===0?<p>{tr.nochatInfo}</p>:jobs.map(job=><article key={job.id} style={{overflowWrap:'anywhere',padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border, #ccc)'}}><small>{job.status} · {job.agent??tr.legacy} · {job.model??HIVE_MODEL} · {new Date(job.created_at).toLocaleString()}</small><p>{job.answer||(job.status==='FAILED'?job.error_code:tr.waiting)}</p></article>)}</div>
    {!workerEnrolled&&<div><p>{tr.enrollInfo}</p><input aria-label={tr.workerHashLabel} value={workerHash} onChange={e=>setWorkerHash(e.target.value.trim().toLowerCase())} maxLength={64} autoComplete="off"/><button type="button" disabled={!/^[a-f0-9]{64}$/.test(workerHash)} onClick={()=>void provisionWorker()}>{tr.enrollAction}</button></div>}
    {chatError&&<p role="alert">{chatError}</p>}
    <label htmlFor="ugo-hive-agent">{tr.agents}</label><select id="ugo-hive-agent" value={selectedAgent} onChange={e=>setSelectedAgent(e.target.value as typeof catalog[number])}>{catalog.map(name=><option key={name} value={name}>{name}</option>)}</select>
