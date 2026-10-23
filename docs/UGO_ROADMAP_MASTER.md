@@ -819,27 +819,6 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
 
 
-### 2026-10-22 — Hive local PR #571, bloqueo de integración y prevención de regresiones
-- Confirmado en la Mac del usuario: `127.0.0.1:3037/inference` con token respondió `COMPLETED_LOCAL_INFERENCE` y `UGO PUENTE OK`. Esto **solo valida el recorrido local**, no Super Admin ↔ Supabase TEST ↔ Mac.
-- En rama de Hive: worker de consulta saliente exige trabajo autorizado `inference-only`, lease y campos permitidos. Reforzado para rechazar UUID mal formados y respuestas de modelo vacías, demasiado largas o cuyo identificador no coincida. Agregadas pruebas negativas; ejecución del SHA final aún por verificar.
-- Bloqueos de diseño: API autenticada TEST para claim/completion con lease exclusivo y expiración, idempotencia, permisos Super Admin, límites de reintentos y auditoría, integración de HiveConsole y prueba real de extremo a extremo. Evitar publicar el puerto Mac directamente. No reutilizar `autonomous_jobs` sin aislar expresamente los permisos y verificar RLS.
-- Protección: no tocar producción ni matching/GPS/pagos; Empresa Autónoma OFF; no fusionar este PR incompleto a `main`. Verificar CI del SHA final, fallos 401/429/503, reintentos, entrega duplicada, caída/reinicio de Mac y recuperación de lease antes de cualquier habilitación.
-- Estado: IMPLEMENTACIÓN INCOMPLETA, NO DESPLEGADA COMO CHAT FUNCIONAL. Ningún PR, commit o test aislado constituye cierre.
-
-
-### 2026-10-22 — PR #571: transporte saliente TEST bajo contrato (no activado)
-- Se agregó `scripts/hive-local-test-transport.mjs` que restringe el destino a la función futura `ugo-hive-local-jobs` de Supabase TEST, exige token de worker solo en entorno local, usa timeouts y rechaza errores/autorización y respuestas demasiado grandes sin filtrar credenciales.
-- Nuevas pruebas `tests/contracts/hive-local-test-transport.test.mjs` cubren endpoint fijo, autenticación, claims inválidos, rechazo de completions y fallos de red. Son contratos simulados, **no** prueba E2E.
-- No se ha creado ni activado el endpoint remoto, ni implementado el daemon/encendido automático, ni conectado HiveConsole. Nunca considerar el transporte por sí mismo como integración operativa.
-- Antes de habilitar: autorización de roles y worker separadas, leases y deduplicación transaccionales en TEST, comprobación de RLS, reinicios y reintentos, pruebas CI y E2E desde Mac, regresión de app. Empresa Autónoma OFF, producción intacta.
-
-
-### 2026-10-22 — Hive local: backend real desplegado SOLO TEST, no E2E
-- PR #571: migraciones `20261022235500_hive_local_inference_test_queue.sql` y `20261022235900_hive_local_retry_and_presence.sql` aplicadas en Arena TEST `tmossnqfwfwjrtzwcbmm`. RLS habilitado; `anon`/`authenticated` sin SELECT ni EXECUTE sobre RPC claim. Migraciones NO aplicadas a producción.
-- Edge `ugo-hive-local-jobs` desplegada en TEST, versión 3 ACTIVE (deploy no equivale a E2E). Funciones: create/list Super Admin autenticado, claim/complete con token dedicado, registro por hash, heartbeat y disable; solo inferencia, Empresa Autónoma OFF.
-- Contrato SQL con ROLLBACK aprobado: lease válido completa, lease falso y doble completion rechazados. No quedaron datos de prueba.
-- UI HiveConsole y worker opt-in implementados en rama, **CI del SHA final y prueba real de Mac pendientes**. Aún no existe worker credencial activa; panel NO debe afirmar Mac conectada. No fusionar hasta mismo SHA CI, seguridad, prueba Super Admin real, despliegue de código de cliente y smoke. No tocar matching/GPS/pagos.
-
 ### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
 - Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
 - No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
@@ -871,8 +850,3 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Corrección acotada generada con npm: lockfile actualizado a `zod@4.6.7`, compatible con la gama declarada y sin cambios en `package.json`, integridades manuales, `--force` ni security gate.
 - Evidencia local: instalación limpia `npm ci`; `npm audit --audit-level=high` = 0; build/TypeScript, contrato focalizado e i18n PASS; 1508 pruebas PASS / 0 FAIL / 8 SKIP; lint 0 errores con 986 warnings ya presentes en baseline `8c753669…`.
 - Madurez: **candidato local verificado, CI VALIDATED e INTEGRATED pendientes del SHA exacto**. No es evidencia runtime de Hive, matching ni roles y no modifica bases o canales publicados. Siguiente: Actions same-SHA, integración independiente y verificación postmerge.
-
-### 2026-10-23 — Zod INTEGRATED en main; Hive sigue en fase de candidato
-- PR #576 fusionada: `83d9a08ce2128463471ba14c78b958788efce762`. Core CI postmerge `40035456820` y Pages `40035456858` SUCCESS; `status.json` público coincide con ese SHA. Alcance cerrado: vulnerabilidad high `GHSA-mrhx-c7xc-m3w5`. No es certificado runtime de otros frentes; Supabase Preview externo figura FAILURE y queda pendiente por separado.
-- PR #571 se reconcilió en la rama Arena conservando todo el trabajo y resolviendo sólo conflictos documentales. Se implementaron Keychain/LaunchAgent/backoff/instancia única, estados heartbeat/motor/inferencia, enrolamiento sin hashes manuales e idempotencia reforzada. Build PASS; 1582 PASS / 0 FAIL / 8 SKIP; lint 0 errores / 987 warnings; contratos PGlite de nueve migraciones PASS.
-- Madurez Hive: **IMPLEMENTED + LOCAL CONTRACT VALIDATED; CI final/TEST/RUNTIME/PUBLISHED pendientes**. No hubo nuevo SQL remoto ni Edge deploy porque el conector no enumera proyectos accesibles. Mac física, nueve perfiles reales, misión secuencial E2E y concurrencia multi-sesión TEST siguen bloqueados; no fusionar Hive a `main` por este verde local.
