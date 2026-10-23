@@ -825,3 +825,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Bloqueos de diseño: API autenticada TEST para claim/completion con lease exclusivo y expiración, idempotencia, permisos Super Admin, límites de reintentos y auditoría, integración de HiveConsole y prueba real de extremo a extremo. Evitar publicar el puerto Mac directamente. No reutilizar `autonomous_jobs` sin aislar expresamente los permisos y verificar RLS.
 - Protección: no tocar producción ni matching/GPS/pagos; Empresa Autónoma OFF; no fusionar este PR incompleto a `main`. Verificar CI del SHA final, fallos 401/429/503, reintentos, entrega duplicada, caída/reinicio de Mac y recuperación de lease antes de cualquier habilitación.
 - Estado: IMPLEMENTACIÓN INCOMPLETA, NO DESPLEGADA COMO CHAT FUNCIONAL. Ningún PR, commit o test aislado constituye cierre.
+
+
+### 2026-10-22 — PR #571: transporte saliente TEST bajo contrato (no activado)
+- Se agregó `scripts/hive-local-test-transport.mjs` que restringe el destino a la función futura `ugo-hive-local-jobs` de Supabase TEST, exige token de worker solo en entorno local, usa timeouts y rechaza errores/autorización y respuestas demasiado grandes sin filtrar credenciales.
+- Nuevas pruebas `tests/contracts/hive-local-test-transport.test.mjs` cubren endpoint fijo, autenticación, claims inválidos, rechazo de completions y fallos de red. Son contratos simulados, **no** prueba E2E.
+- No se ha creado ni activado el endpoint remoto, ni implementado el daemon/encendido automático, ni conectado HiveConsole. Nunca considerar el transporte por sí mismo como integración operativa.
+- Antes de habilitar: autorización de roles y worker separadas, leases y deduplicación transaccionales en TEST, comprobación de RLS, reinicios y reintentos, pruebas CI y E2E desde Mac, regresión de app. Empresa Autónoma OFF, producción intacta.
