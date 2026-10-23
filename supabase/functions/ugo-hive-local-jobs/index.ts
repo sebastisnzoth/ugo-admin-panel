@@ -47,6 +47,16 @@ Deno.serve(async(req:Request)=>{
  const {data:profile,error:pError}=await db.from('usuarios').select('tipo,activo').eq('id',auth.user.id).maybeSingle();
  if(pError)return send(503,{error:'PROFILE_UNAVAILABLE'});
  if(profile?.activo!==true||String(profile.tipo).toLowerCase()!=='superadmin')return send(403,{error:'SUPERADMIN_REQUIRED'});
+ if(body.action==='provision_worker'){
+   if(typeof body.token_hash!=='string'||!/^[a-f0-9]{64}$/.test(body.token_hash)||Object.keys(body).some(k=>!['action','token_hash'].includes(k)))return send(400,{error:'INVALID_WORKER_HASH'});
+   const {error}=await db.from('hive_local_worker_credentials').upsert({id:1,token_hash:body.token_hash,active:true,updated_at:new Date().toISOString()},{onConflict:'id'});
+   return error?send(503,{error:'WORKER_PROVISION_FAILED'}):send(200,{ok:true});
+ }
+ if(body.action==='disable_worker'){
+   if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_ACTION'});
+   const {error}=await db.from('hive_local_worker_credentials').update({active:false,updated_at:new Date().toISOString()}).eq('id',1);
+   return error?send(503,{error:'WORKER_DISABLE_FAILED'}):send(200,{ok:true});
+ }
  if(body.action==='create'){
    if(typeof body.prompt!=='string'||body.prompt.trim().length<1||body.prompt.length>4000||
       typeof body.idempotency_key!=='string'||!/^[0-9a-f-]{36}$/i.test(body.idempotency_key)||
