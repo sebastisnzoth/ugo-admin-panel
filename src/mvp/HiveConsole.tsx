@@ -14,7 +14,7 @@ const translations={
  docs:'Consultar documentação técnica ↗',conversation:'Conversa com Hugo',gateway:'Gateway de inferência indisponível até verificação e autorização.',
  offline:'OFFLINE',slow:'RESPOSTA LENTA',remoteError:'ERRO DE CONEXÃO',nochat:'Chat não conectado',nochatInfo:'Não existem respostas simuladas. Histórico e streaming dependem de backend seguro.',
  message:'Mensagem',placeholder:'Indisponível enquanto a inferência está desativada',send:'Enviar · indisponível',
- submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
+ enrollInfo:'TEST · Cadastre apenas o hash SHA-256 da chave local do worker.',enrollAction:'Cadastrar worker TEST',submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
  },
  'es':{
  brand:'U.GO · SUPER ADMIN',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligencia',disabled:'INFERENCIA DESACTIVADA',
@@ -26,7 +26,7 @@ const translations={
  docs:'Consultar documentación técnica ↗',conversation:'Conversación con Hugo',gateway:'Gateway de inferencia no disponible hasta su verificación y autorización.',
  offline:'SIN CONEXIÓN',slow:'RESPUESTA LENTA',remoteError:'ERROR DE CONEXIÓN',nochat:'Chat no conectado',nochatInfo:'No hay respuestas simuladas. El historial y streaming requieren un backend seguro.',
  message:'Mensaje',placeholder:'No disponible mientras la inferencia esté desactivada',send:'Enviar · no disponible',
- submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
+ enrollInfo:'TEST · Registrá solamente el hash SHA-256 de la clave local del worker.',enrollAction:'Registrar worker TEST',submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
  },
  'en':{
  brand:'U.GO · SUPER ADMIN',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',agents:'Agents',heading:'Intelligence center',disabled:'INFERENCE DISABLED',
@@ -38,7 +38,7 @@ const translations={
  docs:'Technical documentation ↗',conversation:'Chat with Hugo',gateway:'Inference gateway unavailable until verified and authorized.',
  offline:'OFFLINE',slow:'SLOW RESPONSE',remoteError:'CONNECTION ERROR',nochat:'Chat not connected',nochatInfo:'No simulated answers. History and streaming require a secure backend.',
  message:'Message',placeholder:'Unavailable while inference is disabled',send:'Send · unavailable',
- submitReady:'Send',waiting:'Waiting for Mac response',activeChat:'TEST Chat',sendError:'Could not send',planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.'
+ enrollInfo:'TEST · Enter only the SHA-256 hash of the local worker key.',enrollAction:'Register TEST worker',submitReady:'Send',waiting:'Waiting for Mac response',activeChat:'TEST Chat',sendError:'Could not send',planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.'
  }
 } as const
 const catalog=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const
@@ -80,7 +80,7 @@ export function HiveConsole(){
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
    <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>Supabase TEST · FreeLLMAPI Mac · {tr.off}</p></div><span>{workerConnected?'Mac ONLINE':workerEnrolled?'Mac OFFLINE':tr.offline}</span></div>
    <div className="ugo-hive-chat-empty" role="status">{jobs.length===0?<p>{tr.nochatInfo}</p>:jobs.map(job=><article key={job.id} style={{overflowWrap:'anywhere',padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border, #ccc)'}}><small>{job.status} · {job.model??'qwen3-coder-free'} · {new Date(job.created_at).toLocaleString()}</small><p>{job.answer||(job.status==='FAILED'?job.error_code:tr.waiting)}</p></article>)}</div>
-   {!workerEnrolled&&<div><p>TEST · Registrar hash SHA-256 de la clave local del worker (no pegar la clave original).</p><input aria-label="Worker SHA-256" value={workerHash} onChange={e=>setWorkerHash(e.target.value.trim().toLowerCase())} maxLength={64} autoComplete="off"/><button type="button" disabled={!/^[a-f0-9]{64}$/.test(workerHash)} onClick={()=>void provisionWorker()}>Registrar worker TEST</button></div>}
+   {!workerEnrolled&&<div><p>{tr.enrollInfo}</p><input aria-label="Worker SHA-256" value={workerHash} onChange={e=>setWorkerHash(e.target.value.trim().toLowerCase())} maxLength={64} autoComplete="off"/><button type="button" disabled={!/^[a-f0-9]{64}$/.test(workerHash)} onClick={()=>void provisionWorker()}>{tr.enrollAction}</button></div>}
    {chatError&&<p role="alert">{chatError}</p>}
    <label htmlFor="ugo-hive-message">{tr.message}</label><textarea id="ugo-hive-message" value={prompt} onChange={e=>setPrompt(e.target.value)} maxLength={4000} placeholder={tr.message} rows={3}/>
    <button type="button" disabled={!chatVerified||sending||!prompt.trim()} onClick={()=>void sendPrompt()}>{sending?tr.waiting:tr.submitReady}</button>
