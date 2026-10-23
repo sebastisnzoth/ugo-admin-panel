@@ -28,3 +28,13 @@ test('Hive multilingual UI copy is present and no fictional metrics are rendered
  assert.match(consoleCode,/setInterval\(\(\)=>void refresh\(\),5000\)/)
  assert.doesNotMatch(consoleCode,/Math\.random|fakeData|mockMetrics/)
 })
+
+test('Nine Hive analysis personas route only through existing guarded TEST inference',()=>{
+ assert.match(consoleCode,/agentScopes:Record<typeof catalog\[number\],string>/)
+ assert.match(consoleCode,/const \[selectedAgent,setSelectedAgent\]=useState/)
+ assert.match(consoleCode,/read-only analysis \| role:/)
+ assert.match(consoleCode,/no external actions, tools or DB access/)
+ assert.match(consoleCode,/value=\{selectedAgent\}/)
+ assert.match(consoleCode,/setSelectedAgent\(name\);setTab\('chat'\)/)
+ assert.doesNotMatch(consoleCode,/action:'execute'|action:'autonomy_on'|action:'grant_permission'/)
+})
