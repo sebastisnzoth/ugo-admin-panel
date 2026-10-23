@@ -431,3 +431,10 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 - Nuevas pruebas `tests/contracts/hive-local-test-transport.test.mjs` cubren endpoint fijo, autenticación, claims inválidos, rechazo de completions y fallos de red. Son contratos simulados, **no** prueba E2E.
 - No se ha creado ni activado el endpoint remoto, ni implementado el daemon/encendido automático, ni conectado HiveConsole. Nunca considerar el transporte por sí mismo como integración operativa.
 - Antes de habilitar: autorización de roles y worker separadas, leases y deduplicación transaccionales en TEST, comprobación de RLS, reinicios y reintentos, pruebas CI y E2E desde Mac, regresión de app. Empresa Autónoma OFF, producción intacta.
+
+
+### 2026-10-22 — Continuidad PR #571: Hive TEST, primer backend instalado
+- **Avance verificado:** esquema Hive aislado con RLS aplicado en `tmossnqfwfwjrtzwcbmm`, Edge `ugo-hive-local-jobs` v3 ACTIVE, SQL test transaccional de claim/completion/lease negativo/doble completion PASS+ROLLBACK. Authenticated/anon no tienen permisos directos sobre tablas ni claim.
+- **Implementado en rama, aún no comprobado E2E:** `HiveConsole.tsx` envía solicitudes autenticadas, lista respuestas, registra hash de worker y muestra presencia por heartbeat; worker de Mac consulta saliente y ejecuta inferencia local autorizada.
+- **Bloqueo activo exacto:** credencial worker no registrada (0 activas en TEST), Mac aún no ejecuta daemon nuevo; CI same-SHA y navegador Super Admin no validados. No declarar terminado ni fusionar hasta superar gates. La inferencia local previa `UGO PUENTE OK` no sustituye este recorrido.
+- **Siguiente paso:** pasar Core CI y contratos; activar credencial mediante hash generado en Mac (nunca enviar token) con Super Admin en entorno TEST; iniciar worker explícitamente; ejecutar una solicitud real y recibir la respuesta del mismo job; validar reintento/reinicio y publicación segura a `main`.
