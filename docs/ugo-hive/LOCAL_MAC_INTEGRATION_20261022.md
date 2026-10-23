@@ -70,3 +70,12 @@ Do not deploy/migrate production or enable Empresa Autonoma. If the Mac cannot r
 - SHA de código: `3fae819e6cb544611d1ac7c45ba041c19a368877` (Edge), `4936738bf4a52a9af789be3c4943ae2191c2e6e4` (UI), `ec92e622f06ce3d1165ce49f0a2d48d4a57c6cba` (contrato).
 - Estado: código publicado en la rama, pero versión nueva NO desplegada en TEST, CI SAME-SHA todavía pendiente, E2E de nueve perfiles pendiente. Base de datos TEST y PROD sin cambios en esta intervención. Empresa Autónoma OFF.
 - Siguiente gate: CI exacto, revisión seguridad, desplegar Edge solo TEST y verificar respuestas reales antes de fusionar PR.
+
+## 2026-10-23 — Diagnóstico real de saturación FreeLLMAPI y reparación acotada
+
+- Evidencia local aportada por el dueño: qwen3-coder-free vía Septor responde algunas llamadas y otras terminan 429 `free tier queue is saturated`; otras rutas gratuitas OpenRouter agotaron cuota. ENCRYPTION_KEY fue rotada localmente con 11 registros; no reproducir secretos en logs.
+- Cambio: adapter FreeLLMAPI clasifica 429 y 503 con códigos sanitizados, captura Retry-After en segundos acotados a 3600 sin reenvío automático; rechaza JSON roto y respuesta vacía. El worker preserva un conjunto restringido de códigos de error para diagnosis sin exponer proveedor/credenciales.
+- Tests agregados para 429/503/Retry-After, una llamada sin replay y excepción sanitizada. Implementado en rama PR #571; pruebas GitHub CI exact-SHA pendientes.
+- **Límite importante:** `FAILED` sigue cerrando el job actual. No afirmar resiliencia completa, espera persistente ni retry automático sin rediseñar cola/lease/idempotencia para no duplicar una inferencia de resultado incierto. En caso de 429 la interfaz debe comunicar fallo recuperable y permitir nueva consulta humana, sin fingir ejecución automática.
+- No se tocó Supabase TEST/PROD ni Render; no se activó Empresa Autónoma; no hubo claves nuevas.
+- Próximo trabajo: confirmar CI same-SHA; diseñar transición persistente `RETRY_WAIT` por clase de fallo y presupuestos de reintentos (sólo rechazos HTTP conocidos sin inferencia ejecutada, no timeouts inciertos); validar migración aditiva y prueba contra TEST antes de desplegar; comprobar los nueve perfiles.
