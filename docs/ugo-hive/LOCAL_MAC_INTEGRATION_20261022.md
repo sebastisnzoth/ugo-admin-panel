@@ -61,3 +61,12 @@ Do not deploy/migrate production or enable Empresa Autonoma. If the Mac cannot r
 - Código: commit de interfaz `8e0d5209b3afb618f758adfb0e30bb2522b8f23b` y pruebas `2bfdf3699e5d445aea275cd078134844609d8f02`. **Pruebas SAME-SHA y preview publicado pendientes de comprobar; no declarar nuevos agentes E2E verificados.**
 - Empresa Autónoma OFF; sin cambios de Supabase PROD, esquema SQL, claves ni matching. No confundir perfiles de análisis por prompt con agentes autónomos capaces de herramientas o colaboración multiagente.
 - Próximo gate: CI Core/contratos del HEAD; comprobar preview Pages del nuevo HEAD; probar cada rol con prompt real y límites; evaluar RBAC, cuotas, errores y métricas; solo después considerar merge a main.
+
+
+## 2026-10-23 — Corrección de atribución histórica y gate de despliegue
+
+- Inspección TEST: `ugo-hive-local-jobs` sigue ACTIVE versión 4, `verify_jwt=false` con autorización interna del worker y Super Admin; no actualizar antes de validar el árbol revisado.
+- En PR #571, las entradas antiguas sin cabecera de agente válida se etiquetan `Legacy`, no `Hugo`; el frontend hace lo mismo para respuestas sin campo `agent`. Esto elimina una falsa atribución de identidad. Se incorporó una aserción de contrato específica.
+- SHA de código: `3fae819e6cb544611d1ac7c45ba041c19a368877` (Edge), `4936738bf4a52a9af789be3c4943ae2191c2e6e4` (UI), `ec92e622f06ce3d1165ce49f0a2d48d4a57c6cba` (contrato).
+- Estado: código publicado en la rama, pero versión nueva NO desplegada en TEST, CI SAME-SHA todavía pendiente, E2E de nueve perfiles pendiente. Base de datos TEST y PROD sin cambios en esta intervención. Empresa Autónoma OFF.
+- Siguiente gate: CI exacto, revisión seguridad, desplegar Edge solo TEST y verificar respuestas reales antes de fusionar PR.
