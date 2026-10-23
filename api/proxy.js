@@ -7,9 +7,29 @@ import { createClient } from '@supabase/supabase-js';
 const OFFICIAL_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co';
 const SERVICE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
 
+// Align with server/hugo/cors.ts allowlist (no wildcard).
+const UGO_BROWSER_ORIGINS = new Set([
+  'https://sebastisnzoth.github.io',
+  'https://ugo-admin-panel.vercel.app',
+  ...String(process.env.UGO_ALLOWED_BROWSER_ORIGINS || '')
+    .split(',')
+    .map((v) => v.trim())
+    .filter(Boolean),
+]);
+
 function bearer(req) {
   const raw = String(req.headers?.authorization || '');
   return raw.startsWith('Bearer ') ? raw.slice(7).trim() : '';
+}
+
+function allowedOrigin(req) {
+  const origin = String(req.headers?.origin || '').trim();
+  if (!origin) return '';
+  try {
+    // Same-origin (Vercel preview / local) is always allowed.
+    if (new URL(origin).host === String(req.headers?.host || '')) return origin;
+  } catch {}
+  return UGO_BROWSER_ORIGINS.has(origin) ? origin : '';
 }
 
 async function adminCreateUser(req, res) {
@@ -98,13 +118,23 @@ async function adminCreateUser(req, res) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = allowedOrigin(req);
+  if (origin) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Headers', 'content-type,authorization');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    // Fail closed on unknown browser origin (wildcard is not allowed for privileged endpoint).
+    if (req.headers?.origin && !origin) return res.status(403).end();
+    return res.status(200).end();
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const adminCreate = String(req.query?.admin_create_user || '') === '1' || String(req.body?.action || '') === 'admin_create_user';
-  if (adminCreate) return adminCreateUser(req, res);
+  if (adminCreate) {
+    if (req.headers?.origin && !origin) return res.status(403).json({ error: 'Origen no autorizado.' });
+    return adminCreateUser(req, res);
+  }
 
   return res.status(410).json({
     error: 'Legacy AI proxy retired.',
