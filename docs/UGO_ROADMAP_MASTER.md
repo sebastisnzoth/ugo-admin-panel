@@ -822,3 +822,11 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 ### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
 - Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
 - No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
+
+
+### 2026-10-23 — PR #572: integración incremental de Agent Skills en UGO
+- Objetivo: reforzar reparación P0, pruebas, revisión, seguridad, CI y publicación con 8 skills de ingeniería externas, preservando todas las skills propias `ugo-*` y el protocolo `AGENTS.md`.
+- Fuente auditada: `sebastisnzoth/agent-skills` commit `aeac41d4d005999432bb7312f7ff06383a91d59d` (MIT). Copias exactas en `.agents/skills/`, licencia incluida en `docs/third-party/agent-skills-LICENSE` y guía `docs/UGO_AGENT_SKILLS_INTEGRACION.md`.
+- Cambio de integración: enrutamiento de skills dentro de `AGENTS.md`, prueba `tests/contracts/agent-skills-integration.test.mjs` ejecutable desde Core CI; **ninguna modificación de lógica Cliente/Proveedor, Supabase, configuración productiva, secretos ni autonomía**.
+- Evidencia parcial: preflight comparó los 8 blobs origen/destino y validó enrutamiento/licencia; en el primer SHA de PR `145a9f1b` falló Roadmap Traceability por falta de estos registros (no por fallo funcional). Este commit agrega la trazabilidad faltante. Requerido: checks actualizados del nuevo SHA y merge seguro; no marcar DONE antes de verificarlos.
+- P0 Cliente → Pedido → Proveedor, Auth/GPS/Realtime y prueba humana siguen **pendientes de validación funcional**, no se declaran resueltos por importar instrucciones. No se habilita Empresa Autónoma.
