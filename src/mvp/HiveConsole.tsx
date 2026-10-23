@@ -44,7 +44,6 @@ const translations={
 const HIVE_MODEL='qwen3-coder-free'
 const catalog=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const
 // These are analysis personas using the existing inference-only worker, not autonomous agents.
-const agentScopes:Record<typeof catalog[number],string>={Hugo:'general product analysis',Architect:'software architecture review',Developer:'code explanation and suggested patches only',QA:'test design and defect analysis',Security:'defensive security review without exploitation',DevOps:'deployment planning without execution',Judge:'evaluate claims against provided evidence',Sentinel:'identify risks and missing safeguards',Research:'research synthesis using only supplied context'}
 type HiveStatus={environment:string;backend:{reachable:boolean;state?:'ONLINE'|'TIMEOUT'|'HTTP_ERROR'|'NETWORK_ERROR';http_status?:number|null;checked_at:string;latency_ms:number};backup:{state:string;version?:string;bytes?:number;created_at?:string};inference:{state:string};autonomy:{state:string}}
 type Tab='overview'|'chat'|'agents'
 export function HiveConsole(){
@@ -57,7 +56,7 @@ export function HiveConsole(){
  const [selectedAgent,setSelectedAgent]=useState<typeof catalog[number]>('Hugo')
  const [sending,setSending]=useState(false)
  const [chatError,setChatError]=useState('')
- const [jobs,setJobs]=useState<Array<{id:string;status:string;answer?:string|null;model?:string|null;error_code?:string|null;created_at:string}>>([])
+ const [jobs,setJobs]=useState<Array<{id:string;status:string;answer?:string|null;model?:string|null;error_code?:string|null;agent?:string;created_at:string}>>([])
  const [chatVerified,setChatVerified]=useState(false)
  const [workerConnected,setWorkerConnected]=useState(false)
  const [workerEnrolled,setWorkerEnrolled]=useState(false)
@@ -65,7 +64,7 @@ export function HiveConsole(){
  useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  useEffect(()=>{if(tab!=='chat')return;let live=true;const refresh=async()=>{try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list'}});if(!live)return;if(error||!Array.isArray(data?.jobs))throw Error('CHAT_UNAVAILABLE');setJobs(data.jobs);setChatVerified(true);const w=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'worker_status'}});if(!w.error&&live){setWorkerConnected(w.data?.connected===true);setWorkerEnrolled(w.data?.enrolled===true)}else if(live){setWorkerConnected(false)}}catch{if(live){setChatVerified(false);setWorkerConnected(false);setChatError(tr.remoteError)}}};void refresh();const id=setInterval(()=>void refresh(),5000);return()=>{live=false;clearInterval(id)}},[tab,tr.remoteError]);
  const provisionWorker=async()=>{if(!/^[a-f0-9]{64}$/.test(workerHash))return;setChatError('');try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'provision_worker',token_hash:workerHash}});if(error||data?.ok!==true)throw Error('PROVISION_FAILED');setWorkerEnrolled(true);setWorkerHash('')}catch{setChatError(tr.remoteError)}}
- const sendPrompt=async()=>{const input=prompt.trim();if(!input||sending)return;const value=`[UGO TEST read-only analysis | role: ${selectedAgent} | scope: ${agentScopes[selectedAgent]} | no external actions, tools or DB access; do not claim execution]\n${input}`;if(value.length>4000)return;setSending(true);setChatError('');const id=crypto.randomUUID();try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create',prompt:value,idempotency_key:id}});if(error||!data?.job?.id)throw Error('CREATE_FAILED');setPrompt('');const r=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list'}});if(!r.error&&Array.isArray(r.data?.jobs))setJobs(r.data.jobs)}catch{setChatError(tr.sendError)}finally{setSending(false)}}
+ const sendPrompt=async()=>{const value=prompt.trim();if(!value||value.length>3600||sending)return;setSending(true);setChatError('');const id=crypto.randomUUID();try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create',prompt:value,agent:selectedAgent,idempotency_key:id}});if(error||!data?.job?.id)throw Error('CREATE_FAILED');setPrompt('');const r=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list'}});if(!r.error&&Array.isArray(r.data?.jobs))setJobs(r.data.jobs)}catch{setChatError(tr.sendError)}finally{setSending(false)}}
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
   <nav className="ugo-hive-tabs" aria-label={tr.navLabel}>
@@ -83,7 +82,7 @@ export function HiveConsole(){
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
    <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.macName} · {tr.off}</p></div><span>{workerConnected?tr.macOnline:workerEnrolled?tr.macOffline:tr.offline}</span></div>
-   <div className="ugo-hive-chat-empty" role="status">{jobs.length===0?<p>{tr.nochatInfo}</p>:jobs.map(job=><article key={job.id} style={{overflowWrap:'anywhere',padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border, #ccc)'}}><small>{job.status} · {job.model??HIVE_MODEL} · {new Date(job.created_at).toLocaleString()}</small><p>{job.answer||(job.status==='FAILED'?job.error_code:tr.waiting)}</p></article>)}</div>
+   <div className="ugo-hive-chat-empty" role="status">{jobs.length===0?<p>{tr.nochatInfo}</p>:jobs.map(job=><article key={job.id} style={{overflowWrap:'anywhere',padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border, #ccc)'}}><small>{job.status} · {job.agent??'Hugo'} · {job.model??HIVE_MODEL} · {new Date(job.created_at).toLocaleString()}</small><p>{job.answer||(job.status==='FAILED'?job.error_code:tr.waiting)}</p></article>)}</div>
    {!workerEnrolled&&<div><p>{tr.enrollInfo}</p><input aria-label={tr.workerHashLabel} value={workerHash} onChange={e=>setWorkerHash(e.target.value.trim().toLowerCase())} maxLength={64} autoComplete="off"/><button type="button" disabled={!/^[a-f0-9]{64}$/.test(workerHash)} onClick={()=>void provisionWorker()}>{tr.enrollAction}</button></div>}
    {chatError&&<p role="alert">{chatError}</p>}
    <label htmlFor="ugo-hive-agent">{tr.agents}</label><select id="ugo-hive-agent" value={selectedAgent} onChange={e=>setSelectedAgent(e.target.value as typeof catalog[number])}>{catalog.map(name=><option key={name} value={name}>{name}</option>)}</select>
