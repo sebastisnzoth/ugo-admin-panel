@@ -279,3 +279,12 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Conservatism: uncertain previous outcomes cannot be replayed automatically. This intentionally prioritizes at-most-once dispatch over automatic availability; manual operator reconciliation remains necessary and future robust status support is pending.
 - No SQL executed in TEST/PROD by this commit. No Edge deploy, Mac process change or credential rotation. Empresa Autónoma OFF.
 - Blockers: CI exact-SHA, TEST migration verification with controlled lease-expiry case, Edge TEST deployment, all-nine real E2E, regression proof, final main/Pages release.
+
+
+### 2026-10-23 — TEST migration applied and verified
+- Applied `hive_local_expired_lease_fail_closed` through Supabase migration API to TEST project `tmossnqfwfwjrtzwcbmm` only, using the exact SQL in commit `7816c82b6f05c9ad242f6a959b1eda7d7f42bbe4`.
+- Before applying, the isolated inference queue held 7 SUCCEEDED and 7 FAILED jobs, none RUNNING or PENDING.
+- Read-only `pg_get_functiondef` verification afterwards: `pending_only=true`, `reconciliation_guard=true`, `unsafe_reclaim=false`. This confirms the server claim RPC no longer automatically reclaims expired RUNNING jobs.
+- Existing schema still represents uncertainty as FAILED + `RECONCILIATION_REQUIRED` error code; dedicated state and operator reconciliation UI are not implemented yet.
+- Remaining validation: controlled lease-expiry integration proof, TEST Edge deployment for nine agent identity, real nine-agent E2E from Super Admin through Mac/FreeLLMAPI, final SHA CI/regressions, then merge/Pages.
+- No changes to PROD, Mac secrets, or Empresa Autónoma. Do not claim full system completion.
