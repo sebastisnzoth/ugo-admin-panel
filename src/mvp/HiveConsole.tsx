@@ -11,7 +11,7 @@ const translations={
  remote:'Render / persistência',remoteInfo:'Disponibilidade remota não comprovada.',
  autonomy:'Empresa Autônoma',off:'NÃO ATIVADA',autonomyInfo:'Autonomy Gate permanece independente.',
  operational:'Estado operacional',notice:'Este painel é informativo. Não executa missões nem concede permissões. Métricas reais exigem API autenticada.',
- docs:'Consultar documentação técnica ↗',conversation:'Conversa com Hugo',gateway:'Gateway de inferência indisponível até verificação e autorização.',
+ docs:'Consultar documentação técnica ↗',retry:'Tentar novamente',conversation:'Conversa com Hugo',gateway:'Gateway de inferência indisponível até verificação e autorização.',
  offline:'OFFLINE',slow:'RESPOSTA LENTA',remoteError:'ERRO DE CONEXÃO',nochat:'Chat não conectado',nochatInfo:'Não existem respostas simuladas. Histórico e streaming dependem de backend seguro.',
  message:'Mensagem',placeholder:'Indisponível enquanto a inferência está desativada',send:'Enviar · indisponível',
  planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
@@ -23,7 +23,7 @@ const translations={
  remote:'Render / persistencia',remoteInfo:'Disponibilidad remota no comprobada.',
  autonomy:'Empresa Autónoma',off:'NO ACTIVADA',autonomyInfo:'Autonomy Gate continúa independiente.',
  operational:'Estado operativo',notice:'Este panel es informativo. No ejecuta misiones ni concede permisos. Las métricas reales requieren una API autenticada.',
- docs:'Consultar documentación técnica ↗',conversation:'Conversación con Hugo',gateway:'Gateway de inferencia no disponible hasta su verificación y autorización.',
+ docs:'Consultar documentación técnica ↗',retry:'Reintentar',conversation:'Conversación con Hugo',gateway:'Gateway de inferencia no disponible hasta su verificación y autorización.',
  offline:'SIN CONEXIÓN',slow:'RESPUESTA LENTA',remoteError:'ERROR DE CONEXIÓN',nochat:'Chat no conectado',nochatInfo:'No hay respuestas simuladas. El historial y streaming requieren un backend seguro.',
  message:'Mensaje',placeholder:'No disponible mientras la inferencia esté desactivada',send:'Enviar · no disponible',
  planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
@@ -35,7 +35,7 @@ const translations={
  remote:'Render / persistence',remoteInfo:'Remote availability unverified.',
  autonomy:'Autonomous Company',off:'NOT ENABLED',autonomyInfo:'Autonomy Gate remains independent.',
  operational:'Operational status',notice:'This is an informational panel. It cannot run missions or grant permissions. Real metrics require an authenticated API.',
- docs:'Technical documentation ↗',conversation:'Chat with Hugo',gateway:'Inference gateway unavailable until verified and authorized.',
+ docs:'Technical documentation ↗',retry:'Retry',conversation:'Chat with Hugo',gateway:'Inference gateway unavailable until verified and authorized.',
  offline:'OFFLINE',slow:'SLOW RESPONSE',remoteError:'CONNECTION ERROR',nochat:'Chat not connected',nochatInfo:'No simulated answers. History and streaming require a secure backend.',
  message:'Message',placeholder:'Unavailable while inference is disabled',send:'Send · unavailable',
  planned:'Planned roles',plannedInfo:'Proposed catalog; no agents are claimed operational.'
@@ -50,7 +50,20 @@ export function HiveConsole(){
  const[tab,setTab]=useState<Tab>('overview')
  const[status,setStatus]=useState<HiveStatus|null>(null)
  const[statusError,setStatusError]=useState(false)
- useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
+ const[statusFailure,setStatusFailure]=useState('')
+ const[retry,setRetry]=useState(0)
+ useEffect(()=>{let active=true;const load=async()=>{try{
+  const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'})
+  if(!active)return
+  if(error){
+   const response=(error as {context?:unknown}).context
+   const statusCode=response instanceof Response?response.status:null
+   const safeCode=statusCode===401?'AUTH_REQUIRED':statusCode===403?'SUPERADMIN_REQUIRED':statusCode===503?'SERVICE_UNAVAILABLE':statusCode===404?'FUNCTION_NOT_FOUND':statusCode===405?'METHOD_NOT_ALLOWED':statusCode?('HTTP_'+statusCode):'NETWORK_OR_CORS_ERROR'
+   throw new Error(safeCode)
+  }
+  if(!data||data.environment!=='TEST')throw new Error('INVALID_STATUS_RESPONSE')
+  setStatus(data);setStatusError(false);setStatusFailure('')
+ }catch(error){if(active){setStatus(null);setStatusError(true);setStatusFailure(error instanceof Error&&/^(AUTH_REQUIRED|SUPERADMIN_REQUIRED|SERVICE_UNAVAILABLE|FUNCTION_NOT_FOUND|METHOD_NOT_ALLOWED|HTTP_\d{3}|NETWORK_OR_CORS_ERROR|INVALID_STATUS_RESPONSE)$/.test(error.message)?error.message:'NETWORK_OR_CORS_ERROR')}}};void load();return()=>{active=false}},[retry])
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
   <nav className="ugo-hive-tabs" aria-label={tr.navLabel}>
@@ -63,7 +76,8 @@ export function HiveConsole(){
    <article><small>{tr.provider}</small><strong>{tr.unverified}</strong><p>{tr.providerInfo}</p></article>
    <article><small>{tr.remote}</small><strong>{status?(status.backend.reachable?'ONLINE':status.backend.state==='TIMEOUT'?tr.slow:status.backend.state==='NETWORK_ERROR'?tr.remoteError:tr.offline):tr.unverified}</strong><p>{status?('TEST · '+status.backend.checked_at+' · '+status.backend.latency_ms+' ms'+(status.backend.http_status?' · HTTP '+status.backend.http_status:'')):tr.remoteInfo}</p></article>
    <article><small>{tr.autonomy}</small><strong>{tr.off}</strong><p>{tr.autonomyInfo}</p></article>
-  </div><section className="ugo-hive-panel"><h2>{tr.operational}</h2><p>{tr.notice}</p><p role="status">{status?.backup?.state==='RECORDED'?('TEST · '+tr.backupLabel+' '+status.backup.version+' · '+status.backup.bytes+' bytes'):statusError?tr.statusUnavailable:tr.unverified}</p>
+  </div><section className="ugo-hive-panel"><h2>{tr.operational}</h2><p>{tr.notice}</p><p role="status">{status?.backup?.state==='RECORDED'?('TEST · '+tr.backupLabel+' '+status.backup.version+' · '+status.backup.bytes+' bytes'):statusError?(tr.statusUnavailable+' · '+statusFailure):tr.unverified}</p>
+   {statusError&&<button type="button" onClick={()=>setRetry(n=>n+1)}>{tr.retry}</button>}
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/IMPLEMENTATION_STATUS.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
