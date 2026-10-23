@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {processHivePoll} from '../../scripts/hive-local-poll-worker.mjs';
+const valid={id:'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee',lease:'x'.repeat(40),prompt:'Say OK',capability:'inference-only',authorized:true};
+test('idle queue does not run inference or report completion',async()=>{
+  let called=false;
+  assert.deepEqual(await processHivePoll({claim:async()=>null,complete:async()=>{called=true},policy:{},run:async()=>{called=true}}),{status:'IDLE'});
+  assert.equal(called,false);
+});
+test('reject unapproved or tool-capable jobs before model execution',async()=>{
+  for(const job of [{...valid,authorized:false},{...valid,capability:'shell'},{...valid,command:'rm -rf'}]){
+    let invoked=false;
+    await assert.rejects(processHivePoll({claim:async()=>job,complete:async()=>{invoked=true},policy:{},run:async()=>{invoked=true}}),/HIVE_POLL_INVALID_JOB/);
+    assert.equal(invoked,false);
+  }
+});
+test('authorized inference acknowledges bounded result using lease',async()=>{
+  const calls=[];
+  const result=await processHivePoll({claim:async()=>valid,complete:async obj=>calls.push(obj),policy:{},
+    run:async ({task})=>{assert.equal(task.capability,'inference-only');assert.equal(task.model,'qwen3-coder-free');return {status:'COMPLETED_LOCAL_INFERENCE',answer:'UGO OK'}}});
+  assert.equal(result.status,'SUCCEEDED');
+  assert.equal(calls[0].lease,valid.lease);
+  assert.equal(calls[0].answer,'UGO OK');
+});
+test('failed model call reports generic error without leaking detail',async()=>{
+  const calls=[];
+  await processHivePoll({claim:async()=>valid,complete:async obj=>calls.push(obj),policy:{},
+    run:async()=>{throw Error('secret exception')}});
+  assert.deepEqual({status:calls[0].status,code:calls[0].code},{status:'FAILED',code:'HIVE_LOCAL_INFERENCE_FAILED'});
+  assert.equal(JSON.stringify(calls).includes('secret'),false);
+});
