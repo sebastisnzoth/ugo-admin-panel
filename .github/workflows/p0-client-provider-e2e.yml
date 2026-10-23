@@ -31,7 +31,7 @@ env:
 jobs:
   e2e:
     name: P0 Cliente -> Oferta -> Proveedor -> Asignado
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4

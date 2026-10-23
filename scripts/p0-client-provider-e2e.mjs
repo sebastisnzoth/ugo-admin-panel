@@ -185,11 +185,42 @@ async function attemptUiOnline(ui){
   return {pressed,notices,body,buttons:await page.locator('button').allInnerTexts().catch(()=>[])}
 }
 
+async function armProviderLiveOfferProbe(page){
+ // Observe the live popup before a new request exists. Its five-second UI
+ // lifetime is too short to rely on checking only after the matching RPC.
+ await page.locator('.ugo-notification-trigger').waitFor({state:'visible',timeout:20000})
+ await page.evaluate(()=>{
+  window.__ugoP0LiveOfferSignals=[]
+  const capture=()=>{
+   const node=document.querySelector('.ugo-notification-live.is-provider-call')
+   if(!node)return
+   const offerId=node.getAttribute('data-ugo-offer-id')
+   const serviceId=node.getAttribute('data-ugo-service-id')
+   if(!offerId||!serviceId)return
+   const signals=window.__ugoP0LiveOfferSignals
+   if(!signals.some(signal=>signal.offerId===offerId&&signal.serviceId===serviceId)){
+    signals.push({offerId,serviceId,observedAt:new Date().toISOString()})
+   }
+  }
+  new MutationObserver(capture).observe(document.body,{subtree:true,childList:true,attributes:true})
+  capture()
+ })
+}
+
+async function assertProviderLiveOffer(ui,offerId,serviceId){
+ await ui.page.waitForFunction(({offerId,serviceId})=>{
+  const signals=window.__ugoP0LiveOfferSignals
+  return Array.isArray(signals)&&signals.some(signal=>signal.offerId===offerId&&signal.serviceId===serviceId)
+ },{offerId,serviceId},{timeout:60000})
+ const signals=await ui.page.evaluate(()=>window.__ugoP0LiveOfferSignals)
+ const signal=signals.find(signal=>signal.offerId===offerId&&signal.serviceId===serviceId)
+ assert.ok(signal,'P0_PROVIDER_LIVE_OFFER_NOT_DELIVERED')
+ stage('ui_provider_live_offer_without_reload',{offerId,serviceId,observedAt:signal.observedAt})
+}
+
 async function acceptOfferInUi(ui){
   const {page,screenshot,pageErrors}=ui
-  // Reload keeps the persisted session and forces a fresh provider feed from
-  // obtener_ofertas_proveedor instead of trusting an in-memory list.
-  await page.reload({waitUntil:'domcontentloaded'})
+  // No reload here: the provider must see the offer on the same live page.
   await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_BEFORE_OFFER')
   await page.locator('[data-testid="provider-mobile-orders"]').click()
@@ -276,6 +307,8 @@ try{
   assert.equal(profileAfter.data.disponible,true,'P0_PROVIDER_NOT_AVAILABLE')
   assert.ok(Number.isFinite(gpsAgeMs)&&gpsAgeMs>=0&&gpsAgeMs<=90_000,'P0_PROVIDER_GPS_NOT_FRESH')
 
+  if(ui)await armProviderLiveOfferProbe(ui.page)
+
   // 4 · client creates the request and persists the pickup ---------------
   const insertedService=must(await client.from('servicios').insert({
     cliente_id:clientId,categoria_id:categoryId,estado:'buscando',descripcion:SERVICE_DESCRIPTION,
@@ -301,6 +334,9 @@ try{
   assert.ok(myOffer,'P0_NO_OFFER_FOR_ELIGIBLE_PROVIDER')
   offerId=myOffer.id
   assert.equal(serviceAfterMatch.data.estado,'ofrecido','P0_SERVICE_NOT_OFFERED')
+  // The backend offer alone is insufficient: prove foreground delivery on
+  // the same provider browser before any reload or offer acceptance.
+  if(ui)await assertProviderLiveOffer(ui,offerId,serviceId)
 
   // 6 · the authenticated provider reads the offer through the app RPC ---
   const providerFeed=must(await provider.rpc('obtener_ofertas_proveedor'),'provider offer feed')
