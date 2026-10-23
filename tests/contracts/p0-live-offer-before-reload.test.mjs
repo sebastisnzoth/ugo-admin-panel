@@ -6,6 +6,7 @@ const read = path => readFileSync(new URL('../../' + path, import.meta.url), 'ut
 const e2e = read('scripts/p0-client-provider-e2e.mjs')
 const notifications = read('src/mvp/NotificationCenter.tsx')
 const workflow = read('.github/workflows/p0-client-provider-e2e.yml')
+const providerNoticeWorkflow = read('.github/workflows/provider-notifications-runtime.yml')
 
 test('offer popup exposes the exact authenticated offer and service IDs for E2E matching proof', () => {
  assert.match(notifications, /data-ugo-offer-id=\{role==='provider'&&liveNotice\.tipo==='nueva_oferta'/)
@@ -34,4 +35,9 @@ test('E2E never refreshes the provider UI to make a new offer appear', () => {
 test('E2E browser runner uses the supported pinned Ubuntu image for Playwright 1.56.1', () => {
  assert.match(workflow,/runs-on:\s*ubuntu-24\.04/)
  assert.match(workflow,/playwright@1\.56\.1/)
+})
+
+test('Provider notification browser QA uses supported Playwright OS without weakening asserts', () => {
+ assert.match(providerNoticeWorkflow,/runs-on:\s*ubuntu-24\.04/)
+ assert.match(providerNoticeWorkflow,/playwright@1\.56\.1/)
 })

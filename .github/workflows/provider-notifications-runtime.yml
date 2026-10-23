@@ -34,7 +34,7 @@ jobs:
   provider-notifications:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Provider notifications · UGO TEST · Judge · Sentinel
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
