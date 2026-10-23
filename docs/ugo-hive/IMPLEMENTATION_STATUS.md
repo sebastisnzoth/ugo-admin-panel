@@ -262,3 +262,11 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - **NO VALIDADO en runtime:** el Edge remoto aún no se redeployó a este SHA, la vista previa puede conservar revisión anterior, el CI del último SHA está pendiente y falta prueba E2E por rol. No declarar nueve agentes autónomos ni colaboración ejecutada.
 - Permisos: TEST-only guard existente, Super Admin JWT, worker con bearer dedicado, solo inferencia; Empresa Autónoma OFF; ninguna escritura a Supabase PROD, clientes, proveedores, matching o pagos.
 - Próximo gate: pasar CI exact-SHA; desplegar solo función Edge TEST verificada; confirmar hash del frontend en preview; ejecutar casos positivos/negativos con los nueve perfiles, errores y regresiones; solo entonces considerar promoción a main.
+
+
+### 2026-10-23 — Completion ambiguity fail-closed (PR #571)
+- CI on previous SHA `5a36b0225efd960b10b77b60166e9482745080d3`: Core CI, Cross Security, Hugo Timeout, Roadmap PASS; Cross-role UI in progress at last inspection; Groq smoke SKIPPED.
+- Implemented in branch: local worker now emits `HIVE_COMPLETION_UNCERTAIN` if a completion acknowledgement is lost, and the polling daemon halts with `HIVE_WORKER_RECONCILIATION_REQUIRED` rather than continuing. Added unit contracts. No remote tests or deployment claimed.
+- **Still unsafe to declare recovered:** Supabase TEST claim RPC currently can auto-reclaim an expired RUNNING lease, even when inference outcome is unknown. Durable server-side `RECONCILIATION_REQUIRED` and safe lease semantics are not implemented yet. Do not automatically re-run unresolved jobs.
+- No Supabase TEST/PROD DB changes, no Edge redeploy, no changes to Mac encryption material; Empresa Autónoma OFF. PR remains draft and unmerged.
+- Next gate: review/test aditive TEST-only server fix to distinguish unstarted expired leases from potentially executed inference, then run exact-SHA CI + real Mac E2E. A client fail-stop alone cannot prevent server-side replay after restart.
