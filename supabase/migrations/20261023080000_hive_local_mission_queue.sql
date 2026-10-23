@@ -95,7 +95,7 @@ begin
  return true;
 end $$;
 create or replace function public.hive_local_pump_missions()
- returns integer language plpgsql security definer set search_path=public,pg_temp as $
+ returns integer language plpgsql security definer set search_path=public,pg_temp as $mission_pump$
 declare item record; advanced integer:=0; result text;
 begin
  if current_user <> 'postgres' and auth.role() is distinct from 'service_role' then raise exception 'FORBIDDEN' using errcode='42501';end if;
@@ -106,7 +106,7 @@ begin
   if result in ('QUEUED','SUCCEEDED','FAILED') then advanced:=advanced+1;end if;
  end loop;
  return advanced;
-end $;
+end $mission_pump$;
 revoke all on function public.hive_local_create_mission(uuid,text,text[]) from public,anon,authenticated;
 revoke all on function public.hive_local_advance_mission(uuid,uuid) from public,anon,authenticated;
 revoke all on function public.hive_local_cancel_mission(uuid,uuid) from public,anon,authenticated;
