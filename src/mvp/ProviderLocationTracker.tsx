@@ -109,7 +109,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     const persistedAt=trackingProfile?.ubicacion_updated_at?Date.parse(trackingProfile.ubicacion_updated_at):NaN
     const persistedAccuracy=Number(trackingProfile?.ubicacion_accuracy_m)
     if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M&&Date.now()-persistedAt<=MATCHING_POSITION_AGE_MS){
-     lastValidFixAtRef.current=Date.now()
+     lastValidFixAtRef.current=persistedAt
      setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
     }
    }
@@ -124,9 +124,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      setAvailable(Boolean(row.online&&row.disponible))
      const persistedAt=row.ubicacion_updated_at?Date.parse(row.ubicacion_updated_at):NaN
      const persistedAccuracy=Number(row.ubicacion_accuracy_m)
-     if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M){
+     if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M&&persistedAt<=Date.now()&&Date.now()-persistedAt<=MATCHING_POSITION_AGE_MS){
       setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
-      lastValidFixAtRef.current=Date.now()
+      lastValidFixAtRef.current=persistedAt
      }
     }
    })
