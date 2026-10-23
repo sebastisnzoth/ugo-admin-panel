@@ -50,6 +50,21 @@ const must=(result,label)=>{
   if(result?.error)throw Object.assign(new Error(label+': '+result.error.message),{cause:result.error,p0:{label,error:describe(result.error)}})
   return result
 }
+// Retry only a read-only TEST prerequisite when PostgREST is temporarily unable to
+// access its schema cache. Do not retry functional assertions or payment mutations.
+const readCategoriesWithRetry=async()=>{
+  const maxAttempts=4
+  for(let attempt=1;attempt<=maxAttempts;attempt++){
+    const result=await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20)
+    const error=result.error
+    if(!error)return must(result,'read categories').data||[]
+    const transient=error.code==='PGRST002'||/schema cache|gateway timeout|connection timed out/i.test(String(error.message||''))
+    if(!transient||attempt===maxAttempts)return must(result,'read categories').data||[]
+    console.warn('P0 catalog temporary Supabase failure: retry '+attempt+'/'+maxAttempts+' ('+String(error.code||'network')+')')
+    await new Promise(resolve=>setTimeout(resolve,Math.min(attempt*1500,4500)))
+  }
+}
+
 const anonClient=()=>createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 // Reuse the real signed-in session so every request carries the user JWT (RLS applies)
 // and the session can be revalidated at the end of the journey.
@@ -243,7 +258,7 @@ async function acceptOfferInUi(ui){
 
 try{
   // 0 · catalog prerequisites ---------------------------------------------
-  const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
+  const categories=await readCategoriesWithRetry()
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
   categoryId=categories[0].id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})

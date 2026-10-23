@@ -16,13 +16,13 @@ async function persist(candidate){
    if(!error)return
    lastError=error
    const text=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(' ')
-   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream|schema cache|PGRST002/i.test(text)
    lastRetryable=retryable
    if(!retryable||attempt===4)break
   }catch(error){
    lastError=error
    const text=String(error?.message||error||'')
-   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream|schema cache|PGRST002/i.test(text)
    lastRetryable=retryable
    if(!retryable||attempt===4)break
   }

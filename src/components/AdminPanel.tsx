@@ -9,6 +9,7 @@ import {
   useVault, usePendingWithdrawals,
 } from '../hooks/useAdminData';
 import { supabase } from '../lib/supabase';
+import { UGO_SUPABASE_URL, UGO_SUPABASE_PROJECT_REF } from '../lib/supabaseProject';
 import { resetRealtimeChannel, onRealtimeEvent } from '../hooks/useAdminData';
 import { SecZonas, SecPromos, SecRatings, SecAvanzado, SecValidacionPaises, SecImportProviders , SecTiendasInsumos } from './AdvancedSections';
 import { SecMapaOperativo } from './MapaOperativo';
@@ -1072,9 +1073,9 @@ export function AdminPanel() {
       <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'14px',marginBottom:'12px'}}>
         <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:'10px'}}><LocalizedText id="adminSurface.appCredentials"/></div>
         {[
-          {label:'SUPABASE_URL',val:'https://byajcqrgetloavrgyqak.supabase.co'},
-          {label:'SUPABASE_ANON_KEY',val:'eyJ...(legacy key)'},
-          {label:'PROJECT_ID',val:'byajcqrgetloavrgyqak'},
+          {label:'SUPABASE_URL',val:UGO_SUPABASE_URL},
+          {label:'SUPABASE_ANON_KEY',val:'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl (TEST, ver src/lib/supabaseProject.ts)'},
+          {label:'PROJECT_ID',val:UGO_SUPABASE_PROJECT_REF},
         ].map(r=>(
           <div key={r.label} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
             <div style={{fontSize:10,fontWeight:700,width:180,flexShrink:0}}>{r.label}</div>
@@ -1102,7 +1103,7 @@ export function AdminPanel() {
           </div>
         ))}
         <div style={{marginTop:8,fontSize:10,color:'var(--muted)'}}>
-          <LocalizedText id="adminForms.baseUrl"/> <span style={{fontFamily:'monospace'}}>https://byajcqrgetloavrgyqak.supabase.co/functions/v1/</span>
+          <LocalizedText id="adminForms.baseUrl"/> <span style={{fontFamily:'monospace'}}>{`${UGO_SUPABASE_URL}/functions/v1/`}</span>
           <br/>Auth: Header <span style={{fontFamily:'monospace'}}>Authorization: Bearer {'<supabase_session_token>'}</span>
         </div>
       </div>

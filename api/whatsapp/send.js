@@ -23,7 +23,30 @@ function sbClient(){if(!SERVICE_KEY)throw Object.assign(new Error('UGO TEST serv
 function cleanPhone(v=''){return String(v).replace(/\D/g,'')}
 function bearer(req){const raw=String(req.headers?.authorization||'');return raw.startsWith('Bearer ')?raw.slice(7).trim():''}
 function sameOrigin(req){try{const origin=String(req.headers?.origin||'');return Boolean(origin)&&new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
-function hookAllowed(req){return Boolean(WA_HOOK_SECRET)&&String(req.query?.hook||'')===WA_HOOK_SECRET}
+function hookAllowed(req){
+  if (!WA_HOOK_SECRET) return false
+  // Preferred: header (not logged by default). Fallback to query for backward compat during rotation.
+  const headerSecret = String(req.headers['x-webhook-secret'] || req.headers['x-hub-signature'] || '').trim()
+  if (headerSecret && headerSecret === WA_HOOK_SECRET) return true
+  const querySecret = String(req.query?.hook || '').trim()
+  if (querySecret && querySecret === WA_HOOK_SECRET) {
+    console.warn('[whatsapp] webhook secret via query string (deprecated, use x-webhook-secret header)')
+    return true
+  }
+  return false
+}
+
+// Rate-limit inbound creation (per phone, per minute) — best-effort in-memory, like Hugo.
+const WA_INBOUND_BUCKETS = new Map()
+function allowInbound(phone){
+  const now = Date.now(), windowMs = 60_000, limit = 20
+  const key = `wa:${phone}`
+  const b = WA_INBOUND_BUCKETS.get(key)
+  const bucket = !b || b.resetAt <= now ? { count: 0, resetAt: now + windowMs } : b
+  bucket.count += 1
+  WA_INBOUND_BUCKETS.set(key, bucket)
+  return bucket.count <= limit
+}
 function yes(t){return /^(si|sí|sim|s|ok|dale|confirmo|confirmar|pode|fechado|isso|yes)$/i.test(String(t).trim())}
 function no(t){return /^(no|não|nao|cancelar|cancela|parar|reset|reiniciar)$/i.test(String(t).trim())}
 function statusIntent(t){return /\b(estado|status|acompanhar|seguimiento|onde está|onde esta|como vai|meu pedido|mi pedido)\b/i.test(String(t))}
@@ -39,7 +62,11 @@ async function sendText(sb,to,message){if(!WA_TOKEN||!WA_PHONE_ID)throw Object.a
 async function authorizeAdmin(req,sb){const token=bearer(req);if(!token)return false;const{data,error}=await sb.auth.getUser(token);if(error||!data?.user)return false;const{data:p,error:profileError}=await sb.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle();if(profileError)return false;return Boolean(p?.activo&&['admin','superadmin'].includes(String(p.tipo)))}
 async function loadConversation(sb,phone,name){const{data}=await sb.from('whatsapp_conversaciones').select('*').eq('telefono',phone).maybeSingle();if(data)return data;const{data:created,error}=await sb.from('whatsapp_conversaciones').insert({telefono:phone,nombre:name||null,idioma:'pt-BR',estado:'idle',borrador:{}}).select().single();if(error)throw error;return created}
 async function saveConversation(sb,phone,patch){const{error}=await sb.from('whatsapp_conversaciones').update({...patch,updated_at:new Date().toISOString()}).eq('telefono',phone);if(error)throw error}
-async function ensureWhatsappUser(sb,conv,phone,name){if(conv.usuario_id){const{data:u}=await sb.from('usuarios').select('id').eq('id',conv.usuario_id).maybeSingle();if(u)return conv.usuario_id}const{data:profile}=await sb.from('perfiles_cliente').select('usuario_id').in('telefono',[phone,`+${phone}`]).limit(1).maybeSingle();if(profile?.usuario_id){await saveConversation(sb,phone,{usuario_id:profile.usuario_id});return profile.usuario_id}const phoneE164=`+${phone}`;let authUser=null;const created=await sb.auth.admin.createUser({phone:phoneE164,phone_confirm:true,user_metadata:{source:'whatsapp',display_name:name||'Cliente WhatsApp'}});if(created.data?.user)authUser=created.data.user;if(!authUser){const listed=await sb.auth.admin.listUsers({page:1,perPage:1000});authUser=listed.data?.users?.find(u=>u.phone===phoneE164)||null;if(!authUser)throw created.error||new Error('No se pudo crear cliente WhatsApp')}const uid=authUser.id;await sb.from('usuarios').upsert({id:uid,nombre:name||'Cliente WhatsApp',tipo:'cliente',activo:true,pais:'BR'},{onConflict:'id'});await sb.from('perfiles_cliente').upsert({usuario_id:uid,telefono:phoneE164,contacto_preferido:'whatsapp',idioma_preferido:conv.idioma||'pt-BR'},{onConflict:'usuario_id'});await saveConversation(sb,phone,{usuario_id:uid,nombre:name||conv.nombre||null});return uid}
+async function ensureWhatsappUser(sb,conv,phone,name){
+  if (!allowInbound(phone)) throw Object.assign(new Error('Demasiadas solicitudes WhatsApp, reintentá en un minuto.'),{status:429})
+  if(conv.usuario_id){const{data:u}=await sb.from('usuarios').select('id').eq('id',conv.usuario_id).maybeSingle();if(u)return conv.usuario_id}const{data:profile}=await sb.from('perfiles_cliente').select('usuario_id').in('telefono',[phone,`+${phone}`]).limit(1).maybeSingle();if(profile?.usuario_id){await saveConversation(sb,phone,{usuario_id:profile.usuario_id});return profile.usuario_id}const phoneE164=`+${phone}`;let authUser=null;const created=await sb.auth.admin.createUser({phone:phoneE164,phone_confirm:true,user_metadata:{source:'whatsapp',display_name:name||'Cliente WhatsApp'}});if(created.data?.user)authUser=created.data.user;if(!authUser){
+    // Fallback: only when create fails due to duplicate phone (rare). Keep limited to avoid full scan on every message.
+    const listed=await sb.auth.admin.listUsers({page:1,perPage:200});authUser=listed.data?.users?.find(u=>u.phone===phoneE164)||null;if(!authUser)throw created.error||new Error('No se pudo crear cliente WhatsApp')}const uid=authUser.id;await sb.from('usuarios').upsert({id:uid,nombre:name||'Cliente WhatsApp',tipo:'cliente',activo:true,pais:'BR'},{onConflict:'id'});await sb.from('perfiles_cliente').upsert({usuario_id:uid,telefono:phoneE164,contacto_preferido:'whatsapp',idioma_preferido:conv.idioma||'pt-BR'},{onConflict:'usuario_id'});await saveConversation(sb,phone,{usuario_id:uid,nombre:name||conv.nombre||null});return uid}
 async function suggestedTariff(sb,categoryId){const{data}=await sb.from('perfiles_proveedor').select('tarifa_base').eq('categoria_principal_id',categoryId).eq('disponible',true).not('tarifa_base','is',null).limit(30);const nums=(data||[]).map(x=>Number(x.tarifa_base)).filter(n=>Number.isFinite(n)&&n>0);return nums.length?Math.round(nums.reduce((a,b)=>a+b,0)/nums.length*100)/100:null}
 async function statusReply(sb,conv){let id=conv.ultimo_servicio_id;if(!id&&conv.usuario_id){const{data:s}=await sb.from('servicios').select('id').eq('cliente_id',conv.usuario_id).order('created_at',{ascending:false}).limit(1).maybeSingle();id=s?.id||null}if(!id)return langText(conv.idioma,'Todavía no tenés un servicio creado por WhatsApp.','Você ainda não tem um serviço criado pelo WhatsApp.');const{data:s}=await sb.from('servicios').select('numero,estado,proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').eq('id',id).maybeSingle();if(!s)return langText(conv.idioma,'No encontré el último servicio.','Não encontrei o último serviço.');const p=Array.isArray(s.proveedor)?s.proveedor[0]:s.proveedor;return langText(conv.idioma,`Servicio #${s.numero}: ${String(s.estado).replaceAll('_',' ')}${p?.nombre?` · ${p.nombre}`:''}.`,`Serviço #${s.numero}: ${String(s.estado).replaceAll('_',' ')}${p?.nombre?` · ${p.nombre}`:''}.`)}
 async function createService(sb,conv,phone,name,messageId){const d=conv.borrador||{};const{data:cat}=await sb.from('categorias').select('id,nombre').eq('slug',d.category_slug).eq('activa',true).maybeSingle();if(!cat)throw new Error('Categoría inválida');const uid=await ensureWhatsappUser(sb,conv,phone,name);const tarifa=Number(d.budget||d.suggested_tariff||0);if(!tarifa)throw new Error('Falta tarifa');const comision=Math.round(tarifa*.15*100)/100,ganancia=Math.round((tarifa-comision)*100)/100;const location=d.location&&Number.isFinite(Number(d.location.latitude))&&Number.isFinite(Number(d.location.longitude))?`POINT(${Number(d.location.longitude)} ${Number(d.location.latitude)})`:null;const{data:service,error}=await sb.from('servicios').insert({cliente_id:uid,categoria_id:cat.id,estado:'borrador',descripcion:String(d.description).slice(0,800),urgencia:Boolean(d.urgent),direccion_cliente:d.address||'Ubicación compartida por WhatsApp',ubicacion_cliente:location,tarifa,comision_ugo:comision,ganancia_proveedor:ganancia,moneda:'BRL',metadata:{source:'whatsapp',telefono:phone,whatsapp_message_id:messageId,tarifa_fuente:d.budget?'cliente':'promedio_proveedores'}}).select('id,numero,estado').single();if(error)throw error;const{data:offers,error:matchError}=await sb.rpc('iniciar_matching_backend',{p_servicio_id:service.id});if(matchError)throw matchError;await saveConversation(sb,phone,{estado:'idle',borrador:{},ultimo_servicio_id:service.id,usuario_id:uid,ultimo_mensaje_id:messageId});return{service,offers:offers||[],tarifa}}

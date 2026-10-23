@@ -14,12 +14,30 @@ const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_ADMIN_REALTIME_INPUTS_REQUIRED')
 
+// Only retry TEST fixture/bootstrap transport errors. Realtime assertions must
+// fail immediately so a broken event stream can never be concealed by retries.
+async function setupWithTransientRetry(operation,label){
+ const attempts=4
+ for(let attempt=1;attempt<=attempts;attempt++){
+  let result
+  try{result=await operation()}catch(error){result={error}}
+  const error=result?.error
+  if(!error)return result
+  const code=String(error.code||'')
+  const message=String(error.message||error)
+  const retryable=code==='PGRST002'||code==='57014'||[429,502,503,504,522,524].includes(Number(error.status))||/schema cache|gateway timeout|fetch failed|connection timed out/i.test(message)
+  if(!retryable||attempt===attempts)return result
+  console.warn('Admin Realtime TEST '+label+' transient '+(code||message.slice(0,90))+'; retry '+attempt+'/'+attempts)
+  await new Promise(resolve=>setTimeout(resolve,1500*attempt))
+ }
+}
+
 const root=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
-const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await setupWithTransientRetry(()=>user.auth.signInWithPassword({email,password}),'admin login')
 assert.ifError(loginError)
 assert.ok(login.user&&login.session,'UGO_TEST_ADMIN_SESSION_REQUIRED')
-const {data:profile,error:profileError}=await root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
+const {data:profile,error:profileError}=await setupWithTransientRetry(()=>root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single(),'admin profile')
 assert.ifError(profileError)
 assert.ok(['admin','superadmin'].includes(profile.tipo),'ADMIN_ROLE_REQUIRED')
 assert.equal(profile.activo,true,'ACTIVE_ADMIN_REQUIRED')
@@ -35,7 +53,7 @@ let providerFixtureCreated=false
 try{
  const {error:userError}=await root.from('usuarios').upsert({id:providerId,nombre:'UGO Admin Realtime Fixture',tipo:'proveedor',activo:true,es_demo:true,online:false},{onConflict:'id'})
  assert.ifError(userError)
- const {data:category,error:categoryError}=await root.from('categorias').select('id').eq('activa',true).limit(1).single()
+ const {data:category,error:categoryError}=await setupWithTransientRetry(()=>root.from('categorias').select('id').eq('activa',true).limit(1).single(),'fixture category')
  assert.ifError(categoryError)
  const {error:providerError}=await root.from('perfiles_proveedor').upsert({usuario_id:providerId,estado_verificacion:'verificado',online:false,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100},{onConflict:'usuario_id'})
  assert.ifError(providerError)
