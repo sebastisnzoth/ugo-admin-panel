@@ -58,3 +58,8 @@ test('mission Console holds idempotency key across uncertain requests',()=>{
  assert.match(source,/idempotency_key:pendingMissionRef\.current\.key/);
  assert.match(source,/pendingMissionRef\.current=null/);
 });
+
+test('mission create RPC service grant matches its four-argument signature',()=>{
+ assert.match(sql,/grant execute on function public\.hive_local_create_mission\(uuid,text,text\[\],uuid\) to service_role/);
+ assert.doesNotMatch(sql,/grant execute on function public\.hive_local_create_mission\(uuid,text,text\[\]\) to service_role/);
+});
