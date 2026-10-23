@@ -316,3 +316,9 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - PR #571 SHA preceding changes `6c946484ec886b292784598f5caebfb3616406e1`: Cross Security, Hugo Timeout, Roadmap PASS; Core CI and Cross-role UI still running at last baseline query; Groq smoke SKIPPED.
 - Added `buildHiveTaskContext` to `scripts/hive-analysis-mission-plan.mjs`: requires a previously SUCCEEDED dependency with nonempty answer, labels predecessor content as untrusted, and bounds inherited context at 1200 chars. Added contract covering rejection and bounding. This remains a pure read-only planning primitive: not yet connected to a persistent queue or live inference.
 - IMPORTANT: Do not count this as nine agents collaborating end-to-end. No deployment, DB migration or Mac access in this change; last TEST Edge v6 remains the validated baseline. Latest CI and full E2E are required.
+
+
+### 2026-10-23 — Persistent sequential TEST mission implementation (PR #571, not deployed)
+- Added `20261023080000_hive_local_mission_queue.sql`: TEST-only RLS-enabled mission and task records; service-role-only RPCs create, advance and cancel; serialized advance via row lock; mission steps queue into the existing `hive_local_inference_jobs` table; waits on RUNNING/PENDING, stops on FAILED, caps mission count and recent inference creation; no autonomous system commands.
+- Edge `ugo-hive-local-jobs` branch source now defines Super Admin-only `create_mission`, `advance_mission`, `cancel_mission`, `list_missions` endpoints. Hive Console includes a manual TEST Missions section with bounded agent selection, status polling and cancellation. New static contract tests included.
+- **Not yet deployed**: new mission migration and Edge code remain on PR branch pending CI, live TEST database compatibility checks, and tests. Edge TEST v6 still serves earlier identity APIs. Mac E2E and multiagent sequence have not been verified; no merge to main.
