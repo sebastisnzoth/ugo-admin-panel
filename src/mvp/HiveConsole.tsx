@@ -77,7 +77,7 @@ export function HiveConsole(){
   }
  }catch{if(live)setChatError(tr.remoteError)}};void refresh();const interval=setInterval(()=>void refresh(),5000);return()=>{live=false;clearInterval(interval)}},[tab,tr.remoteError]);
  const createMission=async()=>{if(!prompt.trim()||missionBusy)return;setMissionBusy(true);setChatError('');try{
-  const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create_mission',objective:prompt.trim(),agents:missionFlow}});
+  const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create_mission',objective:prompt.trim(),agents:missionFlow,idempotency_key:crypto.randomUUID()}});
   if(error||!data?.mission_id)throw Error('MISSION_CREATE_FAILED');
   setPrompt('');
   await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'advance_mission',mission_id:data.mission_id}});
