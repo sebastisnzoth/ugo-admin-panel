@@ -101,3 +101,9 @@ A duplicate/obsolete closure is allowed only after showing that all useful chang
 2. Finish TEST-only migration and Edge validation for #571, including Mac E2E.
 3. Audit remaining PRs individually; merge only verified clean candidates; close only proven obsolete/duplicate candidates.
 4. Refresh this report after each action and after main changes.
+
+## Main divergence checks (2026-10-23)
+
+- #552: 79 commits behind main, 6 ahead; 6 changed files including `src/mvp/provider/useProviderRealtime.ts`, Realtime contracts and roadmap; not mergeable as is. Preserve its successful matching E2E evidence but rerun after reconciliation.
+- #558: 68 behind, 7 ahead; 7 files related to runtime gates, CSS and contracts; not mergeable as is, despite successful branch checks.
+- #568: 64 behind, 1 ahead; only `src/mvp/ProviderLocationTracker.tsx`; mergeable flag true at latest check, **but** CI failures prohibit automatic merge.
