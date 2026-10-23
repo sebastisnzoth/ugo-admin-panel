@@ -418,6 +418,27 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 - Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
 
 
+### 2026-10-22 — Hive local PR #571, bloqueo de integración y prevención de regresiones
+- Confirmado en la Mac del usuario: `127.0.0.1:3037/inference` con token respondió `COMPLETED_LOCAL_INFERENCE` y `UGO PUENTE OK`. Esto **solo valida el recorrido local**, no Super Admin ↔ Supabase TEST ↔ Mac.
+- En rama de Hive: worker de consulta saliente exige trabajo autorizado `inference-only`, lease y campos permitidos. Reforzado para rechazar UUID mal formados y respuestas de modelo vacías, demasiado largas o cuyo identificador no coincida. Agregadas pruebas negativas; ejecución del SHA final aún por verificar.
+- Bloqueos de diseño: API autenticada TEST para claim/completion con lease exclusivo y expiración, idempotencia, permisos Super Admin, límites de reintentos y auditoría, integración de HiveConsole y prueba real de extremo a extremo. Evitar publicar el puerto Mac directamente. No reutilizar `autonomous_jobs` sin aislar expresamente los permisos y verificar RLS.
+- Protección: no tocar producción ni matching/GPS/pagos; Empresa Autónoma OFF; no fusionar este PR incompleto a `main`. Verificar CI del SHA final, fallos 401/429/503, reintentos, entrega duplicada, caída/reinicio de Mac y recuperación de lease antes de cualquier habilitación.
+- Estado: IMPLEMENTACIÓN INCOMPLETA, NO DESPLEGADA COMO CHAT FUNCIONAL. Ningún PR, commit o test aislado constituye cierre.
+
+
+### 2026-10-22 — PR #571: transporte saliente TEST bajo contrato (no activado)
+- Se agregó `scripts/hive-local-test-transport.mjs` que restringe el destino a la función futura `ugo-hive-local-jobs` de Supabase TEST, exige token de worker solo en entorno local, usa timeouts y rechaza errores/autorización y respuestas demasiado grandes sin filtrar credenciales.
+- Nuevas pruebas `tests/contracts/hive-local-test-transport.test.mjs` cubren endpoint fijo, autenticación, claims inválidos, rechazo de completions y fallos de red. Son contratos simulados, **no** prueba E2E.
+- No se ha creado ni activado el endpoint remoto, ni implementado el daemon/encendido automático, ni conectado HiveConsole. Nunca considerar el transporte por sí mismo como integración operativa.
+- Antes de habilitar: autorización de roles y worker separadas, leases y deduplicación transaccionales en TEST, comprobación de RLS, reinicios y reintentos, pruebas CI y E2E desde Mac, regresión de app. Empresa Autónoma OFF, producción intacta.
+
+
+### 2026-10-22 — Continuidad PR #571: Hive TEST, primer backend instalado
+- **Avance verificado:** esquema Hive aislado con RLS aplicado en `tmossnqfwfwjrtzwcbmm`, Edge `ugo-hive-local-jobs` v3 ACTIVE, SQL test transaccional de claim/completion/lease negativo/doble completion PASS+ROLLBACK. Authenticated/anon no tienen permisos directos sobre tablas ni claim.
+- **Implementado en rama, aún no comprobado E2E:** `HiveConsole.tsx` envía solicitudes autenticadas, lista respuestas, registra hash de worker y muestra presencia por heartbeat; worker de Mac consulta saliente y ejecuta inferencia local autorizada.
+- **Bloqueo activo exacto:** credencial worker no registrada (0 activas en TEST), Mac aún no ejecuta daemon nuevo; CI same-SHA y navegador Super Admin no validados. No declarar terminado ni fusionar hasta superar gates. La inferencia local previa `UGO PUENTE OK` no sustituye este recorrido.
+- **Siguiente paso:** pasar Core CI y contratos; activar credencial mediante hash generado en Mac (nunca enviar token) con Super Admin en entorno TEST; iniciar worker explícitamente; ejecutar una solicitud real y recibir la respuesta del mismo job; validar reintento/reinicio y publicación segura a `main`.
+
 ### PR #558 — CI runtime regression fixes reconciled with current main (2026-10-23)
 - Prior UI navigation and WCAG login contrast fixes already exist on newer main and are preserved intact. The missing immutable SHA handoff (`UGO_RUNTIME_SHA`) was added to the GPS/geofence workflow step, and its exact runtime contract test is included.
 - No business logic, Supabase schema, production settings or autonomy permissions changed. Verify the merged branch SHA in CI and runtime before main integration.
@@ -449,3 +470,13 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 - `npm update zod --package-lock-only --ignore-scripts` regeneró únicamente la entrada de Zod en `package-lock.json` a `4.6.7`, versión disponible, corregida (`>=4.6.6`) y dentro de la gama `^3.25.0 || ^4.0.0` del consumidor. Sin `--force`, sin editar integridades, sin añadir dependencia directa y sin relajar el gate.
 - Verificación local del candidato: `npm ci` limpio y `npm audit --audit-level=high` con 0 vulnerabilidades; TypeScript/build PASS; contrato GPS focalizado e i18n PASS; suite 1508 PASS / 0 FAIL / 8 SKIP por credenciales TEST ausentes, igual que baseline; lint 0 errores y 986 warnings preexistentes. La verificación adicional de firmas no pudo contactar Sigstore y no se usa como evidencia.
 - Estado: **corrección local comprobada; CI del SHA exacto e integración pendientes**. No cambia lógica de producto, SQL, Supabase TEST/PROD, Empresa Autónoma ni publicación por sí solo. Siguiente puerta: Core CI remoto same-SHA y merge controlado; después continuar Hive/matching sin atribuirles este verde.
+
+### 2026-10-23 — PR #576 integrada: Zod corregido en main
+- PR #576 fusionada como `83d9a08ce2128463471ba14c78b958788efce762`. Core CI postmerge `40035456820` SUCCESS y GitHub Pages `40035456858` SUCCESS sobre ese SHA. El `status.json` público publica exactamente `83d9a08…`; PROD sigue protegido y `production_ready=false`.
+- Esta evidencia cierra la vulnerabilidad high de Zod en `main`; no prueba Hive, matching, roles ni Vercel. El check externo Supabase Preview del SHA aparece FAILURE y no se reetiqueta como PASS; queda separado de la corrección de dependencia.
+
+### 2026-10-23 — PR #571 reconciliada y recuperación Mac implementada, runtime aún bloqueado
+- Se incorporó la rama Hive a la rama Arena sin perder sus 118 commits. Los únicos conflictos eran los dos documentos maestros; se conservaron completas ambas historias. Hive NO se fusionó a `main`.
+- Se agregaron presencia de motor separada, enrolamiento Super Admin sin hash manual, token de una sola vista para Keychain, LaunchAgent Catalina idempotente, reutilización de credenciales, instancia única, recuperación de lock, backoff/reconexión, parada fail-closed y logs de códigos fijos. También se reforzó idempotencia prompt+agente y reintento incierto de Chat.
+- Prueba local del árbol: build/TypeScript PASS; 1590 tests = 1582 PASS / 0 FAIL / 8 SKIP por credenciales TEST ausentes; lint 0 errores / 987 warnings; i18n y diálogos PASS. Nueve migraciones Hive se ejercen en PGlite con datos sintéticos, replay como propietario, reinicio, handoff, cancelación, lease incierto, RLS/ACL y metadatos. PGlite no prueba concurrencia multi-sesión de TEST.
+- **No desplegado:** el conector Supabase actual no devolvió proyectos accesibles; no se aplicaron las nuevas migraciones ni se actualizó Edge TEST. No hay acceso al runtime Mac. Los nueve perfiles reales, misión E2E, Keychain/reinicio físico y TEST multi-sesión permanecen BLOCKED/HUMAN_REQUIRED. Siguiente: CI del SHA final y actualización controlada de PR #571, sin promoverla mientras falten estas puertas.
