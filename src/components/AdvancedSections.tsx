@@ -520,80 +520,70 @@ function TabReferidos() {
 }
 
 export function SecValidacionPaises() {
- const{t}=useLocale()
-  const [paises, setPaises] = React.useState<any[]>([]);
-  const [sel, setSel] = React.useState<any>(null);
-  const [kycError,setKycError] = React.useState('');
-
-  React.useEffect(() => {
-    let alive=true;
-    void (async()=>{
-      const {data,error}=await (supabase as any).from('config_validacion_pais').select('*').order('pais');
-      if(!alive)return;
-      if(error){setKycError('No se pudo cargar la configuración KYC.');setPaises([]);return}
-      setKycError('');
-      setPaises(Array.isArray(data)?data:[]);
-    })();
-    return()=>{alive=false};
-  }, []);
-
-  const toggle = async (id: string, activo: boolean) => {
-    setKycError('');
-    const {error}=await (supabase as any).from('config_validacion_pais').update({activo}).eq('id',id);
-    if(error){setKycError('No se pudo actualizar la configuración KYC.');return}
-    setPaises(p => p.map(x => x.id===id ? {...x,activo} : x));
+  const {t,locale}=useLocale();
+  type Country={id:string;codigo_iso:string;pais:string;activo:boolean;docs_requeridos:string[];reglas_ocr:{docs?:Record<string,{nombre_completo?:string;formato_regex?:string;digitos?:number;prompt_gemini?:string}>;nota_cultural?:string}};
+  const [paises,setPaises]=React.useState<Country[]>([]);
+  const [selectedId,setSelectedId]=React.useState<string|null>(null);
+  const [loading,setLoading]=React.useState(true);
+  const [saving,setSaving]=React.useState<string|null>(null);
+  const [kycError,setKycError]=React.useState('');
+  const labels={
+    'pt-BR':{load:'Não foi possível carregar a configuração KYC.',save:'Não foi possível atualizar o país.',retry:'Tentar novamente',loading:'Carregando configuração…',empty:'Nenhum país configurado.',pending:'Regras documentais pendentes de aprovação',read:'Ver detalhes',activate:'Ativar',deactivate:'Desativar'},
+    es:{load:'No se pudo cargar la configuración KYC.',save:'No se pudo actualizar el país.',retry:'Reintentar',loading:'Cargando configuración…',empty:'No hay países configurados.',pending:'Reglas documentales pendientes de aprobación',read:'Ver detalles',activate:'Activar',deactivate:'Desactivar'},
+    en:{load:'Could not load KYC configuration.',save:'Could not update country.',retry:'Retry',loading:'Loading configuration…',empty:'No countries configured.',pending:'Document requirements pending approval',read:'View details',activate:'Enable',deactivate:'Disable'}
+  }[locale];
+  const load=React.useCallback(async()=>{
+    setLoading(true);setKycError('');
+    try{
+      const {data,error}=await (supabase as any).from('config_validacion_pais').select('id,codigo_iso,pais,activo,docs_requeridos,reglas_ocr').order('pais');
+      if(error)throw error;
+      const countries=Array.isArray(data)?data as Country[]:[];
+      setPaises(countries);
+      setSelectedId(old=>countries.some(c=>c.id===old)?old:(countries[0]?.id??null));
+    }catch(error){
+      console.error('KYC country loading failed',error);
+      setKycError(labels.load);
+      setPaises([]);setSelectedId(null);
+    }finally{setLoading(false)}
+  },[labels.load]);
+  React.useEffect(()=>{void load()},[load]);
+  const selected=paises.find(p=>p.id===selectedId);
+  const toggle=async(country:Country)=>{
+    if(saving)return;
+    setSaving(country.id);setKycError('');
+    try{
+      const {data,error}=await (supabase as any).from('config_validacion_pais')
+        .update({activo:!country.activo}).eq('id',country.id).select('id,activo').single();
+      if(error)throw error;
+      if(!data||data.id!==country.id||data.activo===country.activo)throw new Error('KYC update not persisted');
+      setPaises(items=>items.map(item=>item.id===country.id?{...item,activo:data.activo}:item));
+    }catch(error){console.error('KYC country update failed',error);setKycError(labels.save)}
+    finally{setSaving(null)}
   };
-
-  return (
-    <div className="pad">
-      <div className="st"><LocalizedText id="adminAdvanced.kycByCountry"/></div>{kycError&&<div role="alert" style={{marginBottom:8,color:"#b00020",fontSize:11}}>{kycError}</div>}
-      <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:'12px',height:'calc(100% - 60px)'}}>
-        {/* Lista de países */}
-        <div className="tw" style={{height:'fit-content'}}>
-          {paises.map(p => (
-            <div key={p.id} onClick={()=>setSel(p)}
-              style={{padding:'10px 13px',borderBottom:'1px solid var(--border)',cursor:'pointer',background:sel?.id===p.id?'rgba(21,147,102,.05)':'#FFF',display:'flex',alignItems:'center',gap:'9px',transition:'background .1s'}}>
-              <span style={{fontSize:'18px'}}>{{'BR':'🇧🇷','AR':'🇦🇷','CL':'🇨🇱','CO':'🇨🇴','MX':'🇲🇽','UY':'🇺🇾'}[p.codigo_iso]||'🌐'}</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:'12px',fontWeight:700}}>{p.pais}</div>
-                <div style={{fontSize:'10px',color:'var(--muted)'}}>{p.docs_requeridos?.join(', ')}</div>
-              </div>
-              <button onClick={e=>{e.stopPropagation();toggle(p.id,!p.activo);}}
-                style={{padding:'2px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'9px',fontWeight:700,
-                  background:p.activo?'rgba(21,147,102,.1)':'rgba(0,0,0,.06)',color:p.activo?'#159366':'#888'}}>
-                {p.activo?t("uiCopy.short14"):t("uiCopy.expression17")}
-              </button>
-            </div>
-          ))}
+  const flags:Record<string,string>={BR:'🇧🇷',AR:'🇦🇷',CL:'🇨🇱',CO:'🇨🇴',MX:'🇲🇽',UY:'🇺🇾'};
+  return <div className="pad">
+    <div className="st"><LocalizedText id="adminAdvanced.kycByCountry"/></div>
+    {kycError&&<div role="alert" style={{marginBottom:12,color:'#b00020',fontSize:13}}>{kycError} <button type="button" onClick={()=>void load()}>{labels.retry}</button></div>}
+    {loading?<p role="status">{labels.loading}</p>:paises.length===0?<p>{labels.empty}</p>:
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,280px),1fr))',gap:12,alignItems:'start'}}>
+        <div className="tw">{paises.map(p=><div key={p.id} style={{padding:12,borderBottom:'1px solid var(--border)',background:selectedId===p.id?'rgba(21,147,102,.05)':'#FFF',display:'flex',gap:8,alignItems:'center'}}>
+          <button type="button" onClick={()=>setSelectedId(p.id)} aria-label={labels.read+' '+p.pais} aria-pressed={selectedId===p.id} style={{border:0,background:'transparent',cursor:'pointer',flex:1,display:'flex',alignItems:'center',gap:8,textAlign:'left'}}>
+            <span aria-hidden="true" style={{fontSize:20}}>{flags[p.codigo_iso]||'🌐'}</span><span><strong>{p.pais}</strong><span style={{display:'block',fontSize:11}}>{p.docs_requeridos?.length?p.docs_requeridos.join(', '):labels.pending}</span></span>
+          </button>
+          <button type="button" disabled={saving!==null||!p.docs_requeridos?.length&&!p.activo} onClick={()=>void toggle(p)} aria-label={(p.activo?labels.deactivate:labels.activate)+' '+p.pais} title={!p.docs_requeridos?.length?labels.pending:undefined}>{saving===p.id?'…':p.activo?labels.deactivate:labels.activate}</button>
+        </div>)}</div>
+        <div className="tw" style={{padding:16,minWidth:0,overflowWrap:'anywhere'}}>
+          {selected&&<><h3>{flags[selected.codigo_iso]||'🌐'} {selected.pais}</h3><p><LocalizedText id="adminAdvanced.iso"/>: {selected.codigo_iso}</p>
+          {!selected.docs_requeridos?.length&&<p>{labels.pending}</p>}
+          {Object.entries(selected.reglas_ocr?.docs||{}).map(([tipo,cfg])=><div key={tipo} style={{padding:12,marginBottom:10,background:'var(--bg)',borderRadius:8}}>
+            <strong>{tipo} — {cfg.nombre_completo||tipo}</strong>
+            {cfg.formato_regex&&<p style={{overflowWrap:'anywhere'}}><LocalizedText id="adminAdvanced.regex"/>: {cfg.formato_regex}</p>}
+            {cfg.digitos&&<p>{cfg.digitos}</p>}
+            {cfg.prompt_gemini&&<p>{cfg.prompt_gemini}</p>}
+          </div>)}{selected.reglas_ocr?.nota_cultural&&<p>{selected.reglas_ocr.nota_cultural}</p>}</>}
         </div>
-        {/* Detalle del país seleccionado */}
-        {sel ? (
-          <div className="tw" style={{padding:'16px',overflowY:'auto'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px'}}>
-              <span style={{fontSize:'28px'}}>{{'BR':'🇧🇷','AR':'🇦🇷','CL':'🇨🇱','CO':'🇨🇴','MX':'🇲🇽','UY':'🇺🇾'}[sel.codigo_iso]||'🌐'}</span>
-              <div>
-                <div style={{fontWeight:800,fontSize:'16px'}}>{sel.pais}</div>
-                <div style={{fontSize:'11px',color:'var(--muted)'}}><LocalizedText id="adminAdvanced.iso"/>: {sel.codigo_iso} <LocalizedText id="verification.docs"/> {sel.docs_requeridos?.join(', ')}</div>
-              </div>
-            </div>
-            {Object.entries((sel.reglas_ocr?.docs||{})).map(([tipo, cfg]: any) => (
-              <div key={tipo} style={{background:'var(--bg)',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
-                <div style={{fontWeight:700,fontSize:'12px',marginBottom:'3px'}}>{tipo} — {cfg.nombre_completo}</div>
-                {cfg.formato_regex && <div style={{fontSize:'10px',color:'var(--muted)',fontFamily:'monospace',marginBottom:'5px'}}><LocalizedText id="adminAdvanced.regex"/>: {cfg.formato_regex}</div>}
-                {cfg.digitos && <div style={{fontSize:'10px',color:'var(--muted)',marginBottom:'5px'}}><LocalizedText id="adminAdvanced.digits"/>: {cfg.digitos}</div>}
-                <div style={{fontSize:'11px',color:'#444',lineHeight:1.5,background:'#FFF',borderRadius:'8px',padding:'8px'}}>{cfg.prompt_gemini}</div>
-              </div>
-            ))}
-            <div style={{fontSize:'11px',color:'var(--muted)',fontStyle:'italic',marginTop:'8px'}}>{sel.reglas_ocr?.nota_cultural}</div>
-          </div>
-        ) : (
-          <div style={{display:'flex',alignItems:'center',justifyContent:'center',color:'var(--muted)',fontSize:'13px'}}>
-            <LocalizedText id="adminAdvanced.validationCountryHelp"/>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+      </div>}
+  </div>;
 }
 
 export function SecAvanzado() {
