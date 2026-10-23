@@ -5,7 +5,7 @@ import'./hive-console.css'
 
 const translations={
  'pt-BR':{
- brand:'U.GO · SUPER ADMIN',statusUnavailable:'Status de TEST indisponível',backupLabel:'backup',navLabel:'Navegação Hive',overview:'Visão geral',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligência',disabled:'INFERÊNCIA DESATIVADA',
+ brand:'U.GO · SUPER ADMIN',statusUnavailable:'Status de TEST indisponível',backupLabel:'backup',navLabel:'Navegação Hive',overview:'Visão geral',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligência',disabled:'CHAT TEST · EXECUÇÃO MANUAL',
  router:'Router Hive',prepared:'PREPARADO',routerInfo:'Código integrado; execução real ainda não verificada.',
  provider:'FreeLLMAPI / OpenRouter',unverified:'NÃO VERIFICADO',providerInfo:'Provedor, modelo, endpoint, pinning e custo pendentes de verificação.',
  remote:'Render / persistência',remoteInfo:'Disponibilidade remota não comprovada.',
@@ -17,7 +17,7 @@ const translations={
  macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 do worker',enrollInfo:'TEST · Cadastre apenas o hash SHA-256 da chave local do worker.',enrollAction:'Cadastrar worker TEST',submitReady:'Enviar',waiting:'Aguardando resposta da Mac',activeChat:'Chat TEST',sendError:'Não foi possível enviar',planned:'Funções planejadas',plannedInfo:'Catálogo proposto; nenhum agente é declarado operacional.'
  },
  'es':{
- brand:'U.GO · SUPER ADMIN',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligencia',disabled:'INFERENCIA DESACTIVADA',
+ brand:'U.GO · SUPER ADMIN',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',agents:'Agentes',heading:'Centro de inteligencia',disabled:'CHAT TEST · EJECUCIÓN MANUAL',
  router:'Router Hive',prepared:'PREPARADO',routerInfo:'Código integrado; ejecución real todavía no verificada.',
  provider:'FreeLLMAPI / OpenRouter',unverified:'NO VERIFICADO',providerInfo:'Proveedor, modelo, endpoint, pinning y costo pendientes de verificación.',
  remote:'Render / persistencia',remoteInfo:'Disponibilidad remota no comprobada.',
@@ -29,7 +29,7 @@ const translations={
  macOnline:'Mac conectada',macOffline:'Mac desconectada',macName:'Supabase TEST · FreeLLMAPI Mac',workerHashLabel:'Hash SHA-256 del worker',enrollInfo:'TEST · Registrá solamente el hash SHA-256 de la clave local del worker.',enrollAction:'Registrar worker TEST',submitReady:'Enviar',waiting:'Esperando respuesta de la Mac',activeChat:'Chat TEST',sendError:'No se pudo enviar',planned:'Roles previstos',plannedInfo:'Catálogo propuesto; ningún agente está declarado operativo.'
  },
  'en':{
- brand:'U.GO · SUPER ADMIN',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',agents:'Agents',heading:'Intelligence center',disabled:'INFERENCE DISABLED',
+ brand:'U.GO · SUPER ADMIN',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',agents:'Agents',heading:'Intelligence center',disabled:'TEST CHAT · MANUAL ONLY',
  router:'Hive Router',prepared:'PREPARED',routerInfo:'Code integrated; real runtime not yet verified.',
  provider:'FreeLLMAPI / OpenRouter',unverified:'NOT VERIFIED',providerInfo:'Provider, model, endpoint, pinning and cost require verification.',
  remote:'Render / persistence',remoteInfo:'Remote availability unverified.',
