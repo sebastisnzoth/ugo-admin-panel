@@ -28,3 +28,16 @@ test('limits concurrency to one', async () => {
   release();
   await first;
 });
+
+test('429 is a controlled failure without retries', async () => {
+  let calls = 0;
+  const client = createLocalModelClient({ apiKey: 'test', fetchImpl: async () => {
+    calls++;
+    return { status: 429, ok: false };
+  }});
+  await assert.rejects(
+    client.complete({ model: 'qwen3-coder', messages: [{ role:'user', content:'hola' }] }),
+    /HIVE_FREEAPI_RATE_LIMITED/
+  );
+  assert.equal(calls, 1);
+});
