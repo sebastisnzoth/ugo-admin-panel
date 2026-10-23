@@ -45,7 +45,7 @@ test('TEST Edge validates nine agents server-side and attributes persisted jobs'
  assert.match(edge,/agents\.includes\(body\.agent\)/)
  assert.match(edge,/jobRole\(prompt\)/)
  assert.match(edge,/'Legacy'\}/)
- assert.match(consoleCode,/job\.agent\?\?'Legacy'/)
+ assert.match(consoleCode,/job\.agent\?\?tr\.legacy/)
  assert.match(edge,/p_prompt:payload/)
  assert.match(edge,/SUPABASE_URL'\)!==URL/)
  assert.doesNotMatch(edge,/action==='execute'|action==='autonomy_on'/)
