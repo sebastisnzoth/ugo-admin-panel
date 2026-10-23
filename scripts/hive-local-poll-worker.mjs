@@ -28,8 +28,18 @@ export async function processHivePoll({claim, complete, policy, run = runLocalHi
     outcome = validAnswer
       ? {status:'SUCCEEDED',answer:result.answer,model:'qwen3-coder-free'}
       : {status:'FAILED',code:'HIVE_INVALID_INFERENCE_RESULT'};
-  } catch {
-    outcome = {status:'FAILED',code:'HIVE_LOCAL_INFERENCE_FAILED'};
+  } catch (error) {
+    // Safe fixed error codes only; never expose provider response, tokens or stack traces.
+    const code = String(error?.message || '').split(':',1)[0];
+    const recognized = new Set([
+      'HIVE_FREEAPI_RATE_LIMITED','HIVE_PROVIDER_UNAVAILABLE',
+      'HIVE_INVALID_PROVIDER_RESPONSE','HIVE_RESPONSE_TOO_LARGE',
+      'HIVE_BUSY','HIVE_LOCAL_API_KEY_REQUIRED','HIVE_LOCAL_ENDPOINT_REQUIRED',
+      'HIVE_INVALID_MESSAGES','HIVE_MODEL_REQUIRED'
+    ]);
+    outcome = {status:'FAILED',code:recognized.has(code)?code:
+      error?.name === 'TimeoutError' || error?.name === 'AbortError'
+        ? 'HIVE_PROVIDER_TIMEOUT' : 'HIVE_LOCAL_INFERENCE_FAILED'};
   }
   await complete({id:job.id,lease:job.lease,...outcome});
   return {status:outcome.status,id:job.id};
