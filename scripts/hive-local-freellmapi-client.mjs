@@ -1,5 +1,4 @@
 // Local-only FreeLLMAPI adapter. No database, production, or remote access.
-import { setTimeout as sleep } from 'node:timers/promises';
 
 const ALLOWED_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]']);
 export function validateLocalEndpoint(value = 'http://127.0.0.1:3001/v1') {
@@ -29,6 +28,7 @@ export function createLocalModelClient({ endpoint = process.env.HIVE_LOCAL_FREEA
           signal: AbortSignal.timeout(timeoutMs),
           redirect: 'error'
         });
+        if (response.status === 429) throw new Error('HIVE_FREEAPI_RATE_LIMITED: proveedor sin cuota temporal; no se reintenta automáticamente');
         if (!response.ok) throw new Error('HIVE_PROVIDER_HTTP_' + response.status);
         const raw = await response.text();
         if (raw.length > 131072) throw new Error('HIVE_RESPONSE_TOO_LARGE');
