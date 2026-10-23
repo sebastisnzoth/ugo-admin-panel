@@ -65,6 +65,7 @@ export function HiveConsole(){
  const [missions,setMissions]=useState<HiveMission[]>([])
  const [missionFlow,setMissionFlow]=useState<string[]>(['Hugo','Architect','Developer','QA','Security','Judge'])
  const [missionBusy,setMissionBusy]=useState(false)
+ const pendingMissionRef=React.useRef<{signature:string;key:string}|null>(null)
  useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  useEffect(()=>{if(tab!=='chat')return;let live=true;const refresh=async()=>{try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list'}});if(!live)return;if(error||!Array.isArray(data?.jobs))throw Error('CHAT_UNAVAILABLE');setJobs(data.jobs);setChatVerified(true);const w=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'worker_status'}});if(!w.error&&live){setWorkerConnected(w.data?.connected===true);setWorkerEnrolled(w.data?.enrolled===true)}else if(live){setWorkerConnected(false)}}catch{if(live){setChatVerified(false);setWorkerConnected(false);setChatError(tr.remoteError)}}};void refresh();const id=setInterval(()=>void refresh(),5000);return()=>{live=false;clearInterval(id)}},[tab,tr.remoteError]);
  useEffect(()=>{if(tab!=='missions')return;let live=true;const refresh=async()=>{try{
@@ -77,8 +78,11 @@ export function HiveConsole(){
   }
  }catch{if(live)setChatError(tr.remoteError)}};void refresh();const interval=setInterval(()=>void refresh(),5000);return()=>{live=false;clearInterval(interval)}},[tab,tr.remoteError]);
  const createMission=async()=>{if(!prompt.trim()||missionBusy)return;setMissionBusy(true);setChatError('');try{
-  const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create_mission',objective:prompt.trim(),agents:missionFlow,idempotency_key:crypto.randomUUID()}});
+  const signature=JSON.stringify([prompt.trim(),missionFlow]);
+  if(pendingMissionRef.current?.signature!==signature)pendingMissionRef.current={signature,key:crypto.randomUUID()};
+  const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create_mission',objective:prompt.trim(),agents:missionFlow,idempotency_key:pendingMissionRef.current.key}});
   if(error||!data?.mission_id)throw Error('MISSION_CREATE_FAILED');
+  pendingMissionRef.current=null;
   setPrompt('');
   await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'advance_mission',mission_id:data.mission_id}});
   const refreshed=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list_missions'}});
