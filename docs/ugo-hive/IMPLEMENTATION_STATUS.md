@@ -288,3 +288,10 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Existing schema still represents uncertainty as FAILED + `RECONCILIATION_REQUIRED` error code; dedicated state and operator reconciliation UI are not implemented yet.
 - Remaining validation: controlled lease-expiry integration proof, TEST Edge deployment for nine agent identity, real nine-agent E2E from Super Admin through Mac/FreeLLMAPI, final SHA CI/regressions, then merge/Pages.
 - No changes to PROD, Mac secrets, or Empresa Autónoma. Do not claim full system completion.
+
+
+### 2026-10-23 — TEST Edge function deployed (nine-profile manual inference)
+- Checked PR HEAD `dd2e09f5868781040ac9400865db6435239d3ece`: Core CI, Cross-role UI, Cross Security, Hugo Timeout and Roadmap PASS; Groq smoke SKIPPED.
+- Compared deployed `ugo-hive-local-jobs` TEST v4 source with PR file; v4 lacked server-side nine-agent allowlist. Deployed exact PR source to TEST project `tmossnqfwfwjrtzwcbmm` only, version 5, ACTIVE, retaining `verify_jwt=false` because the endpoint explicitly authenticates worker bearer tokens and Super Admin user JWTs inside its handler. Did not deploy to PROD.
+- Re-fetched TEST v5: server-side nine-agent allowlist and scope present. Isolated queue unchanged: 7 SUCCEEDED and 7 FAILED.
+- **Remaining gate:** nine names are still prompt personas using one local worker, not full autonomous agents or coordinator. No nine-Agent Super Admin→Mac→FreeLLMAPI real E2E performed from this remote session; no authenticated user session or remote Mac worker access. Do not declare nine-agent integration complete or merge PR yet.
