@@ -33,3 +33,18 @@ test('bridge rejects unauthorized origins and extra action fields',()=>withBridg
   assert.notEqual(r.status,200);
  }
 }));
+
+test('bridge preserves rate-limit status and does not retry',()=>withBridge(async()=>{
+ throw new Error('HIVE_FREEAPI_RATE_LIMITED: proveedor sin cuota temporal; no se reintenta automáticamente');
+},async url=>{
+ const r=await fetch(url+'/inference',{method:'POST',headers:{'x-hive-local-token':token,'content-type':'application/json'},body:JSON.stringify({prompt:'Hi'})});
+ assert.equal(r.status,429);
+ assert.equal((await r.json()).error,'HIVE_FREEAPI_RATE_LIMITED');
+}));
+test('bridge returns unavailable when local inference fails',()=>withBridge(async()=>{
+ throw new Error('OFFLINE');
+},async url=>{
+ const r=await fetch(url+'/inference',{method:'POST',headers:{'x-hive-local-token':token,'content-type':'application/json'},body:JSON.stringify({prompt:'Hi'})});
+ assert.equal(r.status,503);
+ assert.equal((await r.json()).error,'HIVE_LOCAL_INFERENCE_FAILED');
+}));
