@@ -41,6 +41,9 @@ export async function processHivePoll({claim, complete, policy, run = runLocalHi
       error?.name === 'TimeoutError' || error?.name === 'AbortError'
         ? 'HIVE_PROVIDER_TIMEOUT' : 'HIVE_LOCAL_INFERENCE_FAILED'};
   }
-  await complete({id:job.id,lease:job.lease,...outcome});
+  // A lost completion acknowledgement cannot be treated as a failed inference.
+  // Stop this worker: blindly polling again risks replaying an already executed request.
+  try { await complete({id:job.id,lease:job.lease,...outcome}); }
+  catch { throw Error('HIVE_COMPLETION_UNCERTAIN'); }
   return {status:outcome.status,id:job.id};
 }
