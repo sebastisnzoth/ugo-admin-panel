@@ -87,3 +87,12 @@ test('worker retains safe upstream HTTP error codes without revealing response c
   assert.equal(Object.hasOwn(calls[0],'answer'),false);
  }
 });
+
+test('network failure remains a safe actionable code in the persisted outcome',async()=>{
+ const calls=[];
+ await processHivePoll({claim:async()=>valid,complete:async data=>calls.push(data),policy:{},run:async()=>{throw Error('HIVE_PROVIDER_NETWORK_ERROR')}});
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].status,'FAILED');
+ assert.equal(calls[0].code,'HIVE_PROVIDER_NETWORK_ERROR');
+ assert.equal(Object.hasOwn(calls[0],'answer'),false);
+});
