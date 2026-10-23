@@ -49,3 +49,13 @@ test('does not acknowledge malformed or oversized inference as successful',async
     assert.equal(Object.hasOwn(calls[0],'answer'),false);
   }
 });
+
+test('worker reports allowlisted 429/503/timeouts but never leaks arbitrary exception',async()=>{
+ const cases=[['HIVE_FREEAPI_RATE_LIMITED','HIVE_FREEAPI_RATE_LIMITED'],['HIVE_PROVIDER_UNAVAILABLE','HIVE_PROVIDER_UNAVAILABLE'],['secret: unsafe','HIVE_LOCAL_INFERENCE_FAILED']];
+ for(const [message,expected] of cases){
+  const calls=[];
+  await processHivePoll({claim:async()=>valid,complete:async data=>calls.push(data),policy:{},run:async()=>{throw Error(message)}});
+  assert.equal(calls[0].code,expected);
+  assert.equal(JSON.stringify(calls).includes('secret'),false);
+ }
+});
