@@ -416,3 +416,11 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 - En `main` be7377c8, Cross-role UI (run 39837869684) y Cross Visual (run 39837869745) fallaron antes de ejecutar Chromium: `Playwright 1.56.1 does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest`. No es evidencia de defecto de producto.
 - Corrección acotada: fijar `runs-on: ubuntu-24.04` en `.github/workflows/role-ui-runtime.yml` y `.github/workflows/cross-visual-runtime.yml`, sin relajar las aserciones, la seguridad ni modificar la app. Estado IMPLEMENTADO EN RAMA, pendiente CI/navegador del SHA final y verificación tras fusión.
 - Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.
+
+
+### 2026-10-22 — Hive local PR #571, bloqueo de integración y prevención de regresiones
+- Confirmado en la Mac del usuario: `127.0.0.1:3037/inference` con token respondió `COMPLETED_LOCAL_INFERENCE` y `UGO PUENTE OK`. Esto **solo valida el recorrido local**, no Super Admin ↔ Supabase TEST ↔ Mac.
+- En rama de Hive: worker de consulta saliente exige trabajo autorizado `inference-only`, lease y campos permitidos. Reforzado para rechazar UUID mal formados y respuestas de modelo vacías, demasiado largas o cuyo identificador no coincida. Agregadas pruebas negativas; ejecución del SHA final aún por verificar.
+- Bloqueos de diseño: API autenticada TEST para claim/completion con lease exclusivo y expiración, idempotencia, permisos Super Admin, límites de reintentos y auditoría, integración de HiveConsole y prueba real de extremo a extremo. Evitar publicar el puerto Mac directamente. No reutilizar `autonomous_jobs` sin aislar expresamente los permisos y verificar RLS.
+- Protección: no tocar producción ni matching/GPS/pagos; Empresa Autónoma OFF; no fusionar este PR incompleto a `main`. Verificar CI del SHA final, fallos 401/429/503, reintentos, entrega duplicada, caída/reinicio de Mac y recuperación de lease antes de cualquier habilitación.
+- Estado: IMPLEMENTACIÓN INCOMPLETA, NO DESPLEGADA COMO CHAT FUNCIONAL. Ningún PR, commit o test aislado constituye cierre.
