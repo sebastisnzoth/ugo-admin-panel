@@ -24,6 +24,7 @@ Deno.serve(async(req:Request)=>{
    if(cError)return send(503,{error:'WORKER_AUTH_UNAVAILABLE'});
    if(!credential?.active||credential.token_hash!==digest)return send(403,{error:'WORKER_UNAUTHORIZED'});
    if(body.action==='claim'){
+     await db.from('hive_local_worker_credentials').update({last_seen_at:new Date().toISOString()}).eq('id',1);
      if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_CLAIM'});
      const {data,error}=await db.rpc('hive_local_claim_job');
      if(error)return send(503,{error:'CLAIM_UNAVAILABLE'});
@@ -47,6 +48,13 @@ Deno.serve(async(req:Request)=>{
  const {data:profile,error:pError}=await db.from('usuarios').select('tipo,activo').eq('id',auth.user.id).maybeSingle();
  if(pError)return send(503,{error:'PROFILE_UNAVAILABLE'});
  if(profile?.activo!==true||String(profile.tipo).toLowerCase()!=='superadmin')return send(403,{error:'SUPERADMIN_REQUIRED'});
+ if(body.action==='worker_status'){
+   if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_STATUS'});
+   const {data,error}=await db.from('hive_local_worker_credentials').select('active,last_seen_at').eq('id',1).maybeSingle();
+   if(error)return send(503,{error:'STATUS_UNAVAILABLE'});
+   const seen=data?.last_seen_at?Date.parse(data.last_seen_at):0;
+   return send(200,{enrolled:!!data?.active,connected:!!data?.active&&seen>0&&(Date.now()-seen)<45000,last_seen_at:data?.last_seen_at??null});
+ }
  if(body.action==='provision_worker'){
    if(typeof body.token_hash!=='string'||!/^[a-f0-9]{64}$/.test(body.token_hash)||Object.keys(body).some(k=>!['action','token_hash'].includes(k)))return send(400,{error:'INVALID_WORKER_HASH'});
    const {error}=await db.from('hive_local_worker_credentials').upsert({id:1,token_hash:body.token_hash,active:true,updated_at:new Date().toISOString()},{onConflict:'id'});
