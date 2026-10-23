@@ -63,10 +63,10 @@ jobs:
           NODE
           {
             echo "## UGO GitHub Direct Action"
-            echo "- task: `$CTA_TASK_ID`"
-            echo "- job: `$CTA_JOB_ID`"
-            echo "- source SHA: `$CTA_SOURCE_SHA`"
-            echo "- actor: `$GITHUB_ACTOR`"
+            echo "- task: $CTA_TASK_ID"
+            echo "- job: $CTA_JOB_ID"
+            echo "- source SHA: $CTA_SOURCE_SHA"
+            echo "- actor: $GITHUB_ACTOR"
             echo "- channel: GitHub Actions / UGO TEST"
             echo "- production: PROTECTED"
           } >> "$GITHUB_STEP_SUMMARY"
