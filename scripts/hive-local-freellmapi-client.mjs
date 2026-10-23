@@ -21,13 +21,18 @@ export function createLocalModelClient({ endpoint = process.env.HIVE_LOCAL_FREEA
           messages.some(m => !['system','user','assistant'].includes(m?.role) || typeof m.content !== 'string' || m.content.length > 8000)) throw new Error('HIVE_INVALID_MESSAGES');
       inFlight = true;
       try {
-        const response = await fetchImpl(base + '/chat/completions', {
+        let response;
+        try { response = await fetchImpl(base + '/chat/completions', {
           method: 'POST',
           headers: { 'content-type': 'application/json', 'authorization': 'Bearer ' + apiKey },
           body: JSON.stringify({ model, messages, stream: false, max_tokens: 512 }),
           signal: AbortSignal.timeout(timeoutMs),
           redirect: 'error'
         });
+        } catch (error) {
+          if (error?.name === 'TimeoutError' || error?.name === 'AbortError') throw error;
+          throw new Error('HIVE_PROVIDER_NETWORK_ERROR');
+        }
         // Fail once, without an automatic upstream replay: a timeout may have completed remotely.
         // Retry-After is advisory metadata only, not permission to duplicate a request.
         if (response.status === 429 || response.status === 503) {
