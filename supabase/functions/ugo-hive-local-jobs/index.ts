@@ -72,10 +72,11 @@ Deno.serve(async(req:Request)=>{
  }
  if(body.action==='create_mission'){
    if(typeof body.objective!=='string'||body.objective.trim().length<1||body.objective.length>1800||
+     typeof body.idempotency_key!=='string'||!/^[0-9a-f-]{36}$/i.test(body.idempotency_key)||
      !Array.isArray(body.agents)||body.agents.length<1||body.agents.length>9||
      new Set(body.agents).size!==body.agents.length||body.agents.some((a:unknown)=>!agents.includes(a as Agent))||
-     Object.keys(body).some(k=>!['action','objective','agents'].includes(k)))return send(400,{error:'INVALID_MISSION'});
-   const {data,error}=await db.rpc('hive_local_create_mission',{p_user_id:auth.user.id,p_objective:body.objective,p_agents:body.agents});
+     Object.keys(body).some(k=>!['action','objective','agents','idempotency_key'].includes(k)))return send(400,{error:'INVALID_MISSION'});
+   const {data,error}=await db.rpc('hive_local_create_mission',{p_user_id:auth.user.id,p_objective:body.objective,p_agents:body.agents,p_key:body.idempotency_key});
    return error?send(503,{error:'MISSION_CREATE_UNAVAILABLE'}):send(200,{mission_id:data});
  }
  if(body.action==='advance_mission'||body.action==='cancel_mission'){
