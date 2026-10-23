@@ -29,6 +29,8 @@ Deno.serve(async(req:Request)=>{
    if(body.action==='claim'){
      await db.from('hive_local_worker_credentials').update({last_seen_at:new Date().toISOString()}).eq('id',1);
      if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_CLAIM'});
+     const {error:pumpError}=await db.rpc('hive_local_pump_missions');
+     if(pumpError)return send(503,{error:'MISSION_PUMP_UNAVAILABLE'});
      const {data,error}=await db.rpc('hive_local_claim_job');
      if(error)return send(503,{error:'CLAIM_UNAVAILABLE'});
      return send(200,{job:data?.[0]??null});
