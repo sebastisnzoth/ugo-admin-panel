@@ -33,7 +33,7 @@ export function buildHiveTaskContext(plan,task,results={}){
  if(task.dependency&&(!predecessor||predecessor.status!=='SUCCEEDED'||
    typeof predecessor.answer!=='string'||!predecessor.answer.trim()))
   throw Error('HIVE_DEPENDENCY_NOT_VERIFIED');
- const clean=(value)=>value.trim().split(/\s+/).join(' ').slice(0,1200);
+ const clean=(value)=>value.trim().replaceAll(String.fromCharCode(10),' ').replaceAll(String.fromCharCode(13),' ').slice(0,1200);
  const objective=clean(task.prompt);
  const previous=predecessor?clean(predecessor.answer):'';
  const prompt=previous
