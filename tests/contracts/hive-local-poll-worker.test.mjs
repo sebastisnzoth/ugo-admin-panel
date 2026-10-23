@@ -77,3 +77,13 @@ test('TEST SQL claim forbids automatic replay after expired RUNNING lease',async
  assert.doesNotMatch(sql,/or \(q\.status='RUNNING'/i);
  assert.match(sql,/grant execute on function public\.hive_local_claim_job\(\) to service_role/);
 });
+
+test('worker retains safe upstream HTTP error codes without revealing response contents',async()=>{
+ for(const code of ['HIVE_PROVIDER_HTTP_400','HIVE_PROVIDER_HTTP_401','HIVE_PROVIDER_HTTP_404','HIVE_PROVIDER_HTTP_502']){
+  const calls=[];
+  await processHivePoll({claim:async()=>valid,complete:async data=>calls.push(data),policy:{},run:async()=>{throw Error(code)}});
+  assert.equal(calls[0].status,'FAILED');
+  assert.equal(calls[0].code,code);
+  assert.equal(Object.hasOwn(calls[0],'answer'),false);
+ }
+});
