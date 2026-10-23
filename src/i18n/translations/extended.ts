@@ -1081,6 +1081,7 @@ export const extendedMessages={
     "providerPortfolio.nextMonth": "Próximo mês",
     "providerPortfolio.saving": "Salvando…",
     "providerPortfolio.saveSchedule": "Salvar agenda",
+    "providerPortfolio.receive24h": "Receber ofertas 24 horas (somente Online e com GPS válido)",
     "providerPortfolio.dayOff": "marcar folga",
     "providerPortfolio.dayOffMarked": "folga",
 
@@ -2199,6 +2200,7 @@ export const extendedMessages={
     "providerPortfolio.nextMonth": "Mes siguiente",
     "providerPortfolio.saving": "Guardando…",
     "providerPortfolio.saveSchedule": "Guardar agenda",
+    "providerPortfolio.receive24h": "Recibir ofertas las 24 horas (solo mientras estoy Online y con GPS válido)",
     "providerPortfolio.dayOff": "marcar día libre",
     "providerPortfolio.dayOffMarked": "día libre",
 
@@ -3317,6 +3319,7 @@ export const extendedMessages={
     "providerPortfolio.nextMonth": "Next month",
     "providerPortfolio.saving": "Saving…",
     "providerPortfolio.saveSchedule": "Save schedule",
+    "providerPortfolio.receive24h": "Receive offers 24 hours a day (only when Online with valid GPS)",
     "providerPortfolio.dayOff": "mark day off",
     "providerPortfolio.dayOffMarked": "day off",
 

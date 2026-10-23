@@ -8,6 +8,14 @@ on:
       - "scripts/provider-notification-recovery-browser.mjs"
       - "src/mvp/NotificationCenter.tsx"
       - ".github/workflows/provider-notifications-runtime.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/provider-notifications-*.mjs"
+      - "scripts/provider-notification-recovery-browser.mjs"
+      - "src/mvp/NotificationCenter.tsx"
+      - "src/mvp/provider/ProviderRoot.tsx"
+      - ".github/workflows/provider-notifications-runtime.yml"
   workflow_dispatch:
 
 permissions:
@@ -24,6 +32,7 @@ env:
 
 jobs:
   provider-notifications:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Provider notifications · UGO TEST · Judge · Sentinel
     runs-on: ubuntu-latest
     timeout-minutes: 25

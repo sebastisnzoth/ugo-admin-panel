@@ -94,23 +94,25 @@ try{
   await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
-  await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000});
-  await page.getByLabel('UGO ambiente de prueba').waitFor({state:'visible'});
+  await page.locator('.ugo-superadmin-header h2').waitFor({state:'visible',timeout:20000});
+  assert.equal(await page.locator('.ugo-superadmin').count(),1,'SUPERADMIN_AUTHORIZED_PANEL_REQUIRED');
+  // TEST project is asserted from the authenticated Supabase URL above; require the actual governance state bar.
+  await page.locator('.ugo-superadmin-statebar').waitFor({state:'visible',timeout:20000});
 
-  await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
-  await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
+  await page.locator('.ugo-superadmin-statebar button').first().click();
+  await page.locator('.ugo-autonomous-content').waitFor({state:'visible',timeout:20000});
   let headerMatched=false;
   for(let attempt=0;attempt<30;attempt++){
     const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
-    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Customer #1: '+before.launch)){headerMatched=true;break}
+    if(autonomyText.includes(before.mode)&&autonomyText.includes(before.launch)){headerMatched=true;break}
     await page.waitForTimeout(250);
   }
   assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
-  await page.getByRole('button',{name:'Departamentos',exact:true}).click();
+  await page.getByTestId('autonomy-view-departments').click();
   await page.getByText('Departamentos corporativos',{exact:true}).waitFor({state:'visible'});
-  const departmentTable=page.locator('table').filter({hasText:'Jobs totales'}).first();
+  const departmentTable=page.locator('.ugo-autonomous-content table').first();
   await departmentTable.waitFor({state:'visible'});
   for(const summary of before.departmentJobs){
     const rows=departmentTable.locator('tbody tr');
@@ -160,28 +162,32 @@ try{
   const firstIdText=((await firstRow.locator('td').nth(0).textContent())||'').trim();
   const firstDepartmentId=Number(firstIdText.replace(/^D/,''));
   assert.ok(Number.isInteger(firstDepartmentId),'DEPARTMENT_HISTORY_ID_REQUIRED');
-  await firstRow.getByRole('button',{name:'Ver historial'}).click();
-  const historyDialog=page.getByRole('dialog',{name:'Historial del departamento'});
+  await firstRow.locator('button').first().click();
+  const historyDialog=page.locator('.ugo-autonomous-content [role="dialog"]');
   await historyDialog.waitFor({state:'visible'});
   const historyText=(await historyDialog.textContent())||'';
-  assert.ok(/actualizado hace/i.test(historyText),'DEPARTMENT_FRESHNESS_MISSING');
+  const freshnessNode=historyDialog.getByTestId('department-history-freshness');
+  const refreshedAt=await freshnessNode.getAttribute('data-loaded-at');
+  const refreshedMs=Date.parse(refreshedAt||'');
+  assert.ok(Number.isFinite(refreshedMs)&&Math.abs(Date.now()-refreshedMs)<600000,'DEPARTMENT_FRESHNESS_MISSING_OR_STALE');
+  assert.ok(((await freshnessNode.textContent())||'').trim().length>0,'DEPARTMENT_FRESHNESS_LABEL_MISSING');
   const recentPersisted=await reader.from('autonomous_jobs').select('id').eq('department_id',firstDepartmentId).order('created_at',{ascending:false}).limit(10);
   assert.ifError(recentPersisted.error);
   if(recentPersisted.data?.length)assert.ok(recentPersisted.data.some(job=>historyText.includes(String(job.id))),'DEPARTMENT_HISTORY_NOT_BACKED_BY_PERSISTED_JOB');
-  await page.getByRole('button',{name:'Cerrar historial'}).click();
+  await historyDialog.locator('button[aria-label]').first().click();
   await page.screenshot({path:'artifacts/super-admin-ui-departments.png',fullPage:true});
 
-  await page.getByRole('button',{name:'QA Lab',exact:true}).click();
+  await page.getByTestId('autonomy-view-qa').click();
   await assertCardCount('SIMULADORES',before.qa.simulators);
   await assertCardCount('ESCENARIOS',before.qa.scenarios);
   await assertCardCount('RUNS',before.qa.runs);
 
-  await page.getByRole('button',{name:'Model Router',exact:true}).click();
+  await page.getByTestId('autonomy-view-models').click();
   await assertCardCount('CANDIDATOS',before.models.candidates);
   await assertCardCount('RUTAS',before.models.routes);
   await assertCardCount('MÉTRICAS',before.models.metrics);
 
-  await page.getByRole('button',{name:'Riesgo & Auditoría',exact:true}).click();
+  await page.getByTestId('autonomy-view-audit').click();
   await assertCardCount('RIESGOS',before.risk.risks);
   await assertCardCount('CONTROLES',before.risk.controls);
   await assertCardCount('CHALLENGES D14',before.risk.challenges);
@@ -195,7 +201,7 @@ try{
   assert.ok(recentRiskEvidence.length===0||visibleRiskEvidence.length>0,'RISK_EVIDENCE_UI_BACKEND_NO_OVERLAP');
   await page.screenshot({path:'artifacts/super-admin-ui-risk-audit.png',fullPage:true});
 
-  await page.getByRole('button',{name:'UGO Empresas',exact:true}).click();
+  await page.getByTestId('autonomy-view-empresas').click();
   await page.getByText('UGO Empresas',{exact:true}).last().waitFor({state:'visible'});
   assert.equal(before.empresas.readiness?.status,'READY','UGO_EMPRESAS_RUNTIME_NOT_READY');
   const enterpriseRuntimeSha=String(before.empresas.readiness?.metrics?.runtime_sha||'');
@@ -204,25 +210,30 @@ try{
   assert.ok(enterpriseDemand,'UGO_EMPRESAS_EVIDENCE_DEMAND_NOT_VISIBLE');
   assert.equal(String(enterpriseDemand.requirements?.sha||''),enterpriseRuntimeSha,'UGO_EMPRESAS_EVIDENCE_SHA_MISMATCH');
   if(before.empresas.readiness?.metrics?.correlation_id)assert.equal(String(enterpriseDemand.requirements?.correlation_id||''),String(before.empresas.readiness.metrics.correlation_id),'UGO_EMPRESAS_CORRELATION_MISMATCH');
-  const enterpriseSlots=before.empresas.slots.filter(s=>s.demand_id===enterpriseDemand.id);
+  // Check the target demand directly: a global .limit(100) can omit its slots.
+  const enterpriseSlotsQuery=await reader.from('ugo_empresas_slots')
+    .select('id,demand_id,status,validated_minutes')
+    .eq('demand_id',enterpriseDemand.id);
+  assert.ifError(enterpriseSlotsQuery.error);
+  const enterpriseSlots=enterpriseSlotsQuery.data||[];
   assert.equal(enterpriseSlots.length,enterpriseDemand.quantity,'UGO_EMPRESAS_SLOT_COUNT_MISMATCH');
   assert.ok(enterpriseSlots.every(s=>s.status==='VALIDATED'),'UGO_EMPRESAS_SLOT_STATE_MISMATCH');
   await page.getByText(enterpriseDemand.company_ref,{exact:false}).waitFor({state:'visible'});
   await page.screenshot({path:'artifacts/ugo-empresas-runtime.png',fullPage:true});
 
-  await page.getByRole('button',{name:'Ledgers',exact:true}).click();
-  const search=page.getByPlaceholder('correlation_id, job id o serviceId');
+  await page.getByTestId('autonomy-view-ledgers').click();
+  const search=page.getByTestId('autonomy-correlation-search');
   await search.fill(String(before.correlated.correlation_id));
   await page.getByText(String(before.correlated.correlation_id),{exact:false}).first().waitFor({state:'visible'});
   const timelineText=await page.locator('.ugo-autonomous-content').textContent();
   assert.ok((timelineText||'').includes(String(before.correlated.status)),'TIMELINE_STATUS_MISMATCH');
   if(before.correlated.service_id)assert.ok((timelineText||'').includes(String(before.correlated.service_id)),'TIMELINE_SERVICE_ID_MISMATCH');
 
-  await page.getByRole('button',{name:'Launch Gate',exact:true}).click();
-  await page.getByRole('button',{name:'Evaluar Launch Gate',exact:true}).click();
+  await page.getByTestId('autonomy-view-launch').click();
+  await page.getByTestId('autonomy-evaluate-launch-gate').click();
   await page.waitForTimeout(1200);
   const after=await snapshot();
-  await page.getByText('Launch Gate · '+after.launch,{exact:true}).waitFor({state:'visible',timeout:10000});
+  await page.waitForFunction(expected=>document.querySelector('[data-testid="autonomy-launch-gate-status"]')?.textContent?.trim()===expected,after.launch,{timeout:10000});
 
   await page.screenshot({path:'artifacts/super-admin-ui-runtime.png',fullPage:true});
   const evidence={

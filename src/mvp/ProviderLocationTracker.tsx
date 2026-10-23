@@ -23,7 +23,7 @@ function usableBrowserPosition(pos:GeolocationPosition){
  return Number.isFinite(latitude)&&Number.isFinite(longitude)&&!(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)&&Number.isFinite(accuracy)&&accuracy>0&&accuracy<=MAX_ACCEPTABLE_ACCURACY_M&&age<=MAX_POSITION_AGE_MS
 }
 function oneBrowserPosition(options:PositionOptions):Promise<GeolocationPosition>{return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
-async function getFreshBrowserPosition():Promise<GeolocationPosition>{
+function acquireFreshBrowserPosition():Promise<GeolocationPosition>{
  // Run compatible, high accuracy and watch concurrently. Sequential timeouts can
  // otherwise leave the provider without matching GPS for >30 seconds.
  return new Promise((resolve,reject)=>{
@@ -61,6 +61,16 @@ async function getFreshBrowserPosition():Promise<GeolocationPosition>{
  })
 }
 
+// Share a single acquisition across the manual retry and foreground heartbeats.
+// Every settled result clears this slot, allowing a genuine new retry.
+let pendingFreshPosition:Promise<GeolocationPosition>|null=null
+async function getFreshBrowserPosition():Promise<GeolocationPosition>{
+ if(pendingFreshPosition)return pendingFreshPosition
+ const request=acquireFreshBrowserPosition()
+ pendingFreshPosition=request
+ try{return await request}finally{if(pendingFreshPosition===request)pendingFreshPosition=null}
+}
+
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
  const dLat=toRad(b[0]-a[0]),dLng=toRad(b[1]-a[1]),lat1=toRad(a[0]),lat2=toRad(b[0])
@@ -79,6 +89,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const[lastFix,setLastFix]=useState<{capturedAt:number;accuracy:number}|null>(null)
  const[nowMs,setNowMs]=useState(()=>Date.now())
  const enRoute=service?.estado==='en_camino'
+ const manualRefreshRef=useRef<(()=>Promise<void>)|null>(null)
+ const[refreshingGps,setRefreshingGps]=useState(false)
+ const refreshGps=()=>{const action=manualRefreshRef.current;if(!action||refreshingGps)return;setRefreshingGps(true);void action().finally(()=>setRefreshingGps(false))}
  const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null),lastValidFixAtRef=useRef(0)
  useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
  useEffect(()=>{if(service?.estado!=='en_camino'){attemptedServiceRef.current=null;setLastFix(null)}},[service?.estado,service?.id])
@@ -175,10 +188,13 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    }catch(error){setGeoError(error as GeolocationPositionError)}
   }
 
+  manualRefreshRef.current=()=>acquire(true)
+
   const startWatch=()=>{
    if(!alive)return
-   if(watchId!=null)navigator.geolocation.clearWatch(watchId)
-   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(startWatch,3_000)}},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
+   if(restartTimer!==undefined){window.clearTimeout(restartTimer);restartTimer=undefined}
+   if(watchId!=null){navigator.geolocation.clearWatch(watchId);watchId=null}
+   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(()=>{restartTimer=undefined;startWatch()},3_000)}},{enableHighAccuracy:true,maximumAge:0,timeout:15_000})
   }
 
   const publishHeartbeat=async()=>{
@@ -207,7 +223,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   const availabilityHeartbeatTimer=window.setInterval(()=>void publishHeartbeat(),AVAILABILITY_HEARTBEAT_MS)
   window.addEventListener('focus',onForeground)
   document.addEventListener('visibilitychange',onForeground)
-  return()=>{alive=false;if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(restartTimer)window.clearTimeout(restartTimer);window.clearInterval(refreshTimer);window.clearInterval(availabilityHeartbeatTimer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
+  return()=>{alive=false;manualRefreshRef.current=null;if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(restartTimer)window.clearTimeout(restartTimer);window.clearInterval(refreshTimer);window.clearInterval(availabilityHeartbeatTimer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
  },[available,enRoute,service?.id,service?.estado,supabase])
 
  const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
@@ -216,8 +232,8 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const idleGpsStale=available&&(!lastFix||fixAgeMs==null||fixAgeMs>MATCHING_POSITION_AGE_MS)
  if(service?.estado!=='en_camino'){
   if(!available)return null
-  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.onlineNoGps')}</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
-  if(idleGpsStale)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.outsideMatching')}</strong><span>{t('providerGps.refreshForMatching')}</span><span className="provider-location-freshness">{freshness}</span></div>
+  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.onlineNoGps')}</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span><button type="button" className="provider-gps-retry-button" disabled={refreshingGps} onClick={refreshGps}>{t(refreshingGps?'providerGps.refreshing':'providerGps.refreshNow')}</button></div>
+  if(idleGpsStale)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.outsideMatching')}</strong><span>{t('providerGps.refreshForMatching')}</span><span className="provider-location-freshness">{freshness}</span><button type="button" className="provider-gps-retry-button" disabled={refreshingGps} onClick={refreshGps}>{t(refreshingGps?'providerGps.refreshing':'providerGps.refreshNow')}</button></div>
   return null
  }
  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>{t('providerGps.attention')}</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>

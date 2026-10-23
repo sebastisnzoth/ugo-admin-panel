@@ -14,9 +14,18 @@ assert.equal(runtime.autonomous_scope_complete,true)
 assert.equal(runtime.launch_authorized,false)
 assert.equal(runtime.production_touched,false)
 
-const now=new Date().toISOString()
+const expectedSha=String(process.env.GITHUB_SHA||'').trim()
 const runId=String(process.env.GITHUB_RUN_ID||'').trim()
 const runAttempt=String(process.env.GITHUB_RUN_ATTEMPT||'').trim()
+assert.match(expectedSha,/^[a-f0-9]{40}$/,'GATE_GITHUB_SHA_REQUIRED')
+assert.match(runId,/^[1-9][0-9]*$/,'GATE_GITHUB_RUN_ID_REQUIRED')
+assert.match(runAttempt,/^[1-9][0-9]*$/,'GATE_RUN_ATTEMPT_REQUIRED')
+assert.equal(runtime.sha,expectedSha,'GATE_EVIDENCE_SHA_MISMATCH')
+assert.equal(runtime.environment,'UGO TEST','GATE_TEST_ENVIRONMENT_REQUIRED')
+assert.equal(runtime.result,'PASS','GATE_RUNTIME_NOT_PASSED')
+assert.equal(judge.judge,'PASS','GATE_JUDGE_NOT_PASSED')
+assert.equal(sentinel.sentinel,'PASS','GATE_SENTINEL_NOT_PASSED')
+const now=new Date().toISOString()
 const evidencePath='docs/evidence/readiness-end-to-end-command-center-gate-20261002.json'
 const lockPath='docs/ugo-work-locks/readiness-end-to-end-command-center-gate.json'
 

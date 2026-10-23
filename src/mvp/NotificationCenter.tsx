@@ -6,7 +6,8 @@ import'./notification-center.css'
 
 export type UgoNotification={id:string;tipo:string;titulo:string;cuerpo:string|null;datos:Record<string,unknown>;leida_at:string|null;created_at:string}
 type AppRole='client'|'provider'
-type Props={role:AppRole;onOpenNotice?:(notice:UgoNotification)=>void;attentionEnabled?:boolean}
+type ProviderOfferSnapshot={id:string;servicio_id:string;estado:string;expira_at:string|null}
+type Props={role:AppRole;onOpenNotice?:(notice:UgoNotification)=>void;attentionEnabled?:boolean;providerOffers?:ReadonlyArray<ProviderOfferSnapshot>}
 type PushRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:{message?:string}|null}>}
 const VAPID_PUBLIC='BPiPh1AzAkgiOv1lkTx0hW8X7UoP9NTnAJUWA7voNwMrwExQ7CCNC4Pbue6aH5AFkhy0xPzjIpcXv3uuou1YDyk'
 function vapidBytes(base64:string){const pad='='.repeat((4-base64.length%4)%4),raw=atob((base64+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
@@ -65,11 +66,26 @@ function emitClientTone(ctx:AudioContext){
 function playClientTone(){const ctx=clientAudio();if(!ctx)return;if(ctx.state==='running'){emitClientTone(ctx);return}void ctx.resume().then(()=>emitClientTone(ctx)).catch(()=>{})}
 
 
-export function NotificationCenter({role,onOpenNotice,attentionEnabled=true}:Props){
+export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,providerOffers}:Props){
  const{locale,t}=useLocale()
  const db=useMemo(()=>getRoleSupabase(role),[role])
  const[uid,setUid]=useState<string|null>(null),[rows,setRows]=useState<UgoNotification[]>([]),[open,setOpen]=useState(false),[error,setError]=useState(''),[pushState,setPushState]=useState<'unsupported'|'off'|'on'|'blocked'|'loading'>('off'),[liveNotice,setLiveNotice]=useState<UgoNotification|null>(null),[channelEpoch,setChannelEpoch]=useState(0),providerAlertSeen=useRef<Set<string>>(new Set()),clientAlertSeen=useRef<Set<string>>(new Set())
  const signalProviderAlert=useCallback((notice:UgoNotification)=>{const alertKey=providerAlertKey(notice);if(role!=='provider'||!PROVIDER_ATTENTION_TYPES.has(notice.tipo)||!providerOfferNoticeActive(notice)||!freshLiveNotice(notice)||providerAlertSeen.current.has(alertKey))return;if(PROVIDER_CALL_TYPES.has(notice.tipo)&&!attentionEnabled)return;providerAlertSeen.current.add(alertKey);setLiveNotice(notice);navigator.vibrate?.(PROVIDER_CALL_TYPES.has(notice.tipo)?[180,80,180,80,340]:[120,60,220]);playProviderTone()},[attentionEnabled,role])
+ // The provider's persisted offers are an independent source of truth if
+ // a mismatched notifier GPS threshold suppresses nueva_oferta at insertion.
+ // Recover only recently renewed, still pending five-minute offers, without
+ // extra API calls or weakening the authenticated provider session.
+ useEffect(()=>{
+  if(role!=='provider'||!attentionEnabled||!providerOffers?.length||document.visibilityState!=='visible')return
+  const now=Date.now(),offer=providerOffers.find(item=>{
+   if(item.estado!=='pendiente'||!item.expira_at)return false
+   const expires=Date.parse(item.expira_at)
+   return Number.isFinite(expires)&&expires>now&&expires-now<=300_000&&expires-now>=210_000
+  })
+  if(!offer?.expira_at)return
+  const offeredAt=new Date(Date.parse(offer.expira_at)-300_000).toISOString()
+  signalProviderAlert({id:'offer:'+offer.id,tipo:'nueva_oferta',titulo:'Nuevo servicio en tu zona',cuerpo:'Tenés un nuevo pedido disponible.',datos:{role:'provider',oferta_id:offer.id,servicio_id:offer.servicio_id,expira_at:offer.expira_at},leida_at:null,created_at:offeredAt})
+ },[attentionEnabled,providerOffers,role,signalProviderAlert])
  const signalClientAlert=useCallback((notice:UgoNotification)=>{if(role!=='client'||!attentionEnabled||!CLIENT_ATTENTION_TYPES.has(notice.tipo)||!freshLiveNotice(notice)||clientAlertSeen.current.has(notice.id))return;clientAlertSeen.current.add(notice.id);setLiveNotice(notice);navigator.vibrate?.([120,60,220]);playClientTone()},[attentionEnabled,role])
  useEffect(()=>{const arm=()=>{const ctx=role==='provider'?providerAudio():clientAudio();if(ctx?.state==='suspended')void ctx.resume().catch(()=>{})};window.addEventListener('pointerdown',arm,true);window.addEventListener('keydown',arm,true);return()=>{window.removeEventListener('pointerdown',arm,true);window.removeEventListener('keydown',arm,true)}},[role])
  const load=useCallback(async(userId:string,isCurrent:()=>boolean=()=>true)=>{const{data,error}=await db.from('notificaciones').select('id,tipo,titulo,cuerpo,datos,leida_at,created_at').eq('usuario_id',userId).order('created_at',{ascending:false}).limit(30);if(!isCurrent())return;if(error)throw error;const next=(data||[])as UgoNotification[],stateBound=next.filter(notice=>Boolean(SERVICE_NOTICE_EXPECTED_STATE[notice.tipo]));const actionable=new Set(next.map(notice=>notice.id)),stale=new Set<string>();if(stateBound.length){const serviceIds=[...new Set(stateBound.map(noticeServiceId).filter((value):value is string=>Boolean(value)))];if(serviceIds.length){const{data:serviceRows,error:serviceError}=await db.from('servicios').select('id,estado').in('id',serviceIds);if(!isCurrent())return;if(serviceError){stateBound.forEach(notice=>actionable.delete(notice.id))}else{const states=new Map((serviceRows||[]).map(row=>[String(row.id),String(row.estado)]));stateBound.forEach(notice=>{const serviceId=noticeServiceId(notice),expected=SERVICE_NOTICE_EXPECTED_STATE[notice.tipo],current=serviceId?states.get(serviceId):null;if(!serviceId||current!==expected){actionable.delete(notice.id);stale.add(notice.id)}})}}else stateBound.forEach(notice=>{actionable.delete(notice.id);stale.add(notice.id)})}if(stale.size){const retiredAt=new Date().toISOString(),staleIds=[...stale];setLiveNotice(current=>current&&stale.has(current.id)?null:current);setRows(next.map(notice=>stale.has(notice.id)&&!notice.leida_at?{...notice,leida_at:retiredAt}:notice));void db.from('notificaciones').update({leida_at:retiredAt}).eq('usuario_id',userId).in('id',staleIds).is('leida_at',null).then(({error:retireError})=>{if(retireError)console.warn('UGO stale notification retirement unavailable',retireError)})}else setRows(next);if(role==='provider'){const pending=next.find(notice=>!notice.leida_at&&actionable.has(notice.id)&&PROVIDER_ATTENTION_TYPES.has(notice.tipo)&&providerOfferNoticeActive(notice)&&freshLiveNotice(notice)&&!providerAlertSeen.current.has(providerAlertKey(notice))&&(!PROVIDER_CALL_TYPES.has(notice.tipo)||attentionEnabled));if(pending)signalProviderAlert(pending)}else if(role==='client'){const pending=next.find(notice=>!notice.leida_at&&actionable.has(notice.id)&&CLIENT_ATTENTION_TYPES.has(notice.tipo)&&freshLiveNotice(notice));if(pending)signalClientAlert(pending)}},[attentionEnabled,db,role,signalClientAlert,signalProviderAlert])
