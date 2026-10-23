@@ -28,3 +28,9 @@ test('idle uses bounded 8 second polling interval',async()=>{
  await runHiveTestWorkerLoop({token,policy,poll:async()=>{called++;return {status:'IDLE'}},wait:async(ms)=>{delay=ms},shouldStop:()=>called>=2});
  assert.equal(delay,8000);assert.equal(called,2);
 });
+test('uncertain completion halts the worker without retrying a lease',async()=>{
+ let calls=0;
+ await assert.rejects(runHiveTestWorkerLoop({token,policy,poll:async()=>{calls++;throw Error('HIVE_COMPLETION_UNCERTAIN')},
+  wait:async()=>{throw Error('MUST_NOT_WAIT')}}),/HIVE_WORKER_RECONCILIATION_REQUIRED/);
+ assert.equal(calls,1);
+});
