@@ -21,3 +21,5 @@ import'./profile/clientProfilePremium2026.css'
 import'./ui/clientResponsiveHardening.css'
 import'./ui/clientHomeRedesign2026.css'
 import'./ui/clientUxRefresh.css'
+
+import'./ui/clientPremiumExperience2026.css'

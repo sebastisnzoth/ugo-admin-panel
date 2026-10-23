@@ -1,0 +1,83 @@
+/* UGO premium complete experience — scoped to authenticated client Home. */
+.ugo-client-root .ugo-premium-search{display:flex;align-items:center;gap:9px;border:1px solid #d8e9df;border-radius:16px;background:#fff;padding:7px 7px 7px 15px;margin:0 0 14px;box-shadow:0 7px 22px rgba(12,83,65,.055)}
+.ugo-client-root .ugo-premium-search>span{font-size:24px;color:#087e65}
+.ugo-client-root .ugo-premium-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#17362f;font-size:16px;min-height:40px}
+.ugo-client-root .ugo-premium-search input:focus-visible{outline:2px solid #087e65;outline-offset:2px;border-radius:5px}
+.ugo-client-root .ugo-premium-search>button{min-width:44px;min-height:44px;border:0;border-radius:12px;background:#007e69;color:#fff;font-size:22px;cursor:pointer}
+.ugo-client-root .ugo-premium-map-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:8px 18px;border:0;border-bottom:1px solid #e2ebe6;background:#f7fbf8;color:#006b58;font-weight:750;cursor:pointer}
+.ugo-client-root .ugo-premium-map-expanded .ugo-home-map{height:min(66dvh,680px)!important}
+.ugo-client-root .ugo-premium-map-expanded .ugo-home-route-view{min-height:420px}
+.ugo-client-root .ugo-home-hero{background:linear-gradient(140deg,#eafaf3 0%,#fff 78%)!important}
+.ugo-client-root .ugo-home-hero h1{max-width:460px!important}
+.ugo-client-root .ugo-home-hugo-cta{background:linear-gradient(110deg,#05876c,#035d70)!important;color:#fff!important;border-color:transparent!important}
+.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy strong,.ugo-client-root .ugo-home-hugo-cta .ugo-home-search-copy small{color:#fff!important}
+.ugo-client-root .ugo-home-hugo-cta>b{background:#fff!important;color:#006b58!important}
+.ugo-client-root .ugo-home-categories{gap:12px!important}
+.ugo-client-root .ugo-home-categories>button{background:#f6faf8!important;border-color:#e3eee8!important}
+.ugo-client-root .ugo-home-services{scroll-margin-top:86px}
+.ugo-client-root #ugo-client-map{scroll-margin-top:86px}
+@media(max-width:800px){
+ .ugo-client-root .ugo-home-screen{height:auto!important;min-height:100dvh!important;overflow:visible!important;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
+ .ugo-client-root .ugo-home-layout{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;gap:12px!important;padding:10px 12px 20px!important}
+ .ugo-client-root .ugo-home-hero{order:1;width:100%;padding:20px 16px!important}
+ .ugo-client-root .ugo-home-services{order:2;width:100%;padding:18px 14px!important}
+ .ugo-client-root .ugo-home-map-card{order:3;width:100%}
+ .ugo-client-root .ugo-home-mobile-nav{order:4}
+ .ugo-client-root .ugo-home-topline{margin-bottom:14px!important}
+ .ugo-client-root .ugo-home-hero h1{font-size:clamp(25px,7.8vw,35px)!important;line-height:1.12!important}
+ .ugo-client-root .ugo-home-hero>p{font-size:13px!important;line-height:1.45!important;margin-bottom:15px!important}
+ .ugo-client-root .ugo-home-categories{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+ .ugo-client-root .ugo-home-categories>button{display:flex!important;flex-direction:column!important;justify-content:center;align-items:center;text-align:center!important;gap:6px!important;padding:9px 3px!important;min-height:88px}
+ .ugo-client-root .ugo-home-categories>button>div small,.ugo-client-root .ugo-home-categories>button>em{display:none!important}
+ .ugo-client-root .ugo-home-categories>button>div b{font-size:10px!important;overflow-wrap:anywhere}
+ .ugo-client-root .ugo-home-category-icon{width:40px!important;height:40px!important;flex-shrink:0}
+ .ugo-client-root .ugo-home-mobile-nav{position:fixed!important;display:flex!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;justify-content:space-around!important;z-index:55!important;padding-bottom:env(safe-area-inset-bottom,0px)!important;background:#fff!important;box-shadow:0 -8px 30px rgba(20,50,40,.07)}
+ .ugo-client-root .ugo-home-mobile-nav button{min-width:0;min-height:54px;flex:1}
+ .ugo-client-root .ugo-home-map{height:320px!important}
+ .ugo-client-root .ugo-premium-map-expanded .ugo-home-map{height:min(65dvh,560px)!important}
+}
+@media(max-width:359px){.ugo-client-root .ugo-home-categories{grid-template-columns:repeat(2,minmax(0,1fr))!important}.ugo-client-root .ugo-home-categories>button{min-height:84px}}
+@media(prefers-reduced-motion:reduce){.ugo-client-root .ugo-premium-search *,.ugo-client-root .ugo-premium-map-toggle{transition:none!important;animation:none!important}}
+
+
+/* Approved seven-screen visual reference: precise mobile hierarchy and palette.
+   Live data only: no decorative fake provider avatars, prices, ratings or ETA. */
+.ugo-client-root{--client-bg:#f3faf8!important;--client-ink:#0c2636!important;--client-green:#008c70!important;--client-green-deep:#056750!important;--client-soft:#e9fbf2!important}
+.ugo-client-root .ugo-home-screen{background:radial-gradient(circle at 10% 0%,#e7f8f7,transparent 48%),#f3faf8!important}
+.ugo-client-root .ugo-home-hero{background:linear-gradient(135deg,#fff 5%,#f3fcf8 85%)!important;border-color:#e3f1ed!important}
+.ugo-client-root .ugo-home-kicker{color:#008c70!important}
+.ugo-client-root .ugo-home-hero h1{font-weight:850!important;letter-spacing:-.05em!important;color:#092638!important}
+.ugo-client-root .ugo-premium-search{box-shadow:0 9px 25px #0d675313!important;border-radius:18px!important}
+.ugo-client-root .ugo-home-hugo-cta{background:linear-gradient(115deg,#00a47f,#087d78 61%,#064d71)!important;border-radius:18px!important}
+.ugo-client-root .ugo-home-services{border-color:#e4efed!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 1){background:#e8fbf2!important;border-color:#dbf5e8!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 2){background:#fff5e9!important;border-color:#ffebd3!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 3){background:#eaf5ff!important;border-color:#daebfc!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 4){background:#f4edff!important;border-color:#e9dfff!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 1) .ugo-home-category-icon{background:#d7f9e9!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 2) .ugo-home-category-icon{background:#ffe6c6!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 3) .ugo-home-category-icon{background:#d8ecff!important}
+.ugo-client-root .ugo-home-categories>button:nth-child(4n + 4) .ugo-home-category-icon{background:#e7d9ff!important}
+.ugo-client-root .ugo-home-map-card{border-color:#e2efed!important}
+.ugo-client-root .ugo-home-map-card>footer button{background:linear-gradient(110deg,#059978,#047f91)!important}
+.ugo-client-root .ugo-home-provider-card{background:#fff!important;border:1px solid #e5eeeb!important}
+.ugo-client-root .ugo-home-provider-info strong{color:#102b38!important}
+.ugo-client-root .ugo-home-mobile-nav button{color:#647987!important}
+.ugo-client-root .ugo-home-mobile-nav button.active{color:#008a70!important}
+@media(max-width:800px){
+ .ugo-client-root .ugo-home-layout{padding:9px 10px 20px!important}
+ .ugo-client-root .ugo-home-hero{border-radius:25px!important;padding:18px 14px 16px!important}
+ .ugo-client-root .ugo-home-topline{margin-bottom:11px!important}
+ .ugo-client-root .ugo-home-kicker{font-size:9px!important;margin-bottom:7px!important}
+ .ugo-client-root .ugo-home-hero h1{font-size:clamp(26px,7.3vw,33px)!important;margin:6px 0 8px!important;max-width:330px!important}
+ .ugo-client-root .ugo-home-hero>p{max-width:315px!important}
+ .ugo-client-root .ugo-home-hugo-cta{min-height:72px!important}
+ .ugo-client-root .ugo-home-services{border-radius:24px!important}
+ .ugo-client-root .ugo-home-services-head h2{font-size:21px!important}
+ .ugo-client-root .ugo-home-categories>button{border-radius:15px!important;box-shadow:none!important}
+ .ugo-client-root .ugo-home-map-card{border-radius:24px!important}
+ .ugo-client-root .ugo-home-map-card>header{min-height:66px!important}
+ .ugo-client-root .ugo-home-map{height:315px!important}
+ .ugo-client-root .ugo-home-provider-card{padding:12px!important}
+ .ugo-client-root .ugo-home-mobile-nav{border-top:1px solid #e7f0ec!important}
+}
