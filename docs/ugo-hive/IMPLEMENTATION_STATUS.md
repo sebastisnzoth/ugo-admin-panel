@@ -322,3 +322,10 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Added `20261023080000_hive_local_mission_queue.sql`: TEST-only RLS-enabled mission and task records; service-role-only RPCs create, advance and cancel; serialized advance via row lock; mission steps queue into the existing `hive_local_inference_jobs` table; waits on RUNNING/PENDING, stops on FAILED, caps mission count and recent inference creation; no autonomous system commands.
 - Edge `ugo-hive-local-jobs` branch source now defines Super Admin-only `create_mission`, `advance_mission`, `cancel_mission`, `list_missions` endpoints. Hive Console includes a manual TEST Missions section with bounded agent selection, status polling and cancellation. New static contract tests included.
 - **Not yet deployed**: new mission migration and Edge code remain on PR branch pending CI, live TEST database compatibility checks, and tests. Edge TEST v6 still serves earlier identity APIs. Mac E2E and multiagent sequence have not been verified; no merge to main.
+
+
+### 2026-10-23 — P0 mission CI correction and worker lifecycle
+- Investigated Core CI failure at `0a6cc855`: 1526/1529 tests passed, i18n JSX audit failed with 10 untranslated or unclassified labels. Corrected mission UI translations in pt-BR/es/en without disabling audit.
+- Added authenticated worker-claim mission pump and protected SQL RPC; missions no longer require an open Super Admin browser for progress while the worker is polling.
+- Fixed a PostgreSQL dollar-quote syntax error in `hive_local_pump_missions` before migration deployment; added a guard contract for the SQL delimiter.
+- **Deployment gate**: mission migration and updated Edge remain branch-only until final SHA Core CI, Cross Security, Cross-role UI, Hugo Timeout and Roadmap approve. Previous TEST v6 stays active. Real Mac E2E and nine-agent evidence still pending; no main merge and no PROD changes.
