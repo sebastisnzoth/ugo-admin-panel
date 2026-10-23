@@ -295,3 +295,10 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Compared deployed `ugo-hive-local-jobs` TEST v4 source with PR file; v4 lacked server-side nine-agent allowlist. Deployed exact PR source to TEST project `tmossnqfwfwjrtzwcbmm` only, version 5, ACTIVE, retaining `verify_jwt=false` because the endpoint explicitly authenticates worker bearer tokens and Super Admin user JWTs inside its handler. Did not deploy to PROD.
 - Re-fetched TEST v5: server-side nine-agent allowlist and scope present. Isolated queue unchanged: 7 SUCCEEDED and 7 FAILED.
 - **Remaining gate:** nine names are still prompt personas using one local worker, not full autonomous agents or coordinator. No nine-Agent Super Admin→Mac→FreeLLMAPI real E2E performed from this remote session; no authenticated user session or remote Mac worker access. Do not declare nine-agent integration complete or merge PR yet.
+
+
+### 2026-10-23 — Structured agent identity and bounded orchestration primitives (PR #571)
+- Added additive TEST-only migration `20261023070000_hive_local_agent_identity.sql`: nullable `agent_id` on inference jobs, nine-name allowlist CHECK, and privileged `hive_local_create_agent_job` RPC that validates agent and preserves idempotency consistency across retries. Old rows remain `agent_id=NULL` and show Legacy, without invented attribution.
+- Updated TEST Edge source to use structured `agent_id` instead of regex-prompt parsing for job listing and creation. Updated contract assertions.
+- Introduced `scripts/hive-analysis-mission-plan.mjs` with deterministic, sequential, bounded read-only mission task planning and dependency gating, with unit contract. This is **only a planning primitive**, not an active Hugo orchestrator; no autonomous dispatch, SQL, tools, or Mac commands were added.
+- **Deployment safety gate:** new identity migration has not been applied to Supabase TEST, and Edge TEST v5 remains on the older compatible implementation. CI on final SHA and E2E remain required before a TEST schema/Edge upgrade. Production and Mac secrets untouched; Empresa Autónoma OFF.
