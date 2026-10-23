@@ -136,3 +136,9 @@ test('provider GPS accepts a usable recent fix quickly while still refining towa
  assert.match(service,/if\(Number\(warm\.coords\.accuracy\)<=GPS_TARGET_ACCURACY_M\)return warm/)
  assert.match(service,/fallbackTimer=window\.setTimeout\(\(\)=>\{if\(best&&acceptablePosition\(best\)\)finish\(best\)\},GPS_ACCEPT_FALLBACK_MS\)/)
 })
+
+test('restored provider GPS freshness uses persisted capture time rather than page reload time',()=>{
+ assert.match(tracker,/lastValidFixAtRef\.current=persistedAt/)
+ assert.match(tracker,/Date\.now\(\)-persistedAt<=MATCHING_POSITION_AGE_MS/)
+ assert.doesNotMatch(tracker,/lastValidFixAtRef\.current=Date\.now\(\)\s*\n\s*setLastFix\(\{capturedAt:persistedAt/)
+})
