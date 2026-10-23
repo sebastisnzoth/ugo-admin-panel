@@ -94,9 +94,24 @@ begin
  update public.hive_local_missions set status='CANCELLED',updated_at=now() where id=m.id;
  return true;
 end $$;
+create or replace function public.hive_local_pump_missions()
+ returns integer language plpgsql security definer set search_path=public,pg_temp as $
+declare item record; advanced integer:=0; result text;
+begin
+ if current_user <> 'postgres' and auth.role() is distinct from 'service_role' then raise exception 'FORBIDDEN' using errcode='42501';end if;
+ for item in select id,user_id from public.hive_local_missions
+   where status in ('PENDING','RUNNING') order by created_at limit 15
+ loop
+  result:=public.hive_local_advance_mission(item.id,item.user_id);
+  if result in ('QUEUED','SUCCEEDED','FAILED') then advanced:=advanced+1;end if;
+ end loop;
+ return advanced;
+end $;
 revoke all on function public.hive_local_create_mission(uuid,text,text[]) from public,anon,authenticated;
 revoke all on function public.hive_local_advance_mission(uuid,uuid) from public,anon,authenticated;
 revoke all on function public.hive_local_cancel_mission(uuid,uuid) from public,anon,authenticated;
 grant execute on function public.hive_local_create_mission(uuid,text,text[]) to service_role;
 grant execute on function public.hive_local_advance_mission(uuid,uuid) to service_role;
 grant execute on function public.hive_local_cancel_mission(uuid,uuid) to service_role;
+revoke all on function public.hive_local_pump_missions() from public,anon,authenticated;
+grant execute on function public.hive_local_pump_missions() to service_role;
