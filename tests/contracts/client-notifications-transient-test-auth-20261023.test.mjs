@@ -13,6 +13,11 @@ test('only gateway/server/network transients are retried for UGO Arena TEST Auth
  }
  assert.equal(retryableTestAuthError({name:'AuthRetryableFetchError',message:'Gateway Timeout'}),true)
  assert.equal(retryableTestAuthError({name:'AuthError',message:'Invalid login credentials'}),false)
+ for(const status of [400,401,403,404,409,429]){
+  assert.equal(retryableTestAuthError({status,name:'AuthRetryableFetchError',message:'Gateway Timeout'}),false,'HTTP '+status+' must not retry even with misleading error name')
+ }
+ assert.equal(retryableTestAuthError({name:'AuthRetryableFetchError',status:0,message:'Gateway Timeout'}),true)
+ assert.equal(retryableTestAuthError({status:520,name:'AuthRetryableFetchError',message:'Gateway Timeout'}),false)
 })
 test('bounded transient 504 recovers only after real Supabase Auth success',async()=>{
  let calls=0;const sleeps=[]

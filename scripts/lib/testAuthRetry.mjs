@@ -3,7 +3,7 @@
 // are never retried or converted into successful sessions.
 export function retryableTestAuthError(error){
  const status=Number(error?.status)
- if([500,502,503,504].includes(status))return true
+ // Explicit HTTP statuses always take precedence over a transport-error class.\n // Never retry a 4xx (including 401/403/429), even if its message says 'timeout'.\n if(Number.isFinite(status)&&status>0)return [500,502,503,504].includes(status)
  return error?.name==='AuthRetryableFetchError'&&
   /gateway timeout|timeout|failed to fetch|fetch failed|network error/i.test(String(error?.message||''))
 }
