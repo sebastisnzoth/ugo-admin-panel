@@ -41,3 +41,27 @@ test('429 is a controlled failure without retries', async () => {
   );
   assert.equal(calls, 1);
 });
+
+test('429 and 503 carry bounded Retry-After but never retry automatically',async()=>{
+ for (const status of [429,503]){
+  let calls=0;
+  const client=createLocalModelClient({apiKey:'test',fetchImpl:async()=>{
+   calls++;
+   return {status,ok:false,headers:{get:()=> '65'}};
+  }});
+  await assert.rejects(client.complete({model:'qwen3-coder-free',messages:[{role:'user',content:'hello'}]}),e=>{
+   assert.equal(e.message,status===429?'HIVE_FREEAPI_RATE_LIMITED':'HIVE_PROVIDER_UNAVAILABLE');
+   assert.equal(e.retryAfterSeconds,65);
+   return true;
+  });
+  assert.equal(calls,1);
+ }
+});
+test('invalid or empty upstream completion is rejected without replay',async()=>{
+ for (const body of ['not json','{"choices":[{"message":{"content":"   "}}]}']){
+  let calls=0;
+  const client=createLocalModelClient({apiKey:'test',fetchImpl:async()=>{calls++;return {ok:true,status:200,text:async()=>body}}});
+  await assert.rejects(client.complete({model:'qwen3-coder-free',messages:[{role:'user',content:'hello'}]}),/HIVE_INVALID_PROVIDER_RESPONSE/);
+  assert.equal(calls,1);
+ }
+});
