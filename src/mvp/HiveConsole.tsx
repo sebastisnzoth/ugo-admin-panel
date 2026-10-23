@@ -45,7 +45,8 @@ const HIVE_MODEL='qwen3-coder-free'
 const catalog=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const
 // These are analysis personas using the existing inference-only worker, not autonomous agents.
 type HiveStatus={environment:string;backend:{reachable:boolean;state?:'ONLINE'|'TIMEOUT'|'HTTP_ERROR'|'NETWORK_ERROR';http_status?:number|null;checked_at:string;latency_ms:number};backup:{state:string;version?:string;bytes?:number;created_at?:string};inference:{state:string};autonomy:{state:string}}
-type Tab='overview'|'chat'|'agents'
+type Tab='overview'|'chat'|'agents'|'missions'
+type HiveMission={id:string;objective:string;agents:string[];position:number;status:string;current_job_id:string|null;created_at:string}
 export function HiveConsole(){
  const{locale}=useLocale()
  const tr=locale.startsWith('pt')?translations['pt-BR']:locale.startsWith('es')?translations.es:translations.en
@@ -61,8 +62,30 @@ export function HiveConsole(){
  const [workerConnected,setWorkerConnected]=useState(false)
  const [workerEnrolled,setWorkerEnrolled]=useState(false)
  const [workerHash,setWorkerHash]=useState('')
+ const [missions,setMissions]=useState<HiveMission[]>([])
+ const [missionFlow,setMissionFlow]=useState<string[]>(['Hugo','Architect','Developer','QA','Security','Judge'])
+ const [missionBusy,setMissionBusy]=useState(false)
  useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  useEffect(()=>{if(tab!=='chat')return;let live=true;const refresh=async()=>{try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list'}});if(!live)return;if(error||!Array.isArray(data?.jobs))throw Error('CHAT_UNAVAILABLE');setJobs(data.jobs);setChatVerified(true);const w=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'worker_status'}});if(!w.error&&live){setWorkerConnected(w.data?.connected===true);setWorkerEnrolled(w.data?.enrolled===true)}else if(live){setWorkerConnected(false)}}catch{if(live){setChatVerified(false);setWorkerConnected(false);setChatError(tr.remoteError)}}};void refresh();const id=setInterval(()=>void refresh(),5000);return()=>{live=false;clearInterval(id)}},[tab,tr.remoteError]);
+ useEffect(()=>{if(tab!=='missions')return;let live=true;const refresh=async()=>{try{
+  const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list_missions'}});
+  if(!live)return;if(error||!Array.isArray(data?.missions))throw Error('MISSION_LIST_UNAVAILABLE');
+  setMissions(data.missions);
+  for(const mission of data.missions as HiveMission[]){
+   if(mission.status!=='RUNNING'&&mission.status!=='PENDING')continue;
+   await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'advance_mission',mission_id:mission.id}});
+  }
+ }catch{if(live)setChatError(tr.remoteError)}};void refresh();const interval=setInterval(()=>void refresh(),5000);return()=>{live=false;clearInterval(interval)}},[tab,tr.remoteError]);
+ const createMission=async()=>{if(!prompt.trim()||missionBusy)return;setMissionBusy(true);setChatError('');try{
+  const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create_mission',objective:prompt.trim(),agents:missionFlow}});
+  if(error||!data?.mission_id)throw Error('MISSION_CREATE_FAILED');
+  setPrompt('');
+  await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'advance_mission',mission_id:data.mission_id}});
+  const refreshed=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list_missions'}});
+  if(!refreshed.error&&Array.isArray(refreshed.data?.missions))setMissions(refreshed.data.missions);
+ }catch{setChatError(tr.sendError)}finally{setMissionBusy(false)}};
+ const cancelMission=async(id:string)=>{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'cancel_mission',mission_id:id}});
+  if(error||data?.result!==true)setChatError(tr.remoteError);else setMissions(old=>old.map(m=>m.id===id?{...m,status:'CANCELLED'}:m))};
  const provisionWorker=async()=>{if(!/^[a-f0-9]{64}$/.test(workerHash))return;setChatError('');try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'provision_worker',token_hash:workerHash}});if(error||data?.ok!==true)throw Error('PROVISION_FAILED');setWorkerEnrolled(true);setWorkerHash('')}catch{setChatError(tr.remoteError)}}
  const sendPrompt=async()=>{const value=prompt.trim();if(!value||value.length>3600||sending)return;setSending(true);setChatError('');const id=crypto.randomUUID();try{const {data,error}=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'create',prompt:value,agent:selectedAgent,idempotency_key:id}});if(error||!data?.job?.id)throw Error('CREATE_FAILED');setPrompt('');const r=await supabase.functions.invoke('ugo-hive-local-jobs',{body:{action:'list'}});if(!r.error&&Array.isArray(r.data?.jobs))setJobs(r.data.jobs)}catch{setChatError(tr.sendError)}finally{setSending(false)}}
  return <div className="ugo-hive">
@@ -71,6 +94,7 @@ export function HiveConsole(){
    <button type="button" aria-current={tab==='overview'?'page':undefined} onClick={()=>setTab('overview')}>{tr.overview}</button>
    <button type="button" aria-current={tab==='chat'?'page':undefined} onClick={()=>setTab('chat')}>{tr.chat}</button>
    <button type="button" aria-current={tab==='agents'?'page':undefined} onClick={()=>setTab('agents')}>{tr.agents}</button>
+   <button type="button" aria-current={tab==='missions'?'page':undefined} onClick={()=>setTab('missions')}>{locale.startsWith('pt')?'Missões':locale.startsWith('es')?'Misiones':'Missions'}</button>
   </nav>
   {tab==='overview'&&<div className="ugo-hive-stack"><div className="ugo-hive-cards">
    <article><small>{tr.router}</small><strong>{tr.prepared}</strong><p>{tr.routerInfo}</p></article>
@@ -88,6 +112,20 @@ export function HiveConsole(){
    <label htmlFor="ugo-hive-agent">{tr.agents}</label><select id="ugo-hive-agent" value={selectedAgent} onChange={e=>setSelectedAgent(e.target.value as typeof catalog[number])}>{catalog.map(name=><option key={name} value={name}>{name}</option>)}</select>
    <label htmlFor="ugo-hive-message">{tr.message}</label><textarea id="ugo-hive-message" value={prompt} onChange={e=>setPrompt(e.target.value)} maxLength={3600} placeholder={tr.message} rows={3}/>
    <button type="button" disabled={!chatVerified||sending||!prompt.trim()} onClick={()=>void sendPrompt()}>{sending?tr.waiting:tr.submitReady}</button>
+  </section>}
+  {tab==='missions'&&<section className="ugo-hive-panel">
+   <h2>{locale.startsWith('pt')?'Missões TEST':locale.startsWith('es')?'Misiones TEST':'TEST Missions'}</h2>
+   <p>{tr.off} · TEST · {tr.macName}</p>
+   <label htmlFor="hive-mission-objective">{tr.message}</label>
+   <textarea id="hive-mission-objective" rows={3} maxLength={1800} value={prompt} onChange={e=>setPrompt(e.target.value)}/>
+   <fieldset><legend>{tr.agents}</legend>{catalog.map(name=><label key={name} style={{display:'inline-flex',gap:'0.35rem',margin:'0.4rem'}}><input type="checkbox" checked={missionFlow.includes(name)} onChange={e=>setMissionFlow(prev=>e.target.checked?[...prev,name]:prev.filter(x=>x!==name))}/>{name}</label>)}</fieldset>
+   <button type="button" disabled={missionBusy||!prompt.trim()||missionFlow.length===0} onClick={()=>void createMission()}>{tr.submitReady}</button>
+   {chatError&&<p role="alert">{chatError}</p>}
+   <div role="status">{missions.map(m=><article key={m.id} style={{padding:'0.7rem 0',borderBottom:'1px solid var(--ugo-border,#ccc)'}}>
+    <strong>{m.status} · {m.position}/{m.agents.length}</strong><p>{m.objective}</p>
+    <small>{m.agents.join(' → ')} · {m.id}</small>
+    {(m.status==='RUNNING'||m.status==='PENDING')&&<button type="button" onClick={()=>void cancelMission(m.id)}>{locale.startsWith('pt')?'Cancelar':locale.startsWith('es')?'Cancelar':'Cancel'}</button>}
+   </article>)}</div>
   </section>}
   {tab==='agents'&&<section className="ugo-hive-panel"><h2>{tr.planned}</h2><p>{tr.plannedInfo}</p>
    <div className="ugo-hive-agents">{catalog.map(name=><article key={name}><strong>{name}</strong><span>{tr.unverified}</span><button type="button" onClick={()=>{setSelectedAgent(name);setTab('chat')}}>{tr.chat} · {name}</button></article>)}</div>
