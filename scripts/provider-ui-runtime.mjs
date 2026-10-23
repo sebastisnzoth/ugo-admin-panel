@@ -55,16 +55,41 @@ async function runViewport(name,viewport){
   }else{
    const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
    await bottom.waitFor({state:'visible',timeout:10000})
-   for(const item of ['Inicio','Pedidos','Trabajo','Perfil'])await bottom.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+   for(const id of ['provider-mobile-home','provider-mobile-orders','provider-mobile-work','provider-mobile-profile'])await bottom.locator(`button[data-testid="${id}"]`).waitFor({state:'visible',timeout:10000})
   }
-  const dock=page.getByRole('region',{name:'Estado operativo del proveedor'}).or(page.locator('.provider-operational-dock')).first()
-  await dock.waitFor({state:'visible',timeout:10000})
-  assert.ok(await dock.getByRole('button',{name:/Online|Offline/i}).count(),'online toggle missing')
-  assert.ok(await dock.getByRole('button',{name:/Trabajo/i}).count(),'work status missing')
-  assert.ok(await dock.getByRole('button',{name:/Pedidos/i}).count(),'demand status missing')
+  const header=page.locator('.provider-client-topbar')
+  await header.waitFor({state:'visible',timeout:10000})
+  await header.locator('.ugo-notification-trigger').waitFor({state:'visible',timeout:10000})
+  await header.locator('.provider-client-online').waitFor({state:'visible',timeout:10000})
+  await header.locator('[data-testid="language-selector"]').waitFor({state:'visible',timeout:10000})
+  const layout=await page.evaluate(()=>{
+   const rect=selector=>{
+    const el=document.querySelector(selector)
+    if(!el)return null
+    const r=el.getBoundingClientRect()
+    return{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}
+   }
+   const bell=rect('.ugo-provider-root .ugo-notification-trigger')
+   const online=rect('.ugo-provider-root .provider-client-online')
+   const language=rect('.ugo-provider-root .provider-client-topbar-language')
+   const nav=rect('.ugo-provider-root .provider-bottom-nav')
+   const intersects=(a,b)=>Boolean(a&&b&&a.width&&b.width&&a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top)
+   const dock=document.querySelector('.ugo-provider-root .provider-operational-dock')
+   const dispute=document.querySelector('.ugo-provider-root .ugo-dispute-launch')
+   return{bell,online,language,nav,bellOnline:intersects(bell,online),bellLanguage:intersects(bell,language),onlineLanguage:intersects(online,language),navLanguage:intersects(nav,language),dockDisplay:dock?getComputedStyle(dock).display:null,disputePosition:dispute?getComputedStyle(dispute).position:null}
+  })
+  assert.ok(layout.bell&&layout.online&&layout.language,'missing mobile/desktop header controls')
+  assert.equal(layout.bellOnline,false,name+' bell covers Online')
+  assert.equal(layout.bellLanguage,false,name+' bell covers language')
+  assert.equal(layout.onlineLanguage,false,name+' Online covers language')
+  if(name!=='desktop'){
+   assert.equal(layout.dockDisplay,'none',name+' duplicate floating dock covers content')
+   assert.equal(layout.navLanguage,false,name+' bottom navigation covers language')
+   if(layout.disputePosition)assert.notEqual(layout.disputePosition,'fixed',name+' dispute launcher covers navigation')
+  }
   await page.screenshot({path:'artifacts/provider-ui-'+name+'.png',fullPage:true})
   assert.deepEqual(errors,[],'provider page errors: '+errors.join(' | '))
-  results.push({viewport:name,status:'PASS',navigation:name==='desktop'?'studio-sidebar':'bottom-nav',operational_dock:true})
+  results.push({viewport:name,status:'PASS',navigation:name==='desktop'?'studio-sidebar':'bottom-nav',header_no_overlap:true,duplicate_dock_hidden:name!=='desktop'})
  }finally{await page.close()}
 }
 try{

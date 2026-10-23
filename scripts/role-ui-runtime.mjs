@@ -346,12 +346,10 @@ async function testAutonomyControl(page,name){
   assert.ok(['SHADOW','ON'].includes(before.data?.mode),'AUTONOMY_UNRECOGNIZED_STATE')
   const active=page.getByRole('radio',{name:new RegExp(before.data.mode)})
   await active.waitFor({state:'visible',timeout:20000})
-  // Realtime can render the persisted mode after the radio becomes visible.
-  // Wait for convergence without weakening the persisted-state assertion.
-  await page.waitForFunction(mode=>{
-   const radio=[...document.querySelectorAll('[role="radio"]')].find(el=>el.textContent?.includes(mode))
-   return radio?.getAttribute('aria-checked')==='true'
-  },before.data.mode,{timeout:20000})
+  await page.waitForFunction(mode=>Array.from(document.querySelectorAll('[role="radio"]')).some(el=>el.textContent?.includes(mode)&&el.getAttribute('aria-checked')==='true'),before.data.mode,{timeout:20000}).catch(()=>{})
+  const confirmed=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
+  assert.ifError(confirmed.error)
+  assert.equal(confirmed.data?.mode,before.data.mode,'AUTONOMY_STATE_CHANGED_DURING_TEST')
   assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
   results.push({role:'superadmin-autonomy-control',viewport:name,status:'SKIPPED',reason:'NON_IDLE_TEST_STATE',observed_mode:before.data.mode,read_only_state_verified:true,transition_tested:false})
   return
@@ -432,7 +430,8 @@ async function testAdmin(viewport,name){
 async function testTranslations(role,viewport,name){
  const {page,errors}=await openRole(role==='superadmin'?'admin':role,viewport)
  try{
-  const root=role==='client'?'.ugo-client-root':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
+  // Preserve authenticated Profile overlay after prior client flow; never accept login as a translation check.
+  const root=role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
   await page.locator(root).waitFor({state:'visible',timeout:30000})
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){

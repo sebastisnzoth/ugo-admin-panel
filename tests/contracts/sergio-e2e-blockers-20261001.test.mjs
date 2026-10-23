@@ -26,13 +26,15 @@ test('client payment choice reacts immediately while backend persistence complet
  assert.match(src,/if\(persisted===false\)setOptimisticMethod\(''\)/)
 })
 
-test('provider root mounts the provider Hugo bridge and never the admin orb',async()=>{
- const[root,bridge]=await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/provider/ProviderHugoBridge.tsx')])
- // The provider Hugo surface is the bridge orb only; the admin ConversationalOrb must stay out.
- assert.match(root,/<ProviderHugoBridge\/>/)
- assert.doesNotMatch(root,/ConversationalOrb/)
- assert.match(bridge,/t\('voice\.providerTool\./)
- assert.match(bridge,/PROVIDER_VOICE_CONNECT_TIMEOUT_MS=16_000/)
+test('provider root keeps the deferred Hugo orb and admin orb detached',async()=>{
+ const root=await read('src/mvp/provider/ProviderRoot.tsx')
+ // Hugo is deferred from the operational UI: do not reintroduce an orb to satisfy legacy tests.
+ assert.doesNotMatch(root,/<ProviderHugoBridge\/>/)
+ assert.doesNotMatch(root,/import.*ProviderHugoBridge/)
+ assert.doesNotMatch(root,/<ConversationalOrb\/>/)
+ assert.doesNotMatch(root,/<ProviderGlobalVoiceCommands\/>/)
+ assert.match(root,/<ProviderHome\/>/)
+ assert.match(root,/<NotificationCenter role="provider"/)
 })
 
 test('client Hugo visual surface stays detached from client root',async()=>{

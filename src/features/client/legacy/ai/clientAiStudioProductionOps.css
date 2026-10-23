@@ -249,3 +249,102 @@
 .ugo-client-root .ugo-active-map .maplibregl-canvas{display:block}
 .ugo-client-root .ugo-active-eta{z-index:4}
 @media(max-width:600px){.ugo-client-root .ugo-active-map-wrap{height:330px!important;min-height:330px}.ugo-client-root .ugo-active-map-state{top:12px;left:12px;right:12px}}
+
+
+/* Client service completion review — mobile-first, no overlapping CTAs. */
+.ugo-client-root .ugo-completion-review{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:clamp(16px,4vw,24px)!important;
+  border:1px solid #dbeae3!important;
+  border-radius:22px!important;
+  box-shadow:0 10px 30px rgba(11,58,42,.06)!important;
+}
+.ugo-client-root .ugo-completion-review header{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:flex-start!important;
+  gap:12px!important;
+  padding:0 0 14px!important;
+}
+.ugo-client-root .ugo-completion-review header>div{min-width:0;flex:1}
+.ugo-client-root .ugo-completion-review header h2{
+  margin:0 0 7px!important;
+  font-size:clamp(20px,5vw,25px)!important;
+  line-height:1.2!important;
+  letter-spacing:-.035em!important;
+  overflow-wrap:anywhere;
+}
+.ugo-client-root .ugo-completion-review header p{
+  font-size:13px!important;
+  line-height:1.5!important;
+  margin:0!important;
+}
+.ugo-client-root .ugo-completion-review header>span{
+  flex:0 0 34px!important;
+  display:grid!important;
+  place-items:center!important;
+  width:34px!important;
+  height:34px!important;
+  border-radius:50%!important;
+}
+.ugo-client-root .ugo-completion-decision{
+  margin:14px 0!important;
+  padding:13px 15px!important;
+  background:#f0f8f4!important;
+  border:1px solid #d8ede2!important;
+  border-radius:14px!important;
+  color:#355b4b!important;
+  line-height:1.5!important;
+}
+.ugo-client-root .ugo-completion-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  gap:10px!important;
+  margin-top:16px!important;
+  align-items:stretch!important;
+}
+.ugo-client-root .ugo-completion-actions button{
+  position:static!important;
+  float:none!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:52px!important;
+  margin:0!important;
+  padding:12px 16px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.35!important;
+  font-size:14px!important;
+  font-weight:750!important;
+  border-radius:14px!important;
+  touch-action:manipulation;
+}
+.ugo-client-root .ugo-completion-actions button:last-child{
+  grid-row:1!important;
+  background:#086c50!important;
+  color:#fff!important;
+}
+.ugo-client-root .ugo-completion-actions button.ugo-completion-dispute{
+  grid-row:2!important;
+  background:#fff!important;
+  border:1px solid #b9d5c8!important;
+  color:#08634b!important;
+}
+.ugo-client-root .ugo-completion-actions button:focus-visible{
+  outline:3px solid #5ac9a0!important;
+  outline-offset:3px!important;
+}
+.ugo-client-root .ugo-completion-actions button:disabled{
+  cursor:not-allowed!important;
+  opacity:.55!important;
+  box-shadow:none!important;
+}

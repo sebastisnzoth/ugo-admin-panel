@@ -299,8 +299,120 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Pendiente: CI same-SHA, postmerge check, evidencia de sesión de proveedor en navegador; P0 permanece PENDING_VERIFICATION.
 
 
-### PR #552 — Realtime Proveedor (2026-10-20, candidato sin validar)
-- Rama `agent/ugo-cycle-39531325977`, cambio `1e9ecd1`: unifica los dos listeners `online` en `useProviderRealtime.ts`, conservando `resync` y `reconnect` y su limpieza correspondiente.
-- Prueba contractual agregada en commit `8b3e434`: `tests/contracts/provider-realtime-online-recovery.test.mjs` verifica la presencia de un único listener, ausencia de signOut en el hook y suscripciones de ofertas/servicios. Es una prueba estática; **no prueba entrega real de notificaciones**.
-- Evidencia anterior: 12 contratos de Auth/Calendar/GPS aprobaron en Actions #39531325977 antes de incorporar el test Realtime. Los CI del PR deben validar el SHA actualizado.
-- Estado: `PENDING_VERIFICATION`; prohibido declarar P0 resuelto, fusionar o publicar hasta CI completo, verificación TEST de sesión Online + Realtime Cliente → Proveedor y revisión de regresiones. Netlify preview y trazabilidad presentaron fallos pendientes.
+### 2026-10-21 — P0 ubicación manual del Proveedor y matching
+- Baseline `main` `8c9e1276f4daf3ea3ba8e67efed610075c9bb41d` (Vercel READY); pedido real de Electricidad a las 16:45 de Florianópolis registrado `buscando`, sin oferta, con logs `provider_dispatch eligible_count=0`.
+- Root causes concurrentes: horario del proveedor Online 08:00–18:00 vs duración estimada 120 min (inicio 16:45 permitido, finalización fuera de horario), y GPS que puede caducar al pasar 90 s. Bloqueo RLS impide renovar `matching_expires_at` desde RPC invocadora.
+- Cambio aislado de esta rama: al elegir **Actualizar ubicación** estando Online/disponible, además de guardar ubicación base se publica una posición GPS fresca para matching y se actualiza snapshot local, sin activar Online a quien está Offline. Prueba de contrato `provider-manual-location-refresh-matching.test.mjs`. No modifica reglas de matching, ubicación confiable, horarios ni permisos.
+- El backend de horario + vencimiento se propone por separado en PR #560; el control de seguridad impidió aplicar la migración a UGO Arena TEST, por lo que **no se aplicó, no hay E2E backend y no debe fusionarse a ciegas**.
+- Estado de esta mejora UI: IMPLEMENTADA EN RAMA / CI Y VALIDACIÓN RUNTIME PENDIENTES, nunca marcar matching end-to-end como DONE por este cambio. Siguiente paso: CI same-SHA y validación no regresiva de botón GPS; resolver migración autorizada en TEST y verificar oferta/alerta real.
+
+
+### 2026-10-21 — P0 nueva_oferta suprimida pese a matching válido · recuperación foreground
+- Evidencia read-only UGO Arena TEST: pedido real Electricidad `c27498a3-f5f4-4b96-8b69-573a69023d09`, proveedor elegible a ~3,11 km, oferta `pendiente` creada el 21/10 a 20:09:30 UTC tras actualizar horario 08:00–23:00. PostgreSQL registró `provider_dispatch eligible_count=1`, pero `provider_offer_alert_suppressed` a las 20:09:31–32 UTC; no existe fila `nueva_oferta` persistida para ese servicio/proveedor. Causa exacta: matching GPS <=90s vs trigger de notificaciones <=30s. Hasta alinear backend, Web Push fuera de UGO puede seguir sin emitirse.
+- Corrección backend segura diseñada por separado en PR #560 (`20261021201500_provider_offer_alert_gps_freshness_parity.sql`) para unificar los 90s, manteniendo GPS preciso, radio, identidad, disponibilidad y dedupe. La herramienta bloqueó la escritura SQL anterior en Arena TEST; **ninguna migración se aplicó**. No declarar push/cierre P0.
+- Corrección frontend independiente (esta rama): `NotificationCenter` recibe las ofertas persistidas ya cargadas por `ProviderData`, recupera alerta visual, sonido y vibración para ofertas `pendiente` con expiración del ciclo de 5 min dentro de los primeros 90 s, incluso si no hay fila `notificaciones`. Reutiliza `signalProviderAlert`, dedupe `oferta_id+expira_at`, guard de disponibilidad, sin lecturas extra, cambios RLS ni notificaciones sintéticas en DB.
+- Estado: IMPLEMENTADO EN RAMA / tests del mismo SHA y validación runtime pendientes. El fallback sólo es una alerta **con la app abierta**; no sustituye Web Push. Revisar CI y P0 E2E antes de merge.
+
+
+### 2026-10-21 — P0 GPS del Proveedor: recuperación directa desde radar (candidato)
+- Baseline GitHub `main` `c2ab5c57fd4efeff36367cc239409433ae0da6da` publicado en Vercel. Arena TEST: varios perfiles Online/disponible con GPS superior a 90 s; no se los debe considerar aptos para matching. De los cuatro pedidos reales consultados, cuatro tuvieron al menos una oferta histórica; esto NO demuestra recepción actual de alertas.
+- Mitigación mínima en rama `fix/p0-provider-gps-retry-from-radar-20261021`: los avisos `Online sem GPS válido` y `Localização desatualizada` incluyen el botón `Atualizar GPS`. Sólo dispara `getFreshBrowserPosition()` y el RPC existente `publicar_ubicacion_disponibilidad_proveedor` para un proveedor que ya figura Online, con timestamp y precisión validados; **nunca** altera Online/Offline ni amplía tolerancia 90 s/250 m.
+- Se agregó contrato `tests/contracts/provider-radar-gps-manual-retry-20261021.test.mjs`, traducciones pt-BR/es/en y control táctil 44 px; validar CI same SHA y Android real antes de declarar DONE. No se creó migración, no se aplicó SQL, ni se modificó Supabase PROD.
+- La migración en PR #560 (horario inmediato y deadline) sigue sin ejecutar en TEST por bloqueo de seguridad y conflicto con `main`; no fusionarla ni sustituir E2E real con contratos.
+- Objetivo medible: volver a publicar GPS reciente desde la alerta sin que se desloguee el Proveedor y comprobar nueva oferta + notificación + sonido + aceptación en dos sesiones. Estado `IMPLEMENTED / CI PENDING / HUMAN E2E PENDING`.
+
+
+### 2026-10-21 — CI exact-SHA: accesibilidad Admin y pruebas de navegador sin falsos bloqueos
+- Base de corrección: `main` `d0f501c7e2515d3a6094b34a4bac2f2b757f6084` (UGO TEST / Vercel READY); PR #564 `fix/ci-a11y-provider-visual-20261021`.
+- `UGO Cross Accessibility Runtime TEST` run 39676501503: AXE confirmó contraste insuficiente en `.mvp-kicker` y el submit del login de Admin. Corregido el kicker blanco/negro con prioridad CSS y botón Admin `#075bb8` para texto blanco WCAG AA. No cambia el color violeta de Super Admin.
+- `UGO Provider Readiness Batch TEST` run 39676501536: selector basado en nombre literal `Trabajo` fallaba porque el nombre accesible cambia a `Agenda` o estado del servicio. Se comprueban los cuatro `data-testid` existentes con `waitFor(state: visible)`, sin omitir controles.
+- `UGO Cross Visual Runtime TEST` run 39676501530: `ECONNREFUSED 127.0.0.1:4174` porque invocaba `role-ui-runtime.mjs` sin levantar el backend API de TEST. Se inicia el servidor local de la misma revisión (`scripts/admin-api-runtime-server.mjs`) con `UGO_TEST_ONLY`, `VITE_API_BASE_URL`, verificación `/__health` y cierre de procesos por trap. No se mockea la API.
+- Contratos en `tests/contracts/ci-a11y-provider-visual-20261021.test.mjs`. Mantener pruebas reales Auth/RLS, matching y alertas separadas. Fase `IMPLEMENTED / CI CHECK`; no declarar corregido lo que sólo tenga prueba estructural.
+- Sin cambios de SQL, matching, notificaciones, Auth, GPS, secretos ni Supabase PROD. Verificar la revisión exacta y el navegador antes de fusionar a `main`.
+
+- Revalidación del PR #564: `UGO Cross-role UI Runtime TEST` run 39678359088 falló sólo en `testTranslations()` después del recorrido desktop: esperaba `.ugo-client-root` tras reload, aunque artefacto `role-ui-client-desktop.png` demuestra Cliente autenticado en `Tu perfil` (`.ugo-client-profile-panel`). Se actualizó el locator para esperar sólo Home o Profile autenticados, sin admitir login; nuevo contrato de persistencia. Fase `FIXED IN PR / SAME-SHA BROWSER RETEST PENDING`. Core CI anterior PASS para las reparaciones de contraste/nav/API, pero el nuevo HEAD requiere CI nuevamente.
+
+## Continuidad 21/10/2026 — método y compromisos del chat (prioridad operativa)
+
+### Mandato del usuario: **resolver la manera de trabajar**
+La conversación insistió repetidamente en que UGO está desordenado porque se atienden incidentes aislados, se abre otro frente, y nunca se entrega un **proceso completo cerrado y verificado**. El usuario reclamó ejecutar todas las decisiones aprobadas, no sólo reconocerlas, explicar por qué falló, ofrecer otro prompt o crear un issue. No convertir ejemplos (como la ficha del trabajo) en un nuevo alcance separado cuando la instrucción trata de la metodología general. No pedir al usuario vigilancia continua ni hacerle repetir decisiones. Esta regla ya consta en `AGENTS.md` y `UGO_LECCION_PERMANENTE_CONTINUIDAD_20261020.md`; aplicar, no duplicar sistemas.
+
+### Cola canónica de compromisos expresados y situación al corte (VERIFICAR LIVE AL RETOMAR)
+
+| Prioridad | Proceso completo / obligación | Evidencia disponible | Estado de entrega y puerta de salida |
+| --- | --- | --- | --- |
+| P0 transversal | **Metodología única**: un bloqueo activo, todos los pendientes previos conservados, continuidad entre chats, mejoras aprobadas ejecutadas, no interrupciones con arreglos sueltos, cierre con evidencia y sin regresión | `AGENTS.md` y este handoff; el propio chat denunció incumplimiento reiterado | **REGLA DOCUMENTADA; ADOPCIÓN OPERATIVA A VERIFICAR**. En cada sesión, reconciliar estado vivo + cola y demostrar trabajo real sobre el proceso priorizado |
+| P0 producto | **Cliente → pedido → matching → oferta → alerta/sonido → proveedor acepta → asignación**; respetar ubicación y horarios, sin pérdida/demora injustificada | Issue #567; recuperación foreground en commits previos; pruebas humanas de ofertas demoradas | **NO E2E VERIFICADO 21/10**. Identificar primer fallo con `serviceId`, validar backend, NotificationCenter, UI y Persistencia mismo SHA |
+| P0 producto | **Proveedor estable ONLINE**: no deslogueo, GPS autorizado y refresco automático confiable en Chrome Mac, radar real; diferenciar Online de elegibilidad; errores de Auth/Realtime sin tormenta | Incidentes y trazas en este documento; issue #567 | **NO RESUELTO CONFIRMADO**. Prueba real de renovación más allá de 90s y reconexión sin login |
+| P1 servicio | **Ficha y recorrido completo de trabajo**, UX ordenada: información cliente/dirección/horario/instrucciones y acciones coherentes (en camino, llegada, iniciar, terminar), sin botones inconexos ni etapas trancadas | Conversación sobre “ficha de trabajo”; el usuario aclaró que es un **ejemplo de problema de método**, no la prioridad por encima del sistema | **PENDIENTE evaluación E2E**. Verificar transiciones con ambos roles y persistencia |
+| P1 servicio | **Navegación** desde “Ir a mapa” hacia ubicación real del cliente en Android (Google Maps/Waze/fallback), no destino genérico | Issue #567; fallo humano en teléfono | **PENDIENTE** prueba Android real |
+| P1 agenda | **Dos trabajos programados compatibles**, agenda sin bloqueo indebido, poder proponer reprogramación con aceptación/rechazo/contraoferta del cliente y conservar hora original hasta acuerdo | Pedido #2509 22/10 y “consertar tomacorriente” 24/10, ambos aceptados tras demora | **PENDIENTE reprogramación**. Dos reservas simultáneas sí observadas; no inventar bloqueo total |
+| P1 agenda | **Modo disponible 24h** con validación UI/backend de medianoche, conflictos y descansos; no prometer push con navegador cerrado sin infraestructura | Issue #567, agenda actual con tramos que rechazan cruce de medianoche | **PENDIENTE** |
+| P0 release | Integrar a `main` TODO código validado con CI y runtime del SHA exacto, no publicar regresiones, distinguir documentado/implementado/validado/publicado, consultar Sentinel y checklist | AGENTS.md y múltiples órdenes directas del usuario | **REGLA VIGENTE**. Cualquier PR sin E2E queda abierto, no DONE |
+| P1 ecosistema | HIVE/Empresa Autónoma/Observatory, plugins, Admin, fotos, pagos, APK, diseño y traducciones se mantienen en el roadmap; no abrir infraestructura paralela ni darlos por finalizados | Roadmap, maestros y locks históricos | **CONSERVAR EN COLA**, priorizar sólo tras primer servicio P0 salvo dependencia crítica |
+
+### Acción y trazabilidad concreta de este chat
+- **Issue #567** https://github.com/sebastisnzoth/ugo-admin-panel/issues/567 creado como registro de síntomas, propuestas de producto y criterios de aceptación. **No es reparación.**
+- **PR #568** https://github.com/sebastisnzoth/ugo-admin-panel/pull/568 , HEAD `b56522638dc380a0791d637825d3fa53d1200819`. Se hizo **un parche parcial** sobre presentación de timeout de GPS (30s vs 90s de elegibilidad); se abrió mientras el usuario reclamaba metodología, ejemplo explícito de desviación. **NO VALIDADO, NO MERGED**, no soluciona adquisición GPS automática. Comprobar CI/diff/conflictos y priorizarlo sólo si contribuye al P0 completo; no fusionar a ciegas. El usuario NO autorizó tratarlo como resolución de metodología.
+- **Medida estructural aplicada**: ampliación de `AGENTS.md` y este registro canónico para que cualquier chat lea los mandatos antes de trabajar. **Esto es documentación efectiva, NO prueba de que el flujo operativo ya esté resuelto.**
+
+### Handoff sin preguntas repetidas
+**Bloqueo activo:** cumplimiento operativo de la metodología, seguido de primer fallo del flujo completo Cliente → Proveedor. **Próximo agente:** 1) leer este bloque y `AGENTS.md`, issue #567, roadmap; 2) contrastar `main`, PR #568, CI, TEST, Sentinel/checklist y despliegues; 3) seleccionar primera transición P0 fallida y ejecutar corrección mínima con regresiones del proceso completo; 4) validar antes de integrar cambios de producto a `main`; 5) registrar commit, run, runtime y próximo bloqueo aquí, no crear una nueva cola ni contestar sólo con planes. **Intervención humana** sólo para prueba física indispensable o autorización material; no simularlas.
+
+### 21/10/2026 — Handoff de riesgos del método antes del piloto de Florianópolis
+
+**Orden más reciente del usuario:** examinar ventajas, contras, errores previos y fallos futuros de la ejecución automatizada; corregirlos, repetir pruebas y establecer una metodología **validada** antes del piloto. **Este chat NO ha validado todavía la automatización ni el piloto.** Consulta el registro de riesgos R1–R12 y sus pruebas de fallo en `docs/UGO_ROADMAP_MASTER.md`, sección “Revisión preventiva de metodología y piloto Florianópolis”. Ése es el checklist de riesgos; no duplicarlo en issues nuevos.
+
+**Avance real:** se escribió el análisis preventivo R1–R12 en `main`; sin ejecución de fallos inyectados ni modificaciones a worker/cola. Se prohíbe activar Empresa Autónoma ON, dar status DONE o declarar que se evitarán todos los incidentes sin las pruebas requeridas. Continuidad del PR #568: sigue siendo parche acotado sin CI/runtime confirmado; no asumir merge ni reemplazar la misión central por otro parche GPS.
+
+**Primer bloque técnico pendiente, accionable y medible:** inspeccionar el mecanismo existente de jobs/locks/worker/HIVE/Judge/Sentinel y baseline vigente (SHA/CI/TEST, costo, límites, estado de despliegue). Ensayar en TEST cuatro escenarios: **R1** reintento tras caída sin efecto duplicado; **R3** 429/timeout sin tormenta; **R5** fallo artificial bloquea DONE/merge; **R11** reinicio recupera cola sin falso 24/7. Si falla, corregir componente existente, volver a ejecutar las cuatro pruebas y documentar evidencias SHA/run. Si no hay posibilidad técnica de test, dejar BLOCKED con la dependencia exacta, nunca VERIFIED.
+
+**Después:** pruebas R2/R4/R6–R10/R12, luego E2E del primer servicio y aceptación física de dos dispositivos para Florianópolis. Los P0 reales de Cliente/Proveedor conservan prioridad cuando degradan operación; no interrumpir su solución con infraestructura que no sea indispensable. Registrar owner, estado probado, entorno, artefactos y próxima acción. No crear segunda cola o plataforma; reutilizar `development_checklist`, jobs y ledger canónicos.
+
+**Criterio de aceptación global:** metodología controlada por gates efectivos + un servicio completo real comprobado, sin regresiones nuevas, publicado en canal autorizado y revalidado. El simple guardado de documentos o creación de PR **no alcanza**.
+
+
+---
+
+## Integración operativa con UGO Roadmap Master
+
+**Fuentes complementarias, no paralelas:** `docs/UGO_ROADMAP_MASTER.md` registra alcance, hitos y estados técnicos; este Camino Maestro determina prioridades, verificación y cierre. Ante discrepancias, consultar `main`, CI del SHA exacto, Arena TEST y la aplicación publicada antes de actualizar cualquiera de los dos. Los checkpoints históricos no prueban el estado actual.
+
+**Metodología vinculante por bloque:** recuperar antecedentes → reproducir el primer fallo → corregir lo mínimo necesario → probar funcionalidad, seguridad y regresiones → fusionar a `main` todo cambio independiente completamente verificado → comprobar el SHA de `main` y la publicación correspondiente → registrar evidencia y cerrar. Un commit, PR o test verde aislado no significa entrega funcional. Los cambios no validados permanecen identificados como abiertos, sin bloquear indefinidamente los cambios independientes seguros.
+
+**Incidente P0 en seguimiento (21/10/2026, sujeto a revalidación):** PR [#566](https://github.com/sebastisnzoth/ugo-admin-panel/pull/566), GPS de Proveedor y matching Cliente → Pedido → Oferta → Alerta → Aceptación → Asignación. El último control conversacional confirmó el PR abierto y sin fusionar; el estado de merge y las ejecuciones posteriores requieren consulta en vivo. Antecedente de Arena TEST: proveedor Online sin GPS vigente (umbral del motor: 90 s), pedido en búsqueda sin ofertas. No interpretar cron ejecutado, proveedor Online ni oferta insertada como evidencia de recepción real. Verificar primero el estado del pedido y la ubicación persistida, evitando reusar snapshots históricos como vigentes.
+
+**Cierre del P0:** reconciliar SHA y CI → resolver incompatibilidades con `main` preservando trabajo ajeno → validar GPS actualizado en backend y recuperación permitida por navegador → probar rematching sin duplicados/cancelaciones indebidas → comprobar alerta, aceptación y asignación en Arena TEST → integrar los cambios aprobados → verificar `main` y canal publicado. La prueba de GPS, sonido/vibración y flujo físico en dispositivos reales sigue diferenciada del E2E automatizado; no simular aceptación humana ni alterar Supabase producción sin los gates correspondientes.
+
+**Handoff obligatorio entre sesiones:** registrar en este Camino Maestro el bloqueo P0, SHA de `main` y del PR, ejecuciones y resultados exactos, entorno, evidencia, fusión efectuada o no, revisión publicada y siguiente paso accionable. Actualizar el Roadmap Master con el mismo hito y madurez (`IMPLEMENTED`, `CI VALIDATED`, `RUNTIME VALIDATED`, `PUBLISHED`) para evitar estados contradictorios. No pedir reiteradamente pruebas ya aportadas; marcar sólo las pruebas humanas realmente pendientes.
+
+
+### P0 2026-10-21 — Recuperación automática del matching (PR #566)
+- Preparada migración `20261021223000_safe_automatic_rematch_recovery.sql`: reintenta lotes de hasta 20 servicios `buscando`/`ofrecido` sin ofertas vigentes, omite asignados/cancelados, usa `FOR UPDATE SKIP LOCKED` y reutiliza controles existentes de autorización, GPS, deudas, categoría y horario.
+- Agregado contrato `tests/contracts/p0-safe-automatic-rematch.test.mjs`. `UGO Core CI` run 39695166059 PASS; verificación de trazabilidad falló por falta de estas entradas, corregida en este PR.
+- **No desplegado:** `pg_cron` de TEST sigue deshabilitado tras errores `job startup timeout`; producción no intervenida. Falta resolver PR #560, aplicar y validar migraciones TEST, verificar cancelación/aceptación simultáneas y E2E de ciclos de 5 minutos antes de activar cron o fusionar.
+- Estado: `IMPLEMENTED IN DRAFT PR / TEST E2E AND MIGRATION PENDING`. La aprobación de requisitos no es evidencia de 12 pruebas completas.
+
+- Integración P0 2026-10-21: consolidación del PR #560 dentro del PR #566 de las migraciones de horario inmediato/deadline y paridad GPS 90 s de notificación, junto con contratos. HEAD de integración requiere SAME-SHA CI y pruebas sobre Arena TEST. **No se aplicó SQL ni habilitó cron; no fusionar hasta confirmar E2E sin regresiones.**
+
+- P0 GPS Pro 2026-10-21: captura de UGO Pro muestra proveedor Online fuera del radar, timeout GPS y estado Procesando. Se corrigió carrera comprobable en el código: refresco manual, primer heartbeat y refresco de foco podían iniciar capturas GPS simultáneas; ahora comparten una única adquisición en curso, con limpieza tras éxito/error, preservando validación de 90 s y precisión 250 m. Se agregó test contractual `provider-gps-singleflight-acquisition-20261021.test.mjs`. **PENDIENTE**: CI same-SHA, prueba navegador con GPS real, validación Auth/RLS, matching de alerta/aceptación/cancelación y merge; no afirmar recuperación E2E todavía.
+
+- 2026-10-21 P0: opción voluntaria «Recibir ofertas las 24 horas» en agenda de Proveedor (schedule.receive24h=false por defecto). Solamente elimina restricción horaria para ofertas inmediatas; trabajos programados, GPS fresco, Online, zonas, deuda, calendario de conflictos y autorización permanecen. SQL `20261022014500_provider_opt_in_24h_offers.sql`, contrato `provider-24h-offers-opt-in.test.mjs`. Pendiente CI SAME-SHA, instalación controlada TEST y E2E navegador; sin aplicar producción.
+
+- 2026-10-21 P0 opciones 24h: Core CI del SHA d4e2a9e falló en auditoría i18n JSX (una etiqueta literal de Proveedor). Corregido con `providerPortfolio.receive24h` localizado pt-BR/es/en en `extended.ts`, uso `t(...)` en UI y contrato actualizado. Matching E2E automatizado del SHA anterior SUCCESS, pero no equivale a prueba humana de aviso sonoro y aceptación. Esperar CI mismo SHA y prueba de dispositivo antes de merge.
+
+- 2026-10-21/22 P0 avance: migración `20261022020000_rematch_on_fresh_provider_gps.sql` instalada en Arena TEST: reintenta pedidos sin ofertas tras 60 s de cooldown si existe proveedor Online/disponible con GPS <=90 s y precisión <=250 m, sin esperar vencimiento 5 min; conserva SKIP LOCKED, 20 por lote y filtros de ofertas vigentes/cancelación/asignación. Contrato `provider-fresh-gps-early-rematch.test.mjs`. Cron observado 41 SUCCESS/1 FAIL (startup timeout 01:44 UTC). Pedido real f94bb5da... aún buscando a las 01:56 UTC; pendiente proveedor GPS real estable, confirmación oferta y alerta/aceptación. Mantener PROD sin cambios.
+
+- 2026-10-21 P0 GPS watcher: corregido reinicio de watchPosition con timeout pendiente: startWatch cancela restartTimer obsoleto y pone watchId=null tras clearWatch; callback descarta ID del timer; prueba `provider-gps-watch-restart-recovery.test.mjs`. En SHA 3d0cd6d Cross-role UI falló `AUTONOMY_UI_STATE_MISMATCH` (Super Admin), aunque Core y Matching E2E pasaron. Nuevo CI same SHA pendiente; GPS y alerta reales aún sin certificar. No fusionar ni producción.
+
+
+### 2026-10-22 — PR #569: sincronización de prueba UI de autonomía
+- Tras la integración P0 del PR #566 en `main` (`03b29a13`), el runtime multirrol falló en `AUTONOMY_UI_STATE_MISMATCH` por observar `aria-checked=false` antes de confirmar hidratación de la vista.
+- Cambio del PR #569: esperar selección efectiva de la radio, releer el modo de autonomía persistido y mantener aserción estricta de coincidencia; no activar ni modificar Empresa Autónoma ni su gate. Core CI y Cross-role UI aprobaron el commit `8d6fddec` en PR; nuevo SHA requiere repetir controles.
+- Cierre pendiente: Roadmap Traceability, demás controles del SHA final, fusión a `main`, comprobación postmerge; sin afirmar pruebas físicas GPS/oferta/sonido. Hugo Presence, RPC/RLS y Visual siguen como incidencias independientes.
+
+
+### 2026-10-22 — Postmerge PR #569: compatibilidad Playwright runner
+- En `main` be7377c8, Cross-role UI (run 39837869684) y Cross Visual (run 39837869745) fallaron antes de ejecutar Chromium: `Playwright 1.56.1 does not support chromium on ubuntu26.04-x64` al usar `ubuntu-latest`. No es evidencia de defecto de producto.
+- Corrección acotada: fijar `runs-on: ubuntu-24.04` en `.github/workflows/role-ui-runtime.yml` y `.github/workflows/cross-visual-runtime.yml`, sin relajar las aserciones, la seguridad ni modificar la app. Estado IMPLEMENTADO EN RAMA, pendiente CI/navegador del SHA final y verificación tras fusión.
+- Otras pruebas de RPC/RLS, GPS real y entrega de ofertas en dispositivo siguen pendientes de comprobación independiente.

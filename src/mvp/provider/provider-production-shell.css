@@ -643,3 +643,158 @@
 @media(prefers-reduced-motion:reduce){
  .ugo-provider-root .ugo-ux-screen-host .provider-screen :is(button,a){scroll-behavior:auto}
 }
+
+/* P0 mobile overlap repair (2026-10-21).
+   Bell and online switch share one header row; language has its own row.
+   The redundant status dock no longer obscures navigation or service cards. */
+.ugo-provider-root .provider-client-topbar{
+  z-index:12020!important;
+}
+.ugo-provider-root .provider-client-topbar-main{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex:1 1 auto;
+  min-width:0;
+}
+.ugo-provider-root .provider-client-topbar-actions{
+  display:flex;
+  flex:0 0 auto;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.ugo-provider-root .provider-client-topbar-language{
+  flex:0 1 230px;
+  min-width:0;
+}
+.ugo-provider-root .provider-client-topbar-language .ugo-language-inline{
+  margin:0;
+  min-width:0;
+}
+.ugo-provider-root .provider-client-topbar-language .ugo-language-inline select{
+  min-width:0;
+  width:100%;
+  min-height:44px;
+  font-size:14px;
+}
+.ugo-provider-root .provider-client-topbar .ugo-notification-center.role-provider{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  z-index:auto!important;
+  flex:none;
+}
+.ugo-provider-root .provider-client-topbar .ugo-notification-trigger{
+  width:44px;
+  height:44px;
+  min-width:44px;
+  box-shadow:none;
+  border-color:var(--provider-preview-line);
+}
+.ugo-provider-root .provider-client-topbar .ugo-notification-panel{
+  top:calc(100% + 10px);
+  right:0;
+  max-width:calc(100vw - 24px);
+}
+@media(min-width:1000px){
+  .ugo-provider-root .provider-client-topbar-language{order:-1}
+}
+@media(max-width:999px){
+  .ugo-provider-root .provider-client-topbar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr);
+    gap:10px!important;
+    min-height:0!important;
+    padding:12px 16px!important;
+  }
+  .ugo-provider-root .provider-client-topbar-main{
+    width:100%;
+    gap:10px;
+  }
+  .ugo-provider-root .provider-client-topbar-copy{
+    flex:1 1 128px;
+    min-width:0;
+  }
+  .ugo-provider-root .provider-client-topbar-copy strong{
+    overflow-wrap:anywhere;
+  }
+  .ugo-provider-root .provider-client-topbar-actions{
+    gap:8px;
+  }
+  .ugo-provider-root .provider-client-online{
+    min-height:44px!important;
+    padding:0 12px!important;
+    white-space:nowrap;
+  }
+  .ugo-provider-root .provider-client-topbar-language{
+    width:100%;
+    min-width:0;
+  }
+  .ugo-provider-root .provider-client-topbar-language .ugo-language-inline{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    gap:12px;
+    align-items:center;
+  }
+  .ugo-provider-root .provider-client-topbar-language .ugo-language-inline select{
+    width:100%;
+    max-width:100%;
+  }
+  /* Orders and jobs remain accessible in the 4-tab bottom navigation. */
+  .ugo-provider-root .provider-operational-dock{
+    display:none!important;
+  }
+  /* Keep the contextual dispute action in the document flow, not on top of tabs. */
+  .ugo-provider-root .ugo-dispute-launch{
+    position:relative!important;
+    inset:auto!important;
+    left:auto!important;
+    bottom:auto!important;
+    display:block;
+    width:fit-content;
+    max-width:calc(100% - 32px);
+    margin:0 auto calc(108px + env(safe-area-inset-bottom))!important;
+    white-space:normal;
+  }
+  .ugo-provider-root .ugo-ux-screen-host>.provider-screen{
+    padding-bottom:calc(120px + env(safe-area-inset-bottom))!important;
+  }
+  .ugo-provider-root .provider-bottom-nav{
+    height:calc(66px + env(safe-area-inset-bottom))!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+  }
+  .ugo-provider-root .provider-bottom-nav button{
+    min-width:0;
+    min-height:48px!important;
+    overflow-wrap:anywhere;
+  }
+}
+@media(max-width:560px){
+  .ugo-provider-root .provider-client-topbar{
+    padding:12px 14px!important;
+  }
+  .ugo-provider-root .provider-client-topbar-language .ugo-language-inline select{
+    font-size:16px;
+  }
+  .ugo-provider-root .provider-home .ugo-ui-section-header .provider-status{
+    display:none!important; /* Online is controlled in the topbar. */
+  }
+  .ugo-provider-root .provider-client-topbar .ugo-notification-panel{
+    position:fixed!important;
+    left:12px!important;
+    right:12px!important;
+    top:max(122px,calc(122px + env(safe-area-inset-top)))!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:calc(100dvh - 150px)!important;
+  }
+}
+@media(max-width:360px){
+  .ugo-provider-root .provider-client-topbar-main{flex-wrap:wrap}
+  .ugo-provider-root .provider-client-topbar-actions{margin-left:auto}
+  .ugo-provider-root .provider-client-topbar-copy{flex:1 1 100px}
+  .ugo-provider-root .provider-client-online{padding:0 10px!important}
+}

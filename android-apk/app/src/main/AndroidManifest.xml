@@ -20,6 +20,7 @@
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
+        android:icon="@drawable/ugo_provider_icon"
         android:usesCleartextTraffic="false"
         android:theme="@style/AppTheme">
         <activity
