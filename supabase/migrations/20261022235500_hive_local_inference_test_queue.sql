@@ -38,9 +38,9 @@ begin
  where (q.status='PENDING' or (q.status='RUNNING' and q.lease_until<now()))
  and q.attempts<3 order by q.created_at for update skip locked limit 1;
  if not found then return;end if;
- l=encode(gen_random_bytes(32),'hex');
+ l=encode(extensions.gen_random_bytes(32),'hex');
  update public.hive_local_inference_jobs q set status='RUNNING',attempts=q.attempts+1,
- lease_token_hash=encode(digest(l,'sha256'),'hex'),lease_until=now()+interval '90 seconds',updated_at=now()
+ lease_token_hash=encode(extensions.digest(l,'sha256'),'hex'),lease_until=now()+interval '90 seconds',updated_at=now()
  where q.id=j.id;
  return query select j.id,l,j.prompt,'inference-only'::text,true;
 end $$;
@@ -55,7 +55,7 @@ begin
  model=case when p_status='SUCCEEDED' then p_model else null end,error_code=case when p_status='FAILED' then left(p_code,80) else null end,
  lease_until=null,lease_token_hash=null,updated_at=now()
  where id=p_id and status='RUNNING' and lease_until>now()
- and lease_token_hash=encode(digest(p_lease,'sha256'),'hex');
+ and lease_token_hash=encode(extensions.digest(p_lease,'sha256'),'hex');
  return found;
 end $$;
 revoke all on function public.hive_local_claim_job() from public,anon,authenticated;
