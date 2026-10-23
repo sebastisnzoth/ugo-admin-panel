@@ -11,10 +11,20 @@ test('Hive router is TEST scoped, server-authenticated, and rejects non-superadm
  assert.match(source,/superadmin/)
  assert.match(source,/OPENROUTER_API_KEY/)
 })
-test('Hive router remains fail closed until durable free quota and billing evidence exist',()=>{
- assert.match(source,/HIVE_INFERENCE_NOT_ENABLED/)
- assert.match(source,/GLOBAL_DURABLE_ZERO_COST_QUOTA_REQUIRED/)
- assert.doesNotMatch(source,/fetch\(upstream\s*\+\s*['"]\/chat\/completions/)
+test('Hive router only invokes inference after durable quota reservation for an authorized running mission',()=>{
+ assert.match(source,/mission_id/)
+ assert.match(source,/hive_reserve_model_call/)
+ assert.match(source,/hive_finish_model_call/)
+ assert.match(source,/QUOTA_OR_MISSION_AUTH_FAILED/)
+ assert.match(source,/if \(!apiKey\)/)
+ assert.match(source,/max_tokens:512/)
+})
+test('Hive inference requires an explicit zero-cost free model and disables paid fallback',()=>{
+ assert.match(source,/endsWith\(':free'\)/)
+ assert.match(source,/\['prompt','completion','request'\]/)
+ assert.match(source,/max_price:\{prompt:0,completion:0,request:0\}/)
+ assert.match(source,/allow_fallbacks:false/)
+ assert.match(source,/UNVERIFIED_UPSTREAM_RESPONSE/)
 })
 test('No key is returned to callers and there is no payment or production write path',()=>{
  assert.doesNotMatch(source,/console\.log\(openRouterKey\)/)
