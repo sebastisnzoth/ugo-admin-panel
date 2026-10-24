@@ -75,3 +75,12 @@ test('stale Calendar OAuth and disconnect completions cannot mutate the next acc
   assert.match(action,/finally\{if\(tokenRef\.current===accessToken\)setBusy\(false\)\}/,'old request must not reset the next account action state')
  }
 })
+
+test('Google OAuth binds the signed state to an HttpOnly browser cookie and consumes it at callback',async()=>{
+ const api=await read('api/test.ts')
+ assert.match(api,/ugo_calendar_oauth=\$\{nonce\}/)
+ assert.match(api,/HttpOnly; Secure; SameSite=Lax; Max-Age=600/)
+ assert.match(api,/ugo_calendar_oauth=; Path=\/api\/calendar; HttpOnly; Secure; SameSite=Lax; Max-Age=0/)
+ assert.match(api,/timingSafeEqual\(left,right\)/)
+ assert.match(api,/const userId=verified\.uid/)
+})
