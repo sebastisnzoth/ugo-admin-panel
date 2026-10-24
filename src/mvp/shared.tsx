@@ -74,7 +74,7 @@ async function withProfileTimeout<T>(operation:PromiseLike<T>&{abortSignal?:(sig
   // Abort the actual fetch so repeated recovery attempts cannot pile up.
   const controller=new AbortController()
   const request=typeof operation.abortSignal==='function'?operation.abortSignal(controller.signal):operation
-  let timer:ReturnType<typeof setTimeout>|undefined
+  let timer:number|undefined
   try{
     return await Promise.race([Promise.resolve(request),new Promise<T>((_,reject)=>{
       timer=window.setTimeout(()=>{reject(new Error('PROFILE_QUERY_TIMEOUT'));controller.abort()},ms)
