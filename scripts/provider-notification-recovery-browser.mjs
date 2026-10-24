@@ -23,7 +23,7 @@ try{
  </script>`}))
  await page.addInitScript(()=>{
   localStorage.setItem('ugo.locale.guest.unknown','es')
-  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[];window.__currentSession=null
+  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[];window.__currentSession=null;window.__sessionReads=0;window.__initialSessionResolve=null
   const params=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}})
   window.AudioContext=class{state='running';currentTime=0;destination={};createOscillator(){return{frequency:params(),connect(){},start(){window.__toneCount++},stop(){}}}createGain(){return{gain:params(),connect(){}}}resume(){return Promise.resolve()}}
   Object.defineProperty(navigator,'vibrate',{value:()=>{window.__vibrateCount++;return true},configurable:true})
@@ -33,7 +33,7 @@ try{
   window.Notification=class{static permission='default'}
   const realInterval=window.setInterval.bind(window)
   window.setInterval=(fn,ms,...args)=>{if(ms===20000)window.__safetyResync=fn;return realInterval(fn,ms,...args)}
-  const db={auth:{getSession:async()=>({data:{session:window.__currentSession}}),onAuthStateChange:callback=>{window.__authCallback=(event,session)=>{window.__currentSession=event==='SIGNED_OUT'?null:session;callback(event,session)};return{data:{subscription:{unsubscribe(){window.__authUnsubscribed=true}}}}}},from:table=>{
+  const db={auth:{getSession:()=>{window.__sessionReads++;if(window.__sessionReads===1)return new Promise(resolve=>{window.__initialSessionResolve=resolve});return Promise.resolve({data:{session:window.__currentSession}})},onAuthStateChange:callback=>{window.__authCallback=(event,session)=>{window.__currentSession=event==='SIGNED_OUT'?null:session;callback(event,session)};return{data:{subscription:{unsubscribe(){window.__authUnsubscribed=true}}}}}},from:table=>{
    const query={select(){return this},eq(column,value){if(column==='id')this.noticeId=value;return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){this.isUpdate=true;return this},then(resolve){
     if(this.isUpdate&&this.noticeId?.startsWith('offer:'))return Promise.resolve({data:null,error:{message:'invalid input syntax for type uuid'}}).then(resolve)
     if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
@@ -54,6 +54,20 @@ try{
  await page.evaluate(()=>window.__authCallback('TOKEN_REFRESHED',{user:{id:'provider-test'}}))
  assert.equal(await page.evaluate(()=>window.__channels.length),1,'Token refresh must not recreate channel')
  evidence.checks.token_refresh_does_not_duplicate_subscription=true
+ await page.evaluate(()=>window.__initialSessionResolve({data:{session:{user:{id:'stale-provider'}}}}))
+ await page.waitForTimeout(60)
+ assert.equal(await page.evaluate(()=>window.__channels.length),1,'Stale initial getSession must not switch identity after SIGNED_IN')
+ evidence.checks.stale_initial_session_cannot_replace_auth_event=true
+ // An in-flight old-user SELECT must never repopulate the notice list after SIGNED_OUT.
+ await page.evaluate(()=>{window.__holdReads=true;window.dispatchEvent(new Event('focus'))})
+ await page.waitForFunction(()=>window.__heldReads.length>0,{},{timeout:3000})
+ await page.evaluate(()=>{window.__authCallback('SIGNED_OUT',null);window.__noticeRows=[window.__offer('private-old-session')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
+ await page.waitForTimeout(120)
+ assert.equal(await page.getByText('TEST private-old-session',{exact:true}).count(),0,'Old identity must not leak notifications after sign-out')
+ evidence.checks.sign_out_invalidates_pending_notification_read=true
+ await page.evaluate(()=>{window.__holdReads=false;window.__noticeRows=[];window.__authCallback('SIGNED_IN',{user:{id:'provider-test'}})})
+ await page.waitForFunction(()=>window.__channels.length===2,{},{timeout:3000})
+ evidence.checks.sign_in_recreates_exactly_one_channel=true
  evidence.checks.subscribed_while_push_pending=true
  // A SELECT that never resolves must not delay an INSERT alert.
  await page.evaluate(()=>{window.__holdReads=true;const n=window.__offer('first');window.__noticeRows=[n];window.__emit(n)})
