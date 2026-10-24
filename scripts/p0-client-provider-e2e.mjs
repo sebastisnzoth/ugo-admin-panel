@@ -302,7 +302,7 @@ try{
   // 0 · catalog prerequisites ---------------------------------------------
   const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
-  categoryId=categories[0].id
+  categoryId=(categories.find(c=>/limpeza|limpieza|faxina|repar|electric/i.test(c.nombre))||categories[0]).id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
 
   // 1 · isolated TEST identities -----------------------------------------
