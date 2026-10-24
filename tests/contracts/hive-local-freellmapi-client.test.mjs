@@ -65,3 +65,17 @@ test('invalid or empty upstream completion is rejected without replay',async()=>
   assert.equal(calls,1);
  }
 });
+test('connection refusal is distinguished without exposing socket or credential details',async()=>{
+ let calls=0;
+ const client=createLocalModelClient({apiKey:'test',fetchImpl:async()=>{
+  calls++;
+  const cause=Object.assign(new Error('secret socket detail'),{code:'ECONNREFUSED'});
+  throw Object.assign(new Error('fetch failed'),{cause});
+ }});
+ await assert.rejects(client.complete({model:'qwen3-coder-free',messages:[{role:'user',content:'hello'}]}),error=>{
+  assert.equal(error.message,'HIVE_LOCAL_CONNECTION_REFUSED');
+  assert.equal(JSON.stringify(error).includes('secret'),false);
+  return true;
+ });
+ assert.equal(calls,1);
+});

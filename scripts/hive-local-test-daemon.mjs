@@ -7,7 +7,7 @@ export async function runHiveTestWorkerLoop({ token, policy, poll=pollHiveTestOn
  let errors=0;
  while(!shouldStop()){
   try{const result=await poll({token,policy});errors=0;onEvent(result?.status==='IDLE'?'IDLE':result?.status==='SUCCEEDED'?'SUCCEEDED':result?.status==='ENGINE_UNAVAILABLE'?'ENGINE_UNAVAILABLE':'JOB_FAILED');}
-  catch(err){if(/UNAUTHORIZED|AUTH_REQUIRED/.test(String(err?.message)))throw Error('HIVE_WORKER_AUTH_STOP');if(err?.message==='HIVE_COMPLETION_UNCERTAIN')throw Error('HIVE_WORKER_RECONCILIATION_REQUIRED');errors=Math.min(errors+1,6);onEvent('RETRY_WAIT');}
+  catch(err){if(/UNAUTHORIZED|AUTH_REQUIRED/.test(String(err?.message)))throw Error('HIVE_WORKER_AUTH_STOP');if(['HIVE_COMPLETION_UNCERTAIN','HIVE_CLAIM_UNCERTAIN','HIVE_POLL_INVALID_JOB'].includes(err?.message))throw Error('HIVE_WORKER_RECONCILIATION_REQUIRED');errors=Math.min(errors+1,6);onEvent('RETRY_WAIT');}
   if(shouldStop())break;
   await wait(errors?Math.min(60000,8000*Math.pow(2,errors-1)):8000);
  }

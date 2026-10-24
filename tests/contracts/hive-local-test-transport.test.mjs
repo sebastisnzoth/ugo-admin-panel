@@ -40,7 +40,7 @@ test('completion requires explicit status and server acknowledgment',async()=>{
  await transport.complete({id:'x',lease:'y',status:'FAILED',code:'HIVE_LOCAL_INFERENCE_FAILED'});
  assert.equal(called,true);
  const rejected=createHiveTestTransport({token,fetchImpl:async()=>reply({ok:false})});
- await assert.rejects(rejected.complete({id:'x',lease:'y',status:'FAILED'}),/HIVE_TEST_COMPLETION_REJECTED/);
+ await assert.rejects(rejected.complete({id:'x',lease:'y',status:'FAILED',code:'HIVE_LOCAL_INFERENCE_FAILED'}),/HIVE_TEST_COMPLETION_REJECTED/);
 });
 test('timeouts, rate limits and excessive replies fail closed',async()=>{
  const cases=[

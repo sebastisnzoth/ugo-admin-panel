@@ -82,6 +82,12 @@ test('cancellation, provider failure, uncertain lease and mission limit remain f
  assert.equal((await db.query('select public.hive_local_cancel_mission($1,$2) as ok',[cancelled,actor])).rows[0].ok,true);
  assert.equal(await advance(db,cancelled),'CANCELLED');
  assert.equal((await db.query('select j.error_code from public.hive_local_inference_jobs j join public.hive_local_missions m on m.current_job_id=j.id where m.id=$1',[cancelled])).rows[0].error_code,'MISSION_CANCELLED');
+ const running = await createMission(db,crypto.randomUUID(),['Developer']);
+ assert.equal(await advance(db,running),'QUEUED');
+ const runningJob = await claim(db);
+ assert.equal((await db.query('select public.hive_local_cancel_mission($1,$2) as ok',[running,actor])).rows[0].ok,false);
+ assert.equal(await complete(db,runningJob),true);
+ assert.equal(await advance(db,running),'SUCCEEDED');
  const failed = await createMission(db,crypto.randomUUID(),['Security']);
  assert.equal(await advance(db,failed),'QUEUED');
  assert.equal(await complete(db,await claim(db),'FAILED'),true);
@@ -128,4 +134,24 @@ test('agent idempotency accepts only the identical prompt and agent',async t=>{
  assert.equal(first.rows[0].id,replay.rows[0].id);
  await assert.rejects(db.query('select * from public.hive_local_create_agent_job($1,$2,$3,$4)',[actor,'Prompt cambiado',key,'Hugo']),/HIVE_IDEMPOTENCY_CONFLICT/);
  await assert.rejects(db.query('select * from public.hive_local_create_agent_job($1,$2,$3,$4)',[actor,'Prompt sintético',key,'QA']),/HIVE_IDEMPOTENCY_CONFLICT/);
+});
+
+test('all nine mission profiles receive their server-owned scope in sequence',async t=>{
+ const db = await database();t.after(()=>db.close());
+ const scopes = {
+  Hugo:'general product analysis',Architect:'architecture analysis',Developer:'propose code changes without executing',
+  QA:'test planning',Security:'defensive security assessment',DevOps:'deployment analysis only',
+  Judge:'evaluate evidence',Sentinel:'flag safety and reliability risks',Research:'summarize provided information'
+ };
+ const mission = await createMission(db,crypto.randomUUID(),Object.keys(scopes),'Evaluar una misión sintética');
+ for(const [agent,scope] of Object.entries(scopes)){
+  assert.equal(await advance(db,mission),'QUEUED');
+  const queued = (await db.query('select id,prompt from public.hive_local_inference_jobs where agent_id=$1 order by created_at desc limit 1',[agent])).rows[0];
+  assert.match(queued.prompt,new RegExp(`Scope: ${scope.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')}`));
+  const job = await claim(db);
+  assert.equal(job.id,queued.id);
+  assert.equal(await complete(db,job),true);
+ }
+ assert.equal(await advance(db,mission),'SUCCEEDED');
+ assert.equal((await db.query('select count(*)::int as n from public.hive_local_mission_tasks where mission_id=$1',[mission])).rows[0].n,9);
 });

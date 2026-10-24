@@ -7,6 +7,8 @@ const wrap=(s:number,o:unknown,origin:string|null)=>{const r=json(s,o);Object.en
 const agents=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const;
 type Agent=typeof agents[number];
 const scopes:Record<Agent,string>={Hugo:'general product analysis',Architect:'architecture analysis',Developer:'propose code changes without executing',QA:'test planning',Security:'defensive security assessment',DevOps:'deployment analysis only',Judge:'evaluate evidence',Sentinel:'flag safety and reliability risks',Research:'summarize provided information'};
+const completionCodes=new Set(['HIVE_FREEAPI_RATE_LIMITED','HIVE_PROVIDER_UNAVAILABLE','HIVE_INVALID_PROVIDER_RESPONSE','HIVE_RESPONSE_TOO_LARGE','HIVE_BUSY','HIVE_LOCAL_API_KEY_REQUIRED','HIVE_LOCAL_ENDPOINT_REQUIRED','HIVE_INVALID_MESSAGES','HIVE_MODEL_REQUIRED','HIVE_PROVIDER_NETWORK_ERROR','HIVE_LOCAL_CONNECTION_REFUSED','HIVE_INVALID_INFERENCE_RESULT','HIVE_PROVIDER_TIMEOUT','HIVE_LOCAL_INFERENCE_FAILED']);
+const validCompletionCode=(value:unknown)=>typeof value==='string'&&(completionCodes.has(value)||/^HIVE_PROVIDER_HTTP_[1-5][0-9]{2}$/.test(value));
 const hash=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,'0')).join('');
 Deno.serve(async(req:Request)=>{
  const origin=req.headers.get('origin'),send=(s:number,o:unknown)=>wrap(s,o,origin);
@@ -48,10 +50,11 @@ Deno.serve(async(req:Request)=>{
    const out=body.outcome;
    if(!out||typeof out!=='object'||Array.isArray(out)||!['SUCCEEDED','FAILED'].includes(out.status)||
       typeof out.id!=='string'||typeof out.lease!=='string'||out.lease.length>128||
-      (out.answer!==undefined&&(typeof out.answer!=='string'||out.answer.length>12000))||
-      (out.model!==undefined&&out.model!=='qwen3-coder-free')||
-      (out.code!==undefined&&(typeof out.code!=='string'||out.code.length>80))||
-      Object.keys(out).some(k=>!['id','lease','status','answer','model','code'].includes(k)))
+     (out.answer!==undefined&&(typeof out.answer!=='string'||out.answer.length>12000))||
+     (out.model!==undefined&&out.model!=='qwen3-coder-free')||
+     (out.status==='FAILED'&&(!validCompletionCode(out.code)||out.answer!==undefined||out.model!==undefined))||
+     (out.status==='SUCCEEDED'&&(out.code!==undefined||typeof out.answer!=='string'||!out.answer.trim()||out.model!=='qwen3-coder-free'))||
+     Object.keys(out).some(k=>!['id','lease','status','answer','model','code'].includes(k)))
       return send(400,{error:'INVALID_COMPLETION'});
    const {data,error}=await db.rpc('hive_local_complete_job',{p_id:out.id,p_lease:out.lease,p_status:out.status,p_answer:out.answer??null,p_model:out.model??null,p_code:out.code??null});
    if(error)return send(503,{error:'COMPLETION_UNAVAILABLE'});
@@ -78,8 +81,15 @@ Deno.serve(async(req:Request)=>{
    // No manual hash enrollment, persistent browser token storage or credential value in responses.
    if(typeof body.worker_token!=='string'||!/^[a-f0-9]{64}$/.test(body.worker_token)||Object.keys(body).some(k=>!['action','worker_token'].includes(k)))return send(400,{error:'INVALID_WORKER_TOKEN'});
    const tokenHash=await hash(body.worker_token);
-   const {error}=await db.from('hive_local_worker_credentials').upsert({id:1,token_hash:tokenHash,active:true,last_seen_at:null,engine_status:'UNKNOWN',engine_checked_at:null,updated_at:new Date().toISOString()},{onConflict:'id'});
-   return error?send(503,{error:'WORKER_PROVISION_FAILED'}):send(200,{ok:true});
+   const values={token_hash:tokenHash,active:true,last_seen_at:null,engine_status:'UNKNOWN',engine_checked_at:null,updated_at:new Date().toISOString()};
+   // Update only a revoked row. An active row can never be replaced by a duplicate enrollment.
+   const {data:reenabled,error:updateError}=await db.from('hive_local_worker_credentials').update(values).eq('id',1).eq('active',false).select('id');
+   if(updateError)return send(503,{error:'WORKER_PROVISION_FAILED'});
+   if(reenabled?.length===1)return send(200,{ok:true});
+   // If two first enrollments race, only the insert wins; conflicts preserve the existing hash.
+   const {data:inserted,error:insertError}=await db.from('hive_local_worker_credentials').upsert({id:1,...values},{onConflict:'id',ignoreDuplicates:true}).select('id');
+   if(insertError)return send(503,{error:'WORKER_PROVISION_FAILED'});
+   return inserted?.length===1?send(200,{ok:true}):send(409,{error:'WORKER_ALREADY_ENROLLED'});
  }
  if(body.action==='disable_worker'){
    if(Object.keys(body).some(k=>k!=='action'))return send(400,{error:'INVALID_ACTION'});

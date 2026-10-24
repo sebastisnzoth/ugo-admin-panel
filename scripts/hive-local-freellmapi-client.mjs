@@ -31,6 +31,8 @@ export function createLocalModelClient({ endpoint = process.env.HIVE_LOCAL_FREEA
         });
         } catch (error) {
           if (error?.name === 'TimeoutError' || error?.name === 'AbortError') throw error;
+          if (error?.code === 'ECONNREFUSED' || error?.cause?.code === 'ECONNREFUSED')
+            throw new Error('HIVE_LOCAL_CONNECTION_REFUSED');
           throw new Error('HIVE_PROVIDER_NETWORK_ERROR');
         }
         // Fail once, without an automatic upstream replay: a timeout may have completed remotely.

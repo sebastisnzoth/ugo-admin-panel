@@ -82,4 +82,22 @@ test('Hive TEST agent identity is structured, server-owned and rejects idempoten
  assert.match(sql,/grant execute on function public\.hive_local_create_agent_job\(uuid,text,uuid,text\) to service_role/)
  assert.match(edge,/select\('id,status,agent_id,answer,model,error_code,created_at,updated_at'\)/)
  assert.doesNotMatch(edge,/jobRole\(prompt\)/)
+})
+
+test('worker provisioning cannot rotate an active credential on a duplicate request',()=>{
+ const edge=fs.readFileSync('supabase/functions/ugo-hive-local-jobs/index.ts','utf8')
+ assert.match(edge,/\.eq\('active',false\)/)
+ assert.match(edge,/ignoreDuplicates:true/)
+ assert.match(edge,/WORKER_ALREADY_ENROLLED/)
+ assert.match(consoleCode,/workerStatusReady/)
+ assert.match(consoleCode,/workerBusy/)
+ assert.match(consoleCode,/disabled=\{workerBusy\|\|!workerStatusReady\|\|workerEnrolled\}/)
+})
+
+test('TEST Edge accepts only sanitized worker completion codes',()=>{
+ const edge=fs.readFileSync('supabase/functions/ugo-hive-local-jobs/index.ts','utf8')
+ assert.match(edge,/HIVE_LOCAL_CONNECTION_REFUSED/)
+ assert.match(edge,/HIVE_INVALID_INFERENCE_RESULT/)
+ assert.match(edge,/\^HIVE_PROVIDER_HTTP_/)
+ assert.match(edge,/INVALID_COMPLETION/)
 });

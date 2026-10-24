@@ -6,7 +6,7 @@ const edge=fs.readFileSync('supabase/functions/ugo-hive-local-jobs/index.ts','ut
 test('mission data is isolated with RLS and only a privileged service can mutate',()=>{
  assert.match(sql,/hive_local_missions enable row level security/);
  assert.match(sql,/hive_local_mission_tasks enable row level security/);
- assert.match(sql,/revoke all on public\.hive_local_missions from anon,authenticated/);
+ assert.match(sql,/revoke all on public\.hive_local_missions from public,anon,authenticated/);
  assert.match(sql,/revoke all on function public\.hive_local_advance_mission\(uuid,uuid\) from public,anon,authenticated/);
  assert.match(sql,/auth\.role\(\) is distinct from 'service_role'/);
 });
@@ -62,4 +62,14 @@ test('mission Console holds idempotency key across uncertain requests',()=>{
 test('mission create RPC service grant matches its four-argument signature',()=>{
  assert.match(sql,/grant execute on function public\.hive_local_create_mission\(uuid,text,text\[\],uuid\) to service_role/);
  assert.doesNotMatch(sql,/grant execute on function public\.hive_local_create_mission\(uuid,text,text\[\]\) to service_role/);
+});
+
+test('mission cancellation locks and rechecks the current job before cancelling',()=>{
+ assert.match(sql,/select \* into j from public\.hive_local_inference_jobs where id=m\.current_job_id for update/);
+ assert.match(sql,/if found and j\.status='RUNNING' then return false;end if/);
+});
+
+test('mission tables explicitly revoke PUBLIC as well as browser roles',()=>{
+ assert.match(sql,/revoke all on public\.hive_local_missions from public,anon,authenticated/);
+ assert.match(sql,/revoke all on public\.hive_local_mission_tasks from public,anon,authenticated/);
 });

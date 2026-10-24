@@ -6,7 +6,16 @@ import { runLocalHiveAgent } from './hive-local-agent-runner.mjs';
 export async function processHivePoll({claim, complete, policy, run = runLocalHiveAgent} = {}) {
   if (typeof claim !== 'function' || typeof complete !== 'function' || !policy)
     throw Error('HIVE_POLL_CONFIGURATION_REQUIRED');
-  const job = await claim();
+  let job;
+  try { job = await claim(); }
+  catch (error) {
+    const code = String(error?.message || '');
+    // An HTTP error, timeout or malformed reply may follow a successful server lease.
+    // Never issue another claim automatically until that outcome is reconciled.
+    if (!/UNAUTHORIZED|AUTH_REQUIRED|^HIVE_TEST_RATE_LIMITED$/.test(code))
+      throw Error('HIVE_CLAIM_UNCERTAIN');
+    throw error;
+  }
   if (job == null) return {status:'IDLE'};
   if (typeof job !== 'object' || Array.isArray(job) ||
       typeof job.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(job.id) ||
@@ -36,11 +45,12 @@ export async function processHivePoll({claim, complete, policy, run = runLocalHi
       'HIVE_INVALID_PROVIDER_RESPONSE','HIVE_RESPONSE_TOO_LARGE',
       'HIVE_BUSY','HIVE_LOCAL_API_KEY_REQUIRED','HIVE_LOCAL_ENDPOINT_REQUIRED',
       'HIVE_INVALID_MESSAGES','HIVE_MODEL_REQUIRED','HIVE_PROVIDER_NETWORK_ERROR',
-      'HIVE_PROVIDER_HTTP_400','HIVE_PROVIDER_HTTP_401','HIVE_PROVIDER_HTTP_403',
-      'HIVE_PROVIDER_HTTP_404','HIVE_PROVIDER_HTTP_422','HIVE_PROVIDER_HTTP_500',
-      'HIVE_PROVIDER_HTTP_502','HIVE_PROVIDER_HTTP_504'
+      'HIVE_LOCAL_CONNECTION_REFUSED','HIVE_PROVIDER_HTTP_400','HIVE_PROVIDER_HTTP_401',
+      'HIVE_PROVIDER_HTTP_403','HIVE_PROVIDER_HTTP_404','HIVE_PROVIDER_HTTP_422',
+      'HIVE_PROVIDER_HTTP_500','HIVE_PROVIDER_HTTP_502','HIVE_PROVIDER_HTTP_504'
     ]);
-    outcome = {status:'FAILED',code:recognized.has(code)?code:
+    const safeProviderHttp = /^HIVE_PROVIDER_HTTP_[1-5][0-9]{2}$/.test(code);
+    outcome = {status:'FAILED',code:recognized.has(code)||safeProviderHttp?code:
       error?.name === 'TimeoutError' || error?.name === 'AbortError'
         ? 'HIVE_PROVIDER_TIMEOUT' : 'HIVE_LOCAL_INFERENCE_FAILED'};
   }

@@ -44,3 +44,9 @@ test('uncertain completion halts the worker without retrying a lease',async()=>{
   wait:async()=>{throw Error('MUST_NOT_WAIT')}}),/HIVE_WORKER_RECONCILIATION_REQUIRED/);
  assert.equal(calls,1);
 });
+test('uncertain claim also halts without an automatic poll retry',async()=>{
+ let calls=0;
+ await assert.rejects(runHiveTestWorkerLoop({token,policy,poll:async()=>{calls++;throw Error('HIVE_CLAIM_UNCERTAIN')},
+  wait:async()=>{throw Error('MUST_NOT_WAIT')}}),/HIVE_WORKER_RECONCILIATION_REQUIRED/);
+ assert.equal(calls,1);
+});
