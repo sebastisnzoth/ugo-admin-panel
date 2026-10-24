@@ -147,14 +147,15 @@ test('restored provider GPS freshness uses persisted capture time rather than pa
 test('GPS candidate validation rejects stale, future and inaccurate device fixes at runtime',()=>{
  const body=tracker.match(/function usableBrowserPosition\(pos:GeolocationPosition\)\{([\s\S]*?)\n\}/)?.[1]
  assert.ok(body,'pure browser position validation function must exist')
- const usable=new Function('pos',body)
+ const usable=new Function('pos','MAX_ACCEPTABLE_ACCURACY_M','MAX_POSITION_AGE_MS',body)
+ const isUsable=pos=>usable(pos,250,30_000)
  const now=Date.now()
  const position=(timestamp,accuracy=16,latitude=-27.59,longitude=-48.55)=>({timestamp,coords:{latitude,longitude,accuracy}})
- assert.equal(usable(position(now-1_000)),true)
- assert.equal(usable(position(now-31_000)),false,'expired browser fix must be rejected')
- assert.equal(usable(position(now+6_000)),false,'future-dated browser fix must be rejected')
- assert.equal(usable(position(now,251)),false,'low precision fix must be rejected')
- assert.equal(usable(position(now,16,0,0)),false,'Null Island must be rejected')
+ assert.equal(isUsable(position(now-1_000)),true)
+ assert.equal(isUsable(position(now-31_000)),false,'expired browser fix must be rejected')
+ assert.equal(isUsable(position(now+6_000)),false,'future-dated browser fix must be rejected')
+ assert.equal(isUsable(position(now,251)),false,'low precision fix must be rejected')
+ assert.equal(isUsable(position(now,16,0,0)),false,'Null Island must be rejected')
 })
 
 test('GPS publish and profile rehydration never renew a captured fix or accept out-of-order Realtime timestamps',()=>{
