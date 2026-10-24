@@ -909,3 +909,11 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 
 ### 2026-10-24 — Separación de PR legales
 - Se quitaron los duplicados `public/privacidade.html` y `public/termos.html` de la PR técnica #582. Los textos de la fase personal de pruebas permanecen exclusivamente en la PR #583 (`release/legal-pages-personal-test-20261024`). No se eliminaron las páginas de #583. El cambio elimina conflicto y evita arrastrar Google Calendar al publicar documentos legales. Pendiente CI del SHA actualizado y gate seguro de despliegue.
+
+
+### 2026-10-24 07:35 BRT — P0 TEST: infra degradada; reducir llamadas opcionales Calendar (PR #582)
+- Baseline de main: `8077edae7e4083439ced9056770003d995876d1f`. PR #580 ya fusionado; PR #582 permanece sin integrar.
+- CI del SHA `7e9202c4`: P0 E2E run 40082696473 FAIL antes del flujo en `read categories` con PostgREST `PGRST002`; Admin Realtime 40082696576 y Cross-role 40082696650 fallan con Auth `504`; Cross Performance 40082696469 falla Auth `504`. Core CI, Cross Security, Auth Isolation, Hugo y Roadmap PASS. No atribuir los errores de infraestructura al matching.
+- Supabase TEST `tmossnqfwfwjrtzwcbmm` reporta `ACTIVE_HEALTHY` en control plane, pero SQL de solo lectura termina con `Connection terminated due to connection timeout`. Logs PostgreSQL entre 08:00–10:30 UTC: 37 `cron job 3 job startup timeout`, 40 arranques del job `private.retry_unmatched_services()`, 2 ejecuciones completadas; entre 09:00–10:30 UTC hubo 46 `canceling statement due to statement timeout`. Correlación observada; causa raíz aún no probada. No reiniciar, cancelar cron ni ejecutar DDL a ciegas.
+- Corrección de carga independiente: el hook opcional de Calendar consultaba `/api/calendar/sync` cada 5 minutos y en cada cambio de servicio aun sin conexión Google. En PR #582 se comprueba primero `status`, se cachea por token, se omite el sync cuando está desconectado, se invalida al cambiar de cuenta y se mantiene el gate de host Vercel. No cambia Auth, matching, RLS ni Supabase.
+- Test focalizado en Node con TypeScript transpile y mocks de React: PASS para cuenta desconectada, cambio de identidad, cuenta conectada y Pages sin backend. Pendientes Core CI, seguridad, P0 E2E y cross-role sobre el SHA final, además de recuperación de PostgreSQL TEST y pruebas humanas GPS. **NO MERGE / NO DEPLOY** hasta verificar.
