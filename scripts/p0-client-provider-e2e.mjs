@@ -405,6 +405,16 @@ try{
   must(matching,'iniciar_matching')
   }
 
+  if(UI){
+    let foundOffer=false
+    for(let attempt=0;attempt<45;attempt++){
+      const current=must(await admin.from('ofertas_servicio').select('id').eq('servicio_id',serviceId).eq('proveedor_id',providerId).limit(1),'observe UI matching')
+      if(current.data?.length){foundOffer=true;break}
+      await new Promise(resolve=>setTimeout(resolve,1000))
+    }
+    assert.ok(foundOffer,'P0_CLIENT_UI_MATCHING_DID_NOT_CREATE_OFFER')
+    stage('ui_matching_persisted',{serviceId,origin:'CLIENT_UI',noManualRpc:true})
+  }
   const serviceAfterMatch=must(await admin.from('servicios').select('id,estado,proveedor_id,matching_expires_at').eq('id',serviceId).single(),'read service after matching')
   const offers=must(await admin.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado,ranking,distancia_km,tarifa_ofrecida,expira_at').eq('servicio_id',serviceId),'read persisted offers').data||[]
   stage('matching_persisted',{service:serviceAfterMatch.data,offers})
