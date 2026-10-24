@@ -53,3 +53,12 @@ test('OAuth allows each active UGO user to connect, while only providers mirror 
 })
 
 test('calendar connection controls are visible in administrator settings with own session',async()=>{const admin=await read('src/mvp/AdminPhase2.tsx');assert.match(admin,/AdminGoogleCalendarSettings/);assert.match(admin,/UserGoogleCalendarConnect accessToken=\{token\}/);assert.match(admin,/supabase\.auth\.getSession\(\)/);assert.match(admin,/settingsView==='system'/)})
+
+test('calendar identity cannot show previous account during auth role switch',async()=>{
+ const component=await read('src/mvp/UserGoogleCalendarConnect.tsx')
+ assert.match(component,/loadedToken!==accessToken/)
+ assert.match(component,/setLoadedToken\(''\);setConnected\(false\);setEmail\(null\)/)
+ assert.match(component,/alive&&tokenRef\.current===accessToken/)
+ assert.match(component,/if\(isCurrent\(\)\)\{setConfigured\(result\.configured\);setConnected\(result\.connected\);setEmail\(result\.email\)\}/)
+ assert.match(component,/if\(tokenRef\.current===accessToken\)\{setConnected\(false\);setEmail\(null\)\}/)
+})
