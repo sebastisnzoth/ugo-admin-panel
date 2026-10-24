@@ -35,7 +35,7 @@ test('superadmin Realtime reloads are throttled, coalesced and stop when hidden'
  assert.match(source,/lastRealtimeReload=useRef\(Date\.now\(\)\)/)
  assert.match(source,/realtimeReloadBusy=useRef\(false\)/)
  assert.match(source,/realtimeReloadPending=useRef\(false\)/)
- assert.match(source,/if\(document\.visibilityState==='hidden'\)return/)
+ assert.match(source,/if\(!alive\|\|document\.visibilityState==='hidden'\)return/)
  assert.match(source,/if\(reloadTimer\.current\)return/)
  assert.match(source,/Math\.max\(250,8_000-\(Date\.now\(\)-lastRealtimeReload\.current\)\)/)
  assert.match(source,/realtimeReloadPending\.current=false;refresh\(\)/)
@@ -46,14 +46,14 @@ test('superadmin Realtime reloads are throttled, coalesced and stop when hidden'
 
 test('superadmin coalesces repeated realtime events in execution', async () => {
  const source=await readFile(new URL('../../src/mvp/SuperAdminCommandCenter.tsx',import.meta.url),'utf8')
- const match=source.match(/const refresh=\(\)=>\{[\s\S]*?\};const channel=db\.channel/)
+ const match=source.match(/const refresh=\(\)=>\{[\s\S]*?\};const onVisibility=/)
  assert.ok(match,'refresh handler must be found')
  let now=10_000,calls=0
  const timers=[]
  const reloadTimer={current:null},lastRealtimeReload={current:0},realtimeReloadBusy={current:false},realtimeReloadPending={current:false}
  const load=()=>{calls++;return Promise.resolve()}
  const setTimeout=(fn,delay)=>{timers.push({fn,delay});return timers.length}
- const refresh=new Function('document','reloadTimer','lastRealtimeReload','realtimeReloadBusy','realtimeReloadPending','load','setTimeout','Date','alive',match[0].replace(/;const channel=db\.channel$/,'')+';return refresh')(
+ const refresh=new Function('document','reloadTimer','lastRealtimeReload','realtimeReloadBusy','realtimeReloadPending','load','setTimeout','Date','alive',match[0].replace(/;const onVisibility=$/,'')+';return refresh')(
   {visibilityState:'visible'},reloadTimer,lastRealtimeReload,realtimeReloadBusy,realtimeReloadPending,load,setTimeout,{now:()=>now},true)
  refresh();refresh();refresh()
  assert.equal(timers.length,1,'event burst must schedule only one DB reload')
