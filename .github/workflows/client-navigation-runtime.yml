@@ -27,7 +27,7 @@ env:
 jobs:
   runtime-proof:
     name: Cliente rutas y acciones ↔ UGO TEST
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4

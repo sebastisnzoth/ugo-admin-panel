@@ -31,7 +31,7 @@ env:
 jobs:
   runtime-proof:
     name: Admin responsive mobile tablet desktop
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - name: Checkout exact triggering SHA
