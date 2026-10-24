@@ -46,3 +46,5 @@ test('OAuth allows each active UGO user to connect, while only providers mirror 
  assert.match(component,/disconnectProviderCalendar\(accessToken\)/)
  assert.doesNotMatch(component,/service_role|refresh_token/)
 })
+
+test('calendar connection controls are visible in administrator settings with own session',async()=>{const admin=await read('src/mvp/AdminPhase2.tsx');assert.match(admin,/AdminGoogleCalendarSettings/);assert.match(admin,/UserGoogleCalendarConnect accessToken=\{token\}/);assert.match(admin,/supabase\.auth\.getSession\(\)/);assert.match(admin,/settingsView==='system'/)})
