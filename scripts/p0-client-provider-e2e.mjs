@@ -205,7 +205,22 @@ async function submitClientRequestUi(page,category){
   await page.locator('.ugo-payment-screen footer button').click()
   const submit=page.locator('.ugo-summary-screen footer button')
   await submit.waitFor({state:'visible',timeout:30000})
+  // ClientSummaryScreen reads the stored draft after its own role session hydrates.
+  // A visible summary can briefly show placeholders while Auth is loading; never
+  // submit until the real category, description and address are rendered.
+  const expectedDescription=category.nombre+' '+SERVICE_DESCRIPTION
+  const expectedAddress='Av. Beira-Mar Norte, 1000, Florianópolis'
+  await page.waitForFunction(({description,address})=>{
+    const summary=document.querySelector('.ugo-summary-screen')
+    const button=summary?.querySelector('footer button')
+    const text=summary?.textContent||''
+    return button instanceof HTMLButtonElement&&!button.disabled
+      &&text.includes(description)&&text.includes(address)
+  },{description:expectedDescription,address:expectedAddress},{timeout:30000})
   assert.ok(await submit.isEnabled(),'P0_CLIENT_UI_SUMMARY_NOT_READY')
+  const summaryText=await page.locator('.ugo-summary-screen').innerText()
+  assert.ok(summaryText.includes(expectedDescription),'P0_CLIENT_UI_SUMMARY_DESCRIPTION_MISMATCH')
+  assert.ok(summaryText.includes(expectedAddress),'P0_CLIENT_UI_SUMMARY_ADDRESS_MISMATCH')
   await submit.click()
   await page.locator('.ugo-matching-screen').waitFor({state:'visible',timeout:45000})
 }
