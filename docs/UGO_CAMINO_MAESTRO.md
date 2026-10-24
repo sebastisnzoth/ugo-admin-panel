@@ -507,3 +507,6 @@ Se actualizó el E2E existente en PR #580 para que un pedido en modo browser naz
 - `Core CI` SHA `1d595fa` falló en `ugo-i18n-audit` por 10 textos JSX nuevos del control Calendar sin traducciones. Se corrigió `src/mvp/UserGoogleCalendarConnect.tsx` con copias pt-BR/es/en reales, manteniendo mismo flujo OAuth.
 - `cross-performance-runtime.yml` y `admin-realtime-runtime.yml` fallaron al instalar Playwright Chromium 1.56.1 bajo runner flotante `ubuntu26.04`; se fija `runs-on: ubuntu-24.04` sin desactivar pruebas. Resultado de los nuevos workflows pendiente para el SHA vigente.
 - Vercel `ugo-admin-panel`: existen las 4 variables `GOOGLE_CALENDAR_*` por nombre, sin inspeccionar secretos; falta prueba OAuth de usuario TEST y release controlado. Pages y PROD no se modificaron.
+
+### 2026-10-24 — Separación de PR legales
+- Se quitaron los duplicados `public/privacidade.html` y `public/termos.html` de la PR técnica #582. Los textos de la fase personal de pruebas permanecen exclusivamente en la PR #583 (`release/legal-pages-personal-test-20261024`). No se eliminaron las páginas de #583. El cambio elimina conflicto y evita arrastrar Google Calendar al publicar documentos legales. Pendiente CI del SHA actualizado y gate seguro de despliegue.
