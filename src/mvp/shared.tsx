@@ -183,7 +183,7 @@ export function useRoleSession(role:UgoRole){
   const profileUserId=session?.user.id
   useEffect(()=>{
     const userId=profileUserId
-    if(!userId)return
+    if(!userId){profileReconnectState.current={userId:'',failures:0};return}
     if(profileReconnectState.current.userId!==userId)profileReconnectState.current={userId,failures:0}
     let alive=true,reconnectTimer:number|undefined
     const refresh=()=>{const current=profileSessionRef.current;if(alive&&current?.user.id===userId)void loadProfile(current).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos actualizar tu perfil.')})}
@@ -202,14 +202,14 @@ export function useRoleSession(role:UgoRole){
       profileReconnectState.current.failures=Math.min(5,profileReconnectState.current.failures+1)
       reconnectTimer=window.setTimeout(()=>{reconnectTimer=undefined;if(alive)setProfileChannelEpoch(value=>value+1)},delay)
     }
-    const onOnline=()=>{profileReconnectState.current.failures=0;refresh();reconnect()}
+    const onOnline=()=>{profileReconnectState.current.failures=0;if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}refresh();reconnect()}
     const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
     window.addEventListener('online',onOnline)
     document.addEventListener('visibilitychange',onVisibility)
     const channelName=`ugo-profile-${role}-${userId}-${profileChannelInstance}-${profileChannelEpoch}`
     const channel=supabase.channel(channelName)
     channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
-    channel.subscribe(status=>{if(status==='SUBSCRIBED'){profileReconnectState.current.failures=0;refreshRealtime()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')reconnect()})
+    channel.subscribe(status=>{if(status==='SUBSCRIBED'){if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}profileReconnectState.current.failures=0;refreshRealtime()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')reconnect()})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
   },[loadProfile,profileChannelEpoch,profileChannelInstance,role,profileUserId,supabase])
   const retrySession=useCallback(()=>{setLoading(true);setSessionEpoch(value=>value+1)},[]);const retryProfile=useCallback(async()=>{if(!session)return;setLoading(true);try{await loadProfile(session);setError('')}catch(e){setError(e instanceof Error?e.message:'No pudimos recuperar tu perfil.')}finally{setLoading(false)}},[loadProfile,session]);const signOut=useCallback(async()=>{const{error:signOutError}=await supabase.auth.signOut({scope:'local'});if(signOutError)throw signOutError;profileGeneration.current++;recordSessionDiagnostic(role,'auth','explicit_sign_out');setSessionChecked(true);setProfile(null);setSession(null)},[role,supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut({scope:'local'})}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,sessionChecked,profile,loading,error,setError,retrySession,retryProfile,signOut,clearAccess}
