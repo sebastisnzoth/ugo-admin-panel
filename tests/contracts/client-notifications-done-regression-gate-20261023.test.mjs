@@ -59,3 +59,16 @@ test('client notification E2E, Judge and Sentinel use current Spanish timeline w
   assert.ok(es.includes('"clientTracking.'+key+'": "'+label+'"'),'mismatched translation '+key)
  }
 })
+
+const statusRuntime=readFileSync(new URL('../../scripts/client-status-runtime.mjs',import.meta.url),'utf8')
+const statusJudge=readFileSync(new URL('../../scripts/client-status-judge.mjs',import.meta.url),'utf8')
+const statusSentinel=readFileSync(new URL('../../scripts/client-status-sentinel.mjs',import.meta.url),'utf8')
+
+test('status lifecycle regression checks the same six localized labels and independently validates proof',()=>{
+ const expected="['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado']"
+ assert.ok(statusRuntime.includes(expected))
+ assert.ok(statusJudge.includes(expected))
+ assert.match(statusSentinel,/for\(const step of proof\.sequence\)assert\.deepEqual\(step\.labels,timelineLabels/)
+ assert.match(statusSentinel,/assert\.equal\(proof\.cleanup_ok,true\)/)
+ assert.match(statusSentinel,/assert\.match\(tracking,\/t/)
+})
