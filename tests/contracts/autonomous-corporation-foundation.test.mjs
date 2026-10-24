@@ -63,3 +63,13 @@ test('autonomy mode control explains persisted state and preserves audited backe
  assert.match(shell,/api\/operations\?op=autonomy-mode/);assert.match(shell,/reason:auditReason/);assert.match(shell,/No se cambió el modo de autonomía/)
  assert.match(operations,/superadmin_set_autonomy_mode/);assert.match(operations,/p_reason/)
 })
+
+test('cross-role runtime never activates autonomy while checking the control',()=>{
+ const roleUi=fs.readFileSync('scripts/role-ui-runtime.mjs','utf8')
+ const start=roleUi.indexOf('async function testAutonomyControl')
+ const end=roleUi.indexOf('async function testAdmin',start)
+ assert.ok(start>=0&&end>start)
+ const control=roleUi.slice(start,end)
+ assert.match(control,/read_only_state_verified:true,transition_tested:false/)
+ assert.doesNotMatch(control,/\.click\(|autonomy-mode|shadow_persisted/)
+})
