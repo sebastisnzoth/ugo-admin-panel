@@ -375,6 +375,18 @@ try{
   }
 
   // 4 · client creates the request and persists the pickup ---------------
+  if(UI){
+    const category=categories.find(c=>c.id===categoryId)
+    assert.ok(category,'P0_UI_CATEGORY_MISSING')
+    await submitClientRequestUi(clientUi.page,category)
+    for(let attempt=0;attempt<40;attempt++){
+      const observed=must(await admin.from('servicios').select('id,estado,numero,cliente_id,categoria_id,descripcion').eq('cliente_id',clientId),'observe UI service')
+      const found=(observed.data||[]).find(row=>String(row.descripcion||'').includes(SERVICE_DESCRIPTION))
+      if(found){serviceId=found.id;stage('service_created',{...found,origin:'CLIENT_UI'});break}
+      await new Promise(resolve=>setTimeout(resolve,1000))
+    }
+    assert.ok(serviceId,'P0_CLIENT_UI_DID_NOT_CREATE_SERVICE')
+  }else{
   const insertedService=must(await client.from('servicios').insert({
     cliente_id:clientId,categoria_id:categoryId,estado:'buscando',descripcion:SERVICE_DESCRIPTION,
     direccion_cliente:'Rua P0 E2E TEST, Florianópolis',zona:'TEST',tarifa:120,urgencia:false,ambiente:'real',
@@ -391,6 +403,7 @@ try{
   const matching=await client.rpc('iniciar_matching',{p_servicio_id:serviceId})
   stage('matching_rpc',{rows:Array.isArray(matching.data)?matching.data.length:null,data:matching.data,error:describe(matching.error)})
   must(matching,'iniciar_matching')
+  }
 
   const serviceAfterMatch=must(await admin.from('servicios').select('id,estado,proveedor_id,matching_expires_at').eq('id',serviceId).single(),'read service after matching')
   const offers=must(await admin.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado,ranking,distancia_km,tarifa_ofrecida,expira_at').eq('servicio_id',serviceId),'read persisted offers').data||[]
