@@ -62,7 +62,7 @@ jobs:
         with: { name: "readiness-client-saved-places-${{ github.sha }}", path: artifacts/client-saved-places }
 
   client-responsive:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
