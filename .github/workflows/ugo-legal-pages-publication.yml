@@ -1,0 +1,56 @@
+name: UGO Legal Pages Publication Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - public/privacidade.html
+      - public/termos.html
+      - .github/workflows/ugo-legal-pages-publication.yml
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-legal-pages-publication
+  cancel-in-progress: false
+
+jobs:
+  legal-pages-public:
+    name: Verify real public legal documents
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source documents in main
+        run: |
+          test -s public/privacidade.html
+          test -s public/termos.html
+          grep -Fq 'Política de Privacidade do UGO' public/privacidade.html
+          grep -Fq 'Termos de Uso do UGO' public/termos.html
+      - name: Verify published Vercel pages, not SPA fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          for entry in 'privacidade.html|Política de Privacidade do UGO' 'termos.html|Termos de Uso do UGO'; do
+            path="${entry%%|*}"
+            expected="${entry#*|}"
+            verified=0
+            for attempt in $(seq 1 15); do
+              status="$(curl -L -sS --max-time 15 -o /tmp/ugo-legal.html -w '%{http_code}' "https://ugo-admin-panel.vercel.app/${path}" || true)"
+              if [ "$status" = "200" ] && grep -Fq "$expected" /tmp/ugo-legal.html && grep -Fq '<html lang="pt-BR">' /tmp/ugo-legal.html; then
+                echo "PASS: public UGO legal document /$path (HTTP 200, expected content)"
+                verified=1
+                break
+              fi
+              echo "::warning::/$path not yet verified (attempt $attempt, HTTP $status)"
+              sleep 15
+            done
+            if [ "$verified" -ne 1 ]; then
+              echo "::error::/$path is not publicly serving the required legal document. Release remains OPEN."
+              exit 1
+            fi
+          done
