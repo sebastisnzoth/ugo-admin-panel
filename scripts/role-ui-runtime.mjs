@@ -340,42 +340,18 @@ async function testAdministrativeSession(viewport,name,key){
 async function testAutonomyControl(page,name){
  const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
  assert.ifError(before.error)
- // Do not override the operator's live TEST autonomy setting. Mutating a
- // non-idle state would interfere with autonomous jobs and manual operations.
- if(before.data?.mode!=='OFF'){
-  assert.ok(['SHADOW','ON'].includes(before.data?.mode),'AUTONOMY_UNRECOGNIZED_STATE')
-  const active=page.getByRole('radio',{name:new RegExp(before.data.mode)})
-  await active.waitFor({state:'visible',timeout:20000})
-  await page.waitForFunction(mode=>Array.from(document.querySelectorAll('[role="radio"]')).some(el=>el.textContent?.includes(mode)&&el.getAttribute('aria-checked')==='true'),before.data.mode,{timeout:20000}).catch(()=>{})
-  const confirmed=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
-  assert.ifError(confirmed.error)
-  assert.equal(confirmed.data?.mode,before.data.mode,'AUTONOMY_STATE_CHANGED_DURING_TEST')
-  assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
-  results.push({role:'superadmin-autonomy-control',viewport:name,status:'SKIPPED',reason:'NON_IDLE_TEST_STATE',observed_mode:before.data.mode,read_only_state_verified:true,transition_tested:false})
-  return
- }
- const actor=sessions.admin.user.id
- try{
-  await page.getByRole('radio',{name:/SHADOW/}).click()
-  await page.waitForFunction(()=>document.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.includes('SHADOW'),null,{timeout:20000})
-  const shadow=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
-  assert.ifError(shadow.error)
-  assert.equal(shadow.data.mode,'SHADOW')
-  assert.equal(shadow.data.updated_by,actor)
-  await page.getByRole('radio',{name:/OFF/}).click()
-  await page.waitForFunction(()=>document.querySelector('[role="radio"][aria-checked="true"]')?.textContent?.includes('OFF'),null,{timeout:20000})
-  const off=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
-  assert.ifError(off.error)
-  assert.equal(off.data.mode,'OFF')
-  results.push({role:'superadmin-autonomy-control',viewport:name,status:'PASS',api:'exact-source local TEST',shadow_persisted:true,off_restored:true})
- }finally{
-  const current=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
-  assert.ifError(current.error)
-  if(current.data?.mode==='SHADOW'&&current.data.updated_by===actor){
-   const response=await fetch('http://127.0.0.1:4174/api/operations?op=autonomy-mode',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+sessions.admin.access_token},body:JSON.stringify({mode:'OFF',reason:'Restore transient TEST UI probe'})})
-   assert.equal(response.ok,true,'AUTONOMY_TEST_RESTORE_FAILED')
-  }
- }
+ const mode=before.data?.mode
+ assert.ok(['OFF','SHADOW','ON'].includes(mode),'AUTONOMY_UNRECOGNIZED_STATE')
+ // Shared TEST evidence must never activate autonomy, even transiently. Verify
+ // the operator's current state in the UI and database without clicking a mode.
+ const active=page.getByRole('radio',{name:new RegExp(mode)})
+ await active.waitFor({state:'visible',timeout:20000})
+ await page.waitForFunction(expected=>Array.from(document.querySelectorAll('[role="radio"]')).some(el=>el.textContent?.includes(expected)&&el.getAttribute('aria-checked')==='true'),mode,{timeout:20000})
+ const confirmed=await privileged.from('autonomous_company_state').select('mode').maybeSingle()
+ assert.ifError(confirmed.error)
+ assert.equal(confirmed.data?.mode,mode,'AUTONOMY_STATE_CHANGED_DURING_TEST')
+ assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
+ results.push({role:'superadmin-autonomy-control',viewport:name,status:mode==='OFF'?'PASS':'SKIPPED',reason:mode==='OFF'?'READ_ONLY_OFF_REQUIRED':'NON_IDLE_TEST_STATE',observed_mode:mode,read_only_state_verified:true,transition_tested:false})
 }
 
 async function testAdmin(viewport,name){
