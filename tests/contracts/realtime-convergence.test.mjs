@@ -29,3 +29,15 @@ test('provider realtime resyncs authoritative state after reconnect', async () =
   assert.match(source, /window\.removeEventListener\('online',handleOnline\)/)
   assert.match(source, /document\.addEventListener\('visibilitychange',onVisibility\)/)
 })
+
+test('superadmin Realtime reloads are throttled, coalesced and stop when hidden', async () => {
+ const source=await readFile(new URL('../../src/mvp/SuperAdminCommandCenter.tsx',import.meta.url),'utf8')
+ assert.match(source,/lastRealtimeReload=useRef\(Date\.now\(\)\)/)
+ assert.match(source,/realtimeReloadBusy=useRef\(false\)/)
+ assert.match(source,/realtimeReloadPending=useRef\(false\)/)
+ assert.match(source,/if\(document\.visibilityState==='hidden'\)return/)
+ assert.match(source,/if\(reloadTimer\.current\)return/)
+ assert.match(source,/Math\.max\(250,8_000-\(Date\.now\(\)-lastRealtimeReload\.current\)\)/)
+ assert.match(source,/realtimeReloadPending\.current=false;refresh\(\)/)
+ assert.match(source,/if\(reloadTimer\.current\)clearTimeout\(reloadTimer\.current\);dispose\(\)/)
+})
