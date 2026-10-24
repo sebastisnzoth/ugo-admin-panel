@@ -323,10 +323,13 @@ try{
   }
 
   // 3b · authoritative API activation (captures the exact backend rejection)
-  const activated=await provider.rpc('activar_disponibilidad_proveedor',{
-    p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
-  })
-  stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+  if(!UI){
+    const activated=await provider.rpc('activar_disponibilidad_proveedor',{
+      p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
+    })
+    stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+    must(activated,'provider online API-only')
+  }
   if(ui){
     await ui.page.reload({waitUntil:'domcontentloaded'})
     await ui.page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
