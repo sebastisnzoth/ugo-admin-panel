@@ -183,8 +183,11 @@ async function submitClientRequestUi(page,category){
   assert.ok(await next.isEnabled(),'P0_CLIENT_UI_CATEGORY_NOT_DETECTED')
   await next.click()
   await page.locator('.ugo-location-screen').waitFor({state:'visible',timeout:30000})
-  await page.locator('.ugo-location-map button').click()
+  // Filling the address clears the stored pickup; do it before acquiring the
+  // browser GPS fix, otherwise the test inadvertently discards valid coords.
   await page.locator('.ugo-location-screen input[autocomplete="street-address"]').fill('Av. Beira-Mar Norte, 1000, Florianópolis')
+  await page.locator('.ugo-location-map button').click()
+  await page.waitForFunction(()=>Boolean(document.querySelector('.ugo-location-map.has-location'))&&Boolean(document.querySelector('.ugo-location-screen footer button:not(:disabled)')),null,{timeout:30000})
   await page.locator('.ugo-location-screen footer button').click()
   await page.locator('.ugo-when-screen').waitFor({state:'visible',timeout:45000})
   await page.locator('.ugo-when-screen footer button').click()
