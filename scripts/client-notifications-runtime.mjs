@@ -114,6 +114,7 @@ const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino'
 
 let cleanup={ok:false,mode:'none',error:null}
 let verifiedPayment=null
+let completionSource='client.aprobar_servicio'
 async function backendState(){
  const {data,error}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
  assert.ifError(error)
@@ -379,7 +380,26 @@ try{
 
  const {data:approved,error:approveError}=await auth.rpc('aprobar_servicio',{p_servicio_id:fixture.id})
  assert.ifError(approveError)
- assert.equal(approved?.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE')
+ let completed=approved
+ if(requestedMethod==='efectivo'){
+  // Cash work approval does not mean payment was made. Confirm explicitly
+  // as the client; never bypass the cash confirmation state transition.
+  assert.equal(approved?.estado,'esperando_aprobacion','CASH_WORK_APPROVAL_MUST_AWAIT_PAYMENT')
+  assert.ok(approved?.metadata?.trabajo_aprobado_at,'CASH_WORK_APPROVAL_MUST_PERSIST')
+  const {data:cashCompleted,error:cashError}=await auth.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:fixture.id})
+  assert.ifError(cashError)
+  completed=cashCompleted
+  completionSource='client.aprobar_servicio+client.confirmar_pago_efectivo_cliente'
+ }else{
+  assert.equal(approved?.estado,'completado','PROTECTED_PIX_APPROVAL_MUST_COMPLETE_SERVICE')
+ }
+ assert.equal(completed?.estado,'completado','CLIENT_APPROVAL_AND_PAYMENT_MUST_COMPLETE_SERVICE')
+ const {data:finalPayment,error:finalPaymentError}=await admin.from('pagos')
+  .select('id,metodo,estado').eq('id',selectedPayment.id).single()
+ assert.ifError(finalPaymentError)
+ assert.equal(finalPayment?.metodo,requestedMethod,'FINAL_PAYMENT_METHOD_MUST_MATCH_PREFERENCE')
+ assert.equal(finalPayment?.estado,'liberado','COMPLETED_SERVICE_PAYMENT_MUST_BE_RELEASED')
+ verifiedPayment.final_state=finalPayment.estado
  await expectUi('completado','finished')
 
  await page.screenshot({path:'artifacts/client-notifications-runtime.png',fullPage:true})
@@ -424,7 +444,7 @@ const evidence={
   llegado:'provider.publicar_ubicacion_proveedor+marcar_llegada_proveedor',
   en_progreso:'provider.evidence_antes+avanzar_servicio',
   esperando_aprobacion:'provider.evidence_despues+avanzar_servicio',
-  completado:'client.aprobar_servicio',
+  completado:completionSource,
  },
  sequence:transitions,
  notifications:notices,
