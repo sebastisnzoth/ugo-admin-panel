@@ -1,9 +1,17 @@
 import React,{useEffect,useState}from'react'
+import{useLocale}from'../i18n/locale'
 import{getProviderCalendarStatus,startProviderCalendar,disconnectProviderCalendar}from'./provider/providerCalendar'
 
 // A connection belongs to the authenticated UGO user, never to a shared account.
 // A functioning calendar API requires the Vercel serverless runtime.
+const copies={
+ 'pt-BR':{unavailable:'A conexão requer a versão do UGO com servidor de calendário.',loading:'Verificando conexão…',unconfigured:'Google Calendar ainda não está configurado no servidor UGO.',connected:'Conta conectada:',disconnect:'Desconectar Google Calendar',about:'Conecte sua conta Google. O UGO não compartilha calendários entre usuários.',connect:'Conectar Google Calendar'},
+ es:{unavailable:'La conexión requiere la versión de UGO con servidor de calendario.',loading:'Consultando conexión…',unconfigured:'Google Calendar todavía no está configurado en el servidor UGO.',connected:'Cuenta conectada:',disconnect:'Desconectar Google Calendar',about:'Conectá tu propia cuenta Google. UGO no comparte calendarios entre usuarios.',connect:'Conectar Google Calendar'},
+ en:{unavailable:'Connection requires UGO with its calendar server.',loading:'Checking connection…',unconfigured:'Google Calendar is not configured on the UGO server.',connected:'Connected account:',disconnect:'Disconnect Google Calendar',about:'Connect your own Google account. UGO does not share calendars between users.',connect:'Connect Google Calendar'}
+} as const
 export function UserGoogleCalendarConnect({accessToken}:{accessToken:string}){
+ const{locale}=useLocale()
+ const labels=copies[locale as keyof typeof copies]||copies['pt-BR']
  const[connected,setConnected]=useState(false),[email,setEmail]=useState<string|null>(null)
  const[configured,setConfigured]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
  const available=typeof window!=='undefined'&&!window.location.hostname.endsWith('.github.io')&&!import.meta.env.DEV
@@ -24,10 +32,10 @@ export function UserGoogleCalendarConnect({accessToken}:{accessToken:string}){
  }
  return <section className="ugo-user-calendar-connect" aria-label="Google Calendar">
   <strong>Google Calendar</strong>
-  {!available?<p>La conexión requiere la versión de UGO con servidor de calendario.</p>:loading?<p>Consultando conexión…</p>:
-   !configured?<p>Google Calendar todavía no está configurado en el servidor UGO.</p>:
-   connected?<><p>Cuenta conectada: {email||'Google Calendar'}</p><button type="button" disabled={busy} onClick={()=>void disconnect()}>Desconectar Google Calendar</button></>:
-   <><p>Conectá tu propia cuenta Google. UGO no comparte el calendario entre usuarios.</p><button type="button" disabled={busy} onClick={()=>void connect()}>Conectar Google Calendar</button></>}
+  {!available?<p>{labels.unavailable}</p>:loading?<p>{labels.loading}</p>:
+   !configured?<p>{labels.unconfigured}</p>:
+   connected?<><p>{labels.connected} {email||'Google Calendar'}</p><button type="button" disabled={busy} onClick={()=>void disconnect()}>{labels.disconnect}</button></>:
+   <><p>{labels.about}</p><button type="button" disabled={busy} onClick={()=>void connect()}>{labels.connect}</button></>}
   {message&&<p role="alert">{message}</p>}
  </section>
 }
