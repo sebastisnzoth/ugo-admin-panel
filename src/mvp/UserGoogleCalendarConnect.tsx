@@ -1,4 +1,4 @@
-import React,{useEffect,useState}from'react'
+import React,{useEffect,useRef,useState}from'react'
 import{useLocale}from'../i18n/locale'
 import{getProviderCalendarStatus,startProviderCalendar,disconnectProviderCalendar,isCalendarApiHostSupported}from'./provider/providerCalendar'
 
@@ -12,13 +12,22 @@ const copies={
 export function UserGoogleCalendarConnect({accessToken}:{accessToken:string}){
  const{locale}=useLocale()
  const labels=copies[locale as keyof typeof copies]||copies['pt-BR']
+ const tokenRef=useRef(accessToken);tokenRef.current=accessToken
+ const[loadedToken,setLoadedToken]=useState('')
  const[connected,setConnected]=useState(false),[email,setEmail]=useState<string|null>(null)
  const[configured,setConfigured]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
  const available=typeof window!=='undefined'&&isCalendarApiHostSupported(window.location.hostname,import.meta.env.DEV)
- useEffect(()=>{let alive=true;if(!available||!accessToken){setLoading(false);return}
-   void getProviderCalendarStatus(accessToken).then(result=>{if(alive){setConfigured(result.configured);setConnected(result.connected);setEmail(result.email)}})
-     .catch(error=>{if(alive)setMessage(error instanceof Error?error.message:'No se pudo consultar Google Calendar.')})
-     .finally(()=>{if(alive)setLoading(false)})
+ useEffect(()=>{
+   let alive=true
+   // A role/account switch must never display the previous user's calendar email.
+   setLoadedToken('');setConnected(false);setEmail(null);setConfigured(false);setMessage('');setBusy(false)
+   if(!available||!accessToken){setLoading(false);return()=>{alive=false}}
+   setLoading(true)
+   const isCurrent=()=>alive&&tokenRef.current===accessToken
+   void getProviderCalendarStatus(accessToken).then(result=>{
+     if(isCurrent()){setConfigured(result.configured);setConnected(result.connected);setEmail(result.email)}
+   }).catch(error=>{if(isCurrent())setMessage(error instanceof Error?error.message:'No se pudo consultar Google Calendar.')})
+     .finally(()=>{if(isCurrent()){setLoadedToken(accessToken);setLoading(false)}})
    return()=>{alive=false}
  },[accessToken,available])
  const connect=async()=>{if(!available||!accessToken||busy)return;setBusy(true);setMessage('')
@@ -26,13 +35,13 @@ export function UserGoogleCalendarConnect({accessToken}:{accessToken:string}){
    catch(error){setMessage(error instanceof Error?error.message:'No se pudo conectar.');setBusy(false)}
  }
  const disconnect=async()=>{if(!accessToken||busy)return;setBusy(true);setMessage('')
-   try{await disconnectProviderCalendar(accessToken);setConnected(false);setEmail(null)}
+   try{await disconnectProviderCalendar(accessToken);if(tokenRef.current===accessToken){setConnected(false);setEmail(null)}}
    catch(error){setMessage(error instanceof Error?error.message:'No se pudo desconectar.')}
    finally{setBusy(false)}
  }
  return <section className="ugo-user-calendar-connect" aria-label="Google Calendar">
   <strong>Google Calendar</strong>
-  {!available?<p>{labels.unavailable}</p>:loading?<p>{labels.loading}</p>:
+  {!available?<p>{labels.unavailable}</p>:loading||loadedToken!==accessToken?<p>{labels.loading}</p>:
    !configured?<p>{labels.unconfigured}</p>:
    connected?<><p>{labels.connected} {email||'Google Calendar'}</p><button type="button" disabled={busy} onClick={()=>void disconnect()}>{labels.disconnect}</button></>:
    <><p>{labels.about}</p><button type="button" disabled={busy} onClick={()=>void connect()}>{labels.connect}</button></>}
