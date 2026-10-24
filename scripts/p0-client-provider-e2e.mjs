@@ -170,6 +170,28 @@ async function clientUiLogin({email,clientUserId}){
   return {page,context,pageErrors}
 }
 
+async function submitClientRequestUi(page,category){
+  await page.locator('.ugo-home-hugo-cta').click()
+  const description=page.locator('#ugo-need-description')
+  await description.waitFor({state:'visible',timeout:30000})
+  await description.fill(category.nombre+' '+SERVICE_DESCRIPTION)
+  const next=page.locator('.ugo-need-screen footer button')
+  assert.ok(await next.isEnabled(),'P0_CLIENT_UI_CATEGORY_NOT_DETECTED')
+  await next.click()
+  await page.locator('.ugo-location-screen').waitFor({state:'visible',timeout:30000})
+  await page.locator('.ugo-location-map button').click()
+  await page.locator('.ugo-location-screen input[autocomplete="street-address"]').fill('Av. Beira-Mar Norte, 1000, Florianópolis')
+  await page.locator('.ugo-location-screen footer button').click()
+  await page.locator('.ugo-when-screen').waitFor({state:'visible',timeout:45000})
+  await page.locator('.ugo-when-screen footer button').click()
+  await page.locator('.ugo-payment-screen footer button').click()
+  const submit=page.locator('.ugo-summary-screen footer button')
+  await submit.waitFor({state:'visible',timeout:30000})
+  assert.ok(await submit.isEnabled(),'P0_CLIENT_UI_SUMMARY_NOT_READY')
+  await submit.click()
+  await page.locator('.ugo-matching-screen').waitFor({state:'visible',timeout:45000})
+}
+
 async function attemptUiOnline(ui){
   const {page,screenshot}=ui
   const toggle=page.locator('.provider-client-online')
