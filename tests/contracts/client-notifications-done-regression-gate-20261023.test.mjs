@@ -72,3 +72,16 @@ test('status lifecycle regression checks the same six localized labels and indep
  assert.match(statusSentinel,/assert\.equal\(proof\.cleanup_ok,true\)/)
  assert.match(statusSentinel,/assert\.match\(tracking,\/t/)
 })
+
+test('notifications E2E never duplicates a cash payment auto-materialized by the assignment trigger',()=>{
+ assert.match(runtime,/\.select\('metadata,ambiente'\)\.eq\('id',fixture\.id\)\.single\(\)/)
+ assert.match(runtime,/const requestedMethod=String\(paymentContext\?\.metadata\?\.requested_payment_method/)
+ assert.match(runtime,/if\(requestedMethod==='efectivo'\)/)
+ assert.match(runtime,/assert\.ok\(existingPayment\?\.id,'AUTO_CASH_PAYMENT_REQUIRED'\)/)
+ assert.match(runtime,/assert\.equal\(existingPayment\.procesador,'efectivo'/)
+ assert.match(runtime,/assert\.equal\(existingPayment\.modelo_pago,'presencial'/)
+ assert.match(runtime,/assert\.equal\(existingPayment,null,'UNEXPECTED_PREEXISTING_PIX_PAYMENT'\)/)
+ assert.match(runtime,/assert\.equal\(selectedPayment\.metodo,requestedMethod,'TEST_PAYMENT_PREFERENCE_MISMATCH'\)/)
+ assert.match(runtime,/payment:\{method:selectedPayment\.metodo,state:selectedPayment\.estado,environment:selectedPayment\.ambiente/)
+ assert.doesNotMatch(runtime,/payment:\{method:'pix',state:'retenido',environment:'demo'\}/)
+})
