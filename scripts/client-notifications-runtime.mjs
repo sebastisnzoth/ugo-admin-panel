@@ -107,7 +107,7 @@ const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino'
  // fails on a missing/wrong live banner without hard-coding a duplicate label.
  const localeSource=await fs.readFile('src/i18n/locale.tsx','utf8')
  const spanishMessages={}
- for(const match of localeSource.matchAll(/Object\\.assign\\(messages\\["es"\\],(\\{[^\\n]*\\})\\)/g)){
+ for(const match of localeSource.matchAll(/Object\.assign\(messages\["es"\],(\{[^\n]*\})\)/g)){
   Object.assign(spanishMessages,JSON.parse(match[1]))
  }
  const displayedTitle=notice=>spanishMessages['notification.'+notice.tipo]||notice.titulo
