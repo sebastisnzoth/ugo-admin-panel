@@ -43,7 +43,9 @@ test('OAuth allows each active UGO user to connect, while only providers mirror 
  assert.match(api,/if\(profile\.tipo==='proveedor'\)await syncCalendarForProvider\(sb,userId\)/)
  assert.match(api,/select\('tipo,activo'\)\.eq\('id',userId\)/)
  assert.match(api,/!\['cliente','proveedor','admin','superadmin'\]\.includes\(String\(profile\.tipo\)\)/)
- assert.doesNotMatch(api,/if\(profile\?\.tipo!=='proveedor'\)throw/)
+ const callback=api.split("if(action==='callback')")[1]?.split('const{sb,user,role}=await authenticatedCalendarUser(req)')[0]||''
+ assert.ok(callback.length>100,'OAuth callback must be present')
+ assert.doesNotMatch(callback,/if\(profile\?\.tipo!=='proveedor'\)throw/)
  assert.match(client,/UserGoogleCalendarConnect accessToken=\{session\.access_token\}/)
  assert.match(component,/startProviderCalendar\(accessToken\)/)
  assert.match(component,/disconnectProviderCalendar\(accessToken\)/)
