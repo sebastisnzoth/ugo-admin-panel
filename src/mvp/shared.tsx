@@ -77,7 +77,7 @@ async function withProfileTimeout<T>(operation:PromiseLike<T>&{abortSignal?:(sig
   let timer:ReturnType<typeof setTimeout>|undefined
   try{
     return await Promise.race([Promise.resolve(request),new Promise<T>((_,reject)=>{
-      timer=window.setTimeout(()=>{controller.abort();reject(new Error('PROFILE_QUERY_TIMEOUT'))},ms)
+      timer=window.setTimeout(()=>{reject(new Error('PROFILE_QUERY_TIMEOUT'));controller.abort()},ms)
     })])
   }finally{if(timer!==undefined)window.clearTimeout(timer)}
 }
