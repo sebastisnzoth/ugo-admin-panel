@@ -93,13 +93,14 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
  useEffect(()=>{if(!liveNotice)return;const timer=window.setTimeout(()=>setLiveNotice(null),5000);return()=>window.clearTimeout(timer)},[liveNotice])
  useEffect(()=>{
   let alive=true,channel:RealtimeChannel|null=null,currentId:string|null=null,reconnectTimer:number|undefined
-  let syncing=false,resyncAgain=false,authRevision=0
+  let syncing=false,resyncAgain=false,authRevision=0,identityEpoch=0
   const resync=()=>{
    if(!alive||!currentId)return
    if(syncing){resyncAgain=true;return}
-   const requestedId=currentId
+   const requestedId=currentId,requestedEpoch=identityEpoch
    syncing=true
-   void load(requestedId,()=>alive&&currentId===requestedId).catch(e=>{if(alive&&currentId===requestedId)setError(e instanceof Error?e.message:'No se pudieron cargar las notificaciones.')}).finally(()=>{
+   void load(requestedId,()=>alive&&currentId===requestedId&&identityEpoch===requestedEpoch).catch(e=>{if(alive&&currentId===requestedId&&identityEpoch===requestedEpoch)setError(e instanceof Error?e.message:'No se pudieron cargar las notificaciones.')}).finally(()=>{
+    if(!alive||identityEpoch!==requestedEpoch)return
     syncing=false
     if(alive&&resyncAgain){resyncAgain=false;resync()}
    })
@@ -132,6 +133,9 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
   }
   const activate=(id:string|null)=>{
    if(!alive)return
+   // A hung SELECT from a previous auth session must not block the next one.
+   // Even a sign-out followed by sign-in of the same user is a new identity epoch.
+   if(currentId!==id){identityEpoch++;syncing=false;resyncAgain=false}
    if(!id){
     currentId=null;setUid(null);setRows([]);setLiveNotice(null)
     if(channel){const previous=channel;channel=null;void db.removeChannel(previous)}
