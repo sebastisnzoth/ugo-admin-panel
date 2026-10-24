@@ -62,3 +62,16 @@ test('calendar identity cannot show previous account during auth role switch',as
  assert.match(component,/if\(isCurrent\(\)\)\{setConfigured\(result\.configured\);setConnected\(result\.connected\);setEmail\(result\.email\)\}/)
  assert.match(component,/if\(tokenRef\.current===accessToken\)\{setConnected\(false\);setEmail\(null\)\}/)
 })
+
+test('stale Calendar OAuth and disconnect completions cannot mutate the next account',async()=>{
+ const component=await read('src/mvp/UserGoogleCalendarConnect.tsx')
+ const connect=component.split('const connect=async()=>')[1]?.split('const disconnect=async()=>')[0]||''
+ const disconnect=component.split('const disconnect=async()=>')[1]?.split('return <section')[0]||''
+ assert.ok(connect.length>100&&disconnect.length>100,'both user actions must be present')
+ assert.match(connect,/await startProviderCalendar\(accessToken\)[\s\S]*?if\(tokenRef\.current!==accessToken\)return[\s\S]*?window\.location\.assign\(url\.href\)/,'old OAuth response must never redirect')
+ assert.match(connect,/catch\(error\)\{if\(tokenRef\.current===accessToken\)setMessage\(/,'old OAuth errors must not leak into the new account')
+ assert.match(disconnect,/catch\(error\)\{if\(tokenRef\.current===accessToken\)setMessage\(/,'old disconnect errors must not leak into the new account')
+ for(const action of [connect,disconnect]){
+  assert.match(action,/finally\{if\(tokenRef\.current===accessToken\)setBusy\(false\)\}/,'old request must not reset the next account action state')
+ }
+})
