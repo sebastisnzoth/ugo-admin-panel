@@ -23,7 +23,7 @@ try{
  </script>`}))
  await page.addInitScript(()=>{
   localStorage.setItem('ugo.locale.guest.unknown','es')
-  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[]
+  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[];window.__currentSession=null
   const params=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}})
   window.AudioContext=class{state='running';currentTime=0;destination={};createOscillator(){return{frequency:params(),connect(){},start(){window.__toneCount++},stop(){}}}createGain(){return{gain:params(),connect(){}}}resume(){return Promise.resolve()}}
   Object.defineProperty(navigator,'vibrate',{value:()=>{window.__vibrateCount++;return true},configurable:true})
@@ -33,7 +33,7 @@ try{
   window.Notification=class{static permission='default'}
   const realInterval=window.setInterval.bind(window)
   window.setInterval=(fn,ms,...args)=>{if(ms===20000)window.__safetyResync=fn;return realInterval(fn,ms,...args)}
-  const db={auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:callback=>{window.__authCallback=callback;return{data:{subscription:{unsubscribe(){window.__authUnsubscribed=true}}}}}},from:table=>{
+  const db={auth:{getSession:async()=>({data:{session:window.__currentSession}}),onAuthStateChange:callback=>{window.__authCallback=(event,session)=>{window.__currentSession=event==='SIGNED_OUT'?null:session;callback(event,session)};return{data:{subscription:{unsubscribe(){window.__authUnsubscribed=true}}}}}},from:table=>{
    const query={select(){return this},eq(column,value){if(column==='id')this.noticeId=value;return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){this.isUpdate=true;return this},then(resolve){
     if(this.isUpdate&&this.noticeId?.startsWith('offer:'))return Promise.resolve({data:null,error:{message:'invalid input syntax for type uuid'}}).then(resolve)
     if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
