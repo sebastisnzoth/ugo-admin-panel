@@ -119,7 +119,7 @@ test('manual arrival reuses trusted tracker GPS and only reacquires for explicit
 
 test('provider tracker keeps a recent trusted fix through transient timeout callbacks',()=>{
  assert.match(tracker,/lastValidFixAtRef=useRef\(0\)/)
- assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
+ assert.match(tracker,/lastValidFixAtRef\.current=capturedAtMs/)
  const helper=tracker.slice(tracker.indexOf('const setGeoError='),tracker.indexOf('const publish=',tracker.indexOf('const setGeoError=')))
  assert.match(helper,/if\(error\.code===1\)/)
  assert.match(helper,/lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=\(serviceId\?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS\)/)
@@ -141,4 +141,25 @@ test('restored provider GPS freshness uses persisted capture time rather than pa
  assert.match(tracker,/lastValidFixAtRef\.current=persistedAt/)
  assert.match(tracker,/Date\.now\(\)-persistedAt<=MATCHING_POSITION_AGE_MS/)
  assert.doesNotMatch(tracker,/lastValidFixAtRef\.current=Date\.now\(\)\s*\n\s*setLastFix\(\{capturedAt:persistedAt/)
+})
+
+
+test('GPS candidate validation rejects stale, future and inaccurate device fixes at runtime',()=>{
+ const body=tracker.match(/function usableBrowserPosition\(pos:GeolocationPosition\)\{([\s\S]*?)\n\}/)?.[1]
+ assert.ok(body,'pure browser position validation function must exist')
+ const usable=new Function('pos',body)
+ const now=Date.now()
+ const position=(timestamp,accuracy=16,latitude=-27.59,longitude=-48.55)=>({timestamp,coords:{latitude,longitude,accuracy}})
+ assert.equal(usable(position(now-1_000)),true)
+ assert.equal(usable(position(now-31_000)),false,'expired browser fix must be rejected')
+ assert.equal(usable(position(now+6_000)),false,'future-dated browser fix must be rejected')
+ assert.equal(usable(position(now,251)),false,'low precision fix must be rejected')
+ assert.equal(usable(position(now,16,0,0)),false,'Null Island must be rejected')
+})
+
+test('GPS publish and profile rehydration never renew a captured fix or accept out-of-order Realtime timestamps',()=>{
+ assert.match(tracker,/lastValidFixAtRef\.current=capturedAtMs;setLastFix\(\{capturedAt:capturedAtMs/)
+ assert.match(tracker,/if\(age < -5_000\|\|age>MAX_POSITION_AGE_MS\)/)
+ assert.equal((tracker.match(/persistedAt>=lastValidFixAtRef\.current/g)||[]).length,2)
+ assert.doesNotMatch(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
 })
