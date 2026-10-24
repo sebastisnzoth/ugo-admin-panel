@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react'
 import{useLocale}from'../i18n/locale'
-import{getProviderCalendarStatus,startProviderCalendar,disconnectProviderCalendar}from'./provider/providerCalendar'
+import{getProviderCalendarStatus,startProviderCalendar,disconnectProviderCalendar,isCalendarApiHostSupported}from'./provider/providerCalendar'
 
 // A connection belongs to the authenticated UGO user, never to a shared account.
 // A functioning calendar API requires the Vercel serverless runtime.
@@ -14,7 +14,7 @@ export function UserGoogleCalendarConnect({accessToken}:{accessToken:string}){
  const labels=copies[locale as keyof typeof copies]||copies['pt-BR']
  const[connected,setConnected]=useState(false),[email,setEmail]=useState<string|null>(null)
  const[configured,setConfigured]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
- const available=typeof window!=='undefined'&&!window.location.hostname.endsWith('.github.io')&&!import.meta.env.DEV
+ const available=typeof window!=='undefined'&&isCalendarApiHostSupported(window.location.hostname,import.meta.env.DEV)
  useEffect(()=>{let alive=true;if(!available||!accessToken){setLoading(false);return}
    void getProviderCalendarStatus(accessToken).then(result=>{if(alive){setConfigured(result.configured);setConnected(result.connected);setEmail(result.email)}})
      .catch(error=>{if(alive)setMessage(error instanceof Error?error.message:'No se pudo consultar Google Calendar.')})
