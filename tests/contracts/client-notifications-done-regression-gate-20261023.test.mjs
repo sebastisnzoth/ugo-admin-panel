@@ -87,3 +87,12 @@ test('notifications E2E never duplicates a cash payment auto-materialized by the
  assert.match(runtime,/payment:verifiedPayment/)
  assert.doesNotMatch(runtime,/payment:\{method:'pix',state:'retenido',environment:'demo'\}/)
 })
+
+test('client live notice compares the localized banner title rather than raw database title',()=>{
+ const locale=readFileSync(new URL('../../src/i18n/locale.tsx',import.meta.url),'utf8')
+ assert.match(locale,/"notification\.proveedor_llego":"Llegó tu profesional"/)
+ assert.match(runtime,/const displayedTitle=notice=>spanishMessages\['notification\.'\+notice\.tipo\]\|\|notice\.titulo/)
+ assert.match(runtime,/banner\.getByText\(displayedTitle\(notice\),\{exact:true\}\)/)
+ assert.match(runtime,/persisted_title:notice\.titulo/)
+ assert.doesNotMatch(runtime,/banner\.getByText\(notice\.titulo,\{exact:true\}\)/)
+})
