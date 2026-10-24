@@ -175,7 +175,11 @@ async function submitClientRequestUi(page,category){
   const description=page.locator('#ugo-need-description')
   await description.waitFor({state:'visible',timeout:30000})
   await description.fill(category.nombre+' '+SERVICE_DESCRIPTION)
-  const next=page.locator('.ugo-need-screen footer button')
+  const next=page.locator('.ugo-need-screen footer button').filter({hasText:'Continuar'}).first()
+  await next.waitFor({state:'visible',timeout:30000})
+  // The catalog is fetched asynchronously after login. Wait for real category
+  // resolution instead of failing before the UI has received the catalog.
+  await page.waitForFunction(()=>{const button=document.querySelector('.ugo-need-screen footer button');return button instanceof HTMLButtonElement&&!button.disabled},null,{timeout:30000})
   assert.ok(await next.isEnabled(),'P0_CLIENT_UI_CATEGORY_NOT_DETECTED')
   await next.click()
   await page.locator('.ugo-location-screen').waitFor({state:'visible',timeout:30000})
