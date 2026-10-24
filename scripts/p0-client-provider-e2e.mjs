@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {randomUUID} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
+import {readWithTransientRetry} from './lib/p0-test-read-retry.mjs'
 
 // UGO P0 end-to-end contract: authenticated client -> persisted request -> real matching
 // -> persisted offer -> authenticated provider session sees it in the real UI -> provider
@@ -107,6 +108,16 @@ async function providerUiLogin({email,providerUserId}){
   const failedRequests=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
   page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
+  // Capture status and pathname only; never include auth tokens or URL query strings.
+  page.on('response',response=>{
+    if(response.status()!==404)return
+    const request=response.request()
+    let pathname='[invalid-url]'
+    try{const u=new URL(response.url());pathname=u.origin+u.pathname}catch{/* avoid leaking URL */}
+    const evidence={status:404,method:request.method(),url:pathname,resourceType:request.resourceType()}
+    pageErrors.push('HTTP_404 '+JSON.stringify(evidence))
+    stage('ui_provider_http_404',evidence)
+  })
   page.on('requestfailed',request=>{
     if(request.url().includes(TEST_REF))failedRequests.push({url:request.url().split('?')[0],reason:request.failure()?.errorText||'unknown'})
   })
@@ -170,7 +181,7 @@ async function clientUiLogin({email,clientUserId}){
   return {page,context,pageErrors}
 }
 
-async function submitClientRequestUi(page,category){
+async function submitClientRequestUi(page,category,clientUserId){
   await page.locator('.ugo-home-hugo-cta').click()
   const description=page.locator('#ugo-need-description')
   await description.waitFor({state:'visible',timeout:30000})
@@ -194,7 +205,29 @@ async function submitClientRequestUi(page,category){
   await page.locator('.ugo-payment-screen footer button').click()
   const submit=page.locator('.ugo-summary-screen footer button')
   await submit.waitFor({state:'visible',timeout:30000})
+  // ClientSummaryScreen reads the stored draft after its own role session hydrates.
+  // A visible summary can briefly show placeholders while Auth is loading; never
+  // submit until the real category, description and address are rendered.
+  const expectedDescription=category.nombre+' '+SERVICE_DESCRIPTION
+  // The GPS action intentionally resolves the device location to a new address.
+  // Compare the summary to the persisted client draft, not to the earlier manual input.
+  const draft=await page.evaluate(uid=>{try{return JSON.parse(sessionStorage.getItem('ugo:guided-request-draft:'+uid)||'{}')}catch{return null}},clientUserId)
+  const expectedAddress=String(draft?.address||'').trim()
+  assert.equal(draft?.categoryId,category.id,'P0_CLIENT_UI_SUMMARY_CATEGORY_NOT_PERSISTED')
+  assert.equal(draft?.description,expectedDescription,'P0_CLIENT_UI_SUMMARY_DESCRIPTION_NOT_PERSISTED')
+  assert.ok(expectedAddress.length>=5,'P0_CLIENT_UI_SUMMARY_ADDRESS_NOT_PERSISTED')
+  assert.ok(Number.isFinite(draft?.pickupLat)&&Number.isFinite(draft?.pickupLng),'P0_CLIENT_UI_PICKUP_NOT_PERSISTED')
+  await page.waitForFunction(({description,address})=>{
+    const summary=document.querySelector('.ugo-summary-screen')
+    const button=summary?.querySelector('footer button')
+    const text=summary?.textContent||''
+    return button instanceof HTMLButtonElement&&!button.disabled
+      &&text.includes(description)&&text.includes(address)
+  },{description:expectedDescription,address:expectedAddress},{timeout:30000})
   assert.ok(await submit.isEnabled(),'P0_CLIENT_UI_SUMMARY_NOT_READY')
+  const summaryText=await page.locator('.ugo-summary-screen').innerText()
+  assert.ok(summaryText.includes(expectedDescription),'P0_CLIENT_UI_SUMMARY_DESCRIPTION_MISMATCH')
+  assert.ok(summaryText.includes(expectedAddress),'P0_CLIENT_UI_SUMMARY_ADDRESS_MISMATCH')
   await submit.click()
   await page.locator('.ugo-matching-screen').waitFor({state:'visible',timeout:45000})
 }
@@ -337,7 +370,7 @@ async function acceptOfferInUi(ui){
 
 try{
   // 0 · catalog prerequisites ---------------------------------------------
-  const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
+  const categories=(await readWithTransientRetry(async()=>must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data,{onRetry:retry=>stage('catalog_read_retry',retry)}))||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
   categoryId=(categories.find(c=>/limpeza|limpieza|faxina|repar|electric/i.test(c.nombre))||categories[0]).id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
@@ -422,7 +455,7 @@ try{
   if(UI){
     const category=categories.find(c=>c.id===categoryId)
     assert.ok(category,'P0_UI_CATEGORY_MISSING')
-    await submitClientRequestUi(clientUi.page,category)
+    await submitClientRequestUi(clientUi.page,category,clientId)
     for(let attempt=0;attempt<40;attempt++){
       const observed=must(await admin.from('servicios').select('id,estado,numero,cliente_id,categoria_id,descripcion').eq('cliente_id',clientId),'observe UI service')
       const found=(observed.data||[]).find(row=>String(row.descripcion||'').includes(SERVICE_DESCRIPTION))

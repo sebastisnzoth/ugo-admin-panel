@@ -69,14 +69,32 @@ function transientProfileError(value:unknown){
   return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst/i.test(text)
 }
 async function wait(ms:number){if(ms>0)await new Promise(resolve=>window.setTimeout(resolve,ms))}
-async function withProfileTimeout<T>(operation:PromiseLike<T>,ms=4500){return await Promise.race([Promise.resolve(operation),new Promise<T>((_,reject)=>window.setTimeout(()=>reject(new Error('PROFILE_QUERY_TIMEOUT')),ms))])}
+async function withProfileTimeout<T>(operation:PromiseLike<T>&{abortSignal?:(signal:AbortSignal)=>PromiseLike<T>},ms=4500){
+  // A Promise.race alone leaves the PostgREST request running after timeout.
+  // Abort the actual fetch so repeated recovery attempts cannot pile up.
+  const controller=new AbortController()
+  const request=typeof operation.abortSignal==='function'?operation.abortSignal(controller.signal):operation
+  let timer:number|undefined
+  try{
+    return await Promise.race([Promise.resolve(request),new Promise<T>((_,reject)=>{
+      timer=window.setTimeout(()=>{reject(new Error('PROFILE_QUERY_TIMEOUT'));controller.abort()},ms)
+    })])
+  }finally{if(timer!==undefined)window.clearTimeout(timer)}
+}
+
+function profileReconnectDelay(failures:number){
+  // Bound the retry rate during a Realtime outage without delaying healthy recovery.
+  return Math.min(30_000,1_200*2**Math.min(5,Math.max(0,failures)))
+}
 
 export function useRoleSession(role:UgoRole){
   const profileChannelInstance=useId().replace(/:/g,'')
   const profileGeneration=useRef(0)
+  const realtimeProfileRefreshAt=useRef(0)
+  const profileReconnectState=useRef({userId:'',failures:0})
   const[sessionChecked,setSessionChecked]=useState(false),[sessionEpoch,setSessionEpoch]=useState(0)
   const supabase=useMemo(()=>getRoleSupabase(role),[role]);const[session,setSession]=useState<Session|null>(null);const[profile,setProfile]=useState<UgoUser|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('');const[profileChannelEpoch,setProfileChannelEpoch]=useState(0)
-  const loadProfile=useCallback(async(next:Session|null)=>{if(!next){setProfile(null);return}const generation=profileGeneration.current;let data:any=null,e:any;for(let attempt=0;attempt<AUTH_PROFILE_RETRY_DELAYS.length;attempt++){await wait(AUTH_PROFILE_RETRY_DELAYS[attempt]);const query=supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).maybeSingle();try{const result=await withProfileTimeout(query,4500);data=result.data;e=result.error}catch(queryError){e=queryError}if(!e)break;if(!transientProfileError(e)||attempt===AUTH_PROFILE_RETRY_DELAYS.length-1)throw e}if(generation!==profileGeneration.current)return;if(!data)throw new Error('No se encontró el perfil conectado a esta cuenta.');if(!data.activo){setProfile(null);throw new Error('Esta cuenta está desactivada. Contactá a UGO si necesitás revisión.')}const expected=role==='client'?'cliente':'proveedor';const pendingRole=window.localStorage.getItem(OAUTH_ROLE_KEY);const isFreshOAuthUser=Date.now()-new Date(next.user.created_at).getTime()<120000;if(role==='provider'&&data.tipo==='cliente'&&pendingRole==='proveedor'&&isFreshOAuthUser){const{error:updateError}=await supabase.from('usuarios').update({tipo:'proveedor'}).eq('id',next.user.id);if(updateError)throw updateError;const{error:providerError}=await supabase.from('perfiles_proveedor').upsert({usuario_id:next.user.id},{onConflict:'usuario_id'});if(providerError)throw providerError;const refreshed=await supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).single();if(refreshed.error)throw refreshed.error;data=refreshed.data}if(data.tipo!==expected){setProfile(null);window.localStorage.removeItem(OAUTH_ROLE_KEY);throw new Error(`Esta cuenta está registrada como ${data.tipo}. Abrí la aplicación correspondiente.`)}window.localStorage.removeItem(OAUTH_ROLE_KEY);if(generation===profileGeneration.current)setProfile(data as UgoUser)},[role,supabase])
+  const loadProfile=useCallback(async(next:Session|null)=>{if(!next){setProfile(null);return}const generation=profileGeneration.current;let data:any=null,e:any;for(let attempt=0;attempt<AUTH_PROFILE_RETRY_DELAYS.length;attempt++){await wait(AUTH_PROFILE_RETRY_DELAYS[attempt]);if(generation!==profileGeneration.current)return;const query=supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).maybeSingle();try{const result=await withProfileTimeout(query,4500);data=result.data;e=result.error}catch(queryError){e=queryError}if(!e)break;if(!transientProfileError(e)||attempt===AUTH_PROFILE_RETRY_DELAYS.length-1)throw e}if(generation!==profileGeneration.current)return;if(!data)throw new Error('No se encontró el perfil conectado a esta cuenta.');if(!data.activo){setProfile(null);throw new Error('Esta cuenta está desactivada. Contactá a UGO si necesitás revisión.')}const expected=role==='client'?'cliente':'proveedor';const pendingRole=window.localStorage.getItem(OAUTH_ROLE_KEY);const isFreshOAuthUser=Date.now()-new Date(next.user.created_at).getTime()<120000;if(role==='provider'&&data.tipo==='cliente'&&pendingRole==='proveedor'&&isFreshOAuthUser){const{error:updateError}=await supabase.from('usuarios').update({tipo:'proveedor'}).eq('id',next.user.id);if(updateError)throw updateError;const{error:providerError}=await supabase.from('perfiles_proveedor').upsert({usuario_id:next.user.id},{onConflict:'usuario_id'});if(providerError)throw providerError;const refreshed=await supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).single();if(refreshed.error)throw refreshed.error;data=refreshed.data}if(data.tipo!==expected){setProfile(null);window.localStorage.removeItem(OAUTH_ROLE_KEY);throw new Error(`Esta cuenta está registrada como ${data.tipo}. Abrí la aplicación correspondiente.`)}window.localStorage.removeItem(OAUTH_ROLE_KEY);if(generation===profileGeneration.current)setProfile(data as UgoUser)},[role,supabase])
   useEffect(()=>{
     let active=true;let authEventVersion=0
     const diagnostic=(reason:Parameters<typeof recordSessionDiagnostic>[2])=>recordSessionDiagnostic(role,'auth',reason)
@@ -165,18 +183,33 @@ export function useRoleSession(role:UgoRole){
   const profileUserId=session?.user.id
   useEffect(()=>{
     const userId=profileUserId
-    if(!userId)return
+    if(!userId){profileReconnectState.current={userId:'',failures:0};return}
+    if(profileReconnectState.current.userId!==userId)profileReconnectState.current={userId,failures:0}
     let alive=true,reconnectTimer:number|undefined
     const refresh=()=>{const current=profileSessionRef.current;if(alive&&current?.user.id===userId)void loadProfile(current).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos actualizar tu perfil.')})}
-    const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setProfileChannelEpoch(value=>value+1)},1200)}
-    const onOnline=()=>{refresh();reconnect()}
-    const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+    const refreshRealtime=()=>{
+      // SUBSCRIBED can flap during a database outage; one read per 30 seconds
+      // is sufficient to reconcile profile changes after reconnect.
+      const now=Date.now()
+      if(now-realtimeProfileRefreshAt.current<30_000)return
+      realtimeProfileRefreshAt.current=now
+      refresh()
+    }
+    const reconnect=()=>{
+      // Duplicate error callbacks must not reset the timer or create a reconnect storm.
+      if(reconnectTimer!==undefined)return
+      const delay=profileReconnectDelay(profileReconnectState.current.failures)
+      profileReconnectState.current.failures=Math.min(5,profileReconnectState.current.failures+1)
+      reconnectTimer=window.setTimeout(()=>{reconnectTimer=undefined;if(alive)setProfileChannelEpoch(value=>value+1)},delay)
+    }
+    const onOnline=()=>{profileReconnectState.current.failures=0;if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}refreshRealtime();reconnect()}
+    const onVisibility=()=>{if(document.visibilityState==='visible')refreshRealtime()}
     window.addEventListener('online',onOnline)
     document.addEventListener('visibilitychange',onVisibility)
     const channelName=`ugo-profile-${role}-${userId}-${profileChannelInstance}-${profileChannelEpoch}`
     const channel=supabase.channel(channelName)
     channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
-    channel.subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
+    channel.subscribe(status=>{if(status==='SUBSCRIBED'){if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}profileReconnectState.current.failures=0;refreshRealtime()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')reconnect()})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
   },[loadProfile,profileChannelEpoch,profileChannelInstance,role,profileUserId,supabase])
   const retrySession=useCallback(()=>{setLoading(true);setSessionEpoch(value=>value+1)},[]);const retryProfile=useCallback(async()=>{if(!session)return;setLoading(true);try{await loadProfile(session);setError('')}catch(e){setError(e instanceof Error?e.message:'No pudimos recuperar tu perfil.')}finally{setLoading(false)}},[loadProfile,session]);const signOut=useCallback(async()=>{const{error:signOutError}=await supabase.auth.signOut({scope:'local'});if(signOutError)throw signOutError;profileGeneration.current++;recordSessionDiagnostic(role,'auth','explicit_sign_out');setSessionChecked(true);setProfile(null);setSession(null)},[role,supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut({scope:'local'})}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,sessionChecked,profile,loading,error,setError,retrySession,retryProfile,signOut,clearAccess}

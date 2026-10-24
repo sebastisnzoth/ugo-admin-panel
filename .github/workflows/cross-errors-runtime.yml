@@ -32,7 +32,7 @@ env:
 
 jobs:
   runtime:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-cross-errors-vite.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/ugo-cross-errors-vite.log 2>&1 &
           echo $! > /tmp/ugo-cross-errors-vite.pid
           for attempt in $(seq 1 40); do
             curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null && exit 0
