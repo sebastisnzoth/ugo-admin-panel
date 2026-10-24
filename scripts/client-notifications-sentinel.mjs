@@ -12,7 +12,7 @@ assert.equal(proof.fixture,'disposable')
 assert.equal(proof.cleanup_ok,true)
 assert.match(tracking,/eq\('id',serviceId\)\.in\('estado',DETAIL_TRACKING_STATES\)/)
 for(const state of ['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'])assert.ok(tracking.includes("'"+state+"'"),'missing tracked state '+state)
-const esMessages=translations.split('  "es": {')[1]?.split('  "en": {')[0]
+const esMessages=translations.split('Object.assign(followupMessages["es"],{')[1]?.split('Object.assign(followupMessages["en"],{')[0]
 assert.ok(esMessages,'Spanish client tracking translations must exist')
 const timelineKeys=['assigned','accepted','route','arrived','working','finished']
 const timelineLabels=['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado']
