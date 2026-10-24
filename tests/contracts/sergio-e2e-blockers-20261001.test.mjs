@@ -30,7 +30,9 @@ test('provider root keeps the deferred Hugo orb and admin orb detached',async()=
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  // Hugo is deferred from the operational UI: do not reintroduce an orb to satisfy legacy tests.
  assert.doesNotMatch(root,/<ProviderHugoBridge\/>/)
- assert.doesNotMatch(root,/import.*ProviderHugoBridge/)
+ assert.match(root,/const VoiceRuntimeBridge=import\.meta\.env\.DEV\?lazy\(\(\)=>import\('\.\/ProviderHugoBridge'\)\):null/)
+ assert.match(root,/const voiceRuntimeEnabled=import\.meta\.env\.DEV&&new URLSearchParams\(window\.location\.search\)\.get\('ugoVoiceRuntime'\)==='1'/)
+ assert.match(root,/\{voiceRuntimeEnabled&&VoiceRuntimeBridge&&<Suspense fallback=\{null\}><VoiceRuntimeBridge\/><\/Suspense>\}/)
  assert.doesNotMatch(root,/<ConversationalOrb\/>/)
  assert.doesNotMatch(root,/<ProviderGlobalVoiceCommands\/>/)
  assert.match(root,/<ProviderHome\/>/)
