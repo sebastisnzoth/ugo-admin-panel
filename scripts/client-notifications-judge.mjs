@@ -21,7 +21,7 @@ for(const step of proof.sequence){
  assert.equal(step.ui_state,step.state)
  assert.equal(typeof step.service_id,'string')
  assert.equal(step.service_id,proof.service_id)
- assert.deepEqual(step.labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
+ assert.deepEqual(step.labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
 }
 const out={validator:'Judge',result:'PASS',readiness_id:'client-notifications',sha,service_id:proof.service_id,checked_at:new Date().toISOString()}
 

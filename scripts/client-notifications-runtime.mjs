@@ -6,6 +6,8 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {clientNotificationsReadinessMode} from './lib/clientNotificationsReadinessMode.mjs'
+import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const TEST_PROVIDER_ID='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
@@ -19,8 +21,9 @@ const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 const workLock=JSON.parse(await fs.readFile('docs/ugo-work-locks/readiness-client-notifications.json','utf8'))
-assert.equal(workLock.status,'IN_PROGRESS')
-assert.ok(Date.parse(workLock.lease_expires_at)>Date.now(),'ACTIVE_LEASE_REQUIRED')
+// Re-check every run against the persisted lock: a completed readiness task
+// may be regression-tested without re-acquiring its historical lease.
+const readinessMode=clientNotificationsReadinessMode(workLock)
 const PARALLEL_TEST_SESSIONS_MUST_NOT_BE_REVOKED=true
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&serviceRole&&email&&password&&providerEmail&&providerPassword&&sha,'CLIENT_NOTIFICATIONS_RUNTIME_INPUTS_REQUIRED')
@@ -29,10 +32,10 @@ const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:fa
 const provider=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 const admin=createClient(url,serviceRole,{auth:{persistSession:false,autoRefreshToken:false}})
 
-const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await signInForTestWithBoundedRetry(auth.auth,{email,password})
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
-const {data:providerLogin,error:providerLoginError}=await provider.auth.signInWithPassword({email:providerEmail,password:providerPassword})
+const {data:providerLogin,error:providerLoginError}=await signInForTestWithBoundedRetry(provider.auth,{email:providerEmail,password:providerPassword})
 assert.ifError(providerLoginError)
 assert.ok(providerLogin.session&&providerLogin.user,'UGO_TEST_PROVIDER_SESSION_REQUIRED')
 assert.equal(providerLogin.user.id,TEST_PROVIDER_ID,'UGO_TEST_PROVIDER_ID_MISMATCH')
@@ -98,7 +101,19 @@ await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',J
 const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
+
+ // The foreground banner displays the localized title, not necessarily the
+ // persisted database title. Read the actual Spanish catalog so the E2E still
+ // fails on a missing/wrong live banner without hard-coding a duplicate label.
+ const localeSource=await fs.readFile('src/i18n/locale.tsx','utf8')
+ const spanishMessages={}
+ for(const match of localeSource.matchAll(/Object\.assign\(messages\["es"\],(\{[^\n]*\})\)/g)){
+  Object.assign(spanishMessages,JSON.parse(match[1]))
+ }
+ const displayedTitle=notice=>spanishMessages['notification.'+notice.tipo]||notice.titulo
+
 let cleanup={ok:false,mode:'none',error:null}
+let verifiedPayment=null
 async function backendState(){
  const {data,error}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
  assert.ifError(error)
@@ -135,7 +150,7 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
   throw error
  }
  const labels=await timeline.locator('small').allTextContents()
- assert.deepEqual(labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
+ assert.deepEqual(labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
  const {data:notice,error:noticeError}=await auth.from('notificaciones').select('id,tipo,titulo,datos,usuario_id').eq('usuario_id',login.user.id).eq('tipo',noticeTypes[state]).contains('datos',{servicio_id:fixture.id}).single()
  assert.ifError(noticeError)
  assert.equal(notice.usuario_id,login.user.id)
@@ -143,14 +158,15 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
  const banner=page.locator('.ugo-notification-live.is-client')
  let bannerText=bannerTextOverride
  if(!bannerText){
-  await banner.getByText(notice.titulo,{exact:true}).waitFor({state:'visible',timeout:15000})
+  await banner.getByText(displayedTitle(notice),{exact:true}).waitFor({state:'visible',timeout:15000})
   bannerText=await banner.innerText()
  }
  const {data:foreign,error:foreignError}=await provider.from('notificaciones').select('id').eq('id',notice.id)
  assert.ifError(foreignError)
  assert.deepEqual(foreign,[],'Provider must not read client notifications')
  await page.screenshot({path:'artifacts/client-notifications-'+state+'.png',fullPage:true})
- notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
+ assert.ok(bannerText.includes(displayedTitle(notice)),'CLIENT_LIVE_LOCALIZED_TITLE_REQUIRED')
+ notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:displayedTitle(notice),persisted_title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
 }
 
@@ -226,7 +242,7 @@ try{
  }
  assert.ok(assignedPersisted?.id,'CLIENT_ASSIGNMENT_NOTIFICATION_MUST_PERSIST_AFTER_UPDATE')
  try{
-  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:assignedPersisted.titulo}).first()
+  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:displayedTitle(assignedPersisted)}).first()
   await assignedNotice.waitFor({state:'attached',timeout:30000})
   const visibilityProbe=await assignedNotice.evaluate(node=>{
    const describe=el=>{
@@ -276,27 +292,54 @@ try{
  }
  await expectUi('asignado','accepted',{bannerTextOverride:globalThis.__ugoAssignedBannerText||null})
 
- const paymentAmount=Math.max(1,Number(template.tarifa||50))
- const {data:selectedPayment,error:paymentInsertError}=await admin.from('pagos').insert({
-  servicio_id:fixture.id,
-  cliente_id:login.user.id,
-  proveedor_id:TEST_PROVIDER_ID,
-  procesador:'ugo-test',
-  pago_externo_id:'client-notifications-'+sha,
-  monto_bruto:paymentAmount,
-  comision_ugo:0,
-  ganancia_proveedor:0,
-  moneda:'BRL',
-  estado:'retenido',
-  metodo:'pix',
-  modelo_pago:'custodia_ugo',
-  ambiente:'demo',
-  fecha_confirmacion:new Date().toISOString(),
- }).select('id,metodo,estado,pago_externo_id,ambiente').single()
- assert.ifError(paymentInsertError)
- assert.equal(selectedPayment?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
- assert.ok(selectedPayment?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
- assert.equal(selectedPayment?.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
+ // A real cash-payment trigger may already have created the only payment for
+ // this service on assignment. Reuse and validate it instead of inserting a
+ // conflicting Pix row; do not mutate the shared TEST client's preference.
+ const {data:paymentContext,error:paymentContextError}=await admin.from('servicios')
+  .select('metadata,ambiente').eq('id',fixture.id).single()
+ assert.ifError(paymentContextError)
+ const requestedMethod=String(paymentContext?.metadata?.requested_payment_method||'').toLowerCase()
+ assert.ok(['efectivo','pix'].includes(requestedMethod),'TEST_PAYMENT_METHOD_MUST_BE_PERSISTED')
+ const {data:existingPayment,error:existingPaymentError}=await admin.from('pagos')
+  .select('id,metodo,estado,pago_externo_id,ambiente,procesador,modelo_pago')
+  .eq('servicio_id',fixture.id).maybeSingle()
+ assert.ifError(existingPaymentError)
+ let selectedPayment=existingPayment
+ if(requestedMethod==='efectivo'){
+  assert.ok(existingPayment?.id,'AUTO_CASH_PAYMENT_REQUIRED')
+  assert.equal(existingPayment.metodo,'efectivo','AUTO_CASH_PAYMENT_METHOD_REQUIRED')
+  assert.equal(existingPayment.procesador,'efectivo','AUTO_CASH_PROCESSOR_REQUIRED')
+  assert.equal(existingPayment.modelo_pago,'presencial','AUTO_CASH_MODEL_REQUIRED')
+  assert.ok(['pendiente','liberado'].includes(existingPayment.estado),'AUTO_CASH_PAYMENT_NOT_READY')
+ }else{
+  // Pix needs a real protected TEST payment, never a fabricated cash payment.
+  assert.equal(existingPayment,null,'UNEXPECTED_PREEXISTING_PIX_PAYMENT')
+  const paymentAmount=Math.max(1,Number(template.tarifa||50))
+  const {data:inserted,error:paymentInsertError}=await admin.from('pagos').insert({
+   servicio_id:fixture.id,
+   cliente_id:login.user.id,
+   proveedor_id:TEST_PROVIDER_ID,
+   procesador:'ugo-test',
+   pago_externo_id:'client-notifications-'+sha,
+   monto_bruto:paymentAmount,
+   comision_ugo:0,
+   ganancia_proveedor:0,
+   moneda:'BRL',
+   estado:'retenido',
+   metodo:'pix',
+   modelo_pago:'custodia_ugo',
+   ambiente:'demo',
+   fecha_confirmacion:new Date().toISOString(),
+  }).select('id,metodo,estado,pago_externo_id,ambiente').single()
+  assert.ifError(paymentInsertError)
+  assert.equal(inserted?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
+  assert.ok(inserted?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
+  selectedPayment=inserted
+ }
+ assert.ok(selectedPayment?.id,'TEST_PAYMENT_REQUIRED')
+ assert.equal(selectedPayment.metodo,requestedMethod,'TEST_PAYMENT_PREFERENCE_MISMATCH')
+ assert.equal(selectedPayment.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
+ verifiedPayment={method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente,source:requestedMethod==='efectivo'?'assignment_cash_trigger':'protected_test_pix'}
 
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
@@ -391,9 +434,10 @@ const evidence={
  job_id:'UGO-READINESS-CLIENT-NOTIFICATIONS',
  correlation_id:process.env.UGO_CORRELATION_ID,
  lock_correlation_id:workLock.correlation_id,
+ readiness_mode:readinessMode,
  push_delivery_proven:false,
  evidence_paths:evidencePaths,
- payment:{method:'pix',state:'retenido',environment:'demo'},
+ payment:verifiedPayment,
  cleanup,
  cleanup_ok:cleanup.ok,
  page_errors:pageErrors,
