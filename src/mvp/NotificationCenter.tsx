@@ -129,9 +129,15 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
     if(alive)setPushState(sub?'on':'off')
    }catch(e){if(alive){setPushState('off');setError(e instanceof Error?e.message:'No pudimos verificar los avisos del navegador.')}}
   }
-  db.auth.getSession().then(({data})=>{
-   const id=data.session?.user.id||null
-   if(!alive||!id)return
+  const activate=(id:string|null)=>{
+   if(!alive)return
+   if(!id){
+    currentId=null;setUid(null);setRows([]);setLiveNotice(null)
+    if(channel){const previous=channel;channel=null;void db.removeChannel(previous)}
+    return
+   }
+   if(currentId===id&&channel)return
+   if(channel){const previous=channel;channel=null;void db.removeChannel(previous)}
    currentId=id;setUid(id)
    // Foreground delivery must never wait for Web Push or a SELECT response.
    channel=db.channel(`ugo-notices-${role}-${id}-${channelEpoch}`)
@@ -154,6 +160,16 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
    channel.subscribe(status=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){resync();reconnect()}})
    resync()
    void initializePush()
+  }
+  // Register before the async initial read so a delayed SIGNED_IN is never lost.
+  const{data:authRegistration}=db.auth.onAuthStateChange((event,session)=>{
+   if(!alive)return
+   if(event==='SIGNED_OUT'){activate(null);return}
+   if(session?.user?.id)activate(session.user.id)
+  })
+  void db.auth.getSession().then(({data})=>{
+   // A stale empty initial read must not overwrite a subsequent SIGNED_IN event.
+   if(data.session?.user.id)activate(data.session.user.id)
   }).catch(e=>{if(alive){setError(e instanceof Error?e.message:'No se pudo iniciar el centro de notificaciones.');reconnect()}})
   return()=>{
    alive=false
@@ -162,6 +178,7 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
    window.removeEventListener('online',onOnline)
    window.removeEventListener('focus',onFocus)
    document.removeEventListener('visibilitychange',onVisibility)
+   authRegistration.subscription.unsubscribe()
    if(channel)void db.removeChannel(channel)
   }
  },[channelEpoch,db,load,retireStalePush,role,signalClientAlert,signalProviderAlert])
