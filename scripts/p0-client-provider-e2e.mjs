@@ -181,7 +181,7 @@ async function clientUiLogin({email,clientUserId}){
   return {page,context,pageErrors}
 }
 
-async function submitClientRequestUi(page,category){
+async function submitClientRequestUi(page,category,clientUserId){
   await page.locator('.ugo-home-hugo-cta').click()
   const description=page.locator('#ugo-need-description')
   await description.waitFor({state:'visible',timeout:30000})
@@ -209,7 +209,7 @@ async function submitClientRequestUi(page,category){
   // A visible summary can briefly show placeholders while Auth is loading; never
   // submit until the real category, description and address are rendered.
   const expectedDescription=category.nombre+' '+SERVICE_DESCRIPTION
-  const expectedAddress='Av. Beira-Mar Norte, 1000, Florianópolis'
+  // The GPS action intentionally resolves the device location to a new address.\n  // Compare the summary to the persisted client draft, not to the earlier manual input.\n  const draft=await page.evaluate(uid=>{try{return JSON.parse(sessionStorage.getItem('ugo:guided-request-draft:'+uid)||'{}')}catch{return null}},clientUserId)\n  const expectedAddress=String(draft?.address||'').trim()\n  assert.equal(draft?.categoryId,category.id,'P0_CLIENT_UI_SUMMARY_CATEGORY_NOT_PERSISTED')\n  assert.equal(draft?.description,expectedDescription,'P0_CLIENT_UI_SUMMARY_DESCRIPTION_NOT_PERSISTED')\n  assert.ok(expectedAddress.length>=5,'P0_CLIENT_UI_SUMMARY_ADDRESS_NOT_PERSISTED')\n  assert.ok(Number.isFinite(draft?.pickupLat)&&Number.isFinite(draft?.pickupLng),'P0_CLIENT_UI_PICKUP_NOT_PERSISTED')
   await page.waitForFunction(({description,address})=>{
     const summary=document.querySelector('.ugo-summary-screen')
     const button=summary?.querySelector('footer button')
@@ -448,7 +448,7 @@ try{
   if(UI){
     const category=categories.find(c=>c.id===categoryId)
     assert.ok(category,'P0_UI_CATEGORY_MISSING')
-    await submitClientRequestUi(clientUi.page,category)
+    await submitClientRequestUi(clientUi.page,category,clientId)
     for(let attempt=0;attempt<40;attempt++){
       const observed=must(await admin.from('servicios').select('id,estado,numero,cliente_id,categoria_id,descripcion').eq('cliente_id',clientId),'observe UI service')
       const found=(observed.data||[]).find(row=>String(row.descripcion||'').includes(SERVICE_DESCRIPTION))
