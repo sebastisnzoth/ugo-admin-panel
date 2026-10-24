@@ -30,14 +30,22 @@ export function UserGoogleCalendarConnect({accessToken}:{accessToken:string}){
      .finally(()=>{if(isCurrent()){setLoadedToken(accessToken);setLoading(false)}})
    return()=>{alive=false}
  },[accessToken,available])
+ // OAuth and disconnect responses may arrive after an account switch. Never redirect
+ // to a previous user's OAuth flow or publish their action errors in the new session.
  const connect=async()=>{if(!available||!accessToken||busy)return;setBusy(true);setMessage('')
-   try{const result=await startProviderCalendar(accessToken);const url=new URL(result.url);if(url.protocol!=='https:'||url.hostname!=='accounts.google.com')throw new Error('Redirección Google inválida');window.location.assign(url.href)}
-   catch(error){setMessage(error instanceof Error?error.message:'No se pudo conectar.');setBusy(false)}
+   try{
+     const result=await startProviderCalendar(accessToken)
+     if(tokenRef.current!==accessToken)return
+     const url=new URL(result.url)
+     if(url.protocol!=='https:'||url.hostname!=='accounts.google.com')throw new Error('Redirección Google inválida')
+     window.location.assign(url.href)
+   }catch(error){if(tokenRef.current===accessToken)setMessage(error instanceof Error?error.message:'No se pudo conectar.')}
+   finally{if(tokenRef.current===accessToken)setBusy(false)}
  }
  const disconnect=async()=>{if(!accessToken||busy)return;setBusy(true);setMessage('')
    try{await disconnectProviderCalendar(accessToken);if(tokenRef.current===accessToken){setConnected(false);setEmail(null)}}
-   catch(error){setMessage(error instanceof Error?error.message:'No se pudo desconectar.')}
-   finally{setBusy(false)}
+   catch(error){if(tokenRef.current===accessToken)setMessage(error instanceof Error?error.message:'No se pudo desconectar.')}
+   finally{if(tokenRef.current===accessToken)setBusy(false)}
  }
  return <section className="ugo-user-calendar-connect" aria-label="Google Calendar">
   <strong>Google Calendar</strong>
