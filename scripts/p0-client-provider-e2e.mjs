@@ -107,6 +107,16 @@ async function providerUiLogin({email,providerUserId}){
   const failedRequests=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
   page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
+  // Capture status and pathname only; never include auth tokens or URL query strings.
+  page.on('response',response=>{
+    if(response.status()!==404)return
+    const request=response.request()
+    let pathname='[invalid-url]'
+    try{const u=new URL(response.url());pathname=u.origin+u.pathname}catch{/* avoid leaking URL */}
+    const evidence={status:404,method:request.method(),url:pathname,resourceType:request.resourceType()}
+    pageErrors.push('HTTP_404 '+JSON.stringify(evidence))
+    stage('ui_provider_http_404',evidence)
+  })
   page.on('requestfailed',request=>{
     if(request.url().includes(TEST_REF))failedRequests.push({url:request.url().split('?')[0],reason:request.failure()?.errorText||'unknown'})
   })
