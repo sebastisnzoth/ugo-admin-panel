@@ -18,3 +18,11 @@ test('Cross Errors browser proof runs on a supported Playwright image against it
  assert.match(crossErrorsWorkflow,/npm run preview -- --host 127\.0\.0\.1 --port 4173/)
  assert.doesNotMatch(crossErrorsWorkflow,/npm run dev --/)
 })
+
+const adminRealtimeWorkflow=readFileSync(new URL('../../.github/workflows/admin-realtime-runtime.yml',import.meta.url),'utf8')
+test('Admin Realtime browser proof serves the compiled candidate SHA, not the dev server',()=>{
+ assert.match(adminRealtimeWorkflow,/name: TypeScript and build[\s\S]*?VITE_APP_REVISION:\s*\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}[\s\S]*?run: npm run build/)
+ assert.match(adminRealtimeWorkflow,/export UGO_RUNTIME_SHA="\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}"/)
+ assert.match(adminRealtimeWorkflow,/npm run preview -- --host 127\.0\.0\.1 --port 4173/)
+ assert.doesNotMatch(adminRealtimeWorkflow,/npm run dev --/)
+})
