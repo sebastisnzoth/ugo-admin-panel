@@ -202,8 +202,8 @@ export function useRoleSession(role:UgoRole){
       profileReconnectState.current.failures=Math.min(5,profileReconnectState.current.failures+1)
       reconnectTimer=window.setTimeout(()=>{reconnectTimer=undefined;if(alive)setProfileChannelEpoch(value=>value+1)},delay)
     }
-    const onOnline=()=>{profileReconnectState.current.failures=0;if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}refresh();reconnect()}
-    const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+    const onOnline=()=>{profileReconnectState.current.failures=0;if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}refreshRealtime();reconnect()}
+    const onVisibility=()=>{if(document.visibilityState==='visible')refreshRealtime()}
     window.addEventListener('online',onOnline)
     document.addEventListener('visibilitychange',onVisibility)
     const channelName=`ugo-profile-${role}-${userId}-${profileChannelInstance}-${profileChannelEpoch}`
