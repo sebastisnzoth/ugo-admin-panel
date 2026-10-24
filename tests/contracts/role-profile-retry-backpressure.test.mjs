@@ -40,7 +40,11 @@ test('profile timeout keeps compatibility with non-abortable promise test double
 test('Realtime reconnect failures never trigger immediate profile reads and resubscribe is rate limited',()=>{
   assert.match(source,/const realtimeProfileRefreshAt=useRef\(0\)/)
   assert.match(source,/if\(now-realtimeProfileRefreshAt\.current<30_000\)return/)
-  assert.match(source,/if\(status==='SUBSCRIBED'\)refreshRealtime\(\)/)
+  // A successful subscription cancels a pending retry, resets backoff, then reconciles.
+  assert.match(source,/if\(status==='SUBSCRIBED'\)\{if\(reconnectTimer!==undefined\)\{window\.clearTimeout\(reconnectTimer\);reconnectTimer=undefined\}profileReconnectState\.current\.failures=0;refreshRealtime\(\)\}/)
+  assert.match(source,/if\(reconnectTimer!==undefined\)return/)
+  assert.match(source,/const delay=profileReconnectDelay\(profileReconnectState\.current\.failures\)/)
+  assert.match(source,/reconnectTimer=window\.setTimeout\(\(\)=>\{reconnectTimer=undefined;if\(alive\)setProfileChannelEpoch\(value=>value\+1\)\},delay\)/)
   assert.match(source,/else if\(status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'\|\|status==='CLOSED'\)reconnect\(\)/)
   assert.match(source,/if\(generation!==profileGeneration\.current\)return;const query=supabase\.from\('usuarios'\)/)
 })
