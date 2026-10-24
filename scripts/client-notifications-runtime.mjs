@@ -102,6 +102,7 @@ const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
 let cleanup={ok:false,mode:'none',error:null}
+let verifiedPayment=null
 async function backendState(){
  const {data,error}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
  assert.ifError(error)
@@ -326,6 +327,7 @@ try{
  assert.ok(selectedPayment?.id,'TEST_PAYMENT_REQUIRED')
  assert.equal(selectedPayment.metodo,requestedMethod,'TEST_PAYMENT_PREFERENCE_MISMATCH')
  assert.equal(selectedPayment.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
+ verifiedPayment={method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente,source:requestedMethod==='efectivo'?'assignment_cash_trigger':'protected_test_pix'}
 
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
@@ -423,7 +425,7 @@ const evidence={
  readiness_mode:readinessMode,
  push_delivery_proven:false,
  evidence_paths:evidencePaths,
- payment:{method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente,source:requestedMethod==='efectivo'?'assignment_cash_trigger':'protected_test_pix'},
+ payment:verifiedPayment,
  cleanup,
  cleanup_ok:cleanup.ok,
  page_errors:pageErrors,
