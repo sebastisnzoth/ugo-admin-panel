@@ -7,8 +7,19 @@ on:
     branches: [main]
     paths:
       - 'scripts/client-notifications-runtime.mjs'
+      - 'scripts/client-notifications-judge.mjs'
+      - 'scripts/client-notifications-sentinel.mjs'
       - 'scripts/lib/clientNotificationsReadinessMode.mjs'
+      - 'scripts/lib/testAuthRetry.mjs'
       - 'tests/contracts/client-notifications-done-regression-gate-20261023.test.mjs'
+      - 'tests/contracts/client-notifications-transient-test-auth-20261023.test.mjs'
+      - 'tests/contracts/client-notifications-readiness.test.mjs'
+      - 'scripts/client-status-runtime.mjs'
+      - 'scripts/client-status-judge.mjs'
+      - 'scripts/client-status-sentinel.mjs'
+      - 'src/features/client/order/ClientLiveTracking.tsx'
+      - 'src/i18n/locale.tsx'
+      - 'src/i18n/translations/followup.ts'
       - '.github/workflows/client-notifications-runtime.yml'
   push:
     branches: [main]
@@ -16,7 +27,17 @@ on:
       - 'scripts/client-notifications-runtime.mjs'
       - 'scripts/client-notifications-judge.mjs'
       - 'scripts/client-notifications-sentinel.mjs'
+      - 'scripts/lib/clientNotificationsReadinessMode.mjs'
+      - 'scripts/lib/testAuthRetry.mjs'
+      - 'tests/contracts/client-notifications-done-regression-gate-20261023.test.mjs'
+      - 'tests/contracts/client-notifications-transient-test-auth-20261023.test.mjs'
       - 'tests/contracts/client-notifications-readiness.test.mjs'
+      - 'scripts/client-status-runtime.mjs'
+      - 'scripts/client-status-judge.mjs'
+      - 'scripts/client-status-sentinel.mjs'
+      - 'src/features/client/order/ClientLiveTracking.tsx'
+      - 'src/i18n/locale.tsx'
+      - 'src/i18n/translations/followup.ts'
       - '.github/workflows/client-notifications-runtime.yml'
 
 concurrency:
