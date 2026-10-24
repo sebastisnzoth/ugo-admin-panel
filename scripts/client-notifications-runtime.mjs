@@ -138,7 +138,7 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
   throw error
  }
  const labels=await timeline.locator('small').allTextContents()
- assert.deepEqual(labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
+ assert.deepEqual(labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
  const {data:notice,error:noticeError}=await auth.from('notificaciones').select('id,tipo,titulo,datos,usuario_id').eq('usuario_id',login.user.id).eq('tipo',noticeTypes[state]).contains('datos',{servicio_id:fixture.id}).single()
  assert.ifError(noticeError)
  assert.equal(notice.usuario_id,login.user.id)
