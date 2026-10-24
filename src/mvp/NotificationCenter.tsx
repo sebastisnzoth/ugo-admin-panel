@@ -93,12 +93,13 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
  useEffect(()=>{if(!liveNotice)return;const timer=window.setTimeout(()=>setLiveNotice(null),5000);return()=>window.clearTimeout(timer)},[liveNotice])
  useEffect(()=>{
   let alive=true,channel:RealtimeChannel|null=null,currentId:string|null=null,reconnectTimer:number|undefined
-  let syncing=false,resyncAgain=false
+  let syncing=false,resyncAgain=false,authRevision=0
   const resync=()=>{
    if(!alive||!currentId)return
    if(syncing){resyncAgain=true;return}
+   const requestedId=currentId
    syncing=true
-   void load(currentId,()=>alive).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No se pudieron cargar las notificaciones.')}).finally(()=>{
+   void load(requestedId,()=>alive&&currentId===requestedId).catch(e=>{if(alive&&currentId===requestedId)setError(e instanceof Error?e.message:'No se pudieron cargar las notificaciones.')}).finally(()=>{
     syncing=false
     if(alive&&resyncAgain){resyncAgain=false;resync()}
    })
@@ -138,12 +139,13 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
    }
    if(currentId===id&&channel)return
    if(channel){const previous=channel;channel=null;void db.removeChannel(previous)}
+   if(currentId!==id){setRows([]);setLiveNotice(null)}
    currentId=id;setUid(id)
    // Foreground delivery must never wait for Web Push or a SELECT response.
    channel=db.channel(`ugo-notices-${role}-${id}-${channelEpoch}`)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones',filter:`usuario_id=eq.${id}`},payload=>{
      const notice=payload.new as unknown as UgoNotification
-     if(!alive||!notice?.id)return
+     if(!alive||currentId!==id||!notice?.id)return
      setError('');setRows(current=>[notice,...current.filter(item=>item.id!==notice.id)].slice(0,30))
      if(role==='provider'&&!SERVICE_NOTICE_EXPECTED_STATE[notice.tipo])signalProviderAlert(notice)
      resync()
@@ -152,7 +154,7 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'notificaciones',filter:`usuario_id=eq.${id}`},resync)
    if(role==='provider')channel.on('postgres_changes',{event:'INSERT',schema:'public',table:'ofertas_servicio',filter:`proveedor_id=eq.${id}`},payload=>{
     const offer=payload.new as Record<string,unknown>,offerId=typeof offer.id==='string'?offer.id:''
-    if(!alive||!offerId)return
+    if(!alive||currentId!==id||!offerId)return
     const serviceId=typeof offer.servicio_id==='string'?offer.servicio_id:'',expiresAt=typeof offer.expira_at==='string'?offer.expira_at:null,createdAt=typeof offer.created_at==='string'?offer.created_at:new Date().toISOString()
     signalProviderAlert({id:`offer:${offerId}`,tipo:'nueva_oferta',titulo:'Nuevo servicio en tu zona',cuerpo:'Tenés un nuevo pedido disponible.',datos:{role:'provider',oferta_id:offerId,servicio_id:serviceId,expira_at:expiresAt},leida_at:null,created_at:createdAt})
     resync()
@@ -164,11 +166,14 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true,prov
   // Register before the async initial read so a delayed SIGNED_IN is never lost.
   const{data:authRegistration}=db.auth.onAuthStateChange((event,session)=>{
    if(!alive)return
+   authRevision++
    if(event==='SIGNED_OUT'){activate(null);return}
    if(session?.user?.id)activate(session.user.id)
   })
+  const initialAuthRevision=authRevision
   void db.auth.getSession().then(({data})=>{
-   // A stale empty initial read must not overwrite a subsequent SIGNED_IN event.
+   // Ignore an initial snapshot if any newer Auth event (including sign-out) won the race.
+   if(!alive||authRevision!==initialAuthRevision)return
    if(data.session?.user.id)activate(data.session.user.id)
   }).catch(e=>{if(alive){setError(e instanceof Error?e.message:'No se pudo iniciar el centro de notificaciones.');reconnect()}})
   return()=>{
