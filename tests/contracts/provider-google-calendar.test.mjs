@@ -33,3 +33,16 @@ test('calendar credentials are server-only and documented',async()=>{
  assert.match(env,/GOOGLE_CALENDAR_STATE_SECRET=/)
  assert.doesNotMatch(env,/VITE_GOOGLE_CALENDAR_CLIENT_SECRET/)
 })
+
+test('OAuth allows each active UGO user to connect, while only providers mirror jobs',async()=>{
+ const[api,client,component]=await Promise.all([read('api/test.ts'),read('src/features/client/profile/ClientProfilePanel.tsx'),read('src/mvp/UserGoogleCalendarConnect.tsx')])
+ assert.match(api,/async function authenticatedCalendarUser\(req:any\)/)
+ assert.match(api,/profile\.activo!==true/)
+ assert.match(api,/const\{sb,user,role\}=await authenticatedCalendarUser\(req\)/)
+ assert.match(api,/role==='proveedor'\?await syncCalendarForProvider\(sb,user\.id\)/)
+ assert.match(api,/if\(profile\.tipo==='proveedor'\)await syncCalendarForProvider\(sb,userId\)/)
+ assert.match(client,/UserGoogleCalendarConnect accessToken=\{session\.access_token\}/)
+ assert.match(component,/startProviderCalendar\(accessToken\)/)
+ assert.match(component,/disconnectProviderCalendar\(accessToken\)/)
+ assert.doesNotMatch(component,/service_role|refresh_token/)
+})
