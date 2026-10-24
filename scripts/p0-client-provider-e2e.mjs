@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {randomUUID} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
+import {readWithTransientRetry} from './lib/p0-test-read-retry.mjs'
 
 // UGO P0 end-to-end contract: authenticated client -> persisted request -> real matching
 // -> persisted offer -> authenticated provider session sees it in the real UI -> provider
@@ -347,7 +348,7 @@ async function acceptOfferInUi(ui){
 
 try{
   // 0 · catalog prerequisites ---------------------------------------------
-  const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
+  const categories=(await readWithTransientRetry(async()=>must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data,{onRetry:retry=>stage('catalog_read_retry',retry)}))||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
   categoryId=(categories.find(c=>/limpeza|limpieza|faxina|repar|electric/i.test(c.nombre))||categories[0]).id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
