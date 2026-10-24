@@ -32,7 +32,7 @@ test('reconnect failure count survives channel recreation but resets for a diffe
 
 test('successful subscription and browser reconnection reset the backoff',()=>{
   assert.match(source,/if\(status==='SUBSCRIBED'\)\{if\(reconnectTimer!==undefined\)\{window\.clearTimeout\(reconnectTimer\);reconnectTimer=undefined\}profileReconnectState\.current\.failures=0;refreshRealtime\(\)\}/)
-  assert.match(source,/const onOnline=\(\)=>\{profileReconnectState\.current\.failures=0;if\(reconnectTimer!==undefined\)\{window\.clearTimeout\(reconnectTimer\);reconnectTimer=undefined\}refresh\(\);reconnect\(\)\}/)
+  assert.match(source,/const onOnline=\(\)=>\{profileReconnectState\.current\.failures=0;if\(reconnectTimer!==undefined\)\{window\.clearTimeout\(reconnectTimer\);reconnectTimer=undefined\}refreshRealtime\(\);reconnect\(\)\}/)
   assert.match(source,/if\(!userId\)\{profileReconnectState\.current=\{userId:'',failures:0\};return\}/)
   assert.match(source,/return\(\)=>\{alive=false;if\(reconnectTimer\)window\.clearTimeout\(reconnectTimer\)/)
 })
