@@ -9,6 +9,9 @@ on:
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
       - "src/mvp/provider/**"
+      - "src/mvp/ProviderLocationTracker.tsx"
+      - "tests/contracts/provider-arrival-location.test.mjs"
+      - "tests/contracts/provider-gps-invalid-reading-recovery.test.mjs"
       - "supabase/migrations/20261020223000_production_provider_gps_rpc_compat.sql"
       - "tests/contracts/production-provider-gps-rpc-compat.test.mjs"
       - "src/features/client/request/**"
