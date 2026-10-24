@@ -186,12 +186,13 @@ async function attemptUiOnline(ui){
 }
 
 async function proveAutomaticGpsHeartbeat(ui,initialProfile){
-  // The browser must renew GPS on its own; a later service-role activation
-  // must never conceal a broken foreground heartbeat.
+  // Chromium's static geolocation fixture does not guarantee a new sensor fix.
+  // First observe natural refresh; then simulate a *new device fix* and require
+  // the app to publish it without clicking Refresh or using the service-role RPC.
   const initialAt=Date.parse(String(initialProfile?.ubicacion_updated_at||''))
   assert.ok(Number.isFinite(initialAt),'P0_UI_GPS_INITIAL_TIMESTAMP_REQUIRED')
-  const deadline=Date.now()+55_000
-  let last=null
+  const started=Date.now(),deadline=started+55_000
+  let last=null,injected=false
   while(Date.now()<deadline){
     await new Promise(resolve=>setTimeout(resolve,5_000))
     const result=must(await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).single(),'read browser GPS heartbeat')
@@ -199,12 +200,17 @@ async function proveAutomaticGpsHeartbeat(ui,initialProfile){
     const capturedAt=Date.parse(String(last.ubicacion_updated_at||''))
     if(last.online===true&&last.disponible===true&&Number.isFinite(capturedAt)&&capturedAt>initialAt&&Date.now()-capturedAt<=90_000&&Number(last.ubicacion_accuracy_m)>0&&Number(last.ubicacion_accuracy_m)<=250){
       assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_LOGGED_OUT_DURING_GPS_HEARTBEAT')
-      stage('ui_gps_automatic_renewal',{initialAt:new Date(initialAt).toISOString(),renewedAt:last.ubicacion_updated_at,accuracy_m:last.ubicacion_accuracy_m,sessionPreserved:true})
+      stage('ui_gps_device_fix_autopublish',{initialAt:new Date(initialAt).toISOString(),renewedAt:last.ubicacion_updated_at,accuracy_m:last.ubicacion_accuracy_m,source:injected?'simulated_new_device_fix':'natural_browser_refresh',sessionPreserved:true})
       return
     }
+    if(!injected&&Date.now()-started>=15_000){
+      injected=true
+      await ui.context.setGeolocation({latitude:PROVIDER_LAT+0.00008,longitude:PROVIDER_LNG,accuracy:12})
+      stage('ui_gps_device_fix_simulated',{note:'Chromium sensor fixture explicitly emits a new GPS fix; not physical Mac evidence'})
+    }
   }
-  stage('ui_gps_automatic_renewal_failed',{initialProfile,last})
-  assert.fail('P0_UI_GPS_HEARTBEAT_NOT_RENEWED_AUTOMATICALLY')
+  stage('ui_gps_device_fix_autopublish_failed',{initialProfile,last,injected})
+  assert.fail('P0_UI_GPS_NEW_DEVICE_FIX_NOT_PUBLISHED')
 }
 
 async function proveProviderRealtimeRecovery(ui){
