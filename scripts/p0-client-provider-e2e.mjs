@@ -185,6 +185,41 @@ async function attemptUiOnline(ui){
   return {pressed,notices,body,buttons:await page.locator('button').allInnerTexts().catch(()=>[])}
 }
 
+async function proveProviderRealtimeRecovery(ui){
+ const {page,context}=ui
+ const latestReady=()=>page.evaluate(()=>{
+  try{
+   const trace=JSON.parse(localStorage.getItem('ugo:provider:auth-trace:v1')||'[]')
+   if(!Array.isArray(trace))return 0
+   return trace.filter(item=>item?.origin==='realtime'&&item?.reason==='channel_ready').at(-1)?.at||0
+  }catch{return 0}
+ })
+ await page.waitForFunction(()=>{
+  try{
+   const trace=JSON.parse(localStorage.getItem('ugo:provider:auth-trace:v1')||'[]')
+   return Array.isArray(trace)&&trace.some(item=>item?.origin==='realtime'&&item?.reason==='channel_ready')
+  }catch{return false}
+ },null,{timeout:30000})
+ const before=await latestReady()
+ assert.ok(before>0,'P0_PROVIDER_REALTIME_INITIAL_READY_REQUIRED')
+ await context.setOffline(true)
+ await page.waitForFunction(()=>navigator.onLine===false,null,{timeout:10000})
+ assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_OFFLINE')
+ await context.setOffline(false)
+ await page.waitForFunction(previous=>{
+  try{
+   const trace=JSON.parse(localStorage.getItem('ugo:provider:auth-trace:v1')||'[]')
+   return Array.isArray(trace)&&trace.some(item=>item?.origin==='realtime'&&item?.reason==='channel_ready'&&item.at>previous)
+  }catch{return false}
+ },before,{timeout:30000})
+ const after=await latestReady()
+ assert.ok(after>before,'P0_PROVIDER_REALTIME_NOT_RECOVERED')
+ await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
+ assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RECONNECT')
+ stage('ui_realtime_offline_online',{reconnected:true,readyBefore:before,readyAfter:after,sessionPreserved:true})
+ return {reconnected:true,readyBefore:before,readyAfter:after}
+}
+
 async function armProviderLiveOfferProbe(page){
  // Observe the live popup before a new request exists. Its five-second UI
  // lifetime is too short to rely on checking only after the matching RPC.
@@ -307,7 +342,11 @@ try{
   assert.equal(profileAfter.data.disponible,true,'P0_PROVIDER_NOT_AVAILABLE')
   assert.ok(Number.isFinite(gpsAgeMs)&&gpsAgeMs>=0&&gpsAgeMs<=90_000,'P0_PROVIDER_GPS_NOT_FRESH')
 
-  if(ui)await armProviderLiveOfferProbe(ui.page)
+  let realtimeRecovery=null
+  if(ui){
+   realtimeRecovery=await proveProviderRealtimeRecovery(ui)
+   await armProviderLiveOfferProbe(ui.page)
+  }
 
   // 4 · client creates the request and persists the pickup ---------------
   const insertedService=must(await client.from('servicios').insert({
@@ -330,7 +369,9 @@ try{
   const serviceAfterMatch=must(await admin.from('servicios').select('id,estado,proveedor_id,matching_expires_at').eq('id',serviceId).single(),'read service after matching')
   const offers=must(await admin.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado,ranking,distancia_km,tarifa_ofrecida,expira_at').eq('servicio_id',serviceId),'read persisted offers').data||[]
   stage('matching_persisted',{service:serviceAfterMatch.data,offers})
-  const myOffer=offers.find(o=>o.proveedor_id===providerId&&o.estado==='pendiente')
+  const providerOffers=offers.filter(o=>o.proveedor_id===providerId)
+  assert.equal(providerOffers.length,1,'P0_DUPLICATE_PROVIDER_OFFERS')
+  const myOffer=providerOffers.find(o=>o.estado==='pendiente')
   assert.ok(myOffer,'P0_NO_OFFER_FOR_ELIGIBLE_PROVIDER')
   offerId=myOffer.id
   assert.equal(serviceAfterMatch.data.estado,'ofrecido','P0_SERVICE_NOT_OFFERED')
@@ -359,6 +400,16 @@ try{
   assert.equal(servicesAfter.data.proveedor_id,providerId,'P0_SERVICE_ASSIGNED_TO_OTHER_PROVIDER')
   assert.ok(offersAfter.some(o=>o.id===offerId&&o.estado==='aceptada'),'P0_OFFER_NOT_ACCEPTED')
 
+  // Replaying the exact accepted offer must return the same assignment without
+  // changing service economics, timestamps or offer state.
+  const acceptedAgain=must(await provider.rpc('aceptar_oferta',{p_oferta_id:offerId}),'idempotent offer acceptance replay')
+  assert.equal(acceptedAgain.data?.id,serviceId,'P0_ACCEPT_REPLAY_CHANGED_ASSIGNMENT')
+  const serviceAfterReplay=must(await admin.from('servicios').select('id,estado,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,aceptado_at').eq('id',serviceId).single(),'read service after acceptance replay')
+  const offersAfterReplay=must(await admin.from('ofertas_servicio').select('id,estado,respondida_at').eq('servicio_id',serviceId),'read offers after acceptance replay').data||[]
+  assert.deepEqual(serviceAfterReplay.data,servicesAfter.data,'P0_ACCEPT_REPLAY_CHANGED_SERVICE')
+  assert.deepEqual(offersAfterReplay,offersAfter,'P0_ACCEPT_REPLAY_CHANGED_OFFERS')
+  stage('accept_replay_idempotent',{serviceId,offerId,unchanged:true})
+
   // 8 · both sessions survive the whole journey -------------------------
   const clientStill=must(await client.auth.getUser(),'client session still valid')
   const providerStill=must(await provider.auth.getUser(),'provider session still valid')
@@ -371,6 +422,7 @@ try{
     readiness_id:'p0-client-provider-e2e',sha,environment:'UGO TEST',project_ref:TEST_REF,production_touched:false,
     client_id:clientId,provider_id:providerId,category_id:categoryId,service_id:serviceId,offer_id:offerId,
     service_state:'asignado',offer_state:'aceptada',gps_age_ms:gpsAgeMs,sessions_alive:true,ui_proof:UI,client_ui_proof:Boolean(clientUi),
+    realtime_recovery:realtimeRecovery,accept_replay_idempotent:true,duplicate_provider_offers:false,
     stages,result:'PASS',completed_at:new Date().toISOString(),
   }
   await fs.mkdir('artifacts',{recursive:true})
