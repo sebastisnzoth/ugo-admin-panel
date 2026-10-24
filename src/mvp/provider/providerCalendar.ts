@@ -1,3 +1,11 @@
+// Calendar endpoints are serverless Vercel routes. A Vite preview build has
+// PROD=true but no /api/calendar backend, so DEV alone is not a safe gate.
+// Do not suppress requests on real custom domains or Vercel deployments.
+export function isCalendarApiHostSupported(hostname:string,development:boolean):boolean{
+ const host=hostname.trim().toLowerCase()
+ if(development||!host||host==='localhost'||host.endsWith('.localhost')||host.endsWith('.github.io'))return false
+ return !['127.0.0.1','0.0.0.0','::1','[::1]'].includes(host)
+}
 export type ProviderCalendarStatus={configured:boolean;connected:boolean;email:string|null;calendarId:string|null;updatedAt:string|null}
 async function request<T>(accessToken:string,path:string,init:RequestInit={}){
  const response=await fetch('/api/calendar/'+path,{...init,headers:{Authorization:'Bearer '+accessToken,'Content-Type':'application/json',...(init.headers||{})}})

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {randomUUID} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
+import {readWithTransientRetry} from './lib/p0-test-read-retry.mjs'
 
 // UGO P0 end-to-end contract: authenticated client -> persisted request -> real matching
 // -> persisted offer -> authenticated provider session sees it in the real UI -> provider
@@ -107,6 +108,16 @@ async function providerUiLogin({email,providerUserId}){
   const failedRequests=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
   page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
+  // Capture status and pathname only; never include auth tokens or URL query strings.
+  page.on('response',response=>{
+    if(response.status()!==404)return
+    const request=response.request()
+    let pathname='[invalid-url]'
+    try{const u=new URL(response.url());pathname=u.origin+u.pathname}catch{/* avoid leaking URL */}
+    const evidence={status:404,method:request.method(),url:pathname,resourceType:request.resourceType()}
+    pageErrors.push('HTTP_404 '+JSON.stringify(evidence))
+    stage('ui_provider_http_404',evidence)
+  })
   page.on('requestfailed',request=>{
     if(request.url().includes(TEST_REF))failedRequests.push({url:request.url().split('?')[0],reason:request.failure()?.errorText||'unknown'})
   })
@@ -337,7 +348,7 @@ async function acceptOfferInUi(ui){
 
 try{
   // 0 · catalog prerequisites ---------------------------------------------
-  const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
+  const categories=(await readWithTransientRetry(async()=>must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data,{onRetry:retry=>stage('catalog_read_retry',retry)}))||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
   categoryId=(categories.find(c=>/limpeza|limpieza|faxina|repar|electric/i.test(c.nombre))||categories[0]).id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
