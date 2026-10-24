@@ -23,3 +23,11 @@ test('provider GPS feedback remains informational until backend arrival validati
  assert.match(source,/autoArrivalRef\.current/)
  assert.doesNotMatch(source,/setDistanceToClient\(0\)/)
 })
+
+test('online provider transient GPS failures do not leave an obsolete global unavailable notice',async()=>{
+ const source=await read('src/mvp/provider/providerData.tsx')
+ assert.equal((source.match(/else if\(!providerOnline\|\|!providerAvailable\)setNotice\(\{type:'info',text:t\('providerRuntime\.locationUnavailable'\)\}\)/g)||[]).length,2)
+ assert.match(source,/if\(error\.code===1\)setNotice\(\{type:'info',text:t\('providerRuntime\.locationPermission'\)\}\)/)
+ const tracker=await read('src/mvp/ProviderLocationTracker.tsx')
+ assert.match(tracker,/if\(locationError\)return <div className="provider-arrival-toast provider-location-error"/)
+})
