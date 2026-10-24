@@ -60,9 +60,11 @@ try{
   navigator.vibrate=()=>{window.__ugoVibrateCount++;return true}
  })
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
- await page.getByPlaceholder('tu@email.com').fill(email)
- await page.getByPlaceholder('Mínimo 6 caracteres').fill(password)
- await page.getByRole('button',{name:'Ingresar a UGO'}).click()
+ // Stable auth controls: the default locale can be pt-BR, so Spanish
+ // placeholders/buttons must not make the alert runtime fail before login.
+ await page.getByTestId('auth-email').fill(email)
+ await page.getByTestId('auth-password').fill(password)
+ await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
  await page.getByRole('button',{name:/Notificaciones UGO/}).waitFor({state:'visible',timeout:30000})
  // Let auth/profile loads settle and the notifications realtime channel subscribe.
  await page.waitForTimeout(1800)
