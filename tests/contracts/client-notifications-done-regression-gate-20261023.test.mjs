@@ -37,3 +37,25 @@ test('DONE cannot pass with revoked or unverified evidence',()=>{
  assert.throws(()=>clientNotificationsReadinessMode({...lock,lease_expires_at:new Date().toISOString()}),/COMPLETED_READINESS_EVIDENCE_INVALID/)
  assert.throws(()=>clientNotificationsReadinessMode({...lock,production_touched:true}),/COMPLETED_READINESS_EVIDENCE_INVALID/)
 })
+
+const judge=readFileSync(new URL('../../scripts/client-notifications-judge.mjs',import.meta.url),'utf8')
+const sentinel=readFileSync(new URL('../../scripts/client-notifications-sentinel.mjs',import.meta.url),'utf8')
+const tracking=readFileSync(new URL('../../src/features/client/order/ClientLiveTracking.tsx',import.meta.url),'utf8')
+const followup=readFileSync(new URL('../../src/i18n/translations/followup.ts',import.meta.url),'utf8')
+
+test('client notification E2E, Judge and Sentinel use current Spanish timeline without weakening state checks',()=>{
+ const expected="['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado']"
+ assert.ok(runtime.includes(expected),'browser E2E must check every exact visible label')
+ assert.ok(judge.includes(expected),'independent Judge must validate the same six labels')
+ assert.match(sentinel,/for\(const step of proof\.sequence\)assert\.deepEqual\(step\.labels,timelineLabels/)
+ assert.match(runtime,/assert\.equal\(persisted,state/)
+ assert.match(judge,/assert\.equal\(step\.backend_state,step\.state\)/)
+ assert.match(sentinel,/assert\.equal\(proof\.cleanup_ok,true\)/)
+ assert.match(tracking,/t\('clientTracking\.'\+step\.key\)/)
+ const es=followup.split('  "es": {')[1]?.split('  "en": {')[0]
+ assert.ok(es,'Spanish translation catalog required')
+ for(const [key,label] of [['assigned','Asignado'],['accepted','Aceptado'],['route','En camino'],['arrived','En el lugar'],['working','En curso'],['finished','Finalizado']]){
+  assert.ok(tracking.includes("{key:'"+key+"'}"),'missing tracking stage '+key)
+  assert.ok(es.includes('"clientTracking.'+key+'": "'+label+'"'),'mismatched translation '+key)
+ }
+})
