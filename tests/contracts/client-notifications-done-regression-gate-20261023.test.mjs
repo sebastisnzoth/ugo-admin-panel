@@ -52,7 +52,7 @@ test('client notification E2E, Judge and Sentinel use current Spanish timeline w
  assert.match(judge,/assert\.equal\(step\.backend_state,step\.state\)/)
  assert.match(sentinel,/assert\.equal\(proof\.cleanup_ok,true\)/)
  assert.match(tracking,/t\('clientTracking\.'\+step\.key\)/)
- const es=followup.split('  "es": {')[1]?.split('  "en": {')[0]
+ const es=followup.split('Object.assign(followupMessages["es"],{')[1]?.split('Object.assign(followupMessages["en"],{')[0]
  assert.ok(es,'Spanish translation catalog required')
  for(const [key,label] of [['assigned','Asignado'],['accepted','Aceptado'],['route','En camino'],['arrived','En el lugar'],['working','En curso'],['finished','Finalizado']]){
   assert.ok(tracking.includes("{key:'"+key+"'}"),'missing tracking stage '+key)
