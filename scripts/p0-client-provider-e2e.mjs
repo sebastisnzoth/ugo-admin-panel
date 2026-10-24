@@ -319,6 +319,7 @@ try{
     const online=await attemptUiOnline(ui)
     const after=await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).maybeSingle()
     stage('ui_online_attempt',{...online,profile:after.data,profileError:describe(after.error),failedRequests:ui.failedRequests})
+    assert.equal(online.pressed,'true','P0_PROVIDER_UI_ONLINE_FAILED')
   }
 
   // 3b · authoritative API activation (captures the exact backend rejection)
