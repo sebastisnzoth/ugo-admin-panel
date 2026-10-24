@@ -66,11 +66,14 @@ try{
  const offer=await admin.from('ofertas_servicio').select('id,estado,proveedor_id').eq('servicio_id',serviceId).eq('proveedor_id',providerId).maybeSingle();if(offer.error)throw offer.error;if(!offer.data?.id)throw new Error('E2E matching did not persist provider offer')
  const offerNotice=await admin.from('notificaciones').select('id,titulo').eq('usuario_id',providerId).eq('tipo','nueva_oferta').eq('datos->>servicio_id',serviceId).maybeSingle();if(offerNotice.error)throw offerNotice.error;if(!offerNotice.data?.id)throw new Error('E2E matching did not create nueva_oferta notification')
  evidence.persisted_entities={service_id:serviceId,provider_id:providerId,client_id:clientId,offer_id:offer.data.id,offer_notice_id:offerNotice.data.id};noticeIds.push(offerNotice.data.id);await page.locator('.ugo-notification-live.is-provider-call').waitFor({state:'visible',timeout:12000});evidence.channels.offer=true
- await admin.from('notificaciones').update({leida_at:new Date().toISOString()}).eq('id',offerNotice.data.id);await page.waitForTimeout(300)
+ // Clicking a live offer must happen before it is marked read. Marking it read
+ // first retires the banner via Realtime and makes the click impossible.
  await page.locator('.ugo-notification-live.is-provider-call').click()
  await page.locator('.provider-opportunity-detail .provider-main-action').waitFor({state:'visible',timeout:12000})
  await page.getByText('UGO provider notification E2E TEST',{exact:true}).waitFor({state:'visible',timeout:12000})
  evidence.offer_opened_in_ui=true
+ const markOfferRead=await admin.from('notificaciones').update({leida_at:new Date().toISOString()}).eq('id',offerNotice.data.id)
+ if(markOfferRead.error)throw markOfferRead.error
  await page.locator('.provider-opportunity-detail .provider-main-action').click()
  let acceptedInDb=false
  for(let attempt=0;attempt<30;attempt++){
