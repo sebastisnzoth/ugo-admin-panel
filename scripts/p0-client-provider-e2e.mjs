@@ -200,6 +200,8 @@ async function proveAutomaticGpsHeartbeat(ui,initialProfile){
     const capturedAt=Date.parse(String(last.ubicacion_updated_at||''))
     if(last.online===true&&last.disponible===true&&Number.isFinite(capturedAt)&&capturedAt>initialAt&&Date.now()-capturedAt<=90_000&&Number(last.ubicacion_accuracy_m)>0&&Number(last.ubicacion_accuracy_m)<=250){
       assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_LOGGED_OUT_DURING_GPS_HEARTBEAT')
+      const notices=await ui.page.locator('.provider-notice').allInnerTexts().catch(()=>[])
+      assert.ok(!notices.some(text=>/no pudimos obtener tu ubicaci[oó]n|location unavailable|n[aã]o conseguimos obter sua localiza[cç][aã]o/i.test(text)),'P0_PROVIDER_STALE_GPS_GLOBAL_NOTICE')
       stage('ui_gps_device_fix_autopublish',{initialAt:new Date(initialAt).toISOString(),renewedAt:last.ubicacion_updated_at,accuracy_m:last.ubicacion_accuracy_m,source:injected?'simulated_new_device_fix':'natural_browser_refresh',sessionPreserved:true})
       return
     }
