@@ -58,15 +58,20 @@ try{
  await page.waitForTimeout(60)
  assert.equal(await page.evaluate(()=>window.__channels.length),1,'Stale initial getSession must not switch identity after SIGNED_IN')
  evidence.checks.stale_initial_session_cannot_replace_auth_event=true
- // An in-flight old-user SELECT must never repopulate the notice list after SIGNED_OUT.
+ // A hung SELECT from the old auth session must not block a new session's resync,
+ // even when the same user logs out and signs back in before that SELECT settles.
  await page.evaluate(()=>{window.__holdReads=true;window.dispatchEvent(new Event('focus'))})
  await page.waitForFunction(()=>window.__heldReads.length>0,{},{timeout:3000})
- await page.evaluate(()=>{window.__authCallback('SIGNED_OUT',null);window.__noticeRows=[window.__offer('private-old-session')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
- await page.waitForTimeout(120)
- assert.equal(await page.getByText('TEST private-old-session',{exact:true}).count(),0,'Old identity must not leak notifications after sign-out')
- evidence.checks.sign_out_invalidates_pending_notification_read=true
- await page.evaluate(()=>{window.__holdReads=false;window.__noticeRows=[];window.__authCallback('SIGNED_IN',{user:{id:'provider-test'}})})
+ const readsBeforeRelogin=await page.evaluate(()=>window.__noticeReads)
+ await page.evaluate(()=>{window.__authCallback('SIGNED_OUT',null);window.__holdReads=false;window.__noticeRows=[];window.__authCallback('SIGNED_IN',{user:{id:'provider-test'}})})
+ await page.waitForFunction(before=>window.__noticeReads>before,readsBeforeRelogin,{timeout:3000})
  await page.waitForFunction(()=>window.__channels.length===2,{},{timeout:3000})
+ evidence.checks.new_auth_session_resync_not_blocked_by_hung_old_select=true
+ await page.evaluate(()=>{window.__noticeRows=[window.__offer('private-old-session')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
+ await page.waitForTimeout(120)
+ assert.equal(await page.getByText('TEST private-old-session',{exact:true}).count(),0,'Old auth epoch must not leak notifications after re-login')
+ await page.evaluate(()=>{window.__noticeRows=[]})
+ evidence.checks.sign_out_invalidates_pending_notification_read=true
  evidence.checks.sign_in_recreates_exactly_one_channel=true
  evidence.checks.subscribed_while_push_pending=true
  // A SELECT that never resolves must not delay an INSERT alert.
