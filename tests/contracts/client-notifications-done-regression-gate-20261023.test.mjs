@@ -96,3 +96,18 @@ test('client live notice compares the localized banner title rather than raw dat
  assert.match(runtime,/persisted_title:notice\.titulo/)
  assert.doesNotMatch(runtime,/banner\.getByText\(notice\.titulo,\{exact:true\}\)/)
 })
+
+
+test('cash work approval cannot be misreported as completion before client confirms payment',()=>{
+ assert.match(runtime,/if\(requestedMethod==='efectivo'\)/)
+ assert.match(runtime,/assert\.equal\(approved\?\.estado,'esperando_aprobacion','CASH_WORK_APPROVAL_MUST_AWAIT_PAYMENT'\)/)
+ assert.match(runtime,/assert\.ok\(approved\?\.metadata\?\.trabajo_aprobado_at,'CASH_WORK_APPROVAL_MUST_PERSIST'\)/)
+ assert.match(runtime,/auth\.rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:fixture\.id\}\)/)
+ assert.match(runtime,/assert\.equal\(approved\?\.estado,'completado','PROTECTED_PIX_APPROVAL_MUST_COMPLETE_SERVICE'\)/)
+ assert.match(runtime,/assert\.equal\(completed\?\.estado,'completado','CLIENT_APPROVAL_AND_PAYMENT_MUST_COMPLETE_SERVICE'\)/)
+ assert.match(runtime,/\.eq\('id',selectedPayment\.id\)\.single\(\)/)
+ assert.match(runtime,/assert\.equal\(finalPayment\?\.estado,'liberado','COMPLETED_SERVICE_PAYMENT_MUST_BE_RELEASED'\)/)
+ assert.match(runtime,/completado:completionSource/)
+ assert.match(runtime,/await expectUi\('completado','finished'\)/)
+ assert.doesNotMatch(runtime,/assert\.equal\(approved\?\.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE'\)/)
+})
