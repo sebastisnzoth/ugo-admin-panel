@@ -279,27 +279,53 @@ try{
  }
  await expectUi('asignado','accepted',{bannerTextOverride:globalThis.__ugoAssignedBannerText||null})
 
- const paymentAmount=Math.max(1,Number(template.tarifa||50))
- const {data:selectedPayment,error:paymentInsertError}=await admin.from('pagos').insert({
-  servicio_id:fixture.id,
-  cliente_id:login.user.id,
-  proveedor_id:TEST_PROVIDER_ID,
-  procesador:'ugo-test',
-  pago_externo_id:'client-notifications-'+sha,
-  monto_bruto:paymentAmount,
-  comision_ugo:0,
-  ganancia_proveedor:0,
-  moneda:'BRL',
-  estado:'retenido',
-  metodo:'pix',
-  modelo_pago:'custodia_ugo',
-  ambiente:'demo',
-  fecha_confirmacion:new Date().toISOString(),
- }).select('id,metodo,estado,pago_externo_id,ambiente').single()
- assert.ifError(paymentInsertError)
- assert.equal(selectedPayment?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
- assert.ok(selectedPayment?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
- assert.equal(selectedPayment?.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
+ // A real cash-payment trigger may already have created the only payment for
+ // this service on assignment. Reuse and validate it instead of inserting a
+ // conflicting Pix row; do not mutate the shared TEST client's preference.
+ const {data:paymentContext,error:paymentContextError}=await admin.from('servicios')
+  .select('metadata,ambiente').eq('id',fixture.id).single()
+ assert.ifError(paymentContextError)
+ const requestedMethod=String(paymentContext?.metadata?.requested_payment_method||'').toLowerCase()
+ assert.ok(['efectivo','pix'].includes(requestedMethod),'TEST_PAYMENT_METHOD_MUST_BE_PERSISTED')
+ const {data:existingPayment,error:existingPaymentError}=await admin.from('pagos')
+  .select('id,metodo,estado,pago_externo_id,ambiente,procesador,modelo_pago')
+  .eq('servicio_id',fixture.id).maybeSingle()
+ assert.ifError(existingPaymentError)
+ let selectedPayment=existingPayment
+ if(requestedMethod==='efectivo'){
+  assert.ok(existingPayment?.id,'AUTO_CASH_PAYMENT_REQUIRED')
+  assert.equal(existingPayment.metodo,'efectivo','AUTO_CASH_PAYMENT_METHOD_REQUIRED')
+  assert.equal(existingPayment.procesador,'efectivo','AUTO_CASH_PROCESSOR_REQUIRED')
+  assert.equal(existingPayment.modelo_pago,'presencial','AUTO_CASH_MODEL_REQUIRED')
+  assert.ok(['pendiente','liberado'].includes(existingPayment.estado),'AUTO_CASH_PAYMENT_NOT_READY')
+ }else{
+  // Pix needs a real protected TEST payment, never a fabricated cash payment.
+  assert.equal(existingPayment,null,'UNEXPECTED_PREEXISTING_PIX_PAYMENT')
+  const paymentAmount=Math.max(1,Number(template.tarifa||50))
+  const {data:inserted,error:paymentInsertError}=await admin.from('pagos').insert({
+   servicio_id:fixture.id,
+   cliente_id:login.user.id,
+   proveedor_id:TEST_PROVIDER_ID,
+   procesador:'ugo-test',
+   pago_externo_id:'client-notifications-'+sha,
+   monto_bruto:paymentAmount,
+   comision_ugo:0,
+   ganancia_proveedor:0,
+   moneda:'BRL',
+   estado:'retenido',
+   metodo:'pix',
+   modelo_pago:'custodia_ugo',
+   ambiente:'demo',
+   fecha_confirmacion:new Date().toISOString(),
+  }).select('id,metodo,estado,pago_externo_id,ambiente').single()
+  assert.ifError(paymentInsertError)
+  assert.equal(inserted?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
+  assert.ok(inserted?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
+  selectedPayment=inserted
+ }
+ assert.ok(selectedPayment?.id,'TEST_PAYMENT_REQUIRED')
+ assert.equal(selectedPayment.metodo,requestedMethod,'TEST_PAYMENT_PREFERENCE_MISMATCH')
+ assert.equal(selectedPayment.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
 
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
@@ -397,7 +423,7 @@ const evidence={
  readiness_mode:readinessMode,
  push_delivery_proven:false,
  evidence_paths:evidencePaths,
- payment:{method:'pix',state:'retenido',environment:'demo'},
+ payment:{method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente,source:requestedMethod==='efectivo'?'assignment_cash_trigger':'protected_test_pix'},
  cleanup,
  cleanup_ok:cleanup.ok,
  page_errors:pageErrors,
