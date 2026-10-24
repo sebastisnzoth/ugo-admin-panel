@@ -28,3 +28,25 @@ test('permissions and schema errors are never retried',async()=>{
   assert.equal(isTransientReadOutage({cause:{code:'PGRST116'}}),false)
   assert.equal(isTransientReadOutage({cause:{status:504}}),true)
 })
+
+test('Cloudflare 522 from read-only catalog retries at most twice and can recover',async()=>{
+  let calls=0
+  const delays=[]
+  const result=await readWithTransientRetry(async()=>{
+    calls++
+    if(calls<3)throw Object.assign(new Error('Connection timed out'),{cause:{status:522}})
+    return ['catalog']
+  },{sleep:async ms=>{delays.push(ms)}})
+  assert.deepEqual(result,['catalog'])
+  assert.equal(calls,3)
+  assert.deepEqual(delays,[1200,3000])
+})
+
+test('persistent 522 still fails closed; 401/403 never retried',async()=>{
+  for(const status of [522,401,403]){
+    let calls=0
+    const error=Object.assign(new Error(`HTTP ${status}`),{p0:{error:{status}}})
+    await assert.rejects(readWithTransientRetry(async()=>{calls++;throw error},{sleep:async()=>{}}),new RegExp(`HTTP ${status}`))
+    assert.equal(calls,status===522?3:1)
+  }
+})

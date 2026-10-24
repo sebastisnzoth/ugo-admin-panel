@@ -8,6 +8,8 @@ on:
     branches: [main]
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
+      - "scripts/lib/p0-test-read-retry.mjs"
+      - "tests/contracts/p0-test-read-retry.test.mjs"
       - "src/mvp/provider/**"
       - "src/mvp/ProviderLocationTracker.tsx"
       - "tests/contracts/provider-arrival-location.test.mjs"

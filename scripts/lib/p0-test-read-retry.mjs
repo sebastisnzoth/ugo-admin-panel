@@ -4,7 +4,7 @@ export function isTransientReadOutage(error){
   const cause=error?.cause||error
   const code=String(cause?.code||error?.p0?.error?.code||'')
   const status=Number(cause?.status||error?.p0?.error?.status||0)
-  return ['PGRST000','PGRST002'].includes(code)||[502,503,504].includes(status)
+  return ['PGRST000','PGRST002'].includes(code)||[502,503,504,522].includes(status)
 }
 export async function readWithTransientRetry(read,{sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms)),onRetry=()=>{}}={}){
   const delays=[1200,3000]
