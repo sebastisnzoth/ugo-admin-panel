@@ -33,7 +33,7 @@ try{
   window.Notification=class{static permission='default'}
   const realInterval=window.setInterval.bind(window)
   window.setInterval=(fn,ms,...args)=>{if(ms===20000)window.__safetyResync=fn;return realInterval(fn,ms,...args)}
-  const db={auth:{getSession:async()=>({data:{session:{user:{id:'provider-test'}}}})},from:table=>{
+  const db={auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:callback=>{window.__authCallback=callback;return{data:{subscription:{unsubscribe(){window.__authUnsubscribed=true}}}}}},from:table=>{
    const query={select(){return this},eq(column,value){if(column==='id')this.noticeId=value;return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){this.isUpdate=true;return this},then(resolve){
     if(this.isUpdate&&this.noticeId?.startsWith('offer:'))return Promise.resolve({data:null,error:{message:'invalid input syntax for type uuid'}}).then(resolve)
     if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
@@ -46,7 +46,14 @@ try{
   window.__emit=notice=>window.__channels.at(-1).callbacks['notificaciones:INSERT']({new:notice})
  })
  await page.goto(base+'/__notification_recovery__')
- await page.waitForFunction(()=>window.__channels.length>0,{},{timeout:3000})
+ await page.waitForFunction(()=>typeof window.__authCallback==='function',{},{timeout:3000})
+ assert.equal(await page.evaluate(()=>window.__channels.length),0,'No channel expected while signed out')
+ await page.evaluate(()=>window.__authCallback('SIGNED_IN',{user:{id:'provider-test'}}))
+ await page.waitForFunction(()=>window.__channels.length===1,{},{timeout:3000})
+ evidence.checks.delayed_sign_in_recovers_subscription=true
+ await page.evaluate(()=>window.__authCallback('TOKEN_REFRESHED',{user:{id:'provider-test'}}))
+ assert.equal(await page.evaluate(()=>window.__channels.length),1,'Token refresh must not recreate channel')
+ evidence.checks.token_refresh_does_not_duplicate_subscription=true
  evidence.checks.subscribed_while_push_pending=true
  // A SELECT that never resolves must not delay an INSERT alert.
  await page.evaluate(()=>{window.__holdReads=true;const n=window.__offer('first');window.__noticeRows=[n];window.__emit(n)})
@@ -115,6 +122,7 @@ try{
  evidence.checks.offline_blocks_attention_online_recovers=true
  await page.evaluate(()=>window.__root.unmount())
  await page.waitForFunction(()=>window.__removed===window.__channels.length)
+ assert.equal(await page.evaluate(()=>window.__authUnsubscribed),true,'Auth listener must be cleaned up')
  evidence.checks.channels_cleaned_up=true
  assert.deepEqual(errors,[])
  evidence.result='PASS'
