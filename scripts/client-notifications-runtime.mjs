@@ -101,6 +101,17 @@ await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',J
 const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
+
+ // The foreground banner displays the localized title, not necessarily the
+ // persisted database title. Read the actual Spanish catalog so the E2E still
+ // fails on a missing/wrong live banner without hard-coding a duplicate label.
+ const localeSource=await fs.readFile('src/i18n/locale.tsx','utf8')
+ const spanishMessages={}
+ for(const match of localeSource.matchAll(/Object\\.assign\\(messages\\["es"\\],(\\{[^\\n]*\\})\\)/g)){
+  Object.assign(spanishMessages,JSON.parse(match[1]))
+ }
+ const displayedTitle=notice=>spanishMessages['notification.'+notice.tipo]||notice.titulo
+
 let cleanup={ok:false,mode:'none',error:null}
 let verifiedPayment=null
 async function backendState(){
@@ -147,14 +158,15 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
  const banner=page.locator('.ugo-notification-live.is-client')
  let bannerText=bannerTextOverride
  if(!bannerText){
-  await banner.getByText(notice.titulo,{exact:true}).waitFor({state:'visible',timeout:15000})
+  await banner.getByText(displayedTitle(notice),{exact:true}).waitFor({state:'visible',timeout:15000})
   bannerText=await banner.innerText()
  }
  const {data:foreign,error:foreignError}=await provider.from('notificaciones').select('id').eq('id',notice.id)
  assert.ifError(foreignError)
  assert.deepEqual(foreign,[],'Provider must not read client notifications')
  await page.screenshot({path:'artifacts/client-notifications-'+state+'.png',fullPage:true})
- notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
+ assert.ok(bannerText.includes(displayedTitle(notice)),'CLIENT_LIVE_LOCALIZED_TITLE_REQUIRED')
+ notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:displayedTitle(notice),persisted_title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
 }
 
@@ -230,7 +242,7 @@ try{
  }
  assert.ok(assignedPersisted?.id,'CLIENT_ASSIGNMENT_NOTIFICATION_MUST_PERSIST_AFTER_UPDATE')
  try{
-  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:assignedPersisted.titulo}).first()
+  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:displayedTitle(assignedPersisted)}).first()
   await assignedNotice.waitFor({state:'attached',timeout:30000})
   const visibilityProbe=await assignedNotice.evaluate(node=>{
    const describe=el=>{
