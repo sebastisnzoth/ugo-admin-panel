@@ -50,3 +50,27 @@ test('persistent 522 still fails closed; 401/403 never retried',async()=>{
     assert.equal(calls,status===522?3:1)
   }
 })
+
+test('exact upstream request timeout retries only read-only operations, remains bounded and reports no sensitive data',async()=>{
+  let calls=0
+  const events=[]
+  const result=await readWithTransientRetry(async()=>{
+    calls++
+    if(calls<3)throw Object.assign(new Error('read categories: upstream request timeout'),{cause:{message:'upstream request timeout',code:null,status:null}})
+    return ['catalog']
+  },{sleep:async()=>{},onRetry:event=>events.push(event)})
+  assert.deepEqual(result,['catalog'])
+  assert.equal(calls,3)
+  assert.deepEqual(events,[{attempt:1,code:'unknown',delayMs:1200},{attempt:2,code:'unknown',delayMs:3000}])
+})
+test('persistent upstream timeout fails closed, permission failures and other messages are not retried',async()=>{
+  let calls=0
+  const timeout=Object.assign(new Error('read categories: upstream request timeout'),{cause:{message:'upstream request timeout'}})
+  await assert.rejects(readWithTransientRetry(async()=>{calls++;throw timeout},{sleep:async()=>{}}),/upstream request timeout/)
+  assert.equal(calls,3)
+  for(const error of [
+    {cause:{message:'upstream request timeout',status:401}},
+    {cause:{message:'upstream request timeout',code:'42501'}},
+    {cause:{message:'unrelated timeout'}},
+  ])assert.equal(isTransientReadOutage(error),false)
+})
