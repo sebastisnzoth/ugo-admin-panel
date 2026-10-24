@@ -39,7 +39,7 @@ test('superadmin Realtime reloads are throttled, coalesced and stop when hidden'
  assert.match(source,/if\(reloadTimer\.current\)return/)
  assert.match(source,/Math\.max\(250,8_000-\(Date\.now\(\)-lastRealtimeReload\.current\)\)/)
  assert.match(source,/realtimeReloadPending\.current=false;refresh\(\)/)
- assert.match(source,/if\(reloadTimer\.current\)clearTimeout\(reloadTimer\.current\);dispose\(\)/)
+ assert.match(source,/alive=false;realtimeReloadPending\.current=false;if\(reloadTimer\.current\)\{clearTimeout\(reloadTimer\.current\);reloadTimer\.current=null\}dispose\(\)/)
 })
 
 test('superadmin coalesces repeated realtime events in execution', async () => {
@@ -51,8 +51,8 @@ test('superadmin coalesces repeated realtime events in execution', async () => {
  const reloadTimer={current:null},lastRealtimeReload={current:0},realtimeReloadBusy={current:false},realtimeReloadPending={current:false}
  const load=()=>{calls++;return Promise.resolve()}
  const setTimeout=(fn,delay)=>{timers.push({fn,delay});return timers.length}
- const refresh=new Function('document','reloadTimer','lastRealtimeReload','realtimeReloadBusy','realtimeReloadPending','load','setTimeout','Date',match[0].replace(/;const channel=db\.channel$/,'')+';return refresh')(
-  {visibilityState:'visible'},reloadTimer,lastRealtimeReload,realtimeReloadBusy,realtimeReloadPending,load,setTimeout,{now:()=>now})
+ const refresh=new Function('document','reloadTimer','lastRealtimeReload','realtimeReloadBusy','realtimeReloadPending','load','setTimeout','Date','alive',match[0].replace(/;const channel=db\.channel$/,'')+';return refresh')(
+  {visibilityState:'visible'},reloadTimer,lastRealtimeReload,realtimeReloadBusy,realtimeReloadPending,load,setTimeout,{now:()=>now},true)
  refresh();refresh();refresh()
  assert.equal(timers.length,1,'event burst must schedule only one DB reload')
  assert.equal(timers[0].delay,250)
