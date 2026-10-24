@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   provider-ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: test
     steps:
       - uses: actions/checkout@v4
