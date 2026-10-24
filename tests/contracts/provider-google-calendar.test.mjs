@@ -84,3 +84,12 @@ test('Google OAuth binds the signed state to an HttpOnly browser cookie and cons
  assert.match(api,/timingSafeEqual\(left,right\)/)
  assert.match(api,/const userId=verified\.uid/)
 })
+
+test('OAuth state rejects malformed nonce, uid, and expiry outside the ten-minute window',async()=>{
+ const api=await read('api/test.ts')
+ assert.match(api,/typeof parsed\?\.uid!=='string'/)
+ assert.match(api,/parsed\.uid\.length>128/)
+ assert.match(api,/Number\.isSafeInteger\(parsed\?\.exp\)/)
+ assert.match(api,/parsed\.exp>Date\.now\(\)\+10\*60\*1000/)
+ assert.match(api,/\^\[-_A-Za-z0-9\]\{16,128\}\$/)
+})
