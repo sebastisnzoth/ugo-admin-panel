@@ -7,6 +7,12 @@ const headers={authorization:'Bearer '+key,'content-type':'application/json','HT
 const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
 const timedFetch=(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(8000)})
 const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false},global:{fetch:timedFetch}}):null
+function isRetryablePersistenceError(error){
+ const text=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(' ')
+ // PGRST002 / this exact schema-cache message means PostgREST cannot reach DB.
+ // It is not a missing table/permission failure and must retain degraded status.
+ return /cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream|PGRST002|could not query the database for the schema cache|connection terminated/i.test(text)
+}
 async function persist(candidate){
  if(!db)return
  let lastError=null,lastRetryable=false
@@ -15,14 +21,12 @@ async function persist(candidate){
    const{error}=await db.from('autonomous_model_candidates').upsert(candidate,{onConflict:'provider,model_id'})
    if(!error)return
    lastError=error
-   const text=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(' ')
-   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   const retryable=isRetryablePersistenceError(error)
    lastRetryable=retryable
    if(!retryable||attempt===4)break
   }catch(error){
    lastError=error
-   const text=String(error?.message||error||'')
-   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   const retryable=isRetryablePersistenceError(error)
    lastRetryable=retryable
    if(!retryable||attempt===4)break
   }
