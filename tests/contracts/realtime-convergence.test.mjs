@@ -39,7 +39,9 @@ test('superadmin Realtime reloads are throttled, coalesced and stop when hidden'
  assert.match(source,/if\(reloadTimer\.current\)return/)
  assert.match(source,/Math\.max\(250,8_000-\(Date\.now\(\)-lastRealtimeReload\.current\)\)/)
  assert.match(source,/realtimeReloadPending\.current=false;refresh\(\)/)
- assert.match(source,/alive=false;realtimeReloadPending\.current=false;if\(reloadTimer\.current\)\{clearTimeout\(reloadTimer\.current\);reloadTimer\.current=null\}dispose\(\)/)
+ assert.match(source,/document\.addEventListener\('visibilitychange',onVisibility\)/)
+ assert.match(source,/document\.removeEventListener\('visibilitychange',onVisibility\)/)
+ assert.match(source,/alive=false;document\.removeEventListener\('visibilitychange',onVisibility\);realtimeReloadPending\.current=false;if\(reloadTimer\.current\)\{clearTimeout\(reloadTimer\.current\);reloadTimer\.current=null\}dispose\(\)/)
 })
 
 test('superadmin coalesces repeated realtime events in execution', async () => {
