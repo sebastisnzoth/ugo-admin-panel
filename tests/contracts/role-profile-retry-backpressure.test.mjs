@@ -48,3 +48,12 @@ test('Realtime reconnect failures never trigger immediate profile reads and resu
   assert.match(source,/else if\(status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'\|\|status==='CLOSED'\)reconnect\(\)/)
   assert.match(source,/if\(generation!==profileGeneration\.current\)return;const query=supabase\.from\('usuarios'\)/)
 })
+
+test('browser online and visibility bursts use the same bounded profile refresh as Realtime resubscribe',()=>{
+  // Network restoration and tab focus can fire repeatedly during outages.
+  // These events must not bypass the existing 30s Realtime profile-read budget.
+  assert.match(source,/const onOnline=\(\)=>\{[^\n]*refreshRealtime\(\);reconnect\(\)\}/)
+  assert.match(source,/const onVisibility=\(\)=>\{if\(document\.visibilityState==='visible'\)refreshRealtime\(\)\}/)
+  assert.doesNotMatch(source,/const onOnline=\(\)=>\{[^\n]*refresh\(\);reconnect\(\)\}/)
+  assert.doesNotMatch(source,/const onVisibility=\(\)=>\{if\(document\.visibilityState==='visible'\)refresh\(\)\}/)
+})
