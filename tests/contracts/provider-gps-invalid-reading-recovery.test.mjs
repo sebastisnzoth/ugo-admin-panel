@@ -7,7 +7,9 @@ const tracker=fs.readFileSync('src/mvp/ProviderLocationTracker.tsx','utf8')
 test('provider tracker seeds UI freshness from persisted valid provider GPS',()=>{
   assert.match(tracker,/select\('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m'\)/)
   assert.match(tracker,/setLastFix\(\{capturedAt:persistedAt,accuracy:persistedAccuracy\}\)/)
-  assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
+  assert.match(tracker,/lastValidFixAtRef\.current=persistedAt/)
+  assert.match(tracker,/persistedAt>=lastValidFixAtRef\.current/)
+  assert.doesNotMatch(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
 })
 
 test('one invalid browser reading does not erase a still-fresh persisted fix',()=>{

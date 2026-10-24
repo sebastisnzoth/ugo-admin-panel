@@ -20,7 +20,7 @@ const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximum
 
 function usableBrowserPosition(pos:GeolocationPosition){
  const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
- return Number.isFinite(latitude)&&Number.isFinite(longitude)&&!(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)&&Number.isFinite(accuracy)&&accuracy>0&&accuracy<=MAX_ACCEPTABLE_ACCURACY_M&&age<=MAX_POSITION_AGE_MS
+ return Number.isFinite(latitude)&&Number.isFinite(longitude)&&!(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)&&Number.isFinite(accuracy)&&accuracy>0&&accuracy<=MAX_ACCEPTABLE_ACCURACY_M&&age>=-5_000&&age<=MAX_POSITION_AGE_MS
 }
 function oneBrowserPosition(options:PositionOptions):Promise<GeolocationPosition>{return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
 function acquireFreshBrowserPosition():Promise<GeolocationPosition>{
@@ -108,8 +108,8 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     setAvailable(Boolean(trackingProfile&&trackingProfile.online&&trackingProfile.disponible))
     const persistedAt=trackingProfile?.ubicacion_updated_at?Date.parse(trackingProfile.ubicacion_updated_at):NaN
     const persistedAccuracy=Number(trackingProfile?.ubicacion_accuracy_m)
-    if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M&&Date.now()-persistedAt<=MATCHING_POSITION_AGE_MS){
-     lastValidFixAtRef.current=Date.now()
+    if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M&&persistedAt<=Date.now()&&Date.now()-persistedAt<=MATCHING_POSITION_AGE_MS&&persistedAt>=lastValidFixAtRef.current){
+     lastValidFixAtRef.current=persistedAt
      setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
     }
    }
@@ -124,9 +124,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      setAvailable(Boolean(row.online&&row.disponible))
      const persistedAt=row.ubicacion_updated_at?Date.parse(row.ubicacion_updated_at):NaN
      const persistedAccuracy=Number(row.ubicacion_accuracy_m)
-     if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M){
+     if(Number.isFinite(persistedAt)&&Number.isFinite(persistedAccuracy)&&persistedAccuracy>0&&persistedAccuracy<=MAX_ACCEPTABLE_ACCURACY_M&&persistedAt<=Date.now()&&Date.now()-persistedAt<=MATCHING_POSITION_AGE_MS&&persistedAt>=lastValidFixAtRef.current){
       setLastFix({capturedAt:persistedAt,accuracy:persistedAccuracy})
-      lastValidFixAtRef.current=Date.now()
+      lastValidFixAtRef.current=persistedAt
      }
     }
    })
@@ -147,7 +147,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   const setGeoError=(error:GeolocationPositionError)=>{
    if(!alive)return
    if(error.code===1){setLocationError(serviceId?translateRef.current('providerGps.permissionRoute'):translateRef.current('providerGps.permissionOnline'));return}
-   if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+   if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=(serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS))return
    setLocationError(error.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
   }
 
@@ -157,7 +157,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    const accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
    if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001)){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.invalid'));return}
    if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.inaccurate'));return}
-   if(age>MAX_POSITION_AGE_MS){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.stale'));return}
+   if(age < -5_000||age>MAX_POSITION_AGE_MS){const freshnessWindow=serviceId?MAX_POSITION_AGE_MS:MATCHING_POSITION_AGE_MS;if(!lastValidFixAtRef.current||Date.now()-lastValidFixAtRef.current>freshnessWindow)setLocationError(translateRef.current('providerGps.stale'));return}
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M,heartbeatDue=lastWrite===0||now-lastWrite>=10_000
    if(writing||now-lastWrite<MIN_WRITE_MS||(!force&&!moved&&!heartbeatDue))return
    writing=true
@@ -168,7 +168,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
     if(!alive)return
     if(error){setLocationError(translateRef.current('providerGps.publishFailed'));return}
-    lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy});setLocationError('')
+    lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=capturedAtMs;setLastFix({capturedAt:capturedAtMs,accuracy});setLocationError('')
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
     setDistanceToClient(validMeters)
@@ -209,7 +209,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    }catch(error){
     if(!alive)return
     const geoError=error as GeolocationPositionError
-    if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+    if(geoError.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MATCHING_POSITION_AGE_MS)return
     setLocationError(geoError.code===1?translateRef.current('providerGps.lostPermission'):geoError.code===2?translateRef.current('providerGps.noPosition'):translateRef.current('providerGps.timeout'))
    }finally{heartbeatBusy=false}
   }
