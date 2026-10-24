@@ -140,7 +140,7 @@ async function clientUiLogin({email,clientUserId}){
   const {chromium}=await import('playwright')
   await fs.mkdir('artifacts',{recursive:true})
   if(!browser)browser=await chromium.launch({headless:true})
-  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR'})
+  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR',permissions:['geolocation'],geolocation:{latitude:CLIENT_LAT,longitude:CLIENT_LNG,accuracy:12}})
   const page=await context.newPage()
   const pageErrors=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
