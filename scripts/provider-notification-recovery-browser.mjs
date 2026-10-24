@@ -116,7 +116,10 @@ try{
  // Mount again to release the intentionally hung SELECT. Keep the seen set.
  await page.evaluate(()=>{window.__holdReads=false;window.__render(false)})
  await page.waitForFunction(()=>window.__channels.length>=2)
- await page.getByRole('button',{name:'Cerrar notificación',exact:true}).click()
+ // The previous live banner may already have expired or been opened; closing
+ // it is optional here. The next assertion verifies the actual offline behavior.
+ const oldBannerClose=page.getByRole('button',{name:'Cerrar notificación',exact:true})
+ if(await oldBannerClose.count())await oldBannerClose.click()
  assert.ok(await page.evaluate(()=>window.__heldReads.length>0),'DELAYED_READ_REQUIRED')
  await page.evaluate(()=>{window.__noticeRows=[window.__offer('late-offline')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
  await page.waitForTimeout(100)
