@@ -861,6 +861,9 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Causa de amplificación identificada en frontend: `SuperAdminCommandCenter` suscribía 18 tablas Realtime y cada evento podía disparar una recarga integral tras 250 ms, con múltiples `count:exact`, páginas y consultas por departamento. Se limita solo el refresco disparado por Realtime: intervalo mínimo 8 s, coalescencia de ráfagas, máximo una recarga Realtime concurrente, refresco pendiente y omisión cuando la pestaña está oculta. Las acciones manuales y carga inicial mantienen su ruta previa.
 - Verificación previa: prueba de ejecución del scheduler con tres eventos seguidos => una sola carga, y segundo evento a +500 ms => espera 7500 ms. Se añadió contrato automatizado; CI exact-SHA, Cross-role, P0 E2E, ausencia de regresiones y smoke publicado siguen **PENDIENTES**. No se tocó PROD ni se activó Empresa Autónoma.
 
+### PR #568 — GPS timestamp integrity (2026-10-23)
+- On the reconciled branch, GPS errors during Online availability retain the last genuinely captured fix for at most 90 s; route mode retains 30 s. Rehydration and Realtime use persisted capture timestamps, reject expired/future/out-of-order fixes, and never extend freshness by reloading the UI. Contract tests accompany the fix. CI and physical E2E remain required before merging to main.
+
 ### 2026-10-24 — P0 PR #580: notificaciones del Proveedor tras Auth tardía
 - Baseline main `393346831f9e63741d14c5fc16e2922d8cb70a97`. `NotificationCenter` consultaba `getSession()` una sola vez; si devolvía null antes de `SIGNED_IN`, no instalaba el canal Realtime.
 - Cambio mínimo en `src/mvp/NotificationCenter.tsx`: escucha Auth antes de consultar sesión; crea canal cuando llega `SIGNED_IN`, evita re-suscripción por `TOKEN_REFRESHED` y elimina listener/canal al desmontar o salir.
