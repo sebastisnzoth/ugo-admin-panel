@@ -863,3 +863,20 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 
 ### PR #568 — GPS timestamp integrity (2026-10-23)
 - On the reconciled branch, GPS errors during Online availability retain the last genuinely captured fix for at most 90 s; route mode retains 30 s. Rehydration and Realtime use persisted capture timestamps, reject expired/future/out-of-order fixes, and never extend freshness by reloading the UI. Contract tests accompany the fix. CI and physical E2E remain required before merging to main.
+
+### 2026-10-24 — P0 PR #580: notificaciones del Proveedor tras Auth tardía
+- Baseline main `393346831f9e63741d14c5fc16e2922d8cb70a97`. `NotificationCenter` consultaba `getSession()` una sola vez; si devolvía null antes de `SIGNED_IN`, no instalaba el canal Realtime.
+- Cambio mínimo en `src/mvp/NotificationCenter.tsx`: escucha Auth antes de consultar sesión; crea canal cuando llega `SIGNED_IN`, evita re-suscripción por `TOKEN_REFRESHED` y elimina listener/canal al desmontar o salir.
+- Regresión en `scripts/provider-notification-recovery-browser.mjs`: sesión inicial null, SIGNED_IN, no duplicación tras TOKEN_REFRESHED, limpieza; el mock conserva la sesión al remontar el componente, igual que Auth real.
+- GitHub Actions para PR #580 (`40056574862`) encontró timeout en el test al remontar el componente porque el mock anterior siempre devolvía sesión null; reparado el mock en el mismo PR. Roadmap Traceability (`40056574850`) exige actualizar roadmap y continuidad; se conservó este gate.
+- Estado: **candidato corregido en PR #580, CI del SHA nuevo aún pendiente; NO MERGE / NO PROD / E2E física HUMAN_REQUIRED**. Próximo paso: comprobar Provider Notifications Runtime, Core CI, Cross-role y seguridad del SHA vigente; corregir fallas reales antes de integrar.
+
+### 2026-10-24 — P0 E2E cliente/proveedor UI-first (PR #580)
+- `scripts/p0-client-provider-e2e.mjs` ahora obliga, en modo browser TEST, a ingresar el pedido recorriendo las pantallas Cliente need → location → when → payment → summary → confirm; verifica la fila persistida y la oferta nacida desde la UI. En modo UI queda prohibida la inserción directa del servicio y la invocación manual `iniciar_matching` por el test. El modo API-only sigue separado y no constituye comprobación visual.
+- Proveedor: si el botón Online falla, la prueba falla sin activar disponibilidad mediante el RPC privilegiado de respaldo. Ubicación en Playwright = simulada, no prueba GPS física.
+- Estado: implementación candidata sin resultados CI same-SHA ni comprobación física; NO MERGE a main por publicación automática Pages y Vercel de producción. Corregir cualquier fallo del runtime antes de declarar PASS. Mantener Supabase TEST exclusivamente.
+
+### 2026-10-24 — P0 Auth/Realtime: aislamiento de resync entre sesiones (PR #580)
+- Causa reproducible en código: `syncing` era global al efecto. Un SELECT `notificaciones` colgado durante SIGNED_OUT mantenía `syncing=true` y bloqueaba el resync de la siguiente sesión; si el mismo usuario volvía a ingresar, la lectura antigua podía superar el control basado solo en `currentId`.
+- Corrección en `NotificationCenter.tsx`: `identityEpoch` se incrementa en cada cambio de identidad, invalida lecturas anteriores y reinicia el candado de sincronización. El `finally` de una lectura obsoleta no modifica el estado de una sesión posterior.
+- Regresión browser: SIGNED_OUT y SIGNED_IN del mismo usuario mientras el SELECT anterior sigue pendiente; exige resync nuevo antes de liberar el viejo y ausencia de filtración del aviso antiguo. Estado: IMPLEMENTADO en PR #580, pendiente CI exact-SHA, E2E TEST y smoke; no integrado ni desplegado.

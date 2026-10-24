@@ -462,3 +462,22 @@ La conversación insistió repetidamente en que UGO está desordenado porque se 
 
 ### PR #568 — GPS timestamp integrity (2026-10-23)
 - On the reconciled branch, GPS errors during Online availability retain the last genuinely captured fix for at most 90 s; route mode retains 30 s. Rehydration and Realtime use persisted capture timestamps, reject expired/future/out-of-order fixes, and never extend freshness by reloading the UI. Contract tests accompany the fix. CI and physical E2E remain required before merging to main.
+
+### 2026-10-24 — P0 PR #580: notificaciones del Proveedor tras Auth tardía
+- Baseline main `393346831f9e63741d14c5fc16e2922d8cb70a97`. `NotificationCenter` consultaba `getSession()` una sola vez; si devolvía null antes de `SIGNED_IN`, no instalaba el canal Realtime.
+- Cambio mínimo en `src/mvp/NotificationCenter.tsx`: escucha Auth antes de consultar sesión; crea canal cuando llega `SIGNED_IN`, evita re-suscripción por `TOKEN_REFRESHED` y elimina listener/canal al desmontar o salir.
+- Regresión en `scripts/provider-notification-recovery-browser.mjs`: sesión inicial null, SIGNED_IN, no duplicación tras TOKEN_REFRESHED, limpieza; el mock conserva la sesión al remontar el componente, igual que Auth real.
+- GitHub Actions para PR #580 (`40056574862`) encontró timeout en el test al remontar el componente porque el mock anterior siempre devolvía sesión null; reparado el mock en el mismo PR. Roadmap Traceability (`40056574850`) exige actualizar roadmap y continuidad; se conservó este gate.
+- Estado: **candidato corregido en PR #580, CI del SHA nuevo aún pendiente; NO MERGE / NO PROD / E2E física HUMAN_REQUIRED**. Próximo paso: comprobar Provider Notifications Runtime, Core CI, Cross-role y seguridad del SHA vigente; corregir fallas reales antes de integrar.
+
+### 2026-10-24 — P0 browser UI-first: eliminar falsos positivos
+Se actualizó el E2E existente en PR #580 para que un pedido en modo browser nazca desde el formulario real del Cliente y para que la activación Online del Proveedor no sea suplida por RPC. La prueba solo reconoce ofertas que provengan del matching iniciado por la UI. Se mantiene TEST estricto, JWT de roles, limpieza de fixtures y GPS Playwright simulado. Pendiente: CI y runtime exact-SHA tras último commit; no se debe considerar comprobación humana ni integrar a main mientras Pages/Vercel publiquen producción automáticamente.
+
+### 2026-10-24 — P0 #580: proteger cambios de identidad durante Auth/Realtime
+- `b2b8bda046aa95212a5a1f73fddd4760d08bd281` corrige otra carrera concreta: un `getSession()` iniciado antes de `SIGNED_IN` o `SIGNED_OUT` podía devolver una identidad obsoleta y reemplazar el canal vigente; las lecturas Realtime anteriores también podían actualizar la UI después del cambio de usuario. Se incorpora revisión de eventos Auth, comprobación de identidad en callbacks/lecturas y limpieza visual al cambiar de usuario.
+- `2d62d19c3df7938f14d1d2bb6c1d4c28b105a5bf` amplía el test browser con respuesta inicial de Auth demorada, identidad obsoleta, lectura pendiente tras cierre de sesión y reconexión. La suite todavía **NO se ejecutó sobre este SHA**: el conector devuelve 0 runs PR y Vercel `pending`; PR #580 sigue `draft`, `mergeable=false` (32 commits de main por reconciliar). No fusionar ni desplegar sin CI exact-SHA, E2E TEST, antirregresión y comprobación publicada. Sin escritura en Supabase PROD; Empresa Autónoma OFF.
+
+### 2026-10-24 — P0 Auth/Realtime: aislamiento de resync entre sesiones (PR #580)
+- Causa reproducible en código: `syncing` era global al efecto. Un SELECT `notificaciones` colgado durante SIGNED_OUT mantenía `syncing=true` y bloqueaba el resync de la siguiente sesión; si el mismo usuario volvía a ingresar, la lectura antigua podía superar el control basado solo en `currentId`.
+- Corrección en `NotificationCenter.tsx`: `identityEpoch` se incrementa en cada cambio de identidad, invalida lecturas anteriores y reinicia el candado de sincronización. El `finally` de una lectura obsoleta no modifica el estado de una sesión posterior.
+- Regresión browser: SIGNED_OUT y SIGNED_IN del mismo usuario mientras el SELECT anterior sigue pendiente; exige resync nuevo antes de liberar el viejo y ausencia de filtración del aviso antiguo. Estado: IMPLEMENTADO en PR #580, pendiente CI exact-SHA, E2E TEST y smoke; no integrado ni desplegado.

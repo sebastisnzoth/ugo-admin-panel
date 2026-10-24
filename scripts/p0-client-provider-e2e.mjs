@@ -140,7 +140,7 @@ async function clientUiLogin({email,clientUserId}){
   const {chromium}=await import('playwright')
   await fs.mkdir('artifacts',{recursive:true})
   if(!browser)browser=await chromium.launch({headless:true})
-  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR'})
+  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR',permissions:['geolocation'],geolocation:{latitude:CLIENT_LAT,longitude:CLIENT_LNG,accuracy:12}})
   const page=await context.newPage()
   const pageErrors=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
@@ -168,6 +168,35 @@ async function clientUiLogin({email,clientUserId}){
   await page.screenshot({path:'artifacts/p0-00-client-login.png',fullPage:true}).catch(()=>{})
   stage('ui_client_login_reload',{authenticated:true,sessionPersisted:true,pageErrors})
   return {page,context,pageErrors}
+}
+
+async function submitClientRequestUi(page,category){
+  await page.locator('.ugo-home-hugo-cta').click()
+  const description=page.locator('#ugo-need-description')
+  await description.waitFor({state:'visible',timeout:30000})
+  await description.fill(category.nombre+' '+SERVICE_DESCRIPTION)
+  const next=page.locator('.ugo-need-screen footer button').filter({hasText:'Continuar'}).first()
+  await next.waitFor({state:'visible',timeout:30000})
+  // The catalog is fetched asynchronously after login. Wait for real category
+  // resolution instead of failing before the UI has received the catalog.
+  await page.waitForFunction(()=>{const button=document.querySelector('.ugo-need-screen footer button');return button instanceof HTMLButtonElement&&!button.disabled},null,{timeout:30000})
+  assert.ok(await next.isEnabled(),'P0_CLIENT_UI_CATEGORY_NOT_DETECTED')
+  await next.click()
+  await page.locator('.ugo-location-screen').waitFor({state:'visible',timeout:30000})
+  // Filling the address clears the stored pickup; do it before acquiring the
+  // browser GPS fix, otherwise the test inadvertently discards valid coords.
+  await page.locator('.ugo-location-screen input[autocomplete="street-address"]').fill('Av. Beira-Mar Norte, 1000, Florianópolis')
+  await page.locator('.ugo-location-map button').click()
+  await page.waitForFunction(()=>Boolean(document.querySelector('.ugo-location-map.has-location'))&&Boolean(document.querySelector('.ugo-location-screen footer button:not(:disabled)')),null,{timeout:30000})
+  await page.locator('.ugo-location-screen footer button').click()
+  await page.locator('.ugo-when-screen').waitFor({state:'visible',timeout:45000})
+  await page.locator('.ugo-when-screen footer button').click()
+  await page.locator('.ugo-payment-screen footer button').click()
+  const submit=page.locator('.ugo-summary-screen footer button')
+  await submit.waitFor({state:'visible',timeout:30000})
+  assert.ok(await submit.isEnabled(),'P0_CLIENT_UI_SUMMARY_NOT_READY')
+  await submit.click()
+  await page.locator('.ugo-matching-screen').waitFor({state:'visible',timeout:45000})
 }
 
 async function attemptUiOnline(ui){
@@ -310,7 +339,7 @@ try{
   // 0 · catalog prerequisites ---------------------------------------------
   const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
-  categoryId=categories[0].id
+  categoryId=(categories.find(c=>/limpeza|limpieza|faxina|repar|electric/i.test(c.nombre))||categories[0]).id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
 
   // 1 · isolated TEST identities -----------------------------------------
@@ -356,13 +385,17 @@ try{
     const browserGpsAge=Date.now()-Date.parse(String(after.data?.ubicacion_updated_at||''))
     assert.ok(Number.isFinite(browserGpsAge)&&browserGpsAge>=0&&browserGpsAge<=90_000,'P0_UI_PROVIDER_GPS_NOT_PUBLISHED')
     await proveAutomaticGpsHeartbeat(ui,after.data)
+    assert.equal(online.pressed,'true','P0_PROVIDER_UI_ONLINE_FAILED')
   }
 
   // 3b · authoritative API activation (captures the exact backend rejection)
-  const activated=await provider.rpc('activar_disponibilidad_proveedor',{
-    p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
-  })
-  stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+  if(!UI){
+    const activated=await provider.rpc('activar_disponibilidad_proveedor',{
+      p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
+    })
+    stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+    must(activated,'provider online API-only')
+  }
   if(ui){
     await ui.page.reload({waitUntil:'domcontentloaded'})
     await ui.page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
@@ -386,6 +419,18 @@ try{
   }
 
   // 4 · client creates the request and persists the pickup ---------------
+  if(UI){
+    const category=categories.find(c=>c.id===categoryId)
+    assert.ok(category,'P0_UI_CATEGORY_MISSING')
+    await submitClientRequestUi(clientUi.page,category)
+    for(let attempt=0;attempt<40;attempt++){
+      const observed=must(await admin.from('servicios').select('id,estado,numero,cliente_id,categoria_id,descripcion').eq('cliente_id',clientId),'observe UI service')
+      const found=(observed.data||[]).find(row=>String(row.descripcion||'').includes(SERVICE_DESCRIPTION))
+      if(found){serviceId=found.id;stage('service_created',{...found,origin:'CLIENT_UI'});break}
+      await new Promise(resolve=>setTimeout(resolve,1000))
+    }
+    assert.ok(serviceId,'P0_CLIENT_UI_DID_NOT_CREATE_SERVICE')
+  }else{
   const insertedService=must(await client.from('servicios').insert({
     cliente_id:clientId,categoria_id:categoryId,estado:'buscando',descripcion:SERVICE_DESCRIPTION,
     direccion_cliente:'Rua P0 E2E TEST, Florianópolis',zona:'TEST',tarifa:120,urgencia:false,ambiente:'real',
@@ -402,7 +447,18 @@ try{
   const matching=await client.rpc('iniciar_matching',{p_servicio_id:serviceId})
   stage('matching_rpc',{rows:Array.isArray(matching.data)?matching.data.length:null,data:matching.data,error:describe(matching.error)})
   must(matching,'iniciar_matching')
+  }
 
+  if(UI){
+    let foundOffer=false
+    for(let attempt=0;attempt<45;attempt++){
+      const current=must(await admin.from('ofertas_servicio').select('id').eq('servicio_id',serviceId).eq('proveedor_id',providerId).limit(1),'observe UI matching')
+      if(current.data?.length){foundOffer=true;break}
+      await new Promise(resolve=>setTimeout(resolve,1000))
+    }
+    assert.ok(foundOffer,'P0_CLIENT_UI_MATCHING_DID_NOT_CREATE_OFFER')
+    stage('ui_matching_persisted',{serviceId,origin:'CLIENT_UI',noManualRpc:true})
+  }
   const serviceAfterMatch=must(await admin.from('servicios').select('id,estado,proveedor_id,matching_expires_at').eq('id',serviceId).single(),'read service after matching')
   const offers=must(await admin.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado,ranking,distancia_km,tarifa_ofrecida,expira_at').eq('servicio_id',serviceId),'read persisted offers').data||[]
   stage('matching_persisted',{service:serviceAfterMatch.data,offers})

@@ -23,7 +23,7 @@ try{
  </script>`}))
  await page.addInitScript(()=>{
   localStorage.setItem('ugo.locale.guest.unknown','es')
-  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[]
+  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[];window.__currentSession=null;window.__sessionReads=0;window.__initialSessionResolve=null
   const params=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}})
   window.AudioContext=class{state='running';currentTime=0;destination={};createOscillator(){return{frequency:params(),connect(){},start(){window.__toneCount++},stop(){}}}createGain(){return{gain:params(),connect(){}}}resume(){return Promise.resolve()}}
   Object.defineProperty(navigator,'vibrate',{value:()=>{window.__vibrateCount++;return true},configurable:true})
@@ -33,7 +33,7 @@ try{
   window.Notification=class{static permission='default'}
   const realInterval=window.setInterval.bind(window)
   window.setInterval=(fn,ms,...args)=>{if(ms===20000)window.__safetyResync=fn;return realInterval(fn,ms,...args)}
-  const db={auth:{getSession:async()=>({data:{session:{user:{id:'provider-test'}}}})},from:table=>{
+  const db={auth:{getSession:()=>{window.__sessionReads++;if(window.__sessionReads===1)return new Promise(resolve=>{window.__initialSessionResolve=resolve});return Promise.resolve({data:{session:window.__currentSession}})},onAuthStateChange:callback=>{window.__authCallback=(event,session)=>{window.__currentSession=event==='SIGNED_OUT'?null:session;callback(event,session)};return{data:{subscription:{unsubscribe(){window.__authUnsubscribed=true}}}}}},from:table=>{
    const query={select(){return this},eq(column,value){if(column==='id')this.noticeId=value;return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){this.isUpdate=true;return this},then(resolve){
     if(this.isUpdate&&this.noticeId?.startsWith('offer:'))return Promise.resolve({data:null,error:{message:'invalid input syntax for type uuid'}}).then(resolve)
     if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
@@ -46,7 +46,33 @@ try{
   window.__emit=notice=>window.__channels.at(-1).callbacks['notificaciones:INSERT']({new:notice})
  })
  await page.goto(base+'/__notification_recovery__')
- await page.waitForFunction(()=>window.__channels.length>0,{},{timeout:3000})
+ await page.waitForFunction(()=>typeof window.__authCallback==='function',{},{timeout:3000})
+ assert.equal(await page.evaluate(()=>window.__channels.length),0,'No channel expected while signed out')
+ await page.evaluate(()=>window.__authCallback('SIGNED_IN',{user:{id:'provider-test'}}))
+ await page.waitForFunction(()=>window.__channels.length===1,{},{timeout:3000})
+ evidence.checks.delayed_sign_in_recovers_subscription=true
+ await page.evaluate(()=>window.__authCallback('TOKEN_REFRESHED',{user:{id:'provider-test'}}))
+ assert.equal(await page.evaluate(()=>window.__channels.length),1,'Token refresh must not recreate channel')
+ evidence.checks.token_refresh_does_not_duplicate_subscription=true
+ await page.evaluate(()=>window.__initialSessionResolve({data:{session:{user:{id:'stale-provider'}}}}))
+ await page.waitForTimeout(60)
+ assert.equal(await page.evaluate(()=>window.__channels.length),1,'Stale initial getSession must not switch identity after SIGNED_IN')
+ evidence.checks.stale_initial_session_cannot_replace_auth_event=true
+ // A hung SELECT from the old auth session must not block a new session's resync,
+ // even when the same user logs out and signs back in before that SELECT settles.
+ await page.evaluate(()=>{window.__holdReads=true;window.dispatchEvent(new Event('focus'))})
+ await page.waitForFunction(()=>window.__heldReads.length>0,{},{timeout:3000})
+ const readsBeforeRelogin=await page.evaluate(()=>window.__noticeReads)
+ await page.evaluate(()=>{window.__authCallback('SIGNED_OUT',null);window.__holdReads=false;window.__noticeRows=[];window.__authCallback('SIGNED_IN',{user:{id:'provider-test'}})})
+ await page.waitForFunction(before=>window.__noticeReads>before,readsBeforeRelogin,{timeout:3000})
+ await page.waitForFunction(()=>window.__channels.length===2,{},{timeout:3000})
+ evidence.checks.new_auth_session_resync_not_blocked_by_hung_old_select=true
+ await page.evaluate(()=>{window.__noticeRows=[window.__offer('private-old-session')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
+ await page.waitForTimeout(120)
+ assert.equal(await page.getByText('TEST private-old-session',{exact:true}).count(),0,'Old auth epoch must not leak notifications after re-login')
+ await page.evaluate(()=>{window.__noticeRows=[]})
+ evidence.checks.sign_out_invalidates_pending_notification_read=true
+ evidence.checks.sign_in_recreates_exactly_one_channel=true
  evidence.checks.subscribed_while_push_pending=true
  // A SELECT that never resolves must not delay an INSERT alert.
  await page.evaluate(()=>{window.__holdReads=true;const n=window.__offer('first');window.__noticeRows=[n];window.__emit(n)})
@@ -90,7 +116,10 @@ try{
  // Mount again to release the intentionally hung SELECT. Keep the seen set.
  await page.evaluate(()=>{window.__holdReads=false;window.__render(false)})
  await page.waitForFunction(()=>window.__channels.length>=2)
- await page.getByRole('button',{name:'Cerrar notificación',exact:true}).click()
+ // The previous live banner may already have expired or been opened; closing
+ // it is optional here. The next assertion verifies the actual offline behavior.
+ const oldBannerClose=page.getByRole('button',{name:'Cerrar notificación',exact:true})
+ if(await oldBannerClose.count())await oldBannerClose.click()
  assert.ok(await page.evaluate(()=>window.__heldReads.length>0),'DELAYED_READ_REQUIRED')
  await page.evaluate(()=>{window.__noticeRows=[window.__offer('late-offline')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
  await page.waitForTimeout(100)
@@ -115,6 +144,7 @@ try{
  evidence.checks.offline_blocks_attention_online_recovers=true
  await page.evaluate(()=>window.__root.unmount())
  await page.waitForFunction(()=>window.__removed===window.__channels.length)
+ assert.equal(await page.evaluate(()=>window.__authUnsubscribed),true,'Auth listener must be cleaned up')
  evidence.checks.channels_cleaned_up=true
  assert.deepEqual(errors,[])
  evidence.result='PASS'
