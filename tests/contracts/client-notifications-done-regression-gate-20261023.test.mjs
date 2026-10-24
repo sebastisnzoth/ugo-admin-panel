@@ -114,3 +114,32 @@ test('cash work approval cannot be misreported as completion before client confi
  assert.match(runtime,/await expectUi\('completado','finished'\)/)
  assert.doesNotMatch(runtime,/assert\.equal\(approved\?\.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE'\)/)
 })
+
+// Keep the real TEST browser gate coupled to every file that can change its
+// assertions or authentication retries. A Judge-only commit must not be green
+// merely because the workflow never ran.
+test('Client Notifications CI runs when runtime, Judge, Sentinel or auth helper changes',()=>{
+ const pr=workflow.split('\n  pull_request:\n')[1]?.split('\n  push:\n')[0]
+ const push=workflow.split('\n  push:\n')[1]?.split('\nconcurrency:\n')[0]
+ assert.ok(pr&&push,'both PR and main triggers are required')
+ const watched=[
+  'scripts/client-notifications-runtime.mjs',
+  'scripts/client-notifications-judge.mjs',
+  'scripts/client-notifications-sentinel.mjs',
+  'scripts/lib/clientNotificationsReadinessMode.mjs',
+  'scripts/lib/testAuthRetry.mjs',
+  'tests/contracts/client-notifications-done-regression-gate-20261023.test.mjs',
+  'tests/contracts/client-notifications-transient-test-auth-20261023.test.mjs',
+  'tests/contracts/client-notifications-readiness.test.mjs',
+  'scripts/client-status-runtime.mjs',
+  'scripts/client-status-judge.mjs',
+  'scripts/client-status-sentinel.mjs',
+  'src/features/client/order/ClientLiveTracking.tsx',
+  'src/i18n/locale.tsx',
+  'src/i18n/translations/followup.ts',
+  '.github/workflows/client-notifications-runtime.yml',
+ ]
+ for(const [event,block] of [['pull_request',pr],['push',push]]){
+  for(const file of watched)assert.ok(block.includes("- '"+file+"'"),event+' must watch '+file)
+ }
+})
