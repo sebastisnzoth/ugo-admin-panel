@@ -105,6 +105,7 @@ jobs:
           fi
           curl -fsS --retry 10 --retry-connrefused --retry-delay 1 http://127.0.0.1:4174/__health
           node scripts/i18n-login-runtime.mjs
+          node scripts/provider-chat-visual-runtime.mjs
           node scripts/role-ui-runtime.mjs 2>&1 | tee /tmp/ugo-role-ui-runtime.log
       - name: Cross-role failure details
         if: failure()

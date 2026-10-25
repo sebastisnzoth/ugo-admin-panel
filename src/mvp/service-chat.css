@@ -1,1 +1,101 @@
 .ugo-service-chat-dock{position:fixed;right:18px;bottom:164px;z-index:46;display:flex;flex-direction:column;align-items:flex-end;gap:10px}.ugo-service-chat-trigger{min-height:48px;padding:0 18px;border:1px solid rgba(130,202,255,.35);border-radius:16px;background:#0f2537;color:#f7fbff;font:700 14px/1.2 inherit;box-shadow:0 14px 36px rgba(0,0,0,.28);cursor:pointer}.ugo-service-chat{width:min(390px,calc(100vw - 24px));max-height:min(620px,72vh);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(132,190,224,.24);border-radius:22px;background:#0d1e2d;color:#f7f9f7;box-shadow:0 24px 70px rgba(0,0,0,.38)}.ugo-service-chat>header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}.ugo-service-chat header small{display:block;color:#7fd8ff;font-size:10px;font-weight:800;letter-spacing:.12em}.ugo-service-chat header h2,.ugo-service-chat header h3{margin:3px 0 0;font-size:18px}.ugo-service-chat-close{width:38px;height:38px;border:0;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:24px;cursor:pointer}.ugo-service-chat-list{min-height:140px;max-height:330px;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}.ugo-service-chat-list article{max-width:84%;align-self:flex-start;padding:10px 12px;border-radius:14px 14px 14px 4px;background:#173247}.ugo-service-chat-list article.is-own{align-self:flex-end;border-radius:14px 14px 4px 14px;background:#115f70}.ugo-service-chat-list small{display:block;margin-bottom:4px;color:#9eb9ca;font-size:10px;font-weight:700}.ugo-service-chat-list p{margin:0;white-space:pre-wrap;word-break:break-word;font-size:14px;line-height:1.35}.ugo-service-chat-empty{margin:auto;color:#a9bac7;text-align:center;font-size:13px;line-height:1.4}.ugo-service-chat-form{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,.08)}.ugo-service-chat-form textarea{width:100%;min-height:44px;max-height:120px;resize:vertical;padding:10px 12px;border:1px solid rgba(255,255,255,.13);border-radius:12px;background:#10283a;color:#fff;font:inherit;box-sizing:border-box}.ugo-service-chat-form button{align-self:stretch;min-width:74px;border:0;border-radius:12px;background:#1cc4c8;color:#05252d;font-weight:800;cursor:pointer}.ugo-service-chat-form button:disabled{opacity:.5;cursor:not-allowed}.ugo-service-chat-error{margin:0;padding:0 14px 12px;color:#ffb1b1;font-size:12px}.ugo-service-chat.compact{width:100%;max-height:none;margin-top:12px;box-shadow:none}.ugo-service-chat.compact .ugo-service-chat-list{max-height:250px}.ugo-service-chat.compact>header span{min-width:28px;height:28px;display:grid;place-items:center;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:800}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:640px){.ugo-service-chat-dock{right:10px;bottom:156px}.ugo-service-chat{width:calc(100vw - 20px);max-height:68vh}.ugo-service-chat-trigger{min-height:44px;padding:0 14px}.ugo-service-chat-list{max-height:290px}}
+
+
+/* Provider chat parity with the existing Client ServiceChat. Scope to the
+   compact Provider screen: messaging, realtime and Client CSS stay unchanged. */
+.ugo-provider-root .ugo-service-chat.compact{
+  min-width:0;width:100%;max-width:100%;color:#17251c!important;
+  background:#fff!important;border:1px solid #dce6e0!important;
+  border-radius:22px!important;box-shadow:none!important;color-scheme:light;
+}
+.ugo-provider-root .ugo-service-chat.compact>header{
+  min-width:0;gap:10px;padding:16px 18px;background:#fff;
+  border-bottom:1px solid #e8eeeb!important;
+}
+.ugo-provider-root .ugo-service-chat.compact>header>div{min-width:0}
+.ugo-provider-root .ugo-service-chat.compact header small{
+  color:#007761!important;font-size:12px!important;font-weight:800;letter-spacing:.075em;
+}
+.ugo-provider-root .ugo-service-chat.compact header h3{
+  color:#17251c!important;font-size:clamp(17px,4vw,22px);
+  line-height:1.25;overflow-wrap:anywhere;
+}
+.ugo-provider-root .ugo-service-chat.compact>header span{
+  flex-shrink:0;background:#f1f6f3!important;color:#17251c!important;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-list{
+  min-width:0;max-height:280px;padding:18px 16px;gap:12px;background:#fff;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-list article{
+  min-width:0;max-width:86%;padding:12px 14px;
+  border-radius:16px 16px 16px 5px;background:#f7f9f7!important;
+  color:#17251c!important;overflow-wrap:anywhere;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-list article.is-own{
+  border-radius:16px 16px 5px 16px;
+  background:#e8f8f0!important;color:#073b28!important;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-list small{
+  color:#60716a!important;font-size:12px;line-height:1.45;overflow-wrap:anywhere;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-list p{
+  color:inherit;font-size:15px;line-height:1.5;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-empty{color:#64736a!important}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick{
+  min-width:0;padding:12px 14px!important;
+  border-top:1px solid #edf1f3!important;background:#f8f9ff!important;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick>small{
+  display:block;margin-bottom:8px;color:#697870!important;
+  font-size:12px;font-weight:800;letter-spacing:.06em;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick>div{
+  display:flex!important;flex-wrap:nowrap!important;gap:8px!important;
+  max-width:100%;overflow-x:auto!important;overscroll-behavior-x:contain;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick>div::-webkit-scrollbar{display:none}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick button{
+  flex:0 0 auto!important;min-height:44px!important;padding:0 14px!important;
+  border:1px solid #dce9ff!important;border-radius:999px!important;
+  background:#fff!important;color:#006b58!important;
+  font-family:inherit!important;font-size:12px!important;font-weight:800!important;
+  line-height:1.25!important;white-space:nowrap!important;cursor:pointer;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick button:disabled{opacity:.55;cursor:not-allowed}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick>p{
+  margin:10px 0 0!important;color:#697870!important;
+  font-size:12px!important;line-height:1.4;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form{
+  display:grid;min-width:0;grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;padding:14px;background:#fff;border-top:1px solid #e8eeeb!important;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form label{min-width:0}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form textarea{
+  display:block;width:100%;min-width:0;min-height:58px;padding:12px 14px;
+  border:1px solid #dce5e0!important;border-radius:16px!important;
+  background:#f7f9f7!important;color:#17251c!important;
+  font-family:inherit;font-size:16px;line-height:1.4;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form button{
+  min-width:82px;min-height:58px;padding:0 14px;border:0;border-radius:16px;
+  background:#15241a!important;color:#fff!important;font-size:15px;font-weight:800;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form button:disabled{
+  background:#929b95!important;color:#fff!important;opacity:1;
+}
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-guard,
+.ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-error{
+  color:#a72c2c!important;padding:0 14px 12px;font-size:12px;
+}
+.ugo-provider-root .ugo-service-chat.compact :is(button,textarea,select):focus-visible{
+  outline:3px solid #20a17d!important;outline-offset:2px;
+}
+@media(max-width:360px){
+  .ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-quick{padding:10px 12px!important}
+  .ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form{padding:12px;gap:8px}
+  .ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-form button{min-width:72px;padding:0 9px}
+  .ugo-provider-root .ugo-service-chat.compact .ugo-service-chat-list{padding:14px 12px}
+}
