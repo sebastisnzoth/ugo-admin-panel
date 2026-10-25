@@ -28,9 +28,13 @@ assert.ok(['admin','superadmin'].includes(profile?.tipo),'UGO_TEST_ADMIN_ROLE_RE
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const matrix=[
- {id:'mobile',width:390,height:844},
- {id:'tablet',width:768,height:1024},
- {id:'desktop',width:1440,height:1100},
+ {id:'mobile-320',width:320,height:720},
+ {id:'mobile-360',width:360,height:800},
+ {id:'mobile-390',width:390,height:844},
+ {id:'mobile-430',width:430,height:932},
+ {id:'tablet-768',width:768,height:1024},
+ {id:'tablet-1024',width:1024,height:768},
+ {id:'desktop-1440',width:1440,height:1100},
 ]
 const result={task_id:'readiness-admin-responsive',job_id:'UGO-READINESS-ADMIN-RESPONSIVE',readiness_id:'admin-responsive',sha,environment:'UGO TEST',actor_role:profile.tipo,tested_url:base+'/?app=admin',viewports:[],page_errors:[],completed_at:null}
 
@@ -60,10 +64,11 @@ try{
   const page=await context.newPage()
   const errors=[]
   page.on('pageerror',e=>errors.push(String(e?.message||e)))
+  // Seed the authorized session before app bootstrap; Realtime/polling keep the network busy.
+  // Never use networkidle as an authentication or UI readiness signal.
+  await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),login.session)
   await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
-  await page.evaluate(({key,value})=>window.localStorage.setItem(key,value),{key:'ugo-test-admin-auth',value:JSON.stringify(login.session)})
-  await page.reload({waitUntil:'networkidle'})
-  await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:20000})
+  await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:30000})
   // Exercise the real language selector so navigation assertions use the same locale.
   await page.getByTestId('language-selector').selectOption('es')
   await page.locator('.ugo-admin2-sidebar nav button').filter({hasText:'Inicio'}).first().waitFor({state:'visible',timeout:20000})
