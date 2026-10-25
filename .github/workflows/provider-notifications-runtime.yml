@@ -7,6 +7,7 @@ on:
       - "scripts/provider-notifications-*.mjs"
       - "scripts/provider-notification-recovery-browser.mjs"
       - "src/mvp/NotificationCenter.tsx"
+      - "tests/contracts/provider-notifications-readiness.test.mjs"
       - ".github/workflows/provider-notifications-runtime.yml"
   pull_request:
     branches: [main]
@@ -15,6 +16,7 @@ on:
       - "scripts/provider-notification-recovery-browser.mjs"
       - "src/mvp/NotificationCenter.tsx"
       - "src/mvp/provider/ProviderRoot.tsx"
+      - "tests/contracts/provider-notifications-readiness.test.mjs"
       - ".github/workflows/provider-notifications-runtime.yml"
   workflow_dispatch:
 
@@ -29,6 +31,7 @@ env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   provider-notifications:
@@ -39,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -54,7 +57,7 @@ jobs:
       - run: npm run verify:test-env
       - name: Build exact SHA
         env:
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
       - name: Notification contract regression
         run: node --test tests/contracts/*notification*.test.mjs
@@ -66,7 +69,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export UGO_RUNTIME_SHA="${UGO_TARGET_SHA}"
+          export VITE_APP_REVISION="${UGO_TARGET_SHA}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
           npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/provider-notifications-vite.log 2>&1 &
           pid=$!
@@ -85,7 +89,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: readiness-provider-notifications-${{ github.sha }}
+          name: readiness-provider-notifications-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             artifacts/provider-notifications-*
             artifacts/provider-notification-recovery-browser.json
