@@ -26,3 +26,14 @@ test('Admin Realtime browser proof serves the compiled candidate SHA, not the de
  assert.match(adminRealtimeWorkflow,/npm run preview -- --host 127\.0\.0\.1 --port 4173/)
  assert.doesNotMatch(adminRealtimeWorkflow,/npm run dev --/)
 })
+
+
+test('P0 real TEST journey executes after matching/provider/client changes reach main',()=>{
+ assert.match(workflow,/on:\s*\n\s*#[^\n]*\n\s*#[^\n]*\n\s*push:\s*\n\s*branches: \[main\]/)
+ for(const p of ['scripts/p0-client-provider-e2e.mjs','src/mvp/provider/**','src/features/client/request/**','src/lib/dispatch/**','.github/workflows/p0-client-provider-e2e.yml']){
+  assert.ok(workflow.includes('      - "'+p+'"'),'P0_PUSH_PATH_REQUIRED:'+p)
+ }
+ assert.match(workflow,/UGO_TEST_SUPABASE_URL: https:\/\/tmossnqfwfwjrtzwcbmm\.supabase\.co/)
+ assert.match(workflow,/concurrency:[\s\S]*?cancel-in-progress: false/)
+ assert.match(workflow,/name: Upload P0 evidence[\s\S]*?if: always\(\)/)
+})
