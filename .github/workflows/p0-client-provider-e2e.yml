@@ -80,6 +80,21 @@ jobs:
         env:
           VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
+      - name: Apply privacy migration to TEST
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Applying privacy migration to TEST Supabase..."
+          MIGRATION_SQL=$(cat supabase/migrations/20261025113000_usuarios_participant_privacy.sql)
+          # Apply via Supabase REST API using service role key
+          curl -X POST \
+            -H "Authorization: Bearer $UGO_TEST_SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            "https://tmossnqfwfwjrtzwcbmm.supabase.co/rest/v1/rpc/exec_sql" \
+            -d "{\"sql\": $(echo "$MIGRATION_SQL" | jq -Rs .)}" || {
+              echo "Migration apply failed (may already exist); continuing..."
+            }
       - name: Install Chromium
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
