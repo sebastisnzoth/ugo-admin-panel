@@ -91,3 +91,19 @@ test('notification panel is closed through the real UI before subsequent menu ac
  assert.ok(runtime.slice(open,next).includes("notificationPanel.waitFor({state:'hidden'"),'E2E must verify the overlay actually closed')
  assert.ok(runtime.slice(open,next).includes("notificationPanel.waitFor({state:'visible'"),'E2E must verify the panel opened')
 })
+
+test('navigation Sentinel checks localized menu bindings instead of stale Spanish literals',async()=>{
+ const [sentinel,menu,header]=await Promise.all([
+  read('scripts/client-navigation-sentinel.mjs'),
+  read('src/features/client/ui/ClientGlobalMenu.tsx'),
+  read('src/features/client/ui/ClientPersistentHeader.tsx'),
+ ])
+ const keys=['nav.home','client.request','client.categories','client.activity','client.addresses','client.payment','client.notifications','clientMenu.assistant','nav.help','clientMenu.settings','client.logout']
+ assert.ok(sentinel.includes("menu.includes(\"t('"+'"),'Sentinel must validate the localized t(key) bindings')
+ assert.ok(!sentinel.includes('menu.includes(token)'),'hard-coded Spanish labels cannot be required in localized JSX')
+ for(const key of keys)assert.ok(menu.includes("t('"+key+"')"),'menu action must have translation binding: '+key)
+ for(const key of ['clientHeader.openMenu','clientHeader.home'])assert.ok(header.includes("t('"+key+"')"),'header must have translation binding: '+key)
+ assert.ok(sentinel.includes('data-client-menu-action="hugo"'),'Sentinel must preserve stable Hugo selector')
+ assert.ok(sentinel.includes("flow.navigate('request')"),'Sentinel must preserve request composer navigation')
+ assert.ok(sentinel.includes("p.page_errors.length"),'Sentinel must still reject browser errors')
+})
