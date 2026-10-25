@@ -113,6 +113,19 @@ page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
 // an assigned service. Capture only allow-listed auth events, never tokens,
 // credentials, user identifiers or the contents of browser storage.
 await page.addInitScript(()=>{
+ // A thrown plain object appears only as "Object" in Playwright pageerror.
+ // Capture allowlisted diagnostics in the browser without tokens, IDs or URLs.
+ window.__ugoClientBrowserErrors=[]
+ const recordBrowserError=(kind,value,message)=>{
+  const keys=value&&typeof value==='object'?Object.keys(value).slice(0,16):[]
+  const code=typeof value?.code==='string'&&/^[A-Z0-9_:-]{1,64}$/.test(value.code)?value.code:null
+  const status=Number.isInteger(value?.status)?value.status:null
+  const safeMessage=String(message||'').replace(/https?:\\/\\/\\S+/g,'[url]').slice(0,240)
+  window.__ugoClientBrowserErrors.push({kind,keys,code,status,message:safeMessage})
+  if(window.__ugoClientBrowserErrors.length>20)window.__ugoClientBrowserErrors.shift()
+ }
+ window.addEventListener('error',event=>recordBrowserError('error',event.error,event.message))
+ window.addEventListener('unhandledrejection',event=>recordBrowserError('unhandledrejection',event.reason,event.reason?.message))
  window.__ugoClientAuthEvents=[]
  window.addEventListener('ugo:session-diagnostic',event=>{
   const detail=event.detail||{}
@@ -470,6 +483,10 @@ try{
 
  await page.screenshot({path:'artifacts/client-notifications-runtime.png',fullPage:true})
 }finally{
+ if(pageErrors.length){
+  const browserErrors=await page.evaluate(()=>Array.isArray(window.__ugoClientBrowserErrors)?window.__ugoClientBrowserErrors:[]).catch(()=>[])
+  await fs.writeFile('artifacts/client-notifications-page-errors.json',JSON.stringify({count:pageErrors.length,diagnostics:browserErrors},null,2)+'\\n').catch(()=>{})
+ }
  await page.close().catch(()=>{})
  await browser.close().catch(()=>{})
  try{
