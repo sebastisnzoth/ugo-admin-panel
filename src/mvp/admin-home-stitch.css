@@ -59,3 +59,41 @@
   .ahs-main-grid{gap:12px}
 }
 @media(prefers-reduced-motion:reduce){.ahs-decision-grid button{transition:none}.ahs-decision-grid button:hover{transform:none}}
+
+/* Super Admin dashboard: readable operational rows and a complete embedded map.
+   Keep native map height >= its 560px minimum; never crop active filters. */
+.ahs-map{height:clamp(560px,58dvh,680px);min-height:560px}
+.ahs-map .ugo-admin-map-root{min-height:0}
+.ahs-service-row{grid-template-columns:minmax(105px,1.1fr) 66px minmax(110px,1.1fr) minmax(100px,1fr) minmax(100px,1fr) minmax(88px,.7fr);gap:10px}
+.ahs-service-row>*{min-width:0}
+.ahs-service-row>.ahs-state{white-space:normal;line-height:1.35;overflow-wrap:anywhere}
+.ahs-service-row>b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.ahs-service-list{min-width:0}
+@media(max-width:1680px){
+  .ahs-main-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:760px){
+  .ahs-map{height:760px;min-height:760px}
+  .ahs-map .ugo-admin-map-toolbar{padding:10px!important;gap:8px!important}
+  .ahs-map .ugo-admin-map-toolbar input{width:min(100%,240px)!important}
+  .ahs-map .ugo-admin-map-body{flex-direction:column}
+  .ahs-map .ugo-admin-map-filters{
+    width:100%!important;flex:0 0 auto;max-height:135px;overflow-y:auto;
+    border-right:0!important;border-bottom:1px solid var(--ahs-line)
+  }
+  .ahs-map .ugo-admin-map-stage{flex:1 1 auto;min-height:260px;min-width:0}
+  .ahs-map .ugo-admin-map-details{width:100%!important;flex:0 0 auto;max-height:155px}
+  .ahs-service-row{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:"number price" "state state" "category category";
+    gap:5px 12px;padding:13px 8px;
+  }
+  .ahs-service-row>strong{grid-area:number}
+  .ahs-service-row>.ahs-state{grid-area:state}
+  .ahs-service-row>span:nth-of-type(2){grid-area:category}
+  .ahs-service-row>span:nth-of-type(3),.ahs-service-row>span:nth-of-type(4){display:none}
+  .ahs-service-row>b{grid-area:price}
+}
+@media(max-width:380px){
+  .ahs-map{height:820px;min-height:820px}
+}
