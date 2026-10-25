@@ -64,7 +64,7 @@ async function clickMenu(page,label){
     'Ayuda y soporte':'Ayuda y disputa',
    }
    const visibleLabel=visibleLabels[label]||label
-   const exactLabel=new RegExp('^'+visibleLabel.replace(/[.*+?^\x24{}()|[\]\\]/g,'\\   const button=drawer.getByRole('button',{name:new RegExp(label,'i')}).first()')+'
+   const button=drawer.getByRole('button',{name:visibleLabel,exact:true}).first()
    await button.waitFor({state:'visible',timeout:10000})
    assert.equal(await button.isDisabled(),false,label+': disabled')
    await button.evaluate(node=>node.click())
