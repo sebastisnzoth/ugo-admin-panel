@@ -47,3 +47,21 @@ test('Client request menu opens composer instead of removed search',async()=>{
  const p0Workflow=await read('.github/workflows/p0-client-provider-e2e.yml')
  assert.ok(p0Workflow.includes('"src/features/client/ui/ClientGlobalMenu.tsx"'),'menu request changes must run P0 matching E2E')
 })
+
+
+test('Hugo menu action has a stable selector and validates the visible translated label',async()=>{
+ const [menu,runtime,locale]=await Promise.all([
+  read('src/features/client/ui/ClientGlobalMenu.tsx'),
+  read('scripts/client-navigation-runtime.mjs'),
+  read('src/i18n/locale.tsx'),
+ ])
+ assert.match(menu,/data-client-menu-action="hugo"/)
+ assert.match(runtime,/button\[data-client-menu-action="hugo"\]/)
+ assert.match(runtime,/Hugo \/ Asistente IA/)
+ assert.match(runtime,/Hugo \/ Assistente IA/)
+ assert.match(runtime,/Hugo \/ AI Assistant/)
+ assert.match(runtime,/assert\.ok\(hugoLabels\.includes\(actualLabel\)/)
+ assert.match(locale,/"clientMenu\.assistant":"Hugo \/ Asistente IA"/)
+ assert.match(locale,/"clientMenu\.assistant":"Hugo \/ Assistente IA"/)
+ assert.match(locale,/"clientMenu\.assistant":"Hugo \/ AI Assistant"/)
+})
