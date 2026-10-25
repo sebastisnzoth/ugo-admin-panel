@@ -43,3 +43,22 @@ test('provider notification pipeline rejects stale lifecycle and expired offer a
  assert.match(sw,/payload\.type==='nueva_oferta'/)
  assert.match(sw,/expiry<=Date\.now\(\)/)
 })
+
+test('provider notification runtime and validators use PR head SHA, not synthetic merge SHA',async()=>{
+ const workflow=await read('.github/workflows/provider-notifications-runtime.yml')
+ const exact='${{ github.event.pull_request.head.sha || github.sha }}'
+ assert.ok(workflow.includes('UGO_TARGET_SHA: '+exact),'target must be immutable PR head or main push SHA')
+ assert.ok(workflow.includes('ref: '+exact),'checkout must use target SHA')
+ assert.ok(workflow.includes('VITE_APP_REVISION: '+exact),'build must embed target SHA')
+ assert.ok(workflow.includes('export UGO_RUNTIME_SHA="${UGO_TARGET_SHA}"'),'runtime and independent validators must consume target SHA')
+ assert.ok(workflow.includes('name: readiness-provider-notifications-'+exact),'artifact must identify target SHA')
+ assert.ok(!workflow.includes('ref: ${{ github.sha }}'),'PR merge ref cannot be treated as validated head')
+ assert.ok(!workflow.includes('UGO_RUNTIME_SHA="${GITHUB_SHA}"'),'runtime must not report synthetic PR merge SHA')
+ const pr=workflow.split('  pull_request:\n')[1]?.split('  workflow_dispatch:')[0]
+ const push=workflow.split('  push:\n')[1]?.split('  pull_request:')[0]
+ assert.ok(pr&&push,'PR and main push triggers are required')
+ for(const block of [pr,push]){
+  assert.ok(block.includes('"tests/contracts/provider-notifications-readiness.test.mjs"'),'contract edits must rerun provider browser E2E')
+  assert.ok(block.includes('".github/workflows/provider-notifications-runtime.yml"'),'workflow edits must rerun provider browser E2E')
+ }
+})

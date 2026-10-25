@@ -3,13 +3,47 @@ name: UGO Client Notifications Runtime TEST
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/client-notifications-runtime.mjs'
+      - 'scripts/client-notifications-judge.mjs'
+      - 'scripts/client-notifications-sentinel.mjs'
+      - 'scripts/lib/clientNotificationsReadinessMode.mjs'
+      - 'scripts/lib/testAuthRetry.mjs'
+      - 'scripts/lib/waitForClientProfileUi.mjs'
+      - 'tests/contracts/client-notifications-profile-ui-recovery.test.mjs'
+      - 'tests/contracts/client-notifications-done-regression-gate-20261023.test.mjs'
+      - 'tests/contracts/client-notifications-transient-test-auth-20261023.test.mjs'
+      - 'tests/contracts/client-notifications-readiness.test.mjs'
+      - 'scripts/client-status-runtime.mjs'
+      - 'scripts/client-status-judge.mjs'
+      - 'scripts/client-status-sentinel.mjs'
+      - 'src/features/client/order/ClientLiveTracking.tsx'
+      - 'src/mvp/NotificationCenter.tsx'
+      - 'src/i18n/locale.tsx'
+      - 'src/i18n/translations/followup.ts'
+      - '.github/workflows/client-notifications-runtime.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/client-notifications-runtime.mjs'
       - 'scripts/client-notifications-judge.mjs'
       - 'scripts/client-notifications-sentinel.mjs'
+      - 'scripts/lib/clientNotificationsReadinessMode.mjs'
+      - 'scripts/lib/testAuthRetry.mjs'
+      - 'scripts/lib/waitForClientProfileUi.mjs'
+      - 'tests/contracts/client-notifications-profile-ui-recovery.test.mjs'
+      - 'tests/contracts/client-notifications-done-regression-gate-20261023.test.mjs'
+      - 'tests/contracts/client-notifications-transient-test-auth-20261023.test.mjs'
       - 'tests/contracts/client-notifications-readiness.test.mjs'
+      - 'scripts/client-status-runtime.mjs'
+      - 'scripts/client-status-judge.mjs'
+      - 'scripts/client-status-sentinel.mjs'
+      - 'src/features/client/order/ClientLiveTracking.tsx'
+      - 'src/mvp/NotificationCenter.tsx'
+      - 'src/i18n/locale.tsx'
+      - 'src/i18n/translations/followup.ts'
       - '.github/workflows/client-notifications-runtime.yml'
 
 concurrency:
@@ -27,6 +61,7 @@ env:
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
   UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
   UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   client-notifications:
@@ -36,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -50,9 +85,21 @@ jobs:
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
       - run: npm ci --include=dev
       - run: npm run verify:test-env
+      - name: Determine completed-readiness regression vs active lease
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          import {clientNotificationsReadinessMode} from './scripts/lib/clientNotificationsReadinessMode.mjs'
+          const lock=JSON.parse(fs.readFileSync('docs/ugo-work-locks/readiness-client-notifications.json','utf8'))
+          const mode=clientNotificationsReadinessMode(lock)
+          fs.appendFileSync(process.env.GITHUB_ENV,'UGO_CLIENT_NOTIFICATIONS_LOCK_STATUS='+mode+'\n')
+          console.log('CLIENT_NOTIFICATIONS_READINESS_MODE='+mode)
+          NODE
       - name: TypeScript and build
         env:
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
       - name: Contract regression
         run: node --test tests/contracts/*notification*.test.mjs
@@ -64,9 +111,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export UGO_RUNTIME_SHA="${UGO_TARGET_SHA}"
           export UGO_CORRELATION_ID="${{ github.run_id }}-client-notifications"
-          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export VITE_APP_REVISION="${UGO_TARGET_SHA}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
           npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-client-notifications-vite.log 2>&1 &
           vite_pid=$!
@@ -79,16 +126,17 @@ jobs:
           node scripts/client-notifications-runtime.mjs
       - name: Judge
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/client-notifications-judge.mjs
       - name: Sentinel
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/client-notifications-sentinel.mjs
       - name: Persist authoritative readiness closure
+        if: github.event_name != 'pull_request' && env.UGO_CLIENT_NOTIFICATIONS_LOCK_STATUS == 'IN_PROGRESS'
         shell: bash
         env:
-          UGO_VALIDATED_SHA: ${{ github.sha }}
+          UGO_VALIDATED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           UGO_WORKFLOW_RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
@@ -157,7 +205,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: client-notifications-runtime-${{ github.sha }}
+          name: client-notifications-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
             artifacts/client-notifications-*
             /tmp/ugo-client-notifications-vite.log

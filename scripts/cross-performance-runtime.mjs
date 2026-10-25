@@ -208,5 +208,6 @@ try{
   throw error
 }finally{
   if(browser) await browser.close()
-  await Promise.allSettled(Object.values(sessions).map(x=>x.sb.auth.signOut()))
+  // Shared TEST users also run Client Notifications E2E; never revoke their sessions.
+  await Promise.allSettled(Object.values(sessions).map(x=>x.sb.auth.signOut({scope:'local'})))
 }

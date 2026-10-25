@@ -21,6 +21,8 @@ on:
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
       - "scripts/lib/p0-test-read-retry.mjs"
+      - "scripts/lib/waitForClientProfileUi.mjs"
+      - "tests/contracts/client-notifications-profile-ui-recovery.test.mjs"
       - "tests/contracts/p0-test-read-retry.test.mjs"
       - "src/mvp/provider/**"
       - "src/mvp/ProviderLocationTracker.tsx"
@@ -29,6 +31,7 @@ on:
       - "supabase/migrations/20261020223000_production_provider_gps_rpc_compat.sql"
       - "tests/contracts/production-provider-gps-rpc-compat.test.mjs"
       - "src/features/client/request/**"
+      - "src/features/client/ui/ClientGlobalMenu.tsx"
       - "src/lib/dispatch/**"
       - ".github/workflows/p0-client-provider-e2e.yml"
   workflow_dispatch:

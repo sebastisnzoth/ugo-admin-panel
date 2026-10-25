@@ -41,6 +41,23 @@ async function snap(page,label){
  await responsive(page,label)
  views.push({label,buttons:buttons.length,screen:await page.locator('.ugo-client-root').getAttribute('class')})
 }
+// Mobile navigation is part of the client journey; do not silently skip it.
+async function assertMobileHomeNav(page){
+ const nav=page.locator('.ugo-home-mobile-nav')
+ await nav.waitFor({state:'visible',timeout:10000})
+ const buttons=nav.getByRole('button')
+ assert.equal(await buttons.count(),4,'mobile home navigation must have four actions')
+ const labels=(await nav.locator('button small').allTextContents()).map(label=>label.trim())
+ assert.equal(labels.length,4,'mobile home navigation labels missing')
+ assert.ok(labels.every(Boolean),'mobile home navigation has an unlabeled action')
+ assert.equal(new Set(labels).size,4,'mobile home navigation actions are ambiguous')
+ assert.ok(await buttons.first().evaluate(node=>node.classList.contains('active')),'mobile home tab must be active')
+ const bounds=await nav.boundingBox()
+ const viewport=page.viewportSize()
+ assert.ok(bounds&&viewport&&bounds.y>=-4&&bounds.y+bounds.height<=viewport.height+4,'mobile home navigation must be visible in viewport')
+ clickMap.push({control:'Mobile home navigation',result:'PASS'})
+}
+
 async function openMenu(page){
  const trigger=page.getByRole('button',{name:/Abrir menú/}).first()
  await trigger.waitFor({state:'visible',timeout:20000})
@@ -55,10 +72,31 @@ async function clickMenu(page,label){
  for(let attempt=1;attempt<=3&&!clicked;attempt++){
   try{
    const drawer=await openMenu(page)
-   const button=drawer.getByRole('button',{name:new RegExp(label,'i')}).first()
+   // Match the translated, visible Spanish labels while retaining stable action names.
+   const visibleLabels={
+    'Actividad y pedidos':'Actividad',
+    'Direcciones':'Mis direcciones',
+    'Formas de pago':'Medios de pago',
+    'Servicios y categorías':'Categorías',
+    'Ayuda y soporte':'Ayuda y disputa',
+   }
+   const visibleLabel=visibleLabels[label]||label
+   // The account locale can override the test's guest locale. Find Hugo by a stable
+   // action identifier, then still verify its visible, localized label.
+   const isHugo=label==='Hugo / Asistente IA'
+   const button=isHugo
+    ?drawer.locator('nav.ugo-client-menu-list button[data-client-menu-action="hugo"]')
+    :drawer.locator('nav.ugo-client-menu-list button').filter({hasText:visibleLabel}).first()
    await button.waitFor({state:'visible',timeout:10000})
+   const actualLabel=(await button.locator('b').innerText()).trim()
+   if(isHugo){
+    const activeLocale=await page.locator('html').getAttribute('lang')
+    const hugoLabels={'es':'Asistente de Hugo','pt-BR':'Assistente Hugo','en':'Hugo assistant'}
+    assert.ok(Object.hasOwn(hugoLabels,activeLocale),label+': unsupported active locale '+JSON.stringify(activeLocale))
+    assert.equal(actualLabel,hugoLabels[activeLocale],label+': visible menu text does not match active locale')
+   }else assert.equal(actualLabel,visibleLabel,label+': visible menu text changed')
    assert.equal(await button.isDisabled(),false,label+': disabled')
-   await button.evaluate(node=>node.click())
+   await button.click()
    await drawer.waitFor({state:'hidden',timeout:5000})
    clicked=true
   }catch(error){
@@ -109,7 +147,7 @@ try{
     await clickMenu(page,item)
     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
     if(item==='Actividad y pedidos')await page.locator('.ugo-client-history-wrap').waitFor({state:'visible',timeout:10000})
-    if(['Direcciones','Formas de pago','Configuración'].includes(item))await page.getByRole('dialog',{name:'Perfil del cliente'}).waitFor({state:'visible',timeout:10000})
+    if(['Direcciones','Formas de pago','Configuración'].includes(item))await page.getByRole('dialog',{name:'Tu perfil'}).waitFor({state:'visible',timeout:10000})
     await snap(page,name+' '+item)
     const dispute=page.locator('.ugo-dispute-backdrop').first()
     if(await dispute.count()&&await dispute.isVisible()){const close=page.locator('.ugo-dispute-sheet header button').first();if(await close.count()&&await close.isVisible())await close.click();else await dispute.click({position:{x:2,y:2},force:true});await dispute.waitFor({state:'hidden',timeout:5000}).catch(()=>{})}
@@ -121,9 +159,15 @@ try{
    }
 
    await clickMenu(page,'Pedir servicio')
-   const serviceSearch=page.getByRole('textbox',{name:'Buscar servicio'}); await serviceSearch.waitFor({state:'visible',timeout:10000}); await serviceSearch.evaluate(node=>{if(node!==document.activeElement)throw new Error('Pedir servicio did not focus search')})
-   clickMap.push({control:'Pedir servicio focus',result:'PASS'})
+   const requestForm=page.locator('main.ugo-need-screen')
+   await requestForm.waitFor({state:'visible',timeout:10000})
+   const description=requestForm.locator('#ugo-need-description')
+   await description.waitFor({state:'visible',timeout:10000})
+   assert.equal(await description.isDisabled(),false,'request description must be editable')
+   clickMap.push({control:'Pedir servicio opens request composer',result:'PASS'})
    await snap(page,name+' Pedir servicio')
+   await requestForm.locator('.ugo-need-top button').first().click()
+   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
 
    await clickMenu(page,'Servicios y categorías')
    await page.locator('.ugo-home-services').waitFor({state:'visible',timeout:10000})
@@ -132,7 +176,15 @@ try{
 
    await clickMenu(page,'Notificaciones')
    assert.ok(await page.locator('.ugo-notification-center.role-client').count()>0,'notification center missing')
+   const notificationPanel=page.locator('.ugo-notification-center.role-client .ugo-notification-panel')
+   await notificationPanel.waitFor({state:'visible',timeout:10000})
    await snap(page,name+' Notificaciones')
+   // The open notification panel overlays the menu trigger. Exercise the
+   // real close action before navigating elsewhere; never force-click through
+   // an overlay or treat an intercepted click as a successful user journey.
+   const notificationClose=notificationPanel.getByRole('button',{name:'Cerrar notificaciones'})
+   await notificationClose.click()
+   await notificationPanel.waitFor({state:'hidden',timeout:5000})
 
    for(const item of ['Hugo / Asistente IA','Ayuda y soporte']){
     await clickMenu(page,item)
@@ -166,7 +218,8 @@ try{
  console.log(JSON.stringify({status:'PASS',sha,clicks:clickMap.length,views:views.length}))
 }finally{
  await browser.close()
- await auth.auth.signOut()
+ // Parallel UGO TEST workflows share this account; never revoke other sessions.
+ await auth.auth.signOut({scope:'local'})
 }
 
 // readiness runtime retrigger 2026-09-29T22:58Z

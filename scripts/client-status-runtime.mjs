@@ -125,7 +125,7 @@ async function expectUi(state,stage){
   throw error
  }
  const labels=await timeline.locator('small').allTextContents()
- assert.deepEqual(labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
+ assert.deepEqual(labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
 }
 

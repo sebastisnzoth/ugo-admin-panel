@@ -1,6 +1,18 @@
 name: UGO Client Navigation Runtime TEST
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/client-navigation-runtime.mjs"
+      - "scripts/client-navigation-judge.mjs"
+      - "scripts/client-navigation-sentinel.mjs"
+      - "src/features/client/**"
+      - "src/i18n/locale.tsx"
+      - "src/i18n/translations/**"
+      - "tests/contracts/client-navigation-service.test.mjs"
+      - "tests/contracts/locale-preference-contract.test.mjs"
+      - ".github/workflows/client-navigation-runtime.yml"
   push:
     branches: [main]
     paths:
@@ -19,6 +31,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  UGO_TARGET_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
@@ -26,13 +39,14 @@ env:
 
 jobs:
   runtime-proof:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     name: Cliente rutas y acciones ↔ UGO TEST
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -47,7 +61,7 @@ jobs:
       - run: npm run verify:test-env
       - name: TypeScript and build
         env:
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
       - name: Contract regressions
         run: node --test tests/contracts/client-navigation-service.test.mjs tests/contracts/client-matching-navigation.test.mjs
@@ -59,10 +73,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
-          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_RUNTIME_SHA="${UGO_TARGET_SHA}"
+          export VITE_APP_REVISION="${UGO_TARGET_SHA}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
-          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-client-nav-vite.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 4173 --strictPort >/tmp/ugo-client-nav-vite.log 2>&1 &
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
           ready=0
@@ -83,17 +97,17 @@ jobs:
           node scripts/client-navigation-runtime.mjs
       - name: Judge
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/client-navigation-judge.mjs
       - name: Sentinel
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/client-navigation-sentinel.mjs
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: client-navigation-runtime-${{ github.sha }}
+          name: client-navigation-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/client-navigation-*
           if-no-files-found: warn
           retention-days: 90

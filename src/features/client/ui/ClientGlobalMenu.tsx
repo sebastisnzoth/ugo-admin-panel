@@ -18,7 +18,7 @@ export function ClientGlobalMenu(){
  const close=()=>setOpen(false)
  const go=(screen:'home'|'history'|'profile'|'dispute')=>{close();flow.navigate(screen)}
  const after=(eventName:(typeof UGO_UI_EVENTS)[keyof typeof UGO_UI_EVENTS])=>window.setTimeout(()=>emitUgoUiEvent(eventName),60)
- const request=()=>{close();flow.navigate('home')}
+ const request=()=>{close();flow.navigate('request')}
  const categories=()=>{close();flow.navigate('home');after(UGO_UI_EVENTS.clientShowCategories)}
  const addresses=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfileAddresses)}
  const payment=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfilePayment)}
@@ -43,7 +43,7 @@ export function ClientGlobalMenu(){
      <button type="button" onClick={addresses}><span>⌖</span><div><b >{t('client.addresses')}</b></div></button>
      <button type="button" onClick={payment}><span>▤</span><div><b >{t('client.payment')}</b></div></button>
      <button type="button" onClick={notifications}><span>♢</span><div><b >{t('client.notifications')}</b></div></button>
-     <button type="button" onClick={hugo}><span>✦</span><div><b>{t('clientMenu.assistant')}</b></div></button>
+     <button type="button" data-client-menu-action="hugo" onClick={hugo}><span>✦</span><div><b>{t('clientMenu.assistant')}</b></div></button>
      <button type="button" onClick={()=>go('dispute')}><span>?</span><div><b >{t('nav.help')}</b></div></button>
      <button type="button" onClick={()=>go('profile')}><span>⚙</span><div><b>{t('clientMenu.settings')}</b></div></button>
      <button type="button" className="ugo-menu-logout" onClick={()=>void logout()}><span>⇥</span><div><b >{t('client.logout')}</b></div></button>

@@ -6,9 +6,14 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {clientNotificationsReadinessMode} from './lib/clientNotificationsReadinessMode.mjs'
+import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
+import {waitForClientProfileUi} from './lib/waitForClientProfileUi.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const TEST_PROVIDER_ID='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
+// Synthetic UGO TEST coordinates, never evidence of physical GPS.
+const TEST_LAT=-27.438,TEST_LNG=-48.477
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const serviceRole=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
@@ -19,8 +24,9 @@ const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 const workLock=JSON.parse(await fs.readFile('docs/ugo-work-locks/readiness-client-notifications.json','utf8'))
-assert.equal(workLock.status,'IN_PROGRESS')
-assert.ok(Date.parse(workLock.lease_expires_at)>Date.now(),'ACTIVE_LEASE_REQUIRED')
+// Re-check every run against the persisted lock: a completed readiness task
+// may be regression-tested without re-acquiring its historical lease.
+const readinessMode=clientNotificationsReadinessMode(workLock)
 const PARALLEL_TEST_SESSIONS_MUST_NOT_BE_REVOKED=true
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&serviceRole&&email&&password&&providerEmail&&providerPassword&&sha,'CLIENT_NOTIFICATIONS_RUNTIME_INPUTS_REQUIRED')
@@ -29,10 +35,10 @@ const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:fa
 const provider=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 const admin=createClient(url,serviceRole,{auth:{persistSession:false,autoRefreshToken:false}})
 
-const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await signInForTestWithBoundedRetry(auth.auth,{email,password})
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
-const {data:providerLogin,error:providerLoginError}=await provider.auth.signInWithPassword({email:providerEmail,password:providerPassword})
+const {data:providerLogin,error:providerLoginError}=await signInForTestWithBoundedRetry(provider.auth,{email:providerEmail,password:providerPassword})
 assert.ifError(providerLoginError)
 assert.ok(providerLogin.session&&providerLogin.user,'UGO_TEST_PROVIDER_SESSION_REQUIRED')
 assert.equal(providerLogin.user.id,TEST_PROVIDER_ID,'UGO_TEST_PROVIDER_ID_MISMATCH')
@@ -45,6 +51,11 @@ const {data:templates,error:templateError}=await admin.from('servicios')
 assert.ifError(templateError)
 const template=templates?.[0]
 assert.ok(template?.categoria_id,'CLIENT_NOTIFICATIONS_TEMPLATE_SERVICE_REQUIRED')
+// Isolated TEST service must have a real positive quote. Cash payment is
+// intentionally materialized only for positive amounts; a zero-price template
+// cannot exercise the assignment-payment contract.
+const TEST_QUOTE={total:50,commission:7.5,providerNet:42.5}
+assert.equal(TEST_QUOTE.commission+TEST_QUOTE.providerNet,TEST_QUOTE.total)
 
 const readinessTag='client-notifications:'+sha
 const metadata={
@@ -63,9 +74,9 @@ const insertRow={
  urgencia:false,
  direccion_cliente:template.direccion_cliente||'UGO TEST',
  zona:template.zona||null,
- tarifa:template.tarifa??0,
- comision_ugo:template.comision_ugo??0,
- ganancia_proveedor:template.ganancia_proveedor??0,
+ tarifa:TEST_QUOTE.total,
+ comision_ugo:TEST_QUOTE.commission,
+ ganancia_proveedor:TEST_QUOTE.providerNet,
  moneda:template.moneda||'BRL',
  ambiente:'demo',
  ubicacion_cliente:template.ubicacion_cliente||null,
@@ -79,6 +90,10 @@ assert.ifError(createError)
 assert.ok(fixture?.id,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_REQUIRED')
 assert.equal(fixture.estado,'borrador','DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_MUST_START_NEUTRAL')
 assert.equal(fixture.proveedor_id,null,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_MUST_START_UNASSIGNED')
+// Assignment now requires an owned pickup snapshot. Use the same authorized
+// client RPC as the application, rather than weakening the database guard.
+const {error:pickupError}=await auth.rpc('guardar_ubicacion_servicio_cliente',{p_servicio_id:fixture.id,p_lat:TEST_LAT,p_lng:TEST_LNG})
+assert.ifError(pickupError)
 
 const expected=[
  ['asignado','accepted'],
@@ -94,17 +109,72 @@ const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:390,height:844}})
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
+// The notification E2E previously failed with a login screen after opening
+// an assigned service. Capture only allow-listed auth events, never tokens,
+// credentials, user identifiers or the contents of browser storage.
+await page.addInitScript(()=>{
+ // A thrown plain object appears only as "Object" in Playwright pageerror.
+ // Capture allowlisted diagnostics in the browser without tokens, IDs or URLs.
+ window.__ugoClientBrowserErrors=[]
+ const recordBrowserError=(kind,value,message)=>{
+  const keys=value&&typeof value==='object'?Object.keys(value).slice(0,16):[]
+  const code=typeof value?.code==='string'&&/^[A-Z0-9_:-]{1,64}$/.test(value.code)?value.code:null
+  const status=Number.isInteger(value?.status)?value.status:null
+  const safeMessage=String(message||'').replace(/https?:\/\/\S+/g,'[url]').slice(0,240)
+  window.__ugoClientBrowserErrors.push({kind,keys,code,status,message:safeMessage})
+  if(window.__ugoClientBrowserErrors.length>20)window.__ugoClientBrowserErrors.shift()
+ }
+ window.addEventListener('error',event=>recordBrowserError('error',event.error,event.message))
+ window.addEventListener('unhandledrejection',event=>recordBrowserError('unhandledrejection',event.reason,event.reason?.message))
+ window.__ugoClientAuthEvents=[]
+ window.addEventListener('ugo:session-diagnostic',event=>{
+  const detail=event.detail||{}
+  if(detail.role!=='client')return
+  const reasons=new Set(['auth_event','token_refreshed','signed_out_received','session_restored','session_check_failed','login_no_session','login_confirmed_signed_out','profile_failed','explicit_sign_out'])
+  const reason=String(detail.reason||'')
+  if(!reasons.has(reason))return
+  window.__ugoClientAuthEvents.push({reason,at:Date.now()})
+  if(window.__ugoClientAuthEvents.length>40)window.__ugoClientAuthEvents.shift()
+ })
+})
 await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},login.session)
 const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
+
+ // The foreground banner displays the localized title, not necessarily the
+ // persisted database title. Read the actual Spanish catalog so the E2E still
+ // fails on a missing/wrong live banner without hard-coding a duplicate label.
+ const localeSource=await fs.readFile('src/i18n/locale.tsx','utf8')
+ const spanishMessages={}
+ for(const match of localeSource.matchAll(/Object\.assign\(messages\["es"\],(\{[^\n]*\})\)/g)){
+  Object.assign(spanishMessages,JSON.parse(match[1]))
+ }
+ const displayedTitle=notice=>spanishMessages['notification.'+notice.tipo]||notice.titulo
+
+// The foreground banner lives for five seconds. Arm the visible-DOM assertion
+// before the RPC changes the service, then retain its observed text while the
+// independent timeline, persisted notice and RLS checks finish. A missing
+// Realtime banner still fails; no polling of the database substitutes for it.
+function watchLiveBanner(tipo){
+ // A notification may use its persisted title when the locale catalog lacks
+ // this type. Match the real service and notice type, then validate the exact
+ // displayed title against the authenticated DB row in expectUi.
+ const live=page.locator('.ugo-notification-live.is-client[data-ugo-notice-type="'+tipo+'"][data-ugo-notice-service-id="'+fixture.id+'"]')
+ return live.waitFor({state:'visible',timeout:30000})
+  .then(()=>live.innerText())
+  .then(text=>({text}),error=>({error}))
+}
+
 let cleanup={ok:false,mode:'none',error:null}
+let verifiedPayment=null
+let completionSource='client.aprobar_servicio'
 async function backendState(){
  const {data,error}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
  assert.ifError(error)
  return String(data?.estado||'')
 }
-async function expectUi(state,stage,{bannerTextOverride=null}={}){
+async function expectUi(state,stage,{bannerTextOverride=null,bannerCapture=null}={}){
  let persisted=''
  for(let attempt=0;attempt<30;attempt++){
   persisted=await backendState()
@@ -122,6 +192,9 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
    detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
    loading:Boolean(document.querySelector('.ugo-history-empty')),
    tracking:Boolean(document.querySelector('.ugo-live-tracking')),
+   auth_screen:Boolean(document.querySelector('[data-testid="auth-form"]')),
+   session_storage_present:Boolean(localStorage.getItem('ugo-test-client-auth')),
+   auth_events:Array.isArray(window.__ugoClientAuthEvents)?window.__ugoClientAuthEvents:[],
    timelines:[...document.querySelectorAll('[data-service-state]')].map(node=>({
     state:node.getAttribute('data-service-state'),
     stage:node.getAttribute('data-current-stage'),
@@ -135,22 +208,28 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
   throw error
  }
  const labels=await timeline.locator('small').allTextContents()
- assert.deepEqual(labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
- const {data:notice,error:noticeError}=await auth.from('notificaciones').select('id,tipo,titulo,datos,usuario_id').eq('usuario_id',login.user.id).eq('tipo',noticeTypes[state]).contains('datos',{servicio_id:fixture.id}).single()
+ assert.deepEqual(labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
+ const {data:notice,error:noticeError}=await auth.from('notificaciones').select('id,tipo,titulo,datos,usuario_id').eq('usuario_id',login.user.id).eq('tipo',noticeTypes[state]).filter('datos->>servicio_id','eq',fixture.id).single()
  assert.ifError(noticeError)
  assert.equal(notice.usuario_id,login.user.id)
  assert.equal(notice.datos.servicio_id,fixture.id)
  const banner=page.locator('.ugo-notification-live.is-client')
  let bannerText=bannerTextOverride
+ if(bannerCapture){
+  const observed=await bannerCapture
+  if(observed.error)throw observed.error
+  bannerText=observed.text
+ }
  if(!bannerText){
-  await banner.getByText(notice.titulo,{exact:true}).waitFor({state:'visible',timeout:15000})
+  await banner.getByText(displayedTitle(notice),{exact:true}).waitFor({state:'visible',timeout:15000})
   bannerText=await banner.innerText()
  }
  const {data:foreign,error:foreignError}=await provider.from('notificaciones').select('id').eq('id',notice.id)
  assert.ifError(foreignError)
  assert.deepEqual(foreign,[],'Provider must not read client notifications')
  await page.screenshot({path:'artifacts/client-notifications-'+state+'.png',fullPage:true})
- notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
+ assert.ok(bannerText.includes(displayedTitle(notice)),'CLIENT_LIVE_LOCALIZED_TITLE_REQUIRED')
+ notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:displayedTitle(notice),persisted_title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
 }
 
@@ -184,7 +263,10 @@ try{
  // the separate AuthScreen lifecycle while keeping the user/session real.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  try{
-  await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:30000})
+  const profileUi=await waitForClientProfileUi(page,page.getByRole('main',{name:'Inicio'}),{
+   initialTimeout:20000,recoveryTimeout:30000,
+  })
+  if(profileUi.recovered)console.log('CLIENT_NOTIFICATIONS_PROFILE_UI_RECOVERED=true')
  }catch(error){
   const diagnostic=await page.evaluate(()=>({
    href:window.location.href,
@@ -203,6 +285,12 @@ try{
  // estado/proveedor_id. Perform the real assignment only after the client is
  // authenticated so both persistence and foreground Realtime delivery are
  // observable in the same run.
+ // Publish a fresh, accurate TEST position through the authenticated
+ // provider availability RPC immediately before assignment. A stale or
+ // missing GPS must continue to fail closed in the real backend.
+ const {data:online,error:onlineError}=await provider.rpc('activar_disponibilidad_proveedor',{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:10})
+ assert.ifError(onlineError)
+ assert.equal(online?.status,'online','TEST_PROVIDER_TRUSTED_GPS_REQUIRED')
  const {data:assigned,error:assignError}=await admin.from('servicios')
   .update({proveedor_id:TEST_PROVIDER_ID,estado:'asignado'})
   .eq('id',fixture.id)
@@ -212,13 +300,15 @@ try{
  assert.equal(assigned?.estado,'asignado','CLIENT_NOTIFICATIONS_ASSIGNMENT_UPDATE_REQUIRED')
  assert.equal(assigned?.proveedor_id,TEST_PROVIDER_ID,'CLIENT_NOTIFICATIONS_PROVIDER_ASSIGNMENT_REQUIRED')
 
+ // Use the existing serviceId expression index (20261024033500) for this
+ // RLS-scoped lookup; avoid JSONB containment scans under TEST load.
  let assignedPersisted=null
  for(let attempt=0;attempt<30;attempt++){
   const {data,error}=await auth.from('notificaciones')
    .select('id,tipo,titulo,datos,usuario_id,leida_at')
    .eq('usuario_id',login.user.id)
    .eq('tipo','proveedor_asignado')
-   .contains('datos',{servicio_id:fixture.id})
+   .filter('datos->>servicio_id','eq',fixture.id)
    .maybeSingle()
   assert.ifError(error)
   if(data){assignedPersisted=data;break}
@@ -226,7 +316,7 @@ try{
  }
  assert.ok(assignedPersisted?.id,'CLIENT_ASSIGNMENT_NOTIFICATION_MUST_PERSIST_AFTER_UPDATE')
  try{
-  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:assignedPersisted.titulo}).first()
+  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:displayedTitle(assignedPersisted)}).first()
   await assignedNotice.waitFor({state:'attached',timeout:30000})
   const visibilityProbe=await assignedNotice.evaluate(node=>{
    const describe=el=>{
@@ -268,6 +358,9 @@ try{
    detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
    auth:Boolean(document.querySelector('[aria-label="Iniciar sesión"]')),
    live_notice:Boolean(document.querySelector('.ugo-notification-live.is-client')),
+   auth_screen:Boolean(document.querySelector('[data-testid="auth-form"]')),
+   session_storage_present:Boolean(localStorage.getItem('ugo-test-client-auth')),
+   auth_events:Array.isArray(window.__ugoClientAuthEvents)?window.__ugoClientAuthEvents:[],
    notice_text:(document.querySelector('.ugo-notification-live.is-client')?.textContent||'').replace(/\s+/g,' ').trim(),
   })).catch(()=>({href:'EVALUATION_FAILED',body:'EVALUATION_FAILED',detail:false,auth:false,live_notice:false,notice_text:''}))
   await page.screenshot({path:'artifacts/client-notifications-open-from-live-notice-failure.png',fullPage:true}).catch(()=>{})
@@ -276,31 +369,59 @@ try{
  }
  await expectUi('asignado','accepted',{bannerTextOverride:globalThis.__ugoAssignedBannerText||null})
 
- const paymentAmount=Math.max(1,Number(template.tarifa||50))
- const {data:selectedPayment,error:paymentInsertError}=await admin.from('pagos').insert({
-  servicio_id:fixture.id,
-  cliente_id:login.user.id,
-  proveedor_id:TEST_PROVIDER_ID,
-  procesador:'ugo-test',
-  pago_externo_id:'client-notifications-'+sha,
-  monto_bruto:paymentAmount,
-  comision_ugo:0,
-  ganancia_proveedor:0,
-  moneda:'BRL',
-  estado:'retenido',
-  metodo:'pix',
-  modelo_pago:'custodia_ugo',
-  ambiente:'demo',
-  fecha_confirmacion:new Date().toISOString(),
- }).select('id,metodo,estado,pago_externo_id,ambiente').single()
- assert.ifError(paymentInsertError)
- assert.equal(selectedPayment?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
- assert.ok(selectedPayment?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
- assert.equal(selectedPayment?.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
+ // A real cash-payment trigger may already have created the only payment for
+ // this service on assignment. Reuse and validate it instead of inserting a
+ // conflicting Pix row; do not mutate the shared TEST client's preference.
+ const {data:paymentContext,error:paymentContextError}=await admin.from('servicios')
+  .select('metadata,ambiente').eq('id',fixture.id).single()
+ assert.ifError(paymentContextError)
+ const requestedMethod=String(paymentContext?.metadata?.requested_payment_method||'').toLowerCase()
+ assert.ok(['efectivo','pix'].includes(requestedMethod),'TEST_PAYMENT_METHOD_MUST_BE_PERSISTED')
+ const {data:existingPayment,error:existingPaymentError}=await admin.from('pagos')
+  .select('id,metodo,estado,pago_externo_id,ambiente,procesador,modelo_pago')
+  .eq('servicio_id',fixture.id).maybeSingle()
+ assert.ifError(existingPaymentError)
+ let selectedPayment=existingPayment
+ if(requestedMethod==='efectivo'){
+  assert.ok(existingPayment?.id,'AUTO_CASH_PAYMENT_REQUIRED')
+  assert.equal(existingPayment.metodo,'efectivo','AUTO_CASH_PAYMENT_METHOD_REQUIRED')
+  assert.equal(existingPayment.procesador,'efectivo','AUTO_CASH_PROCESSOR_REQUIRED')
+  assert.equal(existingPayment.modelo_pago,'presencial','AUTO_CASH_MODEL_REQUIRED')
+  assert.ok(['pendiente','liberado'].includes(existingPayment.estado),'AUTO_CASH_PAYMENT_NOT_READY')
+ }else{
+  // Pix needs a real protected TEST payment, never a fabricated cash payment.
+  assert.equal(existingPayment,null,'UNEXPECTED_PREEXISTING_PIX_PAYMENT')
+  const paymentAmount=TEST_QUOTE.total
+  const {data:inserted,error:paymentInsertError}=await admin.from('pagos').insert({
+   servicio_id:fixture.id,
+   cliente_id:login.user.id,
+   proveedor_id:TEST_PROVIDER_ID,
+   procesador:'ugo-test',
+   pago_externo_id:'client-notifications-'+sha,
+   monto_bruto:paymentAmount,
+   comision_ugo:0,
+   ganancia_proveedor:0,
+   moneda:'BRL',
+   estado:'retenido',
+   metodo:'pix',
+   modelo_pago:'custodia_ugo',
+   ambiente:'demo',
+   fecha_confirmacion:new Date().toISOString(),
+  }).select('id,metodo,estado,pago_externo_id,ambiente').single()
+  assert.ifError(paymentInsertError)
+  assert.equal(inserted?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
+  assert.ok(inserted?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
+  selectedPayment=inserted
+ }
+ assert.ok(selectedPayment?.id,'TEST_PAYMENT_REQUIRED')
+ assert.equal(selectedPayment.metodo,requestedMethod,'TEST_PAYMENT_PREFERENCE_MISMATCH')
+ assert.equal(selectedPayment.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
+ verifiedPayment={method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente,source:requestedMethod==='efectivo'?'assignment_cash_trigger':'protected_test_pix'}
 
+ const routeBanner=watchLiveBanner(noticeTypes.en_camino)
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
- await expectUi('en_camino','route')
+ await expectUi('en_camino','route',{bannerCapture:routeBanner})
 
  const {data:tracking,error:trackingError}=await auth.rpc('obtener_tracking_servicio_cliente',{p_servicio_id:fixture.id})
  assert.ifError(trackingError)
@@ -319,28 +440,55 @@ try{
  assert.ifError(publishError)
  assert.equal(published?.status,'published','GPS_PUBLISH_REQUIRED')
 
+ const arrivalBanner=watchLiveBanner(noticeTypes.llegado)
  const {data:arrival,error:arrivalError}=await provider.rpc('marcar_llegada_proveedor',{p_servicio_id:fixture.id})
  assert.ifError(arrivalError)
  assert.equal(arrival?.status,'arrived','GPS_VALIDATED_ARRIVAL_REQUIRED')
- await expectUi('llegado','arrived')
+ await expectUi('llegado','arrived',{bannerCapture:arrivalBanner})
 
  await addProviderEvidence('antes')
+ const workBanner=watchLiveBanner(noticeTypes.en_progreso)
  const {error:workError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_progreso'})
  assert.ifError(workError)
- await expectUi('en_progreso','working')
+ await expectUi('en_progreso','working',{bannerCapture:workBanner})
 
  await addProviderEvidence('despues')
+ const finishBanner=watchLiveBanner(noticeTypes.esperando_aprobacion)
  const {error:finishError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'esperando_aprobacion'})
  assert.ifError(finishError)
- await expectUi('esperando_aprobacion','finished')
+ await expectUi('esperando_aprobacion','finished',{bannerCapture:finishBanner})
 
+ const completionBanner=watchLiveBanner(noticeTypes.completado)
  const {data:approved,error:approveError}=await auth.rpc('aprobar_servicio',{p_servicio_id:fixture.id})
  assert.ifError(approveError)
- assert.equal(approved?.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE')
- await expectUi('completado','finished')
+ let completed=approved
+ if(requestedMethod==='efectivo'){
+  // Cash work approval does not mean payment was made. Confirm explicitly
+  // as the client; never bypass the cash confirmation state transition.
+  assert.equal(approved?.estado,'esperando_aprobacion','CASH_WORK_APPROVAL_MUST_AWAIT_PAYMENT')
+  assert.ok(approved?.metadata?.trabajo_aprobado_at,'CASH_WORK_APPROVAL_MUST_PERSIST')
+  const {data:cashCompleted,error:cashError}=await auth.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:fixture.id})
+  assert.ifError(cashError)
+  completed=cashCompleted
+  completionSource='client.aprobar_servicio+client.confirmar_pago_efectivo_cliente'
+ }else{
+  assert.equal(approved?.estado,'completado','PROTECTED_PIX_APPROVAL_MUST_COMPLETE_SERVICE')
+ }
+ assert.equal(completed?.estado,'completado','CLIENT_APPROVAL_AND_PAYMENT_MUST_COMPLETE_SERVICE')
+ const {data:finalPayment,error:finalPaymentError}=await admin.from('pagos')
+  .select('id,metodo,estado').eq('id',selectedPayment.id).single()
+ assert.ifError(finalPaymentError)
+ assert.equal(finalPayment?.metodo,requestedMethod,'FINAL_PAYMENT_METHOD_MUST_MATCH_PREFERENCE')
+ assert.equal(finalPayment?.estado,'liberado','COMPLETED_SERVICE_PAYMENT_MUST_BE_RELEASED')
+ verifiedPayment.final_state=finalPayment.estado
+ await expectUi('completado','finished',{bannerCapture:completionBanner})
 
  await page.screenshot({path:'artifacts/client-notifications-runtime.png',fullPage:true})
 }finally{
+ if(pageErrors.length){
+  const browserErrors=await page.evaluate(()=>Array.isArray(window.__ugoClientBrowserErrors)?window.__ugoClientBrowserErrors:[]).catch(()=>[])
+  await fs.writeFile('artifacts/client-notifications-page-errors.json',JSON.stringify({count:pageErrors.length,diagnostics:browserErrors},null,2)+'\n').catch(()=>{})
+ }
  await page.close().catch(()=>{})
  await browser.close().catch(()=>{})
  try{
@@ -381,7 +529,7 @@ const evidence={
   llegado:'provider.publicar_ubicacion_proveedor+marcar_llegada_proveedor',
   en_progreso:'provider.evidence_antes+avanzar_servicio',
   esperando_aprobacion:'provider.evidence_despues+avanzar_servicio',
-  completado:'client.aprobar_servicio',
+  completado:completionSource,
  },
  sequence:transitions,
  notifications:notices,
@@ -391,9 +539,10 @@ const evidence={
  job_id:'UGO-READINESS-CLIENT-NOTIFICATIONS',
  correlation_id:process.env.UGO_CORRELATION_ID,
  lock_correlation_id:workLock.correlation_id,
+ readiness_mode:readinessMode,
  push_delivery_proven:false,
  evidence_paths:evidencePaths,
- payment:{method:'pix',state:'retenido',environment:'demo'},
+ payment:verifiedPayment,
  cleanup,
  cleanup_ok:cleanup.ok,
  page_errors:pageErrors,

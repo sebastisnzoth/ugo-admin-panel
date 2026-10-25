@@ -24,3 +24,24 @@ test('UGO language selector is mounted for every application route through the r
  assert.match(app,/LocaleProvider/)
  assert.match(app,/<LocaleProvider><AppErrorBoundary><EnvironmentBadge\/><MvpAppRoutes\s*\/><\/AppErrorBoundary><\/LocaleProvider>/)
 })
+
+test('client global menu has translated accessible labels for every supported locale',()=>{
+ const menu=fs.readFileSync('src/features/client/ui/ClientGlobalMenu.tsx','utf8')
+ for(const key of ['clientMenu.assistant','clientMenu.settings','clientMenu.close','clientMenu.customer','clientMenu.accountDefault','clientMenu.tagline']){
+  assert.ok(menu.includes("t('"+key+"')"),key+' must remain used by the menu')
+  const count=locale.split('"'+key+'"').length-1
+  assert.equal(count,3,key+' must have pt-BR, es and en translations')
+ }
+ const runtime=fs.readFileSync('scripts/client-navigation-runtime.mjs','utf8')
+ for(const [action,label] of [['Actividad y pedidos','Actividad'],['Formas de pago','Medios de pago'],['Servicios y categorías','Categorías']]){
+  assert.ok(runtime.includes("'"+action+"':'"+label+"'"),action+' must target visible translated text')
+ }
+ assert.ok(runtime.includes("filter({hasText:visibleLabel})"))
+ assert.ok(runtime.includes("button.locator('b').innerText()"),"runtime must verify the exact rendered label")
+ assert.ok(runtime.includes('await button.click()'),'runtime must use Playwright user click, not DOM bypass')
+ const profile=fs.readFileSync('src/features/client/profile/ClientProfilePanel.tsx','utf8')
+ const extended=fs.readFileSync('src/i18n/translations/extended.ts','utf8')
+ assert.ok(profile.includes("aria-label={t('screen.client_profile.2')}"))
+ assert.ok(extended.includes('"screen.client_profile.2": "Tu perfil"'))
+ assert.ok(runtime.includes("getByRole('dialog',{name:'Tu perfil'})"))
+})

@@ -21,11 +21,16 @@ for(const step of proof.sequence){
  assert.equal(step.ui_state,step.state)
  assert.equal(typeof step.service_id,'string')
  assert.equal(step.service_id,proof.service_id)
- assert.deepEqual(step.labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
+ assert.deepEqual(step.labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
 }
 const out={validator:'Judge',result:'PASS',readiness_id:'client-notifications',sha,service_id:proof.service_id,checked_at:new Date().toISOString()}
 
 
+assert.ok(['efectivo','pix'].includes(proof.payment?.method),'payment method must reflect persisted TEST preference')
+assert.equal(proof.payment?.final_state,'liberado','payment must be released before completed evidence')
+assert.equal(proof.transition_sources?.completado,proof.payment.method==='efectivo'
+ ?'client.aprobar_servicio+client.confirmar_pago_efectivo_cliente'
+ :'client.aprobar_servicio','cash completion requires separate client payment confirmation')
 assert.equal(proof.channel,'web-realtime')
 assert.equal(proof.notifications.length,6)
 for(const n of proof.notifications){assert.equal(n.service_id,proof.service_id);assert.equal(n.foreign_read_count,0);assert.ok(n.banner_text.includes(n.title));assert.ok(n.id)}
