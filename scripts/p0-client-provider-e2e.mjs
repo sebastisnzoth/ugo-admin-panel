@@ -536,6 +536,26 @@ try{
   assert.deepEqual(offersAfterReplay,offersAfter,'P0_ACCEPT_REPLAY_CHANGED_OFFERS')
   stage('accept_replay_idempotent',{serviceId,offerId,unchanged:true})
 
+  // 7b · authorization/PII gate: counterpart identity only via safe RPC.
+  // Neither authenticated participant may read the other's full usuarios row.
+  const privateFromProvider=must(await provider.from('usuarios').select('id,email,telefono,endereco,lat,lng').eq('id',clientId),'provider private-row negative proof')
+  const privateFromClient=must(await client.from('usuarios').select('id,email,telefono,endereco,lat,lng').eq('id',providerId),'client private-row negative proof')
+  assert.equal(privateFromProvider.data?.length,0,'P0_PROVIDER_CAN_READ_CLIENT_PRIVATE_ROW')
+  assert.equal(privateFromClient.data?.length,0,'P0_CLIENT_CAN_READ_PROVIDER_PRIVATE_ROW')
+  const providerCounterpart=must(await provider.rpc('obter_perfiles_participantes',{p_ids:[clientId]}),'provider safe counterpart')
+  const clientCounterpart=must(await client.rpc('obter_perfiles_participantes',{p_ids:[providerId]}),'client safe counterpart')
+  assert.equal(providerCounterpart.data?.length,1,'P0_PROVIDER_COUNTERPART_NOT_VISIBLE')
+  assert.equal(clientCounterpart.data?.length,1,'P0_CLIENT_COUNTERPART_NOT_VISIBLE')
+  const expectedPublicColumns=['id','nombre','apellido','foto_url','karma']
+  for(const profile of [...providerCounterpart.data,...clientCounterpart.data]){
+   assert.deepEqual(Object.keys(profile).sort(),expectedPublicColumns.slice().sort(),'P0_COUNTERPART_CONTAINS_PRIVATE_FIELD')
+  }
+  const anonymousProfile=await anonClient().rpc('obter_perfiles_participantes',{p_ids:[providerId]})
+  assert.ok(anonymousProfile.error,'P0_ANON_COUNTERPART_RPC_ALLOWED')
+  const directory=must(await client.from('usuarios_publicos').select('id,lat,lng').eq('id',providerId).limit(1),'safe provider catalog')
+  if(directory.data?.length){assert.ok(directory.data.every(row=>row.lat===null||Math.abs(Number(row.lat)*100-Math.round(Number(row.lat)*100))<1e-6),'P0_PROVIDER_PUBLIC_LAT_PRECISE')}
+  stage('privacy_rls_positive_negative',{privateRowsVisible:0,participantLookupsAllowed:true,anonymousRpcDenied:true,publicDirectory:true})
+
   // 8 · both sessions survive the whole journey -------------------------
   const clientStill=must(await client.auth.getUser(),'client session still valid')
   const providerStill=must(await provider.auth.getUser(),'provider session still valid')
