@@ -62,7 +62,9 @@ try{
   page.on('pageerror',e=>errors.push(String(e?.message||e)))
   await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
   await page.evaluate(({key,value})=>window.localStorage.setItem(key,value),{key:'ugo-test-admin-auth',value:JSON.stringify(login.session)})
-  await page.reload({waitUntil:'networkidle'})
+  // networkidle can never settle when Realtime or polling keeps connections open.
+  // Verify the admin shell explicitly below instead of using network idleness as readiness.
+  await page.reload({waitUntil:'domcontentloaded',timeout:30000})
   await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:20000})
   // Exercise the real language selector so navigation assertions use the same locale.
   await page.getByTestId('language-selector').selectOption('es')
