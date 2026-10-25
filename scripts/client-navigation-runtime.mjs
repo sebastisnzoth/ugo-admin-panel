@@ -55,7 +55,7 @@ async function clickMenu(page,label){
  for(let attempt=1;attempt<=3&&!clicked;attempt++){
   try{
    const drawer=await openMenu(page)
-   // The click-map uses stable action names; the visible labels follow the Spanish catalog.
+   // Match the translated, visible Spanish labels while retaining stable action names.
    const visibleLabels={
     'Actividad y pedidos':'Actividad',
     'Direcciones':'Mis direcciones',
@@ -65,122 +65,6 @@ async function clickMenu(page,label){
    }
    const visibleLabel=visibleLabels[label]||label
    const button=drawer.getByRole('button',{name:visibleLabel,exact:true}).first()
-   await button.waitFor({state:'visible',timeout:10000})
-   assert.equal(await button.isDisabled(),false,label+': disabled')
-   await button.evaluate(node=>node.click())
-   await drawer.waitFor({state:'hidden',timeout:5000})
-   clicked=true
-  }catch(error){
-   lastError=error
-   await page.keyboard.press('Escape').catch(()=>{})
-   await page.waitForTimeout(150)
-  }
- }
- if(!clicked)throw lastError||new Error(label+': click failed')
- await page.waitForTimeout(250)
- assert.equal(pageErrors.length,errorsBefore,label+': pageerror after click')
- clickMap.push({control:label,result:'PASS'})
-}
-async function freshPage(viewport){
- const page=await browser.newPage({viewport})
- page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
- const browserSession=await freshTestSession()
- await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},browserSession)
- await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- try{
-  await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
- }catch(error){
-  const diagnostic=await page.evaluate(()=>({
-   title:document.title,
-   bodyText:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,1400),
-   rootClass:document.querySelector('.ugo-client-root')?.getAttribute('class')||null,
-   onboarding:Boolean(document.querySelector('.ugo-client-onboarding')),
-   auth:Boolean(document.querySelector('.mvp-auth-page')),
-   errorBoundary:Boolean(document.querySelector('[data-ugo-error-boundary],.ugo-app-error,.app-error-boundary')),
-   storedSession:Boolean(localStorage.getItem('ugo-test-client-auth')),
-  })).catch(()=>({title:'',bodyText:'EVALUATION_FAILED',rootClass:null,onboarding:false,auth:false,errorBoundary:false,storedSession:false}))
-  const label=viewport.width+'x'+viewport.height
-  await page.screenshot({path:'artifacts/client-navigation-startup-'+label+'.png',fullPage:true}).catch(()=>{})
-  await fs.writeFile('artifacts/client-navigation-startup-'+label+'.json',JSON.stringify({sha,base,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
-  throw new Error('CLIENT_HOME_STARTUP_FAILED '+JSON.stringify(diagnostic),{cause:error})
- }
- return page
-}
-
-try{
- for(const [name,viewport] of [['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]){
-  const page=await freshPage(viewport)
-  try{
-   await snap(page,name+' home')
-   if(name==='mobile')await assertMobileHomeNav(page)
-
-   for(const item of ['Inicio','Actividad y pedidos','Direcciones','Formas de pago','Configuración']){
-    await clickMenu(page,item)
-    await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
-    if(item==='Actividad y pedidos')await page.locator('.ugo-client-history-wrap').waitFor({state:'visible',timeout:10000})
-    if(['Direcciones','Formas de pago','Configuración'].includes(item))await page.getByRole('dialog',{name:'Perfil del cliente'}).waitFor({state:'visible',timeout:10000})
-    await snap(page,name+' '+item)
-    const dispute=page.locator('.ugo-dispute-backdrop').first()
-    if(await dispute.count()&&await dispute.isVisible()){const close=page.locator('.ugo-dispute-sheet header button').first();if(await close.count()&&await close.isVisible())await close.click();else await dispute.click({position:{x:2,y:2},force:true});await dispute.waitFor({state:'hidden',timeout:5000}).catch(()=>{})}
-    const notificationClose=page.getByRole('button',{name:'Cerrar notificaciones'}).first()
-    if(await notificationClose.count()&&await notificationClose.isVisible())await notificationClose.click()
-    const home=page.getByRole('button',{name:/Ir al inicio|Volver al inicio|Volver/}).first()
-    if(await home.count()&&await home.isVisible())await home.click()
-    await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
-   }
-
-   await clickMenu(page,'Pedir servicio')
-   const serviceSearch=page.getByRole('textbox',{name:'Buscar servicio'}); await serviceSearch.waitFor({state:'visible',timeout:10000}); await serviceSearch.evaluate(node=>{if(node!==document.activeElement)throw new Error('Pedir servicio did not focus search')})
-   clickMap.push({control:'Pedir servicio focus',result:'PASS'})
-   await snap(page,name+' Pedir servicio')
-
-   await clickMenu(page,'Servicios y categorías')
-   await page.locator('.ugo-home-services').waitFor({state:'visible',timeout:10000})
-   clickMap.push({control:'Servicios y categorías reveal',result:'PASS'})
-   await snap(page,name+' Categorías')
-
-   await clickMenu(page,'Notificaciones')
-   assert.ok(await page.locator('.ugo-notification-center.role-client').count()>0,'notification center missing')
-   await snap(page,name+' Notificaciones')
-
-   for(const item of ['Hugo / Asistente IA','Ayuda y soporte']){
-    await clickMenu(page,item)
-    await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
-    await snap(page,name+' '+item)
-    await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-    await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
-   }
-
-   const headerHome=page.getByRole('button',{name:'Ir al inicio'})
-   await headerHome.click()
-   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
-   clickMap.push({control:'Header Ir al inicio',result:'PASS'})
-
-   await page.screenshot({path:'artifacts/client-navigation-'+name+'.png',fullPage:true})
-  } finally {await page.close()}
- }
-
- const logoutPage=await freshPage({width:390,height:844})
- try{
-  await clickMenu(logoutPage,'Cerrar sesión')
-  await logoutPage.getByRole('heading',{name:/Ingresar|Acceso|Cliente/i}).first().waitFor({state:'visible',timeout:15000})
-  clickMap.push({control:'Cerrar sesión auth boundary',result:'PASS'})
- } finally {await logoutPage.close()}
-
- assert.equal(pageErrors.length,0,'runtime page errors detected')
- const required=['Inicio','Actividad y pedidos','Direcciones','Formas de pago','Configuración','Pedir servicio','Servicios y categorías','Notificaciones','Hugo / Asistente IA','Ayuda y soporte','Header Ir al inicio','Cerrar sesión']
- for(const control of required)assert.ok(clickMap.some(x=>x.control===control||x.control.startsWith(control+' ')),control+': missing runtime coverage')
- const evidence={readiness_id:'client-navigation',task_id:'readiness-client-navigation',job_id:'UGO-READINESS-CLIENT-NAVIGATION',correlation_id:'readiness-client-navigation-20260929T220300Z-ff633eb5',environment:'UGO TEST',sha,tested_url:base+'/?app=client',viewports:['desktop','mobile'],click_map:clickMap,views,page_errors:pageErrors,result:'PASS',completed_at:new Date().toISOString()}
- await fs.writeFile('artifacts/client-navigation-runtime.json',JSON.stringify(evidence,null,2)+'\n')
- console.log(JSON.stringify({status:'PASS',sha,clicks:clickMap.length,views:views.length}))
-}finally{
- await browser.close()
- await auth.auth.signOut()
-}
-
-// readiness runtime retrigger 2026-09-29T22:58Z
-,'i')
-   const button=drawer.getByRole('button',{name:exactLabel}).first()
    await button.waitFor({state:'visible',timeout:10000})
    assert.equal(await button.isDisabled(),false,label+': disabled')
    await button.evaluate(node=>node.click())
