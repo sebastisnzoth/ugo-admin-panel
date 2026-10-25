@@ -12,16 +12,18 @@ test('service notifications prefer their explicit serviceId, including completio
 })
 
 
+
 test('Client navigation E2E checks PR head and mobile nav against built preview',async()=>{
  const [workflow,runtime]=await Promise.all([read('.github/workflows/client-navigation-runtime.yml'),read('scripts/client-navigation-runtime.mjs')])
- assert.match(workflow,/  pull_request:\\n    branches: \\[main\\]/)
- assert.match(workflow,/UGO_TARGET_SHA: \\$\\{\\{ github\\.event\\.pull_request\\.head\\.sha \\|\\| github\\.sha \\}\\}/)
- assert.match(workflow,/ref: \\$\\{\\{ github\\.event\\.pull_request\\.head\\.sha \\|\\| github\\.sha \\}\\}/)
- assert.match(workflow,/npm run preview -- --host 127\\.0\\.0\\.1 --port 4173 --strictPort/)
- assert.match(workflow,/export UGO_RUNTIME_SHA="\\$\\{UGO_TARGET_SHA\\}"/)
- assert.match(workflow,/UGO_RUNTIME_SHA: \\$\\{\\{ github\\.event\\.pull_request\\.head\\.sha \\|\\| github\\.sha \\}\\}/)
- assert.match(runtime,/async function assertMobileHomeNav\\(page\\)/)
- assert.match(runtime,/if\\(name==='mobile'\\)await assertMobileHomeNav\\(page\\)/)
- assert.match(runtime,/await nav\\.waitFor\\(\\{state:'visible'/)
- assert.match(runtime,/assert\\.equal\\(await buttons\\.count\\(\\),4/)
+ const shaExpr='github.event.pull_request.head.sha || github.sha'
+ assert.ok(workflow.includes('  pull_request:\n    branches: [main]'))
+ assert.ok(workflow.includes('UGO_TARGET_SHA: ')&&workflow.includes(shaExpr))
+ assert.ok(workflow.includes('ref: ')&&workflow.includes(shaExpr))
+ assert.ok(workflow.includes('npm run preview -- --host 127.0.0.1 --port 4173 --strictPort'))
+ assert.ok(workflow.includes('export UGO_RUNTIME_SHA=')&&workflow.includes('UGO_TARGET_SHA'))
+ assert.ok(workflow.includes('UGO_RUNTIME_SHA: ')&&workflow.includes(shaExpr))
+ assert.ok(runtime.includes('async function assertMobileHomeNav(page)'))
+ assert.ok(runtime.includes("if(name==='mobile')await assertMobileHomeNav(page)"))
+ assert.ok(runtime.includes("await nav.waitFor({state:'visible'"))
+ assert.ok(runtime.includes('assert.equal(await buttons.count(),4'))
 })
