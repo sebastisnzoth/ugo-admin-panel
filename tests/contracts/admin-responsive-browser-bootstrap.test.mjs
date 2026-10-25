@@ -36,3 +36,11 @@ test('Super Admin navigation retains role gate and uses a locale-independent bro
  assert.match(runtime,/page\.getByTestId\('admin-superadmin-nav'\)/)
  assert.match(runtime,/superAdminButton\.waitFor\(\{state:'visible',timeout:20000\}\)/)
 })
+
+test('Admin TEST auth failures keep a sanitized artifact and never silently pass',async()=>{
+ const source=await readFile(new URL('../../scripts/readiness-admin-responsive-runtime.mjs',import.meta.url),'utf8')
+ assert.match(source,/admin-responsive-auth-diagnostic\.json/)
+ assert.match(source,/if\(loginError\)/)
+ assert.match(source,/assert\.ifError\(loginError\)/)
+ assert.match(source,/retryable:loginError\.name==='AuthRetryableFetchError'/)
+})
