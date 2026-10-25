@@ -571,6 +571,7 @@ Se actualizó el E2E existente en PR #580 para que un pedido en modo browser naz
 - Reparacion en PR #586: crear carpeta de evidencia antes de autenticar; persistir `admin-responsive-auth-diagnostic.json` con errorName/status/code/retryable/duracion/sha, sin credenciales ni tokens; mantener `assert.ifError(loginError)` para que un 522 NO sea un PASS artificial. Contrato de regresion agregado.
 - Validacion pendiente: CI en HEAD nuevo de rama y `workflow_dispatch` de Admin Responsive Runtime TEST. Si TEST Auth sigue indisponible, marcar BLOCKED por dependencia externa y comprobar salud sin modificar PROD.
 
+
 ### Continuidad 2026-10-25 — Primer fallo pendiente: sincronización del estado Cliente
 - **Base:** `main=e60231a01f3ee935c11e95dc1a70678c0800aa8b`. PR [#587](https://github.com/sebastisnzoth/ugo-admin-panel/pull/587), rama `fix/p0-client-status-stale-realtime-20261025`. No mezclar con PR #586 (Super Admin).
 - **Reproducción:** run [40241537487](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/40241537487), artefacto 12617008898: `servicios.estado=en_progreso` para un servicio TEST y lectura RLS Cliente HTTP 200, pero timeline visible `llegado/arrived` y E2E timeout; `page_errors=[]`. No se atribuye sin evidencia una causa única a Realtime.
