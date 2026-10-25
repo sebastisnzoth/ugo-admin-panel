@@ -57,14 +57,14 @@ test('Hugo menu action validates effective locale after the later UI copy catalo
   read('src/i18n/translations/core.ts'),
   read('src/i18n/translations/uiCopyCleanup.ts'),
  ])
- assert.match(menu,/data-client-menu-action="hugo"/)
- assert.match(runtime,/button\\[data-client-menu-action="hugo"\\]/)
- assert.match(runtime,/page\\.locator\\('html'\\)\\.getAttribute\\('lang'\\)/)
- assert.match(runtime,/assert\\.equal\\(actualLabel,hugoLabels\\[activeLocale\\]/)
- assert.match(core,/\\.\\.\\.uiCopyCleanupMessages\\['pt-BR'\\]/)
- assert.match(core,/\\.\\.\\.uiCopyCleanupMessages\\.es/)
- assert.match(core,/\\.\\.uiCopyCleanupMessages\\.en/)
- assert.match(locale,/Object\\.assign\\(messages\\[locale\\],coreMessages\\[locale\\]\\)/)
+ assert.ok(menu.includes('data-client-menu-action="hugo"'))
+ assert.ok(runtime.includes('button[data-client-menu-action="hugo"]'))
+ assert.ok(runtime.includes("page.locator('html').getAttribute('lang')"))
+ assert.ok(runtime.includes('assert.equal(actualLabel,hugoLabels[activeLocale]'))
+ for(const language of ["'pt-BR'",'es','en']){
+  assert.ok(core.includes('...uiCopyCleanupMessages['+language+']')||core.includes('...uiCopyCleanupMessages.'+language),'effective catalog must contain late UI copy override: '+language)
+ }
+ assert.ok(locale.includes('Object.assign(messages[locale],coreMessages[locale])'))
  const expected={
   es:'Asistente de Hugo',
   'pt-BR':'Assistente Hugo',
