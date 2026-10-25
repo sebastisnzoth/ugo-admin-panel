@@ -15,6 +15,11 @@ on:
       - "src/mvp/ProviderLocationTracker.tsx"
       - "src/features/client/request/**"
       - "src/lib/dispatch/**"
+      - "supabase/migrations/20261025113000_usuarios_participant_privacy.sql"
+      - "src/mvp/ServiceChat.tsx"
+      - "src/mvp/ProviderRatingPrompt.tsx"
+      - "src/features/client/rating/ClientRatingPrompt.tsx"
+      - "src/mvp/provider/ProviderCustomerCard.tsx"
       - ".github/workflows/p0-client-provider-e2e.yml"
   pull_request:
     branches: [main]
@@ -30,6 +35,11 @@ on:
       - "tests/contracts/production-provider-gps-rpc-compat.test.mjs"
       - "src/features/client/request/**"
       - "src/lib/dispatch/**"
+      - "supabase/migrations/20261025113000_usuarios_participant_privacy.sql"
+      - "src/mvp/ServiceChat.tsx"
+      - "src/mvp/ProviderRatingPrompt.tsx"
+      - "src/features/client/rating/ClientRatingPrompt.tsx"
+      - "src/mvp/provider/ProviderCustomerCard.tsx"
       - ".github/workflows/p0-client-provider-e2e.yml"
   workflow_dispatch:
 
