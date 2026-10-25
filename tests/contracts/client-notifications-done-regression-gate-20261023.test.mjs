@@ -169,7 +169,12 @@ test('notifications fixture establishes client pickup and fresh authenticated pr
 
 test('transient Realtime banners are observed before lifecycle RPCs and independently checked with UI, DB and RLS',()=>{
  assert.match(runtime,/function watchLiveBanner\(tipo\)/)
- assert.match(runtime,/getByText\(title,\{exact:true\}\)\.waitFor\(\{state:'visible'/)
+ const center=readFileSync(new URL('../../src/mvp/NotificationCenter.tsx',import.meta.url),'utf8')
+ assert.match(center,/data-ugo-notice-type=\\{liveNotice\\.tipo\\}/)
+ assert.match(center,/data-ugo-notice-service-id=/)
+ assert.match(runtime,/data-ugo-notice-type/)
+ assert.match(runtime,/data-ugo-notice-service-id/)
+ assert.match(runtime,/\.waitFor\\(\\{state:'visible'/)
  assert.match(runtime,/if\(bannerCapture\)\{/)
  for(const [state,action] of [
   ['en_camino',"provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})"],
