@@ -213,3 +213,10 @@ test('client notification reads use the existing serviceId expression index with
  assert.match(runtime,/\.eq\('tipo',noticeTypes\[state\]\)/)
  assert.match(runtime,/await admin\.from\('notificaciones'\)\.delete\(\)\.contains\('datos',\{servicio_id:fixture\.id\}\)/,'cleanup remains service-scoped')
 })
+
+test('assignment notification E2E declares persisted result as executable code',()=>{
+ // A literal backslash-n inside a // comment once swallowed this declaration.
+ // Keep the declaration on its own physical line, not in a comment.
+ assert.match(runtime,/^\s*let assignedPersisted=null\s*$/m)
+ assert.doesNotMatch(runtime,/\/\/[^\r\n]*\\n[^\r\n]*let assignedPersisted=null/)
+})
