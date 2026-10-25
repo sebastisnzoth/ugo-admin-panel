@@ -44,4 +44,6 @@ test('Client request menu opens composer instead of removed search',async()=>{
  assert.ok(runtime.includes("requestForm.locator('#ugo-need-description')"))
  assert.ok(runtime.includes("requestForm.locator('.ugo-need-top button').first().click()"))
  assert.ok(!runtime.includes("getByRole('textbox',{name:'Buscar servicio'})"))
+ const p0Workflow=await read('.github/workflows/p0-client-provider-e2e.yml')
+ assert.ok(p0Workflow.includes('"src/features/client/ui/ClientGlobalMenu.tsx"'),'menu request changes must run P0 matching E2E')
 })
