@@ -176,7 +176,15 @@ try{
 
    await clickMenu(page,'Notificaciones')
    assert.ok(await page.locator('.ugo-notification-center.role-client').count()>0,'notification center missing')
+   const notificationPanel=page.locator('.ugo-notification-center.role-client .ugo-notification-panel')
+   await notificationPanel.waitFor({state:'visible',timeout:10000})
    await snap(page,name+' Notificaciones')
+   // The open notification panel overlays the menu trigger. Exercise the
+   // real close action before navigating elsewhere; never force-click through
+   // an overlay or treat an intercepted click as a successful user journey.
+   const notificationClose=notificationPanel.getByRole('button',{name:'Cerrar notificaciones'})
+   await notificationClose.click()
+   await notificationPanel.waitFor({state:'hidden',timeout:5000})
 
    for(const item of ['Hugo / Asistente IA','Ayuda y soporte']){
     await clickMenu(page,item)
