@@ -203,3 +203,13 @@ test('unexpected browser errors remain fatal and yield sanitized diagnostics bef
  assert.match(runtime,/assert\.deepEqual\(pageErrors,\[\],'runtime page errors detected'\)/)
  assert.doesNotMatch(runtime,/JSON\.stringify\(login\.session/)
 })
+
+
+test('client notification reads use the existing serviceId expression index without dropping RLS scope',()=>{
+ const indexed=".filter('datos->>servicio_id','eq',fixture.id)"
+ assert.equal(runtime.split(indexed).length-1,2,'assignment and lifecycle reads must filter by indexed serviceId')
+ assert.match(runtime,/\.eq\('usuario_id',login\.user\.id\)/)
+ assert.match(runtime,/\.eq\('tipo','proveedor_asignado'\)/)
+ assert.match(runtime,/\.eq\('tipo',noticeTypes\[state\]\)/)
+ assert.match(runtime,/await admin\.from\('notificaciones'\)\.delete\(\)\.contains\('datos',\{servicio_id:fixture\.id\}\)/,'cleanup remains service-scoped')
+})
