@@ -107,3 +107,13 @@ test('navigation Sentinel checks localized menu bindings instead of stale Spanis
  assert.ok(sentinel.includes("flow.navigate('request')"),'Sentinel must preserve request composer navigation')
  assert.ok(sentinel.includes("p.page_errors.length"),'Sentinel must still reject browser errors')
 })
+
+test('parallel UGO TEST navigation must not revoke notification browser sessions',async()=>{
+ const [navigation,notifications]=await Promise.all([
+  read('scripts/client-navigation-runtime.mjs'),
+  read('scripts/client-notifications-runtime.mjs'),
+ ])
+ assert.match(navigation,/await auth\.auth\.signOut\(\{scope:'local'\}\)/,'navigation teardown must use local-only logout')
+ assert.doesNotMatch(navigation,/await auth\.auth\.signOut\(\)/,'global Supabase signOut revokes concurrent TEST refresh tokens')
+ assert.ok(notifications.includes('PARALLEL_TEST_SESSIONS_MUST_NOT_BE_REVOKED=true'),'notifications must preserve parallel TEST session isolation')
+})
