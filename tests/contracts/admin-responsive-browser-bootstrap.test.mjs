@@ -25,3 +25,14 @@ test('Admin Judge independently requires the seven viewports, real navigation an
  assert.match(judge,/JUDGE_SHELL_OVERFLOW/)
  assert.match(judge,/fs\.access\('artifacts\/'\+shot\)/)
 })
+
+test('Super Admin navigation retains role gate and uses a locale-independent browser locator',async()=>{
+ const [admin,runtime]=await Promise.all([
+  readFile(new URL('../../src/mvp/AdminPhase2.tsx',import.meta.url),'utf8'),
+  readFile(new URL('../../scripts/readiness-admin-responsive-runtime.mjs',import.meta.url),'utf8')
+ ])
+ assert.match(admin,/isSuperAdmin&&<button data-testid="admin-superadmin-nav"/)
+ assert.match(runtime,/if\(profile\.tipo==='superadmin'\)/)
+ assert.match(runtime,/page\.getByTestId\('admin-superadmin-nav'\)/)
+ assert.match(runtime,/superAdminButton\.waitFor\(\{state:'visible',timeout:20000\}\)/)
+})
