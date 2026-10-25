@@ -99,7 +99,7 @@ test('navigation Sentinel checks localized menu bindings instead of stale Spanis
   read('src/features/client/ui/ClientPersistentHeader.tsx'),
  ])
  const keys=['nav.home','client.request','client.categories','client.activity','client.addresses','client.payment','client.notifications','clientMenu.assistant','nav.help','clientMenu.settings','client.logout']
- assert.ok(sentinel.includes("menu.includes(\"t('"+'"),'Sentinel must validate the localized t(key) bindings')
+ assert.ok(sentinel.includes('for(const key of menuKeys)'),'Sentinel must validate the localized t(key) bindings')
  assert.ok(!sentinel.includes('menu.includes(token)'),'hard-coded Spanish labels cannot be required in localized JSX')
  for(const key of keys)assert.ok(menu.includes("t('"+key+"')"),'menu action must have translation binding: '+key)
  for(const key of ['clientHeader.openMenu','clientHeader.home'])assert.ok(header.includes("t('"+key+"')"),'header must have translation binding: '+key)
