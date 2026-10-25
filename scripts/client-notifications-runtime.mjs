@@ -209,7 +209,7 @@ async function expectUi(state,stage,{bannerTextOverride=null,bannerCapture=null}
  }
  const labels=await timeline.locator('small').allTextContents()
  assert.deepEqual(labels,['Asignado','Aceptado','En camino','En el lugar','En curso','Finalizado'])
- const {data:notice,error:noticeError}=await auth.from('notificaciones').select('id,tipo,titulo,datos,usuario_id').eq('usuario_id',login.user.id).eq('tipo',noticeTypes[state]).contains('datos',{servicio_id:fixture.id}).single()
+ const {data:notice,error:noticeError}=await auth.from('notificaciones').select('id,tipo,titulo,datos,usuario_id').eq('usuario_id',login.user.id).eq('tipo',noticeTypes[state]).filter('datos->>servicio_id','eq',fixture.id).single()
  assert.ifError(noticeError)
  assert.equal(notice.usuario_id,login.user.id)
  assert.equal(notice.datos.servicio_id,fixture.id)
@@ -300,13 +300,13 @@ try{
  assert.equal(assigned?.estado,'asignado','CLIENT_NOTIFICATIONS_ASSIGNMENT_UPDATE_REQUIRED')
  assert.equal(assigned?.proveedor_id,TEST_PROVIDER_ID,'CLIENT_NOTIFICATIONS_PROVIDER_ASSIGNMENT_REQUIRED')
 
- let assignedPersisted=null
+ // Use the existing serviceId expression index (20261024033500) for this\n // RLS-scoped lookup; avoid JSONB containment scans under TEST load.\n let assignedPersisted=null
  for(let attempt=0;attempt<30;attempt++){
   const {data,error}=await auth.from('notificaciones')
    .select('id,tipo,titulo,datos,usuario_id,leida_at')
    .eq('usuario_id',login.user.id)
    .eq('tipo','proveedor_asignado')
-   .contains('datos',{servicio_id:fixture.id})
+   .filter('datos->>servicio_id','eq',fixture.id)
    .maybeSingle()
   assert.ifError(error)
   if(data){assignedPersisted=data;break}
