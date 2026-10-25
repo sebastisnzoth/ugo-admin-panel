@@ -35,8 +35,10 @@ test('cross-user UI reads use scoped RPC, while account/self/Admin reads remain 
  assert.match(legacy,/from\('usuarios'\)\.update/)
  assert.match(legacy,/from\('usuarios'\)\.upsert/)
  assert.doesNotMatch(legacy,/from\('usuarios_publicos'\)\.update|from\('usuarios_publicos'\)\.upsert/)
- assert.match(migration,/round\(u\.lat::numeric, 2\)/)
- assert.match(migration,/round\(u\.lng::numeric, 2\)/)
+ assert.match(migration,/WITH \(security_invoker = true, security_barrier = true\)/)
+ assert.match(migration,/FROM public\.proveedores_mapa AS p/)
+ assert.match(migration,/p\.estado_verificacion = 'verificado'::public\.verificacion_estado/)
+ assert.doesNotMatch(migration.split('CREATE OR REPLACE VIEW public.usuarios_publicos')[1].split('REVOKE ALL ON TABLE')[0],/FROM public\.usuarios|u\.lat|u\.lng/)
  assert.doesNotMatch(migration.split('CREATE OR REPLACE VIEW')[1].split('REVOKE ALL ON TABLE')[0],/u\.email|u\.telefono|u\.endereco/)
 })
 
