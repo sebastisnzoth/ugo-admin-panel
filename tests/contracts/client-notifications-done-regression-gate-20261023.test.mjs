@@ -137,6 +137,7 @@ test('Client Notifications CI runs when runtime, Judge, Sentinel or auth helper 
   'scripts/client-status-judge.mjs',
   'scripts/client-status-sentinel.mjs',
   'src/features/client/order/ClientLiveTracking.tsx',
+  'src/mvp/NotificationCenter.tsx',
   'src/i18n/locale.tsx',
   'src/i18n/translations/followup.ts',
   '.github/workflows/client-notifications-runtime.yml',
