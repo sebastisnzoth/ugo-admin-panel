@@ -148,9 +148,15 @@ try{
    }
 
    await clickMenu(page,'Pedir servicio')
-   const serviceSearch=page.getByRole('textbox',{name:'Buscar servicio'}); await serviceSearch.waitFor({state:'visible',timeout:10000}); await serviceSearch.evaluate(node=>{if(node!==document.activeElement)throw new Error('Pedir servicio did not focus search')})
-   clickMap.push({control:'Pedir servicio focus',result:'PASS'})
+   const requestForm=page.locator('main.ugo-need-screen')
+   await requestForm.waitFor({state:'visible',timeout:10000})
+   const description=requestForm.locator('#ugo-need-description')
+   await description.waitFor({state:'visible',timeout:10000})
+   assert.equal(await description.isDisabled(),false,'request description must be editable')
+   clickMap.push({control:'Pedir servicio opens request composer',result:'PASS'})
    await snap(page,name+' Pedir servicio')
+   await requestForm.locator('.ugo-need-top button').first().click()
+   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
 
    await clickMenu(page,'Servicios y categorías')
    await page.locator('.ugo-home-services').waitFor({state:'visible',timeout:10000})
