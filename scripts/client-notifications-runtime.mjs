@@ -8,6 +8,7 @@ import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
 import {clientNotificationsReadinessMode} from './lib/clientNotificationsReadinessMode.mjs'
 import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
+import {waitForClientProfileUi} from './lib/waitForClientProfileUi.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const TEST_PROVIDER_ID='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
@@ -225,7 +226,10 @@ try{
  // the separate AuthScreen lifecycle while keeping the user/session real.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  try{
-  await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:30000})
+  const profileUi=await waitForClientProfileUi(page,page.getByRole('main',{name:'Inicio'}),{
+   initialTimeout:20000,recoveryTimeout:30000,
+  })
+  if(profileUi.recovered)console.log('CLIENT_NOTIFICATIONS_PROFILE_UI_RECOVERED=true')
  }catch(error){
   const diagnostic=await page.evaluate(()=>({
    href:window.location.href,

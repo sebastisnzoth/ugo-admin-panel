@@ -128,6 +128,8 @@ test('Client Notifications CI runs when runtime, Judge, Sentinel or auth helper 
   'scripts/client-notifications-sentinel.mjs',
   'scripts/lib/clientNotificationsReadinessMode.mjs',
   'scripts/lib/testAuthRetry.mjs',
+  'scripts/lib/waitForClientProfileUi.mjs',
+  'tests/contracts/client-notifications-profile-ui-recovery.test.mjs',
   'tests/contracts/client-notifications-done-regression-gate-20261023.test.mjs',
   'tests/contracts/client-notifications-transient-test-auth-20261023.test.mjs',
   'tests/contracts/client-notifications-readiness.test.mjs',

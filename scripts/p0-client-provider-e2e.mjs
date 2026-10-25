@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import {randomUUID} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
 import {readWithTransientRetry} from './lib/p0-test-read-retry.mjs'
+import {waitForClientProfileUi} from './lib/waitForClientProfileUi.mjs'
 
 // UGO P0 end-to-end contract: authenticated client -> persisted request -> real matching
 // -> persisted offer -> authenticated provider session sees it in the real UI -> provider
@@ -167,14 +168,20 @@ async function clientUiLogin({email,clientUserId}){
   await page.locator('[data-testid="auth-email"]').fill(email)
   await page.locator('[data-testid="auth-password"]').fill(password)
   await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
-  await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:60000})
+  await waitForClientProfileUi(page,page.locator('.ugo-client-root'),{
+    initialTimeout:30000,recoveryTimeout:30000,
+    onRecovered:()=>stage('ui_client_profile_recovered',{phase:'login',sessionPreserved:true}),
+  })
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_CLIENT_SENT_BACK_TO_AUTH')
   const stored=await page.evaluate(()=>{
     try{const raw=localStorage.getItem('ugo-test-client-auth');if(!raw)return false;const parsed=JSON.parse(raw);return Boolean(parsed?.access_token||parsed?.currentSession?.access_token)}catch{return false}
   })
   assert.ok(stored,'P0_CLIENT_SESSION_NOT_PERSISTED')
   await page.reload({waitUntil:'domcontentloaded'})
-  await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:60000})
+  await waitForClientProfileUi(page,page.locator('.ugo-client-root'),{
+    initialTimeout:30000,recoveryTimeout:30000,
+    onRecovered:()=>stage('ui_client_profile_recovered',{phase:'reload',sessionPreserved:true}),
+  })
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_CLIENT_SENT_BACK_TO_AUTH_AFTER_RELOAD')
   await page.screenshot({path:'artifacts/p0-00-client-login.png',fullPage:true}).catch(()=>{})
   stage('ui_client_login_reload',{authenticated:true,sessionPersisted:true,pageErrors})

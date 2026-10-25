@@ -9,6 +9,8 @@ on:
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
       - "scripts/lib/p0-test-read-retry.mjs"
+      - "scripts/lib/waitForClientProfileUi.mjs"
+      - "tests/contracts/client-notifications-profile-ui-recovery.test.mjs"
       - "tests/contracts/p0-test-read-retry.test.mjs"
       - "src/mvp/provider/**"
       - "src/mvp/ProviderLocationTracker.tsx"
