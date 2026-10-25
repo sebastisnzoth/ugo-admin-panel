@@ -39,3 +39,17 @@ test('client status runtime uses supported Chromium runner and does not write to
  assert.doesNotMatch(start,/git (push|checkout|pull|commit|fetch)/)
  assert.match(workflow,/      - name: Judge[\s\S]*      - name: Sentinel[\s\S]*      - name: Persist authoritative readiness closure/)
 })
+
+test('client status disposable fixture respects TEST GPS and cash/Pix business gates',async()=>{
+ const runtime=await read('scripts/client-status-runtime.mjs')
+ assert.match(runtime,/estado:'borrador'/)
+ assert.match(runtime,/guardar_ubicacion_servicio_cliente/)
+ assert.match(runtime,/activar_disponibilidad_proveedor/)
+ assert.match(runtime,/TEST_PROVIDER_TRUSTED_GPS_REQUIRED/)
+ assert.match(runtime,/CLIENT_STATUS_ASSIGNMENT_REQUIRED/)
+ assert.match(runtime,/requested_payment_method/)
+ assert.match(runtime,/AUTO_CASH_PAYMENT_REQUIRED/)
+ assert.match(runtime,/UNEXPECTED_PREEXISTING_PIX_PAYMENT/)
+ assert.match(runtime,/DISPOSABLE_TEST_FIXTURE_CLEANUP_REQUIRED/)
+ assert.doesNotMatch(runtime,/estado:'asignado',\s*programado_para/)
+})
