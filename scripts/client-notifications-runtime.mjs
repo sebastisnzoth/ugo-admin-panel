@@ -97,6 +97,21 @@ const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:390,height:844}})
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
+// The notification E2E previously failed with a login screen after opening
+// an assigned service. Capture only allow-listed auth events, never tokens,
+// credentials, user identifiers or the contents of browser storage.
+await page.addInitScript(()=>{
+ window.__ugoClientAuthEvents=[]
+ window.addEventListener('ugo:session-diagnostic',event=>{
+  const detail=event.detail||{}
+  if(detail.role!=='client')return
+  const reasons=new Set(['auth_event','token_refreshed','signed_out_received','session_restored','session_check_failed','login_no_session','login_confirmed_signed_out','profile_failed','explicit_sign_out'])
+  const reason=String(detail.reason||'')
+  if(!reasons.has(reason))return
+  window.__ugoClientAuthEvents.push({reason,at:Date.now()})
+  if(window.__ugoClientAuthEvents.length>40)window.__ugoClientAuthEvents.shift()
+ })
+})
 await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},login.session)
 const transitions=[]
 const notices=[]
@@ -138,6 +153,9 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
    detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
    loading:Boolean(document.querySelector('.ugo-history-empty')),
    tracking:Boolean(document.querySelector('.ugo-live-tracking')),
+   auth_screen:Boolean(document.querySelector('[data-testid="auth-form"]')),
+   session_storage_present:Boolean(localStorage.getItem('ugo-test-client-auth')),
+   auth_events:Array.isArray(window.__ugoClientAuthEvents)?window.__ugoClientAuthEvents:[],
    timelines:[...document.querySelectorAll('[data-service-state]')].map(node=>({
     state:node.getAttribute('data-service-state'),
     stage:node.getAttribute('data-current-stage'),
@@ -285,6 +303,9 @@ try{
    detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
    auth:Boolean(document.querySelector('[aria-label="Iniciar sesión"]')),
    live_notice:Boolean(document.querySelector('.ugo-notification-live.is-client')),
+   auth_screen:Boolean(document.querySelector('[data-testid="auth-form"]')),
+   session_storage_present:Boolean(localStorage.getItem('ugo-test-client-auth')),
+   auth_events:Array.isArray(window.__ugoClientAuthEvents)?window.__ugoClientAuthEvents:[],
    notice_text:(document.querySelector('.ugo-notification-live.is-client')?.textContent||'').replace(/\s+/g,' ').trim(),
   })).catch(()=>({href:'EVALUATION_FAILED',body:'EVALUATION_FAILED',detail:false,auth:false,live_notice:false,notice_text:''}))
   await page.screenshot({path:'artifacts/client-notifications-open-from-live-notice-failure.png',fullPage:true}).catch(()=>{})
