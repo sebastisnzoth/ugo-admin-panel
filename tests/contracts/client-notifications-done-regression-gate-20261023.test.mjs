@@ -111,7 +111,7 @@ test('cash work approval cannot be misreported as completion before client confi
  assert.match(judge,/proof\.payment\?\.final_state,'liberado'/)
  assert.match(judge,/proof\.transition_sources\?\.completado/)
  assert.match(judge,/client\.aprobar_servicio\+client\.confirmar_pago_efectivo_cliente/)
- assert.match(runtime,/await expectUi\('completado','finished'\)/)
+ assert.match(runtime,/await expectUi\('completado','finished',\{bannerCapture:completionBanner\}\)/)
  assert.doesNotMatch(runtime,/assert\.equal\(approved\?\.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE'\)/)
 })
 
