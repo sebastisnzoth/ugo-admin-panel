@@ -41,6 +41,23 @@ async function snap(page,label){
  await responsive(page,label)
  views.push({label,buttons:buttons.length,screen:await page.locator('.ugo-client-root').getAttribute('class')})
 }
+// Mobile navigation is part of the client journey; do not silently skip it.
+async function assertMobileHomeNav(page){
+ const nav=page.locator('.ugo-home-mobile-nav')
+ await nav.waitFor({state:'visible',timeout:10000})
+ const buttons=nav.getByRole('button')
+ assert.equal(await buttons.count(),4,'mobile home navigation must have four actions')
+ const labels=(await nav.locator('button small').allTextContents()).map(label=>label.trim())
+ assert.equal(labels.length,4,'mobile home navigation labels missing')
+ assert.ok(labels.every(Boolean),'mobile home navigation has an unlabeled action')
+ assert.equal(new Set(labels).size,4,'mobile home navigation actions are ambiguous')
+ assert.ok(await buttons.first().evaluate(node=>node.classList.contains('active')),'mobile home tab must be active')
+ const bounds=await nav.boundingBox()
+ const viewport=page.viewportSize()
+ assert.ok(bounds&&viewport&&bounds.y>=-4&&bounds.y+bounds.height<=viewport.height+4,'mobile home navigation must be visible in viewport')
+ clickMap.push({control:'Mobile home navigation',result:'PASS'})
+}
+
 async function openMenu(page){
  const trigger=page.getByRole('button',{name:/Abrir menú/}).first()
  await trigger.waitFor({state:'visible',timeout:20000})
