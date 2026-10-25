@@ -300,7 +300,9 @@ try{
  assert.equal(assigned?.estado,'asignado','CLIENT_NOTIFICATIONS_ASSIGNMENT_UPDATE_REQUIRED')
  assert.equal(assigned?.proveedor_id,TEST_PROVIDER_ID,'CLIENT_NOTIFICATIONS_PROVIDER_ASSIGNMENT_REQUIRED')
 
- // Use the existing serviceId expression index (20261024033500) for this\n // RLS-scoped lookup; avoid JSONB containment scans under TEST load.\n let assignedPersisted=null
+ // Use the existing serviceId expression index (20261024033500) for this
+ // RLS-scoped lookup; avoid JSONB containment scans under TEST load.
+ let assignedPersisted=null
  for(let attempt=0;attempt<30;attempt++){
   const {data,error}=await auth.from('notificaciones')
    .select('id,tipo,titulo,datos,usuario_id,leida_at')
