@@ -218,7 +218,8 @@ try{
  console.log(JSON.stringify({status:'PASS',sha,clicks:clickMap.length,views:views.length}))
 }finally{
  await browser.close()
- await auth.auth.signOut()
+ // Parallel UGO TEST workflows share this account; never revoke other sessions.
+ await auth.auth.signOut({scope:'local'})
 }
 
 // readiness runtime retrigger 2026-09-29T22:58Z
