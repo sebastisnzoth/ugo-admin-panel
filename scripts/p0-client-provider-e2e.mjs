@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {randomUUID} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
+import {readWithTransientRetry} from './lib/p0-test-read-retry.mjs'
 
 // UGO P0 end-to-end contract: authenticated client -> persisted request -> real matching
 // -> persisted offer -> authenticated provider session sees it in the real UI -> provider
@@ -107,6 +108,16 @@ async function providerUiLogin({email,providerUserId}){
   const failedRequests=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
   page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text())})
+  // Capture status and pathname only; never include auth tokens or URL query strings.
+  page.on('response',response=>{
+    if(response.status()!==404)return
+    const request=response.request()
+    let pathname='[invalid-url]'
+    try{const u=new URL(response.url());pathname=u.origin+u.pathname}catch{/* avoid leaking URL */}
+    const evidence={status:404,method:request.method(),url:pathname,resourceType:request.resourceType()}
+    pageErrors.push('HTTP_404 '+JSON.stringify(evidence))
+    stage('ui_provider_http_404',evidence)
+  })
   page.on('requestfailed',request=>{
     if(request.url().includes(TEST_REF))failedRequests.push({url:request.url().split('?')[0],reason:request.failure()?.errorText||'unknown'})
   })
@@ -140,7 +151,7 @@ async function clientUiLogin({email,clientUserId}){
   const {chromium}=await import('playwright')
   await fs.mkdir('artifacts',{recursive:true})
   if(!browser)browser=await chromium.launch({headless:true})
-  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR'})
+  const context=await browser.newContext({viewport:{width:412,height:915},locale:'es-BR',permissions:['geolocation'],geolocation:{latitude:CLIENT_LAT,longitude:CLIENT_LNG,accuracy:12}})
   const page=await context.newPage()
   const pageErrors=[]
   page.on('pageerror',error=>pageErrors.push(error.message))
@@ -170,6 +181,57 @@ async function clientUiLogin({email,clientUserId}){
   return {page,context,pageErrors}
 }
 
+async function submitClientRequestUi(page,category,clientUserId){
+  await page.locator('.ugo-home-hugo-cta').click()
+  const description=page.locator('#ugo-need-description')
+  await description.waitFor({state:'visible',timeout:30000})
+  await description.fill(category.nombre+' '+SERVICE_DESCRIPTION)
+  const next=page.locator('.ugo-need-screen footer button').filter({hasText:'Continuar'}).first()
+  await next.waitFor({state:'visible',timeout:30000})
+  // The catalog is fetched asynchronously after login. Wait for real category
+  // resolution instead of failing before the UI has received the catalog.
+  await page.waitForFunction(()=>{const button=document.querySelector('.ugo-need-screen footer button');return button instanceof HTMLButtonElement&&!button.disabled},null,{timeout:30000})
+  assert.ok(await next.isEnabled(),'P0_CLIENT_UI_CATEGORY_NOT_DETECTED')
+  await next.click()
+  await page.locator('.ugo-location-screen').waitFor({state:'visible',timeout:30000})
+  // Filling the address clears the stored pickup; do it before acquiring the
+  // browser GPS fix, otherwise the test inadvertently discards valid coords.
+  await page.locator('.ugo-location-screen input[autocomplete="street-address"]').fill('Av. Beira-Mar Norte, 1000, Florianópolis')
+  await page.locator('.ugo-location-map button').click()
+  await page.waitForFunction(()=>Boolean(document.querySelector('.ugo-location-map.has-location'))&&Boolean(document.querySelector('.ugo-location-screen footer button:not(:disabled)')),null,{timeout:30000})
+  await page.locator('.ugo-location-screen footer button').click()
+  await page.locator('.ugo-when-screen').waitFor({state:'visible',timeout:45000})
+  await page.locator('.ugo-when-screen footer button').click()
+  await page.locator('.ugo-payment-screen footer button').click()
+  const submit=page.locator('.ugo-summary-screen footer button')
+  await submit.waitFor({state:'visible',timeout:30000})
+  // ClientSummaryScreen reads the stored draft after its own role session hydrates.
+  // A visible summary can briefly show placeholders while Auth is loading; never
+  // submit until the real category, description and address are rendered.
+  const expectedDescription=category.nombre+' '+SERVICE_DESCRIPTION
+  // The GPS action intentionally resolves the device location to a new address.
+  // Compare the summary to the persisted client draft, not to the earlier manual input.
+  const draft=await page.evaluate(uid=>{try{return JSON.parse(sessionStorage.getItem('ugo:guided-request-draft:'+uid)||'{}')}catch{return null}},clientUserId)
+  const expectedAddress=String(draft?.address||'').trim()
+  assert.equal(draft?.categoryId,category.id,'P0_CLIENT_UI_SUMMARY_CATEGORY_NOT_PERSISTED')
+  assert.equal(draft?.description,expectedDescription,'P0_CLIENT_UI_SUMMARY_DESCRIPTION_NOT_PERSISTED')
+  assert.ok(expectedAddress.length>=5,'P0_CLIENT_UI_SUMMARY_ADDRESS_NOT_PERSISTED')
+  assert.ok(Number.isFinite(draft?.pickupLat)&&Number.isFinite(draft?.pickupLng),'P0_CLIENT_UI_PICKUP_NOT_PERSISTED')
+  await page.waitForFunction(({description,address})=>{
+    const summary=document.querySelector('.ugo-summary-screen')
+    const button=summary?.querySelector('footer button')
+    const text=summary?.textContent||''
+    return button instanceof HTMLButtonElement&&!button.disabled
+      &&text.includes(description)&&text.includes(address)
+  },{description:expectedDescription,address:expectedAddress},{timeout:30000})
+  assert.ok(await submit.isEnabled(),'P0_CLIENT_UI_SUMMARY_NOT_READY')
+  const summaryText=await page.locator('.ugo-summary-screen').innerText()
+  assert.ok(summaryText.includes(expectedDescription),'P0_CLIENT_UI_SUMMARY_DESCRIPTION_MISMATCH')
+  assert.ok(summaryText.includes(expectedAddress),'P0_CLIENT_UI_SUMMARY_ADDRESS_MISMATCH')
+  await submit.click()
+  await page.locator('.ugo-matching-screen').waitFor({state:'visible',timeout:45000})
+}
+
 async function attemptUiOnline(ui){
   const {page,screenshot}=ui
   const toggle=page.locator('.provider-client-online')
@@ -183,6 +245,36 @@ async function attemptUiOnline(ui){
   const body=(await page.locator('body').innerText().catch(()=>'')).slice(0,2500)
   await screenshot('02-online')
   return {pressed,notices,body,buttons:await page.locator('button').allInnerTexts().catch(()=>[])}
+}
+
+async function proveAutomaticGpsHeartbeat(ui,initialProfile){
+  // Chromium's static geolocation fixture does not guarantee a new sensor fix.
+  // First observe natural refresh; then simulate a *new device fix* and require
+  // the app to publish it without clicking Refresh or using the service-role RPC.
+  const initialAt=Date.parse(String(initialProfile?.ubicacion_updated_at||''))
+  assert.ok(Number.isFinite(initialAt),'P0_UI_GPS_INITIAL_TIMESTAMP_REQUIRED')
+  const started=Date.now(),deadline=started+55_000
+  let last=null,injected=false
+  while(Date.now()<deadline){
+    await new Promise(resolve=>setTimeout(resolve,5_000))
+    const result=must(await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).single(),'read browser GPS heartbeat')
+    last=result.data
+    const capturedAt=Date.parse(String(last.ubicacion_updated_at||''))
+    if(last.online===true&&last.disponible===true&&Number.isFinite(capturedAt)&&capturedAt>initialAt&&Date.now()-capturedAt<=90_000&&Number(last.ubicacion_accuracy_m)>0&&Number(last.ubicacion_accuracy_m)<=250){
+      assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_LOGGED_OUT_DURING_GPS_HEARTBEAT')
+      const notices=await ui.page.locator('.provider-notice').allInnerTexts().catch(()=>[])
+      assert.ok(!notices.some(text=>/no pudimos obtener tu ubicaci[oó]n|location unavailable|n[aã]o conseguimos obter sua localiza[cç][aã]o/i.test(text)),'P0_PROVIDER_STALE_GPS_GLOBAL_NOTICE')
+      stage('ui_gps_device_fix_autopublish',{initialAt:new Date(initialAt).toISOString(),renewedAt:last.ubicacion_updated_at,accuracy_m:last.ubicacion_accuracy_m,source:injected?'simulated_new_device_fix':'natural_browser_refresh',sessionPreserved:true})
+      return
+    }
+    if(!injected&&Date.now()-started>=15_000){
+      injected=true
+      await ui.context.setGeolocation({latitude:PROVIDER_LAT+0.00008,longitude:PROVIDER_LNG,accuracy:12})
+      stage('ui_gps_device_fix_simulated',{note:'Chromium sensor fixture explicitly emits a new GPS fix; not physical Mac evidence'})
+    }
+  }
+  stage('ui_gps_device_fix_autopublish_failed',{initialProfile,last,injected})
+  assert.fail('P0_UI_GPS_NEW_DEVICE_FIX_NOT_PUBLISHED')
 }
 
 async function proveProviderRealtimeRecovery(ui){
@@ -278,9 +370,9 @@ async function acceptOfferInUi(ui){
 
 try{
   // 0 · catalog prerequisites ---------------------------------------------
-  const categories=must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data||[]
+  const categories=(await readWithTransientRetry(async()=>must(await admin.from('categorias').select('id,nombre,emoji').eq('activa',true).order('nombre').limit(20),'read categories').data,{onRetry:retry=>stage('catalog_read_retry',retry)}))||[]
   if(!categories.length)throw new Error('P0_NO_ACTIVE_CATEGORY')
-  categoryId=categories[0].id
+  categoryId=(categories.find(c=>/limpeza|limpieza|faxina|repar|electric/i.test(c.nombre))||categories[0]).id
   stage('catalog',{categories:categories.map(c=>c.nombre),categoryId})
 
   // 1 · isolated TEST identities -----------------------------------------
@@ -319,13 +411,24 @@ try{
     const online=await attemptUiOnline(ui)
     const after=await admin.from('perfiles_proveedor').select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m').eq('usuario_id',providerId).maybeSingle()
     stage('ui_online_attempt',{...online,profile:after.data,profileError:describe(after.error),failedRequests:ui.failedRequests})
+    assert.equal(online.pressed,'true','P0_UI_ONLINE_TOGGLE_FAILED')
+    must(after,'read provider GPS published by UI')
+    assert.equal(after.data?.online,true,'P0_UI_PROVIDER_NOT_ONLINE')
+    assert.equal(after.data?.disponible,true,'P0_UI_PROVIDER_NOT_AVAILABLE')
+    const browserGpsAge=Date.now()-Date.parse(String(after.data?.ubicacion_updated_at||''))
+    assert.ok(Number.isFinite(browserGpsAge)&&browserGpsAge>=0&&browserGpsAge<=90_000,'P0_UI_PROVIDER_GPS_NOT_PUBLISHED')
+    await proveAutomaticGpsHeartbeat(ui,after.data)
+    assert.equal(online.pressed,'true','P0_PROVIDER_UI_ONLINE_FAILED')
   }
 
   // 3b · authoritative API activation (captures the exact backend rejection)
-  const activated=await provider.rpc('activar_disponibilidad_proveedor',{
-    p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
-  })
-  stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+  if(!UI){
+    const activated=await provider.rpc('activar_disponibilidad_proveedor',{
+      p_lat:PROVIDER_LAT,p_lng:PROVIDER_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:12,
+    })
+    stage('provider_online_rpc',{data:activated.data,error:describe(activated.error)})
+    must(activated,'provider online API-only')
+  }
   if(ui){
     await ui.page.reload({waitUntil:'domcontentloaded'})
     await ui.page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
@@ -349,6 +452,18 @@ try{
   }
 
   // 4 · client creates the request and persists the pickup ---------------
+  if(UI){
+    const category=categories.find(c=>c.id===categoryId)
+    assert.ok(category,'P0_UI_CATEGORY_MISSING')
+    await submitClientRequestUi(clientUi.page,category,clientId)
+    for(let attempt=0;attempt<40;attempt++){
+      const observed=must(await admin.from('servicios').select('id,estado,numero,cliente_id,categoria_id,descripcion').eq('cliente_id',clientId),'observe UI service')
+      const found=(observed.data||[]).find(row=>String(row.descripcion||'').includes(SERVICE_DESCRIPTION))
+      if(found){serviceId=found.id;stage('service_created',{...found,origin:'CLIENT_UI'});break}
+      await new Promise(resolve=>setTimeout(resolve,1000))
+    }
+    assert.ok(serviceId,'P0_CLIENT_UI_DID_NOT_CREATE_SERVICE')
+  }else{
   const insertedService=must(await client.from('servicios').insert({
     cliente_id:clientId,categoria_id:categoryId,estado:'buscando',descripcion:SERVICE_DESCRIPTION,
     direccion_cliente:'Rua P0 E2E TEST, Florianópolis',zona:'TEST',tarifa:120,urgencia:false,ambiente:'real',
@@ -365,7 +480,18 @@ try{
   const matching=await client.rpc('iniciar_matching',{p_servicio_id:serviceId})
   stage('matching_rpc',{rows:Array.isArray(matching.data)?matching.data.length:null,data:matching.data,error:describe(matching.error)})
   must(matching,'iniciar_matching')
+  }
 
+  if(UI){
+    let foundOffer=false
+    for(let attempt=0;attempt<45;attempt++){
+      const current=must(await admin.from('ofertas_servicio').select('id').eq('servicio_id',serviceId).eq('proveedor_id',providerId).limit(1),'observe UI matching')
+      if(current.data?.length){foundOffer=true;break}
+      await new Promise(resolve=>setTimeout(resolve,1000))
+    }
+    assert.ok(foundOffer,'P0_CLIENT_UI_MATCHING_DID_NOT_CREATE_OFFER')
+    stage('ui_matching_persisted',{serviceId,origin:'CLIENT_UI',noManualRpc:true})
+  }
   const serviceAfterMatch=must(await admin.from('servicios').select('id,estado,proveedor_id,matching_expires_at').eq('id',serviceId).single(),'read service after matching')
   const offers=must(await admin.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado,ranking,distancia_km,tarifa_ofrecida,expira_at').eq('servicio_id',serviceId),'read persisted offers').data||[]
   stage('matching_persisted',{service:serviceAfterMatch.data,offers})

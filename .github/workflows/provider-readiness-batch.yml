@@ -48,7 +48,7 @@ env:
 
 jobs:
   provider-readiness:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: test
     timeout-minutes: 35
     steps:

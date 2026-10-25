@@ -57,13 +57,13 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
     }catch(error){
      if(!alive)return
      if(providerGeoErrorCode(error)==='permission')setNotice({type:'info',text:t('providerRuntime.locationPermission')})
-     else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
+     else if(!providerOnline||!providerAvailable)setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
     }
    }else setNotice({type:'info',text:t('providerRuntime.locationEnabled')})
   },error=>{
    if(!alive)return
    if(error.code===1)setNotice({type:'info',text:t('providerRuntime.locationPermission')})
-   else setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
+   else if(!providerOnline||!providerAvailable)setNotice({type:'info',text:t('providerRuntime.locationUnavailable')})
   },{enableHighAccuracy:false,maximumAge:0,timeout:15_000})
   return()=>{alive=false}
  },[provider?.usuario_id,providerOnline,providerAvailable,session,supabase,t])

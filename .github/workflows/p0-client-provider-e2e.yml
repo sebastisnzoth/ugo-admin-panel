@@ -8,7 +8,12 @@ on:
     branches: [main]
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
+      - "scripts/lib/p0-test-read-retry.mjs"
+      - "tests/contracts/p0-test-read-retry.test.mjs"
       - "src/mvp/provider/**"
+      - "src/mvp/ProviderLocationTracker.tsx"
+      - "tests/contracts/provider-arrival-location.test.mjs"
+      - "tests/contracts/provider-gps-invalid-reading-recovery.test.mjs"
       - "supabase/migrations/20261020223000_production_provider_gps_rpc_compat.sql"
       - "tests/contracts/production-provider-gps-rpc-compat.test.mjs"
       - "src/features/client/request/**"
@@ -62,7 +67,7 @@ jobs:
           UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           UGO_UI_BASE_URL: http://127.0.0.1:4173
         run: |
-          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-p0-vite.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/ugo-p0-vite.log 2>&1 &
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 45); do

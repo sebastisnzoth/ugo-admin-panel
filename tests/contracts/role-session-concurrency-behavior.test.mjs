@@ -13,15 +13,15 @@ const response=next=>({data:{session:next},error:null})
 const same=(a,b)=>a&&b&&a.length===b.length&&a.every((v,i)=>Object.is(v,b[i]))
 function mount(initial=response(session('provider-a'))){
  const slots=[],effects=[],timers=new Map(),queries=[],events=[]
- let cursor=0,sequence=0,listener,value,current=initial,getSessionOverride=null,profileOverride=null,signouts=0
+ let cursor=0,sequence=0,listener,channelStatus,value,current=initial,getSessionOverride=null,profileOverride=null,signouts=0
  const memo=(fn,deps)=>{const i=cursor++;if(!same(slots[i]?.deps,deps))slots[i]={value:fn(),deps};return slots[i].value}
  const hooks={useId:()=> 'instance',useState:initial=>{const i=cursor++;if(!(i in slots))slots[i]=typeof initial==='function'?initial():initial;return[slots[i],v=>{slots[i]=typeof v==='function'?v(slots[i]):v}]},useRef:initial=>{const i=cursor++;return slots[i]??(slots[i]={current:initial})},useMemo:memo,useCallback:(fn,deps)=>memo(()=>fn,deps),useEffect:(fn,deps)=>{const i=cursor++;if(!same(slots[i]?.deps,deps)){slots[i]?.cleanup?.();slots[i]={deps};effects.push(()=>{slots[i].cleanup=fn()})}}}
- const client={auth:{getSession:()=>getSessionOverride?getSessionOverride():Promise.resolve(current),onAuthStateChange:fn=>{listener=fn;return{data:{subscription:{unsubscribe(){}}}}},signOut:async()=>{signouts++;current=response(null);listener('SIGNED_OUT',null);return{error:null}}},from:()=>({select:()=>({eq:(_key,id)=>({maybeSingle:()=>{queries.push(id);return profileOverride?profileOverride(id):Promise.resolve({data:{id,nombre:'QA',tipo:'proveedor',activo:true},error:null})}})})}),channel:()=>{const channel={on:()=>channel,subscribe:()=>channel};return channel},removeChannel:async()=>{}}
+ const client={auth:{getSession:()=>getSessionOverride?getSessionOverride():Promise.resolve(current),onAuthStateChange:fn=>{listener=fn;return{data:{subscription:{unsubscribe(){}}}}},signOut:async()=>{signouts++;current=response(null);listener('SIGNED_OUT',null);return{error:null}}},from:()=>({select:()=>({eq:(_key,id)=>({maybeSingle:()=>{queries.push(id);return profileOverride?profileOverride(id):Promise.resolve({data:{id,nombre:'QA',tipo:'proveedor',activo:true},error:null})}})})}),channel:()=>{const channel={on:()=>channel,subscribe:fn=>{channelStatus=fn;return channel}};return channel},removeChannel:async()=>{}}
  const module={exports:{}}
- vm.runInNewContext(code,{...hooks,module,exports:module.exports,getRoleSupabase:()=>client,URL,Date,Error,console,recordSessionDiagnostic:(...args)=>events.push(args),OAUTH_ROLE_KEY:'oauth',document:{visibilityState:'visible',addEventListener(){},removeEventListener(){}},window:{location:{href:'https://test.invalid/?app=provider'},history:{replaceState(){}},localStorage:{getItem:()=>null,removeItem(){}},setTimeout:(fn,ms)=>{const id=++sequence;timers.set(id,{fn,ms});return id},clearTimeout:id=>timers.delete(id),addEventListener(){},removeEventListener(){}}})
+ vm.runInNewContext(code,{...hooks,AbortController,module,exports:module.exports,getRoleSupabase:()=>client,URL,Date,Error,console,recordSessionDiagnostic:(...args)=>events.push(args),OAUTH_ROLE_KEY:'oauth',document:{visibilityState:'visible',addEventListener(){},removeEventListener(){}},window:{location:{href:'https://test.invalid/?app=provider'},history:{replaceState(){}},localStorage:{getItem:()=>null,removeItem(){}},setTimeout:(fn,ms)=>{const id=++sequence;timers.set(id,{fn,ms});return id},clearTimeout:id=>timers.delete(id),addEventListener(){},removeEventListener(){}}})
  function render(){cursor=0;value=module.exports.useRoleSession('provider');while(effects.length)effects.shift()();return value}
  render()
- return{queries,events,get signouts(){return signouts},get value(){return render()},event:(event,next)=>{current=response(next);listener(event,next)},holdSession:fn=>{getSessionOverride=fn},holdProfile:fn=>{profileOverride=fn},async settle(){for(let i=0;i<20;i++){await new Promise(r=>setImmediate(r));for(const[id,timer]of timers){if(timer.ms===0){timers.delete(id);timer.fn()}}render()}},fireGrace(){for(const[id,timer]of timers){if(timer.ms===1200){timers.delete(id);timer.fn()}}},fireFailSafe(){for(const[id,timer]of timers){if(timer.ms===15000){timers.delete(id);timer.fn()}}}}
+ return{queries,events,channelStatus:status=>channelStatus?.(status),get signouts(){return signouts},get value(){return render()},event:(event,next)=>{current=response(next);listener(event,next)},holdSession:fn=>{getSessionOverride=fn},holdProfile:fn=>{profileOverride=fn},async settle(){for(let i=0;i<20;i++){await new Promise(r=>setImmediate(r));for(const[id,timer]of timers){if(timer.ms===0){timers.delete(id);timer.fn()}}render()}},fireGrace(){for(const[id,timer]of timers){if(timer.ms===1200){timers.delete(id);timer.fn()}}},fireFailSafe(){for(const[id,timer]of timers){if(timer.ms===15000){timers.delete(id);timer.fn()}}}}
 }
 
 test('late SIGNED_OUT confirmation cannot erase a newer signed-in session',async()=>{
@@ -119,4 +119,19 @@ test('provider shows login after repeated confirmed absence of session',async()=
  assert.equal(app.value.session,null)
  assert.equal(app.value.profile,null)
  assert.equal(app.value.sessionChecked,true)
+})
+
+
+test('profile Realtime channel flapping does not flood PostgREST profile reads',async()=>{
+ const app=mount();await app.settle()
+ const initial=app.queries.length
+ app.channelStatus('CHANNEL_ERROR');await app.settle()
+ assert.equal(app.queries.length,initial,'CHANNEL_ERROR must not issue profile reads')
+ app.fireGrace();await app.settle()
+ app.channelStatus('SUBSCRIBED');await app.settle()
+ const first=app.queries.length
+ assert.equal(first,initial+1,'first successful subscription reconciles profile once')
+ app.channelStatus('TIMED_OUT');await app.settle();app.fireGrace();await app.settle()
+ app.channelStatus('SUBSCRIBED');await app.settle()
+ assert.equal(app.queries.length,first,'resubscription within cooldown must not repeat profile reads')
 })
