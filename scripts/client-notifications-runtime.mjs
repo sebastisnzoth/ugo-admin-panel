@@ -139,6 +139,19 @@ const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino'
  }
  const displayedTitle=notice=>spanishMessages['notification.'+notice.tipo]||notice.titulo
 
+// The foreground banner lives for five seconds. Arm the visible-DOM assertion
+// before the RPC changes the service, then retain its observed text while the
+// independent timeline, persisted notice and RLS checks finish. A missing
+// Realtime banner still fails; no polling of the database substitutes for it.
+function watchLiveBanner(tipo){
+ const title=spanishMessages['notification.'+tipo]
+ assert.ok(title,'CLIENT_LIVE_LOCALIZED_TITLE_MISSING_'+tipo)
+ const live=page.locator('.ugo-notification-live.is-client')
+ return live.getByText(title,{exact:true}).waitFor({state:'visible',timeout:30000})
+  .then(()=>live.innerText())
+  .then(text=>({text}),error=>({error}))
+}
+
 let cleanup={ok:false,mode:'none',error:null}
 let verifiedPayment=null
 let completionSource='client.aprobar_servicio'
@@ -147,7 +160,7 @@ async function backendState(){
  assert.ifError(error)
  return String(data?.estado||'')
 }
-async function expectUi(state,stage,{bannerTextOverride=null}={}){
+async function expectUi(state,stage,{bannerTextOverride=null,bannerCapture=null}={}){
  let persisted=''
  for(let attempt=0;attempt<30;attempt++){
   persisted=await backendState()
@@ -188,6 +201,11 @@ async function expectUi(state,stage,{bannerTextOverride=null}={}){
  assert.equal(notice.datos.servicio_id,fixture.id)
  const banner=page.locator('.ugo-notification-live.is-client')
  let bannerText=bannerTextOverride
+ if(bannerCapture){
+  const observed=await bannerCapture
+  if(observed.error)throw observed.error
+  bannerText=observed.text
+ }
  if(!bannerText){
   await banner.getByText(displayedTitle(notice),{exact:true}).waitFor({state:'visible',timeout:15000})
   bannerText=await banner.innerText()
@@ -384,9 +402,10 @@ try{
  assert.equal(selectedPayment.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
  verifiedPayment={method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente,source:requestedMethod==='efectivo'?'assignment_cash_trigger':'protected_test_pix'}
 
+ const routeBanner=watchLiveBanner(noticeTypes.en_camino)
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
- await expectUi('en_camino','route')
+ await expectUi('en_camino','route',{bannerCapture:routeBanner})
 
  const {data:tracking,error:trackingError}=await auth.rpc('obtener_tracking_servicio_cliente',{p_servicio_id:fixture.id})
  assert.ifError(trackingError)
@@ -405,21 +424,25 @@ try{
  assert.ifError(publishError)
  assert.equal(published?.status,'published','GPS_PUBLISH_REQUIRED')
 
+ const arrivalBanner=watchLiveBanner(noticeTypes.llegado)
  const {data:arrival,error:arrivalError}=await provider.rpc('marcar_llegada_proveedor',{p_servicio_id:fixture.id})
  assert.ifError(arrivalError)
  assert.equal(arrival?.status,'arrived','GPS_VALIDATED_ARRIVAL_REQUIRED')
- await expectUi('llegado','arrived')
+ await expectUi('llegado','arrived',{bannerCapture:arrivalBanner})
 
  await addProviderEvidence('antes')
+ const workBanner=watchLiveBanner(noticeTypes.en_progreso)
  const {error:workError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_progreso'})
  assert.ifError(workError)
- await expectUi('en_progreso','working')
+ await expectUi('en_progreso','working',{bannerCapture:workBanner})
 
  await addProviderEvidence('despues')
+ const finishBanner=watchLiveBanner(noticeTypes.esperando_aprobacion)
  const {error:finishError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'esperando_aprobacion'})
  assert.ifError(finishError)
- await expectUi('esperando_aprobacion','finished')
+ await expectUi('esperando_aprobacion','finished',{bannerCapture:finishBanner})
 
+ const completionBanner=watchLiveBanner(noticeTypes.completado)
  const {data:approved,error:approveError}=await auth.rpc('aprobar_servicio',{p_servicio_id:fixture.id})
  assert.ifError(approveError)
  let completed=approved
@@ -442,7 +465,7 @@ try{
  assert.equal(finalPayment?.metodo,requestedMethod,'FINAL_PAYMENT_METHOD_MUST_MATCH_PREFERENCE')
  assert.equal(finalPayment?.estado,'liberado','COMPLETED_SERVICE_PAYMENT_MUST_BE_RELEASED')
  verifiedPayment.final_state=finalPayment.estado
- await expectUi('completado','finished')
+ await expectUi('completado','finished',{bannerCapture:completionBanner})
 
  await page.screenshot({path:'artifacts/client-notifications-runtime.png',fullPage:true})
 }finally{
