@@ -75,3 +75,19 @@ test('Hugo menu action validates effective locale after the later UI copy catalo
   assert.ok(runtime.includes("'"+language+"':'"+label+"'"),language+': E2E expectation must match effective UI copy')
  }
 })
+
+
+test('notification panel is closed through the real UI before subsequent menu actions',async()=>{
+ const [runtime,center]=await Promise.all([
+  read('scripts/client-navigation-runtime.mjs'),
+  read('src/mvp/NotificationCenter.tsx'),
+ ])
+ assert.ok(center.includes("className=\"ugo-notification-close\""),'notification panel must expose its real close control')
+ assert.ok(center.includes("setOpen(false)"),'close control must dismiss the panel')
+ const open=runtime.indexOf("await clickMenu(page,'Notificaciones')")
+ const close=runtime.indexOf("await notificationClose.click()",open)
+ const next=runtime.indexOf("for(const item of ['Hugo / Asistente IA'",open)
+ assert.ok(open>=0&&close>open&&next>close,'E2E must dismiss notifications before reopening the menu')
+ assert.ok(runtime.slice(open,next).includes("notificationPanel.waitFor({state:'hidden'"),'E2E must verify the overlay actually closed')
+ assert.ok(runtime.slice(open,next).includes("notificationPanel.waitFor({state:'visible'"),'E2E must verify the panel opened')
+})
