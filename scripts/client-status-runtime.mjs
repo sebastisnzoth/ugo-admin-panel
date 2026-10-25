@@ -76,14 +76,6 @@ assert.ok(fixture?.id,'DISPOSABLE_CLIENT_STATUS_FIXTURE_REQUIRED')
 assert.equal(fixture.estado,'borrador','CLIENT_STATUS_FIXTURE_MUST_START_UNASSIGNED')
 const {error:pickupError}=await auth.rpc('guardar_ubicacion_servicio_cliente',{p_servicio_id:fixture.id,p_lat:TEST_LAT,p_lng:TEST_LNG})
 assert.ifError(pickupError)
-const {data:online,error:onlineError}=await provider.rpc('activar_disponibilidad_proveedor',{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:10})
-assert.ifError(onlineError)
-assert.equal(online?.status,'online','TEST_PROVIDER_TRUSTED_GPS_REQUIRED')
-const {data:assigned,error:assignError}=await admin.from('servicios').update({proveedor_id:TEST_PROVIDER_ID,estado:'asignado'}).eq('id',fixture.id).select('id,estado,proveedor_id').single()
-assert.ifError(assignError)
-assert.equal(assigned?.estado,'asignado','CLIENT_STATUS_ASSIGNMENT_REQUIRED')
-assert.equal(assigned?.proveedor_id,TEST_PROVIDER_ID,'CLIENT_STATUS_PROVIDER_REQUIRED')
-
 const expected=[
  ['asignado','accepted'],
  ['en_camino','route'],
@@ -102,6 +94,7 @@ await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JS
 
 const transitions=[]
 let cleanup={ok:false,mode:'none',error:null}
+let selectedPayment=null
 async function backendState(){
  const {data,error}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
  assert.ifError(error)
@@ -166,6 +159,13 @@ async function addProviderEvidence(tipo){
 }
 
 try{
+ const {data:online,error:onlineError}=await provider.rpc('activar_disponibilidad_proveedor',{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:10})
+ assert.ifError(onlineError)
+ assert.equal(online?.status,'online','TEST_PROVIDER_TRUSTED_GPS_REQUIRED')
+ const {data:assigned,error:assignError}=await admin.from('servicios').update({proveedor_id:TEST_PROVIDER_ID,estado:'asignado'}).eq('id',fixture.id).select('id,estado,proveedor_id').single()
+ assert.ifError(assignError)
+ assert.equal(assigned?.estado,'asignado','CLIENT_STATUS_ASSIGNMENT_REQUIRED')
+ assert.equal(assigned?.proveedor_id,TEST_PROVIDER_ID,'CLIENT_STATUS_PROVIDER_REQUIRED')
  await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
  await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:20000})
  await expectUi('asignado','accepted')
@@ -178,7 +178,7 @@ try{
  assert.ok(['efectivo','pix'].includes(requestedMethod),'TEST_PAYMENT_METHOD_MUST_BE_PERSISTED')
  const {data:existingPayment,error:existingPaymentError}=await admin.from('pagos').select('id,metodo,estado,pago_externo_id,ambiente,procesador,modelo_pago').eq('servicio_id',fixture.id).maybeSingle()
  assert.ifError(existingPaymentError)
- let selectedPayment=existingPayment
+ selectedPayment=existingPayment
  if(requestedMethod==='efectivo'){
   assert.ok(existingPayment?.id,'AUTO_CASH_PAYMENT_REQUIRED')
   assert.equal(existingPayment.metodo,'efectivo')
