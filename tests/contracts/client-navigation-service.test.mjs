@@ -27,3 +27,21 @@ test('Client navigation E2E checks PR head and mobile nav against built preview'
  assert.ok(runtime.includes("await nav.waitFor({state:'visible'"))
  assert.ok(runtime.includes('assert.equal(await buttons.count(),4'))
 })
+
+
+test('Client request menu opens composer instead of removed search',async()=>{
+ const [menu,root,need,runtime]=await Promise.all([
+  read('src/features/client/ui/ClientGlobalMenu.tsx'),
+  read('src/features/client/ClientRoot.tsx'),
+  read('src/features/client/request/ClientNeedScreen.tsx'),
+  read('scripts/client-navigation-runtime.mjs')
+ ])
+ assert.ok(menu.includes("const request=()=>{close();flow.navigate('request')}"))
+ assert.ok(root.includes("flow.screen==='request'&&<ClientNeedScreen/>"))
+ assert.ok(need.includes('className="ugo-need-screen"'))
+ assert.ok(need.includes('id="ugo-need-description"'))
+ assert.ok(runtime.includes("page.locator('main.ugo-need-screen')"))
+ assert.ok(runtime.includes("requestForm.locator('#ugo-need-description')"))
+ assert.ok(runtime.includes("requestForm.locator('.ugo-need-top button').first().click()"))
+ assert.ok(!runtime.includes("getByRole('textbox',{name:'Buscar servicio'})"))
+})
