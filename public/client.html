@@ -523,7 +523,7 @@ async function createService(prov) {
     await sb.rpc('notificar_nuevo_pedido', { p_servicio_id: svc.id, p_usuario_ids: [prov.id] });
   } else {
     // Sin proveedor específico → notificar a los online de esa categoría
-    const { data: provs } = await sb.from('usuarios')
+    const { data: provs } = await sb.from('usuarios_publicos')
       .select('id')
       .eq('tipo', 'proveedor')
       .eq('categoria', prov.categoria)
@@ -766,7 +766,7 @@ function setTrackStep(n) {
 
 async function showProvCard() {
   if (!ACTIVE_SVC?.proveedor_id) return;
-  const { data } = await sb.from('usuarios').select('nombre,karma,categoria,lat,lng').eq('id', ACTIVE_SVC.proveedor_id).single();
+  const { data } = await sb.from('usuarios_publicos').select('nombre,karma,categoria,lat,lng').eq('id', ACTIVE_SVC.proveedor_id).single();
   if (!data) return;
   const card = document.getElementById('tr-pcard');
   card.style.display = 'block';
@@ -808,7 +808,7 @@ async function resumeActiveService(){
     if(!svc)return;
     let prov=null;
     if(svc.proveedor_id){
-      const {data:p}=await sb.from('usuarios').select('id,nombre,karma,categoria,tarifa_base,lat,lng').eq('id',svc.proveedor_id).single();
+      const {data:p}=await sb.from('usuarios_publicos').select('id,nombre,karma,categoria,tarifa_base,lat,lng').eq('id',svc.proveedor_id).single();
       prov=p;
     }
     ACTIVE_SVC={...svc,prov:prov||{categoria:'Servicio'}};
@@ -1029,7 +1029,7 @@ async function loadProvCount() {
   const el = $('prov-count');
   if (!el || !myLat) return;
   try {
-    const { count } = await sb.from('usuarios')
+    const { count } = await sb.from('usuarios_publicos')
       .select('id', { count: 'exact', head: true })
       .eq('tipo', 'proveedor')
       .eq('online', true)
@@ -1233,7 +1233,7 @@ function refreshMyLocation(){
 
 async function loadProviders(){
   const icons={Electricista:'⚡',Plomero:'🔧',Limpieza:'🧹',Pintor:'🎨',Carpintero:'🪚',Cerrajero:'🔑',Jardinero:'🌿'};
-  const{data}=await sb.from('usuarios').select('id,nombre,categoria,karma,tarifa_base,lat,lng').eq('tipo','proveedor').not('lat','is',null).limit(60);
+  const{data}=await sb.from('usuarios_publicos').select('id,nombre,categoria,karma,tarifa_base,lat,lng').eq('tipo','proveedor').not('lat','is',null).limit(60);
   const real=(data||[]).filter(p=>p.lat&&p.lng);
   const sim=[
     {nombre:'Carlos R.',categoria:'Electricista',karma:4.8,tarifa_base:90,lat:myLat+.013,lng:myLng+.009},
@@ -1290,7 +1290,7 @@ function svcsHTML(){return`<div class="pad">
 async function selCat(cat,el){
   document.querySelectorAll('.catb').forEach(b=>b.classList.remove('on'));el.classList.add('on');
   const pl=$('plist');pl.innerHTML='<p style="color:var(--m);font-size:13px">Buscando proveedores cerca tuyo...</p>';
-  const{data}=await sb.from('usuarios').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(6);
+  const{data}=await sb.from('usuarios_publicos').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(6);
   if(!data?.length){pl.innerHTML=`<p style="color:var(--m);font-size:13px;padding:8px 0">Sin ${cat.toLowerCase()}s disponibles ahora. <a href="#" onclick="openChat()" style="color:var(--c)">Pedile a Hugo que busque</a>.</p>`;return;}
   const dist=p=>`${(Math.random()*4+.5).toFixed(1)}km`;
   const avgTime=p=>`${Math.max(5,Math.round((p.karma||5)*3))}min`;
@@ -1798,14 +1798,14 @@ async function queryTerna(){
   const dbTerm=catToDbTerm(SELECTED_CAT);
   if(!dbTerm)return null;
   const sel='id,nombre,karma,categoria,tarifa_base,lat,lng';
-  let r1=await sb.from('usuarios').select(sel)
+  let r1=await sb.from('usuarios_publicos').select(sel)
     .eq('tipo','proveedor').eq('online',true).gte('karma',4.0)
     .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
   if(r1.error)console.error('terna q1:',r1.error.message);
   let online=r1.data;
   // Sin filtro de karma si el estricto no devuelve nada
   if(!online?.length){
-    const r2=await sb.from('usuarios').select(sel)
+    const r2=await sb.from('usuarios_publicos').select(sel)
       .eq('tipo','proveedor').eq('online',true)
       .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
     if(r2.error)throw new Error('DB: '+r2.error.message);
@@ -1813,7 +1813,7 @@ async function queryTerna(){
   }
   let offline=null;
   if(!online?.length){
-    const r3=await sb.from('usuarios').select(sel)
+    const r3=await sb.from('usuarios_publicos').select(sel)
       .eq('tipo','proveedor')
       .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
     if(r3.error)throw new Error('DB: '+r3.error.message);
@@ -1899,7 +1899,7 @@ async function broadcastToAll(){
   ACTIVE_SVC=svc;
 
   // 2. Notificar a TODOS los online en 10km de la categoría
-  const{data:all_provs}=await sb.from('usuarios').select('id,nombre,categoria,lat,lng').eq('tipo','proveedor').eq('online',true).eq('activo',true).eq('estado_verificacion','verificado').not('lat','is',null).limit(50);
+  const{data:all_provs}=await sb.from('usuarios_publicos').select('id,nombre,categoria,lat,lng').eq('tipo','proveedor').eq('online',true).eq('activo',true).eq('estado_verificacion','verificado').not('lat','is',null).limit(50);
 
   let nearby_provs=[];
   if(all_provs){
