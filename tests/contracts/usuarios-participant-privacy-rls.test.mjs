@@ -50,3 +50,10 @@ test('P0 real E2E includes positive/negative authorization checks after acceptan
  assert.match(e2e,/P0_COUNTERPART_CONTAINS_PRIVATE_FIELD/)
  assert.match(e2e,/privacy_rls_positive_negative/)
 })
+
+test('privacy changes require the real P0 regression workflow on push and PR',()=>{
+ const workflow=read('.github/workflows/p0-client-provider-e2e.yml')
+ for(const path of ['supabase/migrations/20261025113000_usuarios_participant_privacy.sql','src/mvp/ServiceChat.tsx','src/mvp/ProviderRatingPrompt.tsx','src/features/client/rating/ClientRatingPrompt.tsx','src/mvp/provider/ProviderCustomerCard.tsx']){
+  assert.equal(workflow.split('      - "'+path+'"').length-1,2,'P0_WATCH_PATH_MISSING:'+path)
+ }
+})
