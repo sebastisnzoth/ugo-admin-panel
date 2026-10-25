@@ -81,10 +81,10 @@ async function clickMenu(page,label){
     'Ayuda y soporte':'Ayuda y disputa',
    }
    const visibleLabel=visibleLabels[label]||label
-   const button=drawer.getByRole('button',{name:visibleLabel,exact:true}).first()
+   const button=drawer.locator('nav.ugo-client-menu-list button').filter({has:drawer.getByText(visibleLabel,{exact:true})}).first()
    await button.waitFor({state:'visible',timeout:10000})
    assert.equal(await button.isDisabled(),false,label+': disabled')
-   await button.evaluate(node=>node.click())
+   await button.click()
    await drawer.waitFor({state:'hidden',timeout:5000})
    clicked=true
   }catch(error){
