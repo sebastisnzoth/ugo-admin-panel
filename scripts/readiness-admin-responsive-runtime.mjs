@@ -17,7 +17,23 @@ assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_RUNTIME_INPUTS_REQUIR
 
 const service=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
+await fs.mkdir('artifacts',{recursive:true})
+const authStartedAt=Date.now()
 const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password})
+if(loginError){
+ // Record only non-sensitive failure metadata; never serialize session, credentials or tokens.
+ const diagnostic={
+  step:'TEST_ADMIN_SIGN_IN',
+  environment:'UGO TEST',
+  sha,
+  errorName:String(loginError.name||'AuthError'),
+  status:Number(loginError.status)||null,
+  code:typeof loginError.code==='string'?loginError.code:null,
+  retryable:loginError.name==='AuthRetryableFetchError',
+  elapsedMs:Date.now()-authStartedAt
+ }
+ await fs.writeFile('artifacts/admin-responsive-auth-diagnostic.json',JSON.stringify(diagnostic,null,2)+'\n')
+}
 assert.ifError(loginError)
 assert.ok(login.user&&login.session,'UGO_TEST_ADMIN_SESSION_REQUIRED')
 const {data:profile,error:profileError}=await service.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
