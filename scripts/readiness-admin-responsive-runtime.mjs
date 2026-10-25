@@ -64,6 +64,9 @@ try{
   await page.evaluate(({key,value})=>window.localStorage.setItem(key,value),{key:'ugo-test-admin-auth',value:JSON.stringify(login.session)})
   await page.reload({waitUntil:'networkidle'})
   await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:20000})
+  // Exercise the real language selector so navigation assertions use the same locale.
+  await page.getByTestId('language-selector').selectOption('es')
+  await page.locator('.ugo-admin2-sidebar nav button').filter({hasText:'Inicio'}).first().waitFor({state:'visible',timeout:20000})
   const sections=[]
   for(const nav of ['Inicio','Operaciones','Personas','Finanzas','Configuración']){
    await clickNav(page,nav)
