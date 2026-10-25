@@ -81,9 +81,18 @@ async function clickMenu(page,label){
     'Ayuda y soporte':'Ayuda y disputa',
    }
    const visibleLabel=visibleLabels[label]||label
-   const button=drawer.locator('nav.ugo-client-menu-list button').filter({hasText:visibleLabel}).first()
+   // The account locale can override the test's guest locale. Find Hugo by a stable
+   // action identifier, then still verify its visible, localized label.
+   const isHugo=label==='Hugo / Asistente IA'
+   const button=isHugo
+    ?drawer.locator('nav.ugo-client-menu-list button[data-client-menu-action="hugo"]')
+    :drawer.locator('nav.ugo-client-menu-list button').filter({hasText:visibleLabel}).first()
    await button.waitFor({state:'visible',timeout:10000})
-   assert.equal((await button.locator('b').innerText()).trim(),visibleLabel,label+': visible menu text changed')
+   const actualLabel=(await button.locator('b').innerText()).trim()
+   if(isHugo){
+    const hugoLabels=['Hugo / Asistente IA','Hugo / Assistente IA','Hugo / AI Assistant']
+    assert.ok(hugoLabels.includes(actualLabel),label+': unexpected visible translation '+JSON.stringify(actualLabel))
+   }else assert.equal(actualLabel,visibleLabel,label+': visible menu text changed')
    assert.equal(await button.isDisabled(),false,label+': disabled')
    await button.click()
    await drawer.waitFor({state:'hidden',timeout:5000})
