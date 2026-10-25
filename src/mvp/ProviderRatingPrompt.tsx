@@ -28,7 +28,7 @@ export function ProviderRatingPrompt({suspended=false,serviceId=null,embedded=fa
   const reviewed=new Set((reviews||[]).map(row=>String(row.servicio_id)))
   const service=rows.find(row=>!reviewed.has(row.id))||null
   if(!service){setTarget(null);return}
-  const{data:client,error:clientError}=await supabase.from('usuarios').select('nombre').eq('id',service.cliente_id).maybeSingle()
+  const{data:clients,error:clientError}=await supabase.rpc('obter_perfiles_participantes',{p_ids:[service.cliente_id]});const client=clients?.find(row=>row.id===service.cliente_id)
   if(clientError)throw clientError
   setTarget({service,clientName:String(client?.nombre||'el cliente')})
  },[serviceId,supabase])
