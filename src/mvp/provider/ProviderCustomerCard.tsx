@@ -11,11 +11,11 @@ export function ProviderCustomerCard({clientId,serviceId,compact=false}:{clientI
  // Only count contracts involving the signed-in provider: RLS prevents seeing unrelated orders.
  void supabase.auth.getUser().then(async({data})=>{const uid=data.user?.id;if(!uid)return
  const [identity,contracts]=await Promise.all([
- supabase.from('usuarios').select('nombre,foto_url,karma').eq('id',clientId).maybeSingle(),
+ supabase.rpc('obter_perfiles_participantes',{p_ids:[clientId]}),
  supabase.from('servicios').select('id',{count:'exact',head:true}).eq('cliente_id',clientId).eq('proveedor_id',uid)
  ])
  if(!alive)return
- if(!identity.error)setCustomer(identity.data as Customer|null)
+ if(!identity.error)setCustomer((identity.data?.find(row=>row.id===clientId)||null) as Customer|null)
  if(!contracts.error)setPrevious(contracts.count??null)
  }).catch(()=>{}).finally(()=>{if(alive)setLoading(false)})
  return()=>{alive=false}
