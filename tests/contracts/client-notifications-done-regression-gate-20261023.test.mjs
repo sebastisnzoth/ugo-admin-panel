@@ -165,3 +165,25 @@ test('notifications fixture establishes client pickup and fresh authenticated pr
  assert.match(runtime,/assert\.ifError\(pickupError\)/)
  assert.doesNotMatch(runtime,/\.update\(\{proveedor_id:TEST_PROVIDER_ID,estado:'asignado',.*ubicacion/)
 })
+
+
+test('transient Realtime banners are observed before lifecycle RPCs and independently checked with UI, DB and RLS',()=>{
+ assert.match(runtime,/function watchLiveBanner\(tipo\)/)
+ assert.match(runtime,/getByText\(title,\{exact:true\}\)\.waitFor\(\{state:'visible'/)
+ assert.match(runtime,/if\(bannerCapture\)\{/)
+ for(const [state,action] of [
+  ['en_camino',"provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})"],
+  ['llegado',"provider.rpc('marcar_llegada_proveedor',{p_servicio_id:fixture.id})"],
+  ['en_progreso',"provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_progreso'})"],
+  ['esperando_aprobacion',"provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'esperando_aprobacion'})"],
+  ['completado',"auth.rpc('aprobar_servicio',{p_servicio_id:fixture.id})"],
+ ]){
+  const start="const "+({en_camino:'routeBanner',llegado:'arrivalBanner',en_progreso:'workBanner',esperando_aprobacion:'finishBanner',completado:'completionBanner'}[state])+"=watchLiveBanner(noticeTypes."+state+")"
+  assert.ok(runtime.includes(start),'missing pre-transition observer for '+state)
+  assert.ok(runtime.indexOf(start)<runtime.indexOf(action),'observer must precede RPC for '+state)
+  assert.match(runtime,new RegExp("await expectUi\\('"+state+"','[^']+',\\{bannerCapture:"))
+ }
+ assert.match(runtime,/const \{data:notice,error:noticeError\}=await auth\.from\('notificaciones'\)/)
+ assert.match(runtime,/assert\.deepEqual\(foreign,\[\],'Provider must not read client notifications'\)/)
+ assert.match(runtime,/assert\.ok\(bannerText\.includes\(displayedTitle\(notice\)\)/)
+})
