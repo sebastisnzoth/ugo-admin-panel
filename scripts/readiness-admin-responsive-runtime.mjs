@@ -76,7 +76,7 @@ try{
    await clickNav(page,'Super Admin')
    await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000})
    await page.screenshot({path:`artifacts/admin-responsive-${vp.id}-superadmin.png`,fullPage:true})
-   const tabNames=['Command Center','Empresa Autónoma','Feature Flags','Audit Log','Integraciones','Métricas globales','Roles y permisos','Legal / IP Protection']
+   const tabNames=['Centro de control','Empresa Autónoma','Funcionalidades','Registro de auditoría','Integraciones','Métricas globales','Roles y permisos','Legal / Protección IP']
    for(const tab of tabNames){
     const b=page.locator('.ugo-superadmin > .ugo-admin2-submenu button').filter({hasText:tab}).first()
     await b.waitFor({state:'visible',timeout:20000})
