@@ -143,3 +143,13 @@ test('Client Notifications CI runs when runtime, Judge, Sentinel or auth helper 
   for(const file of watched)assert.ok(block.includes("- '"+file+"'"),event+' must watch '+file)
  }
 })
+
+
+test('notifications fixture establishes client pickup and fresh authenticated provider GPS before assignment',()=>{
+ assert.match(runtime,/auth\.rpc\('guardar_ubicacion_servicio_cliente',\{p_servicio_id:fixture\.id,p_lat:TEST_LAT,p_lng:TEST_LNG\}\)/)
+ assert.match(runtime,/provider\.rpc\('activar_disponibilidad_proveedor',\{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date\(\)\.toISOString\(\),p_accuracy_m:10\}\)/)
+ assert.ok(runtime.indexOf("provider.rpc('activar_disponibilidad_proveedor'")<runtime.indexOf(".update({proveedor_id:TEST_PROVIDER_ID,estado:'asignado'})"),'provider must publish trusted GPS before assignment')
+ assert.match(runtime,/assert\.ifError\(onlineError\)/)
+ assert.match(runtime,/assert\.ifError\(pickupError\)/)
+ assert.doesNotMatch(runtime,/\.update\(\{proveedor_id:TEST_PROVIDER_ID,estado:'asignado',.*ubicacion/)
+})
