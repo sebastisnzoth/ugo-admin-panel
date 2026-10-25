@@ -36,6 +36,7 @@ test('client global menu has translated accessible labels for every supported lo
  for(const [action,label] of [['Actividad y pedidos','Actividad'],['Formas de pago','Medios de pago'],['Servicios y categorías','Categorías']]){
   assert.ok(runtime.includes("'"+action+"':'"+label+"'"),action+' must target visible translated text')
  }
- assert.ok(runtime.includes("filter({has:drawer.getByText(visibleLabel,{exact:true})})"))
+ assert.ok(runtime.includes("filter({hasText:visibleLabel})"))
+ assert.ok(runtime.includes("button.locator('b').innerText()"),"runtime must verify the exact rendered label")
  assert.ok(runtime.includes('await button.click()'),'runtime must use Playwright user click, not DOM bypass')
 })
