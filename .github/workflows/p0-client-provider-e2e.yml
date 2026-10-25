@@ -84,26 +84,34 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "Verifying privacy schema on TEST Supabase..."
+          echo "Verifying privacy schema on TEST Supabase via exec_sql..."
+          # Helper to execute SQL via exec_sql RPC
+          exec_sql() {
+            curl -fsS -H "Authorization: Bearer $UGO_TEST_SUPABASE_SERVICE_ROLE_KEY" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: return=minimal" \
+              "https://tmossnqfwfwjrtzwcbmm.supabase.co/rest/v1/rpc/exec_sql" \
+              -d "{\"sql\": $(echo "$1" | jq -Rs .)}"
+          }
           # Check RLS policy on usuarios
-          POLICY=$(curl -fsS -H "Authorization: Bearer $UGO_TEST_SUPABASE_SERVICE_ROLE_KEY" \
-            "https://tmossnqfwfwjrtzwcbmm.supabase.co/rest/v1/pg_policies?schema=public&tablename=usuarios&policyname=usuarios_select" | jq -r '.[0].qual')
+          POLICY_JSON=$(exec_sql "SELECT qual FROM pg_policies WHERE schemaname='public' AND tablename='usuarios' AND policyname='usuarios_select'")
+          POLICY=$(echo "$POLICY_JSON" | jq -r '.[0].qual // empty')
           if [[ "$POLICY" != "id = (SELECT auth.uid()) OR (SELECT private.is_admin(auth.uid()))" ]]; then
             echo "FAIL: usuarios RLS policy missing or incorrect: $POLICY"
             exit 1
           fi
           echo "OK: usuarios RLS policy correct"
           # Check RPC function exists
-          RPC=$(curl -fsS -H "Authorization: Bearer $UGO_TEST_SUPABASE_SERVICE_ROLE_KEY" \
-            "https://tmossnqfwfwjrtzwcbmm.supabase.co/rest/v1/pg_proc?proname=obter_perfiles_participantes&pronamespace=public" | jq -r '.[0].proname')
+          RPC_JSON=$(exec_sql "SELECT proname FROM pg_proc WHERE proname='obter_perfiles_participantes' AND pronamespace='public'::regnamespace")
+          RPC=$(echo "$RPC_JSON" | jq -r '.[0].proname // empty')
           if [[ "$RPC" != "obter_perfiles_participantes" ]]; then
             echo "FAIL: RPC obter_perfiles_participantes not found"
             exit 1
           fi
           echo "OK: RPC obter_perfiles_participantes exists"
           # Check view exists
-          VIEW=$(curl -fsS -H "Authorization: Bearer $UGO_TEST_SUPABASE_SERVICE_ROLE_KEY" \
-            "https://tmossnqfwfwjrtzwcbmm.supabase.co/rest/v1/pg_views?viewname=usuarios_publicos&schemaname=public" | jq -r '.[0].viewname')
+          VIEW_JSON=$(exec_sql "SELECT viewname FROM pg_views WHERE schemaname='public' AND viewname='usuarios_publicos'")
+          VIEW=$(echo "$VIEW_JSON" | jq -r '.[0].viewname // empty')
           if [[ "$VIEW" != "usuarios_publicos" ]]; then
             echo "FAIL: view usuarios_publicos not found"
             exit 1
