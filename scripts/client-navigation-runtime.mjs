@@ -91,7 +91,7 @@ async function clickMenu(page,label){
    const actualLabel=(await button.locator('b').innerText()).trim()
    if(isHugo){
     const activeLocale=await page.locator('html').getAttribute('lang')
-    const hugoLabels={'es':'Hugo / Asistente IA','pt-BR':'Hugo / Assistente IA','en':'Hugo / AI Assistant'}
+    const hugoLabels={'es':'Asistente de Hugo','pt-BR':'Assistente Hugo','en':'Hugo assistant'}
     assert.ok(Object.hasOwn(hugoLabels,activeLocale),label+': unsupported active locale '+JSON.stringify(activeLocale))
     assert.equal(actualLabel,hugoLabels[activeLocale],label+': visible menu text does not match active locale')
    }else assert.equal(actualLabel,visibleLabel,label+': visible menu text changed')
