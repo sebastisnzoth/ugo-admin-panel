@@ -193,3 +193,13 @@ test('transient Realtime banners are observed before lifecycle RPCs and independ
  assert.match(runtime,/assert\.deepEqual\(foreign,\[\],'Provider must not read client notifications'\)/)
  assert.match(runtime,/assert\.ok\(bannerText\.includes\(displayedTitle\(notice\)\)/)
 })
+
+
+test('unexpected browser errors remain fatal and yield sanitized diagnostics before teardown',()=>{
+ assert.match(runtime,/window\.__ugoClientBrowserErrors=\[\]/)
+ assert.match(runtime,/addEventListener\('error',/)
+ assert.match(runtime,/addEventListener\('unhandledrejection',/)
+ assert.match(runtime,/client-notifications-page-errors\.json/)
+ assert.match(runtime,/assert\.deepEqual\(pageErrors,\[\],'runtime page errors detected'\)/)
+ assert.doesNotMatch(runtime,/JSON\.stringify\(login\.session/)
+})
