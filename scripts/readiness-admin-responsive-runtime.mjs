@@ -78,7 +78,11 @@ try{
    sections.push({section:nav,metrics:await shellMetrics(page,vp.id+':'+nav)})
   }
   if(profile.tipo==='superadmin'){
-   await clickNav(page,'Super Admin')
+   // Text is localized; use a stable role-gated locator rather than a translated label.
+   const superAdminButton=page.getByTestId('admin-superadmin-nav')
+   await superAdminButton.waitFor({state:'visible',timeout:20000})
+   await superAdminButton.click()
+   await page.waitForTimeout(180)
    await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000})
    await page.screenshot({path:`artifacts/admin-responsive-${vp.id}-superadmin.png`,fullPage:true})
    const tabNames=['Centro de control','Empresa Autónoma','Funcionalidades','Registro de auditoría','Integraciones','Métricas globales','Roles y permisos','Legal / Protección IP']
