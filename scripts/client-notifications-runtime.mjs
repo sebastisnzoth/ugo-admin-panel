@@ -11,6 +11,8 @@ import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const TEST_PROVIDER_ID='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
+// Synthetic UGO TEST coordinates, never evidence of physical GPS.
+const TEST_LAT=-27.438,TEST_LNG=-48.477
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const serviceRole=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
@@ -82,6 +84,10 @@ assert.ifError(createError)
 assert.ok(fixture?.id,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_REQUIRED')
 assert.equal(fixture.estado,'borrador','DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_MUST_START_NEUTRAL')
 assert.equal(fixture.proveedor_id,null,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_MUST_START_UNASSIGNED')
+// Assignment now requires an owned pickup snapshot. Use the same authorized
+// client RPC as the application, rather than weakening the database guard.
+const {error:pickupError}=await auth.rpc('guardar_ubicacion_servicio_cliente',{p_servicio_id:fixture.id,p_lat:TEST_LAT,p_lng:TEST_LNG})
+assert.ifError(pickupError)
 
 const expected=[
  ['asignado','accepted'],
@@ -238,6 +244,12 @@ try{
  // estado/proveedor_id. Perform the real assignment only after the client is
  // authenticated so both persistence and foreground Realtime delivery are
  // observable in the same run.
+ // Publish a fresh, accurate TEST position through the authenticated
+ // provider availability RPC immediately before assignment. A stale or
+ // missing GPS must continue to fail closed in the real backend.
+ const {data:online,error:onlineError}=await provider.rpc('activar_disponibilidad_proveedor',{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:10})
+ assert.ifError(onlineError)
+ assert.equal(online?.status,'online','TEST_PROVIDER_TRUSTED_GPS_REQUIRED')
  const {data:assigned,error:assignError}=await admin.from('servicios')
   .update({proveedor_id:TEST_PROVIDER_ID,estado:'asignado'})
   .eq('id',fixture.id)
