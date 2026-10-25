@@ -4,6 +4,18 @@ name: UGO P0 Client -> Provider Matching E2E TEST
 # authenticated client request -> real matching -> persisted offer ->
 # authenticated provider feed -> acceptance -> assigned service -> live sessions.
 on:
+  # Direct verified changes to main must run the same isolated TEST journey.
+  # Path-scoped to prevent unrelated housekeeping commits from hitting Supabase.
+  push:
+    branches: [main]
+    paths:
+      - "scripts/p0-client-provider-e2e.mjs"
+      - "scripts/lib/p0-test-read-retry.mjs"
+      - "src/mvp/provider/**"
+      - "src/mvp/ProviderLocationTracker.tsx"
+      - "src/features/client/request/**"
+      - "src/lib/dispatch/**"
+      - ".github/workflows/p0-client-provider-e2e.yml"
   pull_request:
     branches: [main]
     paths:
