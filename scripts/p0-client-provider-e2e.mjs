@@ -31,7 +31,7 @@ const CLIENT_LAT=-27.5949,CLIENT_LNG=-48.5482
 const PROVIDER_LAT=-27.5965,PROVIDER_LNG=-48.5499
 const SERVICE_DESCRIPTION='P0 E2E · servicio real de prueba UGO Arena'
 const stages=[]
-let clientId=null,providerId=null,serviceId=null,offerId=null,categoryId=null
+let clientId=null,providerId=null,outsiderId=null,serviceId=null,offerId=null,categoryId=null
 let browser=null,ui=null
 
 const describe=(error)=>{
@@ -74,7 +74,7 @@ async function cleanup(){
       const {error}=await admin.from('servicios').delete().eq('id',serviceId)
       if(error)failures.push(`servicios: ${error.message}`)
     }
-    for(const id of [providerId,clientId]){
+    for(const id of [providerId,clientId,outsiderId]){
       if(!id)continue
       const profileTable=id===providerId?'perfiles_proveedor':'perfiles_cliente'
       for(const table of ['notificaciones',profileTable]){
@@ -550,11 +550,21 @@ try{
   for(const profile of [...providerCounterpart.data,...clientCounterpart.data]){
    assert.deepEqual(Object.keys(profile).sort(),expectedPublicColumns.slice().sort(),'P0_COUNTERPART_CONTAINS_PRIVATE_FIELD')
   }
+  const outsiderEmail=`ugo-p0-outsider-${token}@example.test`
+  const outsiderCreated=must(await admin.auth.admin.createUser({email:outsiderEmail,password,email_confirm:true,user_metadata:{nombre:'UGO P0 Outsider',tipo:'cliente'}}),'create unrelated TEST identity')
+  outsiderId=outsiderCreated.data.user.id
+  must(await admin.from('usuarios').upsert({id:outsiderId,email:outsiderEmail,nombre:'UGO P0 Outsider',tipo:'cliente',activo:true,es_demo:false,pais:'BR',zona:'UGO TEST E2E'}),'seed unrelated TEST identity')
+  const outsiderLogin=must(await anonClient().auth.signInWithPassword({email:outsiderEmail,password}),'unrelated signed-in TEST user')
+  const outsider=await sessionClient(outsiderLogin.data.session)
+  const unrelatedPrivate=must(await outsider.from('usuarios').select('id,email,telefono,lat,lng').eq('id',providerId),'unrelated private row')
+  const unrelatedRpc=must(await outsider.rpc('obter_perfiles_participantes',{p_ids:[providerId]}),'unrelated participant RPC')
+  assert.equal(unrelatedPrivate.data?.length,0,'P0_UNRELATED_USER_CAN_READ_PRIVATE_ROW')
+  assert.equal(unrelatedRpc.data?.length,0,'P0_UNRELATED_USER_CAN_READ_PARTICIPANT_PROFILE')
   const anonymousProfile=await anonClient().rpc('obter_perfiles_participantes',{p_ids:[providerId]})
   assert.ok(anonymousProfile.error,'P0_ANON_COUNTERPART_RPC_ALLOWED')
   const directory=must(await client.from('usuarios_publicos').select('id,lat,lng').eq('id',providerId).limit(1),'safe provider catalog')
   if(directory.data?.length){assert.ok(directory.data.every(row=>row.lat===null||Math.abs(Number(row.lat)*100-Math.round(Number(row.lat)*100))<1e-6),'P0_PROVIDER_PUBLIC_LAT_PRECISE')}
-  stage('privacy_rls_positive_negative',{privateRowsVisible:0,participantLookupsAllowed:true,anonymousRpcDenied:true,publicDirectory:true})
+  stage('privacy_rls_positive_negative',{privateRowsVisible:0,participantLookupsAllowed:true,unrelatedDenied:true,anonymousRpcDenied:true,publicDirectory:true})
 
   // 8 · both sessions survive the whole journey -------------------------
   const clientStill=must(await client.auth.getUser(),'client session still valid')
