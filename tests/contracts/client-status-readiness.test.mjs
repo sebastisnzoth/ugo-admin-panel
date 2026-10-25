@@ -17,6 +17,11 @@ test('client professional tracking keeps the exact serviceId through the full ca
  assert.match(tracking,/t\('clientTracking\.'\+step\.key\)/)
  assert.match(tracking,/data-service-state=\{state\}/)
  assert.match(tracking,/data-current-stage=\{TIMELINE\[current\]\.key\}/)
+ assert.match(tracking,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'&&navigator\.onLine\)resync\(\)\},10000\)/)
+ assert.match(tracking,/clearInterval\(fallbackTimer\)/)
+ assert.match(detail,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'&&navigator\.onLine\)resync\(\)\},10000\)/)
+ assert.match(detail,/load\(\{silent:true\}\)/)
+ assert.match(detail,/clearInterval\(fallbackTimer\)/)
  assert.match(detail,/!disputeActive&&<SentinelErrorBoundary[^>]+client\.order\.tracking[\s\S]*<ClientLiveTracking serviceId=\{service\.id\} embedded\/>/)
  assert.match(provider,/PROVIDER_LIFECYCLE_ORDER = \[[\s\S]*'asignado'[\s\S]*'en_camino'[\s\S]*'llegado'[\s\S]*'en_progreso'[\s\S]*'esperando_aprobacion'[\s\S]*'completado'/)
 })
@@ -24,6 +29,9 @@ test('client professional tracking keeps the exact serviceId through the full ca
 test('client status runtime uses supported Chromium runner and does not write to main before validators',async()=>{
  const workflow=await read('.github/workflows/client-status-runtime.yml')
  assert.match(workflow,/runs-on: ubuntu-24\.04/)
+ assert.match(workflow,/pull_request:/)
+ assert.match(workflow,/UGO_TESTED_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/)
+ assert.match(workflow,/if: github\.event_name != 'pull_request'/)
  assert.match(workflow,/npx playwright install --with-deps chromium/)
  const start=workflow.split('      - name: Persist client-status workflow start marker')[1]?.split('      - uses: actions\/setup-node@v4')[0]
  assert.ok(start,'missing start marker')
