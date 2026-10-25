@@ -93,6 +93,7 @@ await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JS
 const transitions=[]
 let cleanup={ok:false,mode:'none',error:null}
 let selectedPayment=null
+let completionSource='client.aprobar_servicio'
 async function backendState(){
  const {data,error}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
  assert.ifError(error)
@@ -157,6 +158,8 @@ async function addProviderEvidence(tipo){
 }
 
 try{
+ const {error:pickupError}=await auth.rpc('guardar_ubicacion_servicio_cliente',{p_servicio_id:fixture.id,p_lat:TEST_LAT,p_lng:TEST_LNG})
+ assert.ifError(pickupError)
  const {data:online,error:onlineError}=await provider.rpc('activar_disponibilidad_proveedor',{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date().toISOString(),p_accuracy_m:10})
  assert.ifError(onlineError)
  assert.equal(online?.status,'online','TEST_PROVIDER_TRUSTED_GPS_REQUIRED')
@@ -239,7 +242,23 @@ try{
 
  const {data:approved,error:approveError}=await auth.rpc('aprobar_servicio',{p_servicio_id:fixture.id})
  assert.ifError(approveError)
- assert.equal(approved?.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE')
+ let completed=approved
+ if(selectedPayment.metodo==='efectivo'){
+  assert.equal(approved?.estado,'esperando_aprobacion','CASH_WORK_APPROVAL_MUST_AWAIT_PAYMENT')
+  assert.ok(approved?.metadata?.trabajo_aprobado_at,'CASH_WORK_APPROVAL_MUST_PERSIST')
+  const {data:cashCompleted,error:cashError}=await auth.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:fixture.id})
+  assert.ifError(cashError)
+  completed=cashCompleted
+  completionSource='client.aprobar_servicio+client.confirmar_pago_efectivo_cliente'
+ }else{
+  assert.equal(approved?.estado,'completado','PROTECTED_PIX_APPROVAL_MUST_COMPLETE_SERVICE')
+ }
+ assert.equal(completed?.estado,'completado','CLIENT_APPROVAL_AND_PAYMENT_MUST_COMPLETE_SERVICE')
+ const {data:finalPayment,error:finalPaymentError}=await admin.from('pagos').select('id,metodo,estado').eq('id',selectedPayment.id).single()
+ assert.ifError(finalPaymentError)
+ assert.equal(finalPayment?.metodo,selectedPayment.metodo,'FINAL_PAYMENT_METHOD_MUST_MATCH_PREFERENCE')
+ assert.equal(finalPayment?.estado,'liberado','COMPLETED_SERVICE_PAYMENT_MUST_BE_RELEASED')
+ selectedPayment={...selectedPayment,final_state:finalPayment.estado}
  await expectUi('completado','finished')
 
  await page.screenshot({path:'artifacts/client-status-runtime.png',fullPage:true})
@@ -283,11 +302,11 @@ const evidence={
   llegado:'provider.publicar_ubicacion_proveedor+marcar_llegada_proveedor',
   en_progreso:'provider.evidence_antes+avanzar_servicio',
   esperando_aprobacion:'provider.evidence_despues+avanzar_servicio',
-  completado:'client.aprobar_servicio',
+  completado:completionSource,
  },
  sequence:transitions,
  evidence_paths:evidencePaths,
- payment:{method:selectedPayment.metodo,state:selectedPayment.estado,environment:selectedPayment.ambiente},
+ payment:{method:selectedPayment.metodo,state:selectedPayment.estado,final_state:selectedPayment.final_state,environment:selectedPayment.ambiente},
  cleanup,
  cleanup_ok:cleanup.ok,
  page_errors:pageErrors,
