@@ -80,7 +80,19 @@ try{
   if(profile.tipo==='superadmin'){
    // Text is localized; use a stable role-gated locator rather than a translated label.
    const superAdminButton=page.getByTestId('admin-superadmin-nav')
-   await superAdminButton.waitFor({state:'visible',timeout:20000})
+   try {
+    await superAdminButton.waitFor({state:'visible',timeout:20000})
+   } catch(error) {
+    const roleDiagnostic=await page.evaluate(()=>{
+     const status=[...document.querySelectorAll('.ugo-admin2-status')].map(el=>el.textContent?.trim().slice(0,300)||'')
+     const alerts=[...document.querySelectorAll('[role="alert"]')].map(el=>el.textContent?.trim().slice(0,300)||'')
+     const navLabels=[...document.querySelectorAll('.ugo-admin2-sidebar nav button')].map(el=>el.textContent?.trim().slice(0,100)||'')
+     return {status,alerts,navLabels,hasSuperAdminButton:!!document.querySelector('[data-testid="admin-superadmin-nav"]')}
+    })
+    const diagnostics={viewport:vp.id,expectedRole:profile.tipo,...roleDiagnostic,error:String(error?.message||error)}
+    await fs.writeFile('artifacts/admin-responsive-role-diagnostic.json',JSON.stringify(diagnostics,null,2)+'\n')
+    throw new Error('SUPERADMIN_ROLE_UI_NOT_READY:'+JSON.stringify(diagnostics))
+   }
    await superAdminButton.click()
    await page.waitForTimeout(180)
    await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000})
