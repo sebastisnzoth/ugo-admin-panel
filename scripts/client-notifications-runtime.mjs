@@ -144,10 +144,11 @@ const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino'
 // independent timeline, persisted notice and RLS checks finish. A missing
 // Realtime banner still fails; no polling of the database substitutes for it.
 function watchLiveBanner(tipo){
- const title=spanishMessages['notification.'+tipo]
- assert.ok(title,'CLIENT_LIVE_LOCALIZED_TITLE_MISSING_'+tipo)
- const live=page.locator('.ugo-notification-live.is-client')
- return live.getByText(title,{exact:true}).waitFor({state:'visible',timeout:30000})
+ // A notification may use its persisted title when the locale catalog lacks
+ // this type. Match the real service and notice type, then validate the exact
+ // displayed title against the authenticated DB row in expectUi.
+ const live=page.locator('.ugo-notification-live.is-client[data-ugo-notice-type="'+tipo+'"][data-ugo-notice-service-id="'+fixture.id+'"]')
+ return live.waitFor({state:'visible',timeout:30000})
   .then(()=>live.innerText())
   .then(text=>({text}),error=>({error}))
 }
