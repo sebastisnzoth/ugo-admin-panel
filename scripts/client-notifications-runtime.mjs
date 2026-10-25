@@ -120,7 +120,7 @@ await page.addInitScript(()=>{
   const keys=value&&typeof value==='object'?Object.keys(value).slice(0,16):[]
   const code=typeof value?.code==='string'&&/^[A-Z0-9_:-]{1,64}$/.test(value.code)?value.code:null
   const status=Number.isInteger(value?.status)?value.status:null
-  const safeMessage=String(message||'').replace(/https?:\\/\\/\\S+/g,'[url]').slice(0,240)
+  const safeMessage=String(message||'').replace(/https?:\/\/\S+/g,'[url]').slice(0,240)
   window.__ugoClientBrowserErrors.push({kind,keys,code,status,message:safeMessage})
   if(window.__ugoClientBrowserErrors.length>20)window.__ugoClientBrowserErrors.shift()
  }
@@ -485,7 +485,7 @@ try{
 }finally{
  if(pageErrors.length){
   const browserErrors=await page.evaluate(()=>Array.isArray(window.__ugoClientBrowserErrors)?window.__ugoClientBrowserErrors:[]).catch(()=>[])
-  await fs.writeFile('artifacts/client-notifications-page-errors.json',JSON.stringify({count:pageErrors.length,diagnostics:browserErrors},null,2)+'\\n').catch(()=>{})
+  await fs.writeFile('artifacts/client-notifications-page-errors.json',JSON.stringify({count:pageErrors.length,diagnostics:browserErrors},null,2)+'\n').catch(()=>{})
  }
  await page.close().catch(()=>{})
  await browser.close().catch(()=>{})
