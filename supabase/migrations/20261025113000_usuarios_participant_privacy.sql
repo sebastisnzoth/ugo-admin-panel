@@ -41,7 +41,7 @@ AS
   SELECT u.id, u.nombre, u.karma, u.categoria, u.tarifa_base,
          round(u.lat::numeric, 2)::double precision AS lat,
          round(u.lng::numeric, 2)::double precision AS lng,
-         u.online, u.activo, u.tipo, u.foto_url, u.bio,
+         u.online, u.activo, u.tipo, u.foto_url,
          pp.estado_verificacion
   FROM public.usuarios AS u
   LEFT JOIN public.perfiles_proveedor AS pp ON pp.usuario_id = u.id
