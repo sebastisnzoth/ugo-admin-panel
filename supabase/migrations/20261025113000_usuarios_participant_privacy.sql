@@ -32,22 +32,18 @@ $function$;
 REVOKE ALL ON FUNCTION public.obter_perfiles_participantes(uuid[]) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.obter_perfiles_participantes(uuid[]) TO authenticated;
 
--- The legacy public/client.html provider catalog needs only coarse locations.
--- security_barrier stops caller predicates being pushed through this deliberate
--- safe projection; it cannot return contact information or precise coordinates.
+-- Reuse UGO's existing, verified, coarsened provider radar rather than
+-- exposing an additional SECURITY DEFINER view over private usuarios.
+-- The provider radar already resolves category, availability and approximate GPS.
 CREATE OR REPLACE VIEW public.usuarios_publicos
-WITH (security_barrier = true)
+WITH (security_invoker = true, security_barrier = true)
 AS
-  SELECT u.id, u.nombre, u.karma, u.categoria, u.tarifa_base,
-         round(u.lat::numeric, 2)::double precision AS lat,
-         round(u.lng::numeric, 2)::double precision AS lng,
-         u.online, u.activo, u.tipo, u.foto_url,
-         pp.estado_verificacion
-  FROM public.usuarios AS u
-  LEFT JOIN public.perfiles_proveedor AS pp ON pp.usuario_id = u.id
+  SELECT p.id, p.nombre, p.karma, p.categoria_nombre AS categoria,
+         p.tarifa_base, p.lat, p.lng, p.online, true AS activo,
+         'proveedor'::text AS tipo, p.foto_url, p.estado_verificacion
+  FROM public.proveedores_mapa AS p
   WHERE auth.uid() IS NOT NULL
-    AND u.activo IS TRUE
-    AND u.tipo = 'proveedor';
+    AND p.estado_verificacion = 'verificado'::public.verificacion_estado;
 
 REVOKE ALL ON TABLE public.usuarios_publicos FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON TABLE public.usuarios_publicos TO authenticated;
