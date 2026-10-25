@@ -30,26 +30,21 @@ env:
 jobs:
   client-status:
     name: Cliente seguimiento exacto por serviceId
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
       - name: Persist client-status workflow start marker
-        continue-on-error: true
         shell: bash
         env:
           UGO_MARKER_SHA: ${{ github.sha }}
           UGO_MARKER_RUN_ID: ${{ github.run_id }}
         run: |
-          set -u
-          git config user.name "ugo-readiness-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git fetch origin main
-          git checkout -B client-status-marker origin/main
-          mkdir -p docs/evidence
-          cat > docs/evidence/client-status-workflow-start.json <<EOF
+          set -euo pipefail
+          mkdir -p artifacts
+          cat > artifacts/client-status-workflow-start.json <<EOF
           {
             "readiness_id": "client-status",
             "environment": "GitHub Actions / UGO TEST",
@@ -59,11 +54,6 @@ jobs:
             "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
           EOF
-          git add docs/evidence/client-status-workflow-start.json
-          git commit -m "ops(readiness): mark client-status runtime start" || true
-          git pull --rebase origin main || true
-          git push origin HEAD:main || true
-          git checkout --detach "$UGO_MARKER_SHA"
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

@@ -20,3 +20,14 @@ test('client professional tracking keeps the exact serviceId through the full ca
  assert.match(detail,/!disputeActive&&<SentinelErrorBoundary[^>]+client\.order\.tracking[\s\S]*<ClientLiveTracking serviceId=\{service\.id\} embedded\/>/)
  assert.match(provider,/PROVIDER_LIFECYCLE_ORDER = \[[\s\S]*'asignado'[\s\S]*'en_camino'[\s\S]*'llegado'[\s\S]*'en_progreso'[\s\S]*'esperando_aprobacion'[\s\S]*'completado'/)
 })
+
+test('client status runtime uses supported Chromium runner and does not write to main before validators',async()=>{
+ const workflow=await read('.github/workflows/client-status-runtime.yml')
+ assert.match(workflow,/runs-on: ubuntu-24\\.04/)
+ assert.match(workflow,/npx playwright install --with-deps chromium/)
+ const start=workflow.split('      - name: Persist client-status workflow start marker')[1]?.split('      - uses: actions\\/setup-node@v4')[0]
+ assert.ok(start,'missing start marker')
+ assert.match(start,/artifacts\\/client-status-workflow-start\\.json/)
+ assert.doesNotMatch(start,/git (push|checkout|pull|commit|fetch)/)
+ assert.match(workflow,/      - name: Judge[\\s\\S]*      - name: Sentinel[\\s\\S]*      - name: Persist authoritative readiness closure/)
+})
