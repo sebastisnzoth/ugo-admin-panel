@@ -14,3 +14,14 @@ test('Admin browser QA initializes the TEST session before navigation and waits 
  assert.match(source,/PRIMARY_NAV_TOUCH_TARGET_TOO_SMALL/)
  assert.match(source,/RESPONSIVE_BROWSER_PAGE_ERRORS/)
 })
+
+test('Admin Judge independently requires the seven viewports, real navigation and screenshots',async()=>{
+ const judge=await readFile(new URL('../../scripts/readiness-admin-responsive-judge.mjs',import.meta.url),'utf8')
+ assert.match(judge,/JUDGE_VIEWPORT_MATRIX_REQUIRED/)
+ assert.match(judge,/JUDGE_VIEWPORT_WIDTHS/)
+ assert.match(judge,/\['mobile-320','mobile-360','mobile-390','mobile-430','tablet-768','tablet-1024','desktop-1440'\]/)
+ assert.match(judge,/JUDGE_SECTION_COVERAGE/)
+ assert.match(judge,/JUDGE_DOCUMENT_OVERFLOW/)
+ assert.match(judge,/JUDGE_SHELL_OVERFLOW/)
+ assert.match(judge,/fs\.access\('artifacts\/'\+shot\)/)
+})
