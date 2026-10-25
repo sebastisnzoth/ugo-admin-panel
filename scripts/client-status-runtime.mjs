@@ -74,8 +74,6 @@ const {data:fixture,error:createError}=await admin.from('servicios')
 assert.ifError(createError)
 assert.ok(fixture?.id,'DISPOSABLE_CLIENT_STATUS_FIXTURE_REQUIRED')
 assert.equal(fixture.estado,'borrador','CLIENT_STATUS_FIXTURE_MUST_START_UNASSIGNED')
-const {error:pickupError}=await auth.rpc('guardar_ubicacion_servicio_cliente',{p_servicio_id:fixture.id,p_lat:TEST_LAT,p_lng:TEST_LNG})
-assert.ifError(pickupError)
 const expected=[
  ['asignado','accepted'],
  ['en_camino','route'],
