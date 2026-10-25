@@ -51,6 +51,11 @@ const {data:templates,error:templateError}=await admin.from('servicios')
 assert.ifError(templateError)
 const template=templates?.[0]
 assert.ok(template?.categoria_id,'CLIENT_NOTIFICATIONS_TEMPLATE_SERVICE_REQUIRED')
+// Isolated TEST service must have a real positive quote. Cash payment is
+// intentionally materialized only for positive amounts; a zero-price template
+// cannot exercise the assignment-payment contract.
+const TEST_QUOTE={total:50,commission:7.5,providerNet:42.5}
+assert.equal(TEST_QUOTE.commission+TEST_QUOTE.providerNet,TEST_QUOTE.total)
 
 const readinessTag='client-notifications:'+sha
 const metadata={
@@ -69,9 +74,9 @@ const insertRow={
  urgencia:false,
  direccion_cliente:template.direccion_cliente||'UGO TEST',
  zona:template.zona||null,
- tarifa:template.tarifa??0,
- comision_ugo:template.comision_ugo??0,
- ganancia_proveedor:template.ganancia_proveedor??0,
+ tarifa:TEST_QUOTE.total,
+ comision_ugo:TEST_QUOTE.commission,
+ ganancia_proveedor:TEST_QUOTE.providerNet,
  moneda:template.moneda||'BRL',
  ambiente:'demo',
  ubicacion_cliente:template.ubicacion_cliente||null,
@@ -352,7 +357,7 @@ try{
  }else{
   // Pix needs a real protected TEST payment, never a fabricated cash payment.
   assert.equal(existingPayment,null,'UNEXPECTED_PREEXISTING_PIX_PAYMENT')
-  const paymentAmount=Math.max(1,Number(template.tarifa||50))
+  const paymentAmount=TEST_QUOTE.total
   const {data:inserted,error:paymentInsertError}=await admin.from('pagos').insert({
    servicio_id:fixture.id,
    cliente_id:login.user.id,

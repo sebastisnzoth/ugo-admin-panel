@@ -147,6 +147,16 @@ test('Client Notifications CI runs when runtime, Judge, Sentinel or auth helper 
 })
 
 
+test('isolated TEST cash fixture has a positive balanced quote before assignment',()=>{
+ assert.match(runtime,/const TEST_QUOTE=\\{total:50,commission:7\\.5,providerNet:42\\.5\\}/)
+ assert.match(runtime,/assert\\.equal\\(TEST_QUOTE\\.commission\\+TEST_QUOTE\\.providerNet,TEST_QUOTE\\.total\\)/)
+ assert.match(runtime,/tarifa:TEST_QUOTE\\.total/)
+ assert.match(runtime,/comision_ugo:TEST_QUOTE\\.commission/)
+ assert.match(runtime,/ganancia_proveedor:TEST_QUOTE\\.providerNet/)
+ assert.match(runtime,/const paymentAmount=TEST_QUOTE\\.total/)
+ assert.match(runtime,/assert\\.ok\\(existingPayment\\?\\.id,'AUTO_CASH_PAYMENT_REQUIRED'\\)/)
+})
+
 test('notifications fixture establishes client pickup and fresh authenticated provider GPS before assignment',()=>{
  assert.match(runtime,/auth\.rpc\('guardar_ubicacion_servicio_cliente',\{p_servicio_id:fixture\.id,p_lat:TEST_LAT,p_lng:TEST_LNG\}\)/)
  assert.match(runtime,/provider\.rpc\('activar_disponibilidad_proveedor',\{p_lat:TEST_LAT,p_lng:TEST_LNG,p_captured_at:new Date\(\)\.toISOString\(\),p_accuracy_m:10\}\)/)
