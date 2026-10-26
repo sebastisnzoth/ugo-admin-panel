@@ -22,7 +22,9 @@ test('provider-mutating autonomous integration stays serialized on the shared fi
   read('.github/workflows/autonomous-worker-test.yml'),
   read('.github/workflows/isolated-rpc-rls.yml'),
  ])
- for(const source of sources)assert.match(source,/group:\s*ugo-test-shared-provider-fixture/)
+ assert.match(sources[0],/group:\s*ugo-test-shared-provider-fixture/)
+ assert.match(sources[1],/\|\| 'ugo-test-shared-provider-fixture' \}\}/)
+ assert.match(sources[1],/ugo-test-rpc-pr-\{0\}/)
 })
 
 test('scheduled autonomous proof has an independent same-SHA concurrency queue',async()=>{
