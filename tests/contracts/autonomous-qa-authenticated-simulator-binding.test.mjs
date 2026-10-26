@@ -36,3 +36,16 @@ test('authenticated runtime binds client provider and admin simulators to the sa
   assert.match(runtime,/assert\.equal\(svc\.cliente_id,c\.id\)/)
   assert.match(runtime,/assert\.equal\(svc\.proveedor_id,p\.id\)/)
 })
+
+
+test('QA role proof selects only a persisted TEST service bound to the authenticated client and provider',()=>{
+  const start=runtime.indexOf('const {data:svc,error:svce}')
+  const end=runtime.indexOf('for(const [actor,simulator]',start)
+  assert.ok(start>=0&&end>start,'QA service selection must remain observable')
+  const selection=runtime.slice(start,end)
+  assert.match(selection,/\.eq\('cliente_id',c\.id\)/)
+  assert.match(selection,/\.eq\('proveedor_id',p\.id\)/)
+  assert.match(selection,/\.maybeSingle\(\)/)
+  assert.match(selection,/assert\.ok\(svc\?\.id,'QA_P0_EXACT_ROLE_FIXTURE_REQUIRED'\)/)
+  assert.doesNotMatch(selection,/\.limit\(1\)\.single\(\)/)
+})

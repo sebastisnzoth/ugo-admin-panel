@@ -11,7 +11,17 @@ const enabled=Boolean(url&&anon&&email&&password&&serviceKey)
 const sb=()=>createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 const privileged=()=>createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 
-test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, async()=>{
+// The pilot's standard CI is required to keep Empresa Autonoma OFF.
+// Mode-transition governance remains a separate opt-in test, never a CI side effect.
+test('Autonomous Company remains OFF throughout ordinary UGO TEST validation', {skip:!enabled}, async()=>{
+ assert.equal(url,'https://tmossnqfwfwjrtzwcbmm.supabase.co','OFF safety proof must target TEST only')
+ const {data,error}=await privileged().from('autonomous_company_state').select('mode').eq('singleton',true).single()
+ if(error)throw error
+ assert.equal(data.mode,'OFF','P0 CI must not enable SHADOW or ON')
+})
+
+const explicitLocalAuthorization=process.env.UGO_ALLOW_AUTONOMY_MODE_TRANSITIONS==='1'&&process.env.GITHUB_ACTIONS!=='true'
+test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled||!explicitLocalAuthorization}, async()=>{
  assert.ok(url.includes('tmossnqfwfwjrtzwcbmm'))
  assert.ok(!url.includes('trfsjuseqjxlhrxuvdsm'))
  const unauth=sb()

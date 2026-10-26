@@ -18,7 +18,8 @@ try{
  const deniedClientGov=await c.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA unauthorized client probe'});assert.ok(deniedClientGov.error)
  const deniedAdminGov=await admin.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA admin privilege-boundary probe'});assert.ok(deniedAdminGov.error)
  const allowedSuperadminGov=await sa.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA superadmin privilege-boundary probe'});if(allowedSuperadminGov.error)throw allowedSuperadminGov.error
- const {data:svc,error:svce}=await service.from('servicios').select('id,cliente_id,proveedor_id').eq('metadata->>qa_p0','true').eq('ambiente','demo').order('created_at',{ascending:false}).limit(1).single();if(svce)throw svce
+ const {data:svc,error:svce}=await service.from('servicios').select('id,cliente_id,proveedor_id').eq('metadata->>qa_p0','true').eq('ambiente','demo').eq('cliente_id',c.id).eq('proveedor_id',p.id).order('created_at',{ascending:false}).limit(1).maybeSingle();if(svce)throw svce
+ assert.ok(svc?.id,'QA_P0_EXACT_ROLE_FIXTURE_REQUIRED')
  assert.equal(svc.cliente_id,c.id);assert.equal(svc.proveedor_id,p.id)
  for(const [actor,simulator] of [[c,'qa-client-simulator'],[p,'qa-provider-simulator'],[sa,'qa-admin-system-simulator']]){
   const {data:bound,error:be}=await actor.sb.rpc('autonomous_qa_record_actor_action',{p_service_id:svc.id,p_simulator_key:simulator,p_action_key:'observe_service'})
