@@ -53,3 +53,14 @@ test('scoped kill switches contain subsets without forcing company OFF',()=>{
  assert.match(containment,/GLOBAL_KILL_SWITCH_ACTIVE/)
  assert.doesNotMatch(containment,/where enabled\) then/)
 })
+
+test('automatic TEST readiness checks preserve OFF; ON assertion requires explicit dispatch',()=>{
+ const workflow=fs.readFileSync('.github/workflows/autonomy-on-readiness-test.yml','utf8')
+ const offGuard=fs.readFileSync('scripts/assert-autonomy-off-test.mjs','utf8')
+ assert.match(workflow,/name: Verify persistent OFF state after automatic TEST checks\n\s+if: \$\{\{ github\.event_name == 'push' \}\}/)
+ assert.match(workflow,/run: node scripts\/assert-autonomy-off-test\.mjs/)
+ assert.match(workflow,/name: Verify persistent ON state only when explicitly dispatched\n\s+if: \$\{\{ github\.event_name == 'workflow_dispatch' \}\}/)
+ assert.match(workflow,/run: node scripts\/autonomy-on-readiness-runtime\.mjs/)
+ assert.match(offGuard,/assert\.equal\(data\?\.mode, 'OFF', 'AUTONOMY_MUST_REMAIN_OFF'\)/)
+ assert.match(offGuard,/UGO_TEST_ONLY/)
+})
