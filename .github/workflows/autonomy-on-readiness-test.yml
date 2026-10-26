@@ -1,6 +1,10 @@
 name: UGO Autonomy ON Readiness TEST
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/autonomy-on-readiness-test.yml"
+      - "scripts/autonomous-uploaded-media-runtime.mjs"
   push:
     branches: [main]
     paths:
@@ -29,7 +33,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Prove protected media bytes on the exact same-repository PR SHA without
+  # requiring (or attempting) AUTONOMY_ON. Fork PRs never receive TEST secrets.
+  media-proof-pr:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    environment: test
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Enforce UGO TEST only
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: node scripts/assert-test-environment.mjs
+      - name: Verify protected uploaded media bytes
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-uploaded-media-runtime.mjs
+
   verify:
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     environment: test
     timeout-minutes: 20
@@ -75,7 +106,14 @@ jobs:
         run: node scripts/autonomous-launch-gate-runtime.mjs
       - name: Contract test AUTONOMY_ON
         run: node --test tests/contracts/autonomy-on-readiness.test.mjs
-      - name: Verify persistent ON state
+      - name: Verify persistent OFF state after automatic TEST checks
+        if: ${{ github.event_name == 'push' }}
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/assert-autonomy-off-test.mjs
+      - name: Verify persistent ON state only when explicitly dispatched
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}

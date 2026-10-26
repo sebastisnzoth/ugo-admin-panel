@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/isolated-rpc-rls.yml'
       - 'scripts/autonomous-qa-auth-runtime.mjs'
+      - 'scripts/autonomous-uploaded-media-runtime.mjs'
       - 'tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs'
   workflow_dispatch:
   workflow_run:
@@ -18,9 +19,11 @@ permissions:
   contents: read
 
 concurrency:
-  # Both workflows mutate the same designated UGO TEST provider fixture.
-  # Serialize them across workflow boundaries to avoid false P0 conflicts.
-  group: ugo-test-shared-provider-fixture
+  # Main's real shared-provider jobs keep the canonical fixture lease.
+  # PR checks need a dedicated queue: the global group has only one pending
+  # slot and unrelated TEST workflows otherwise cancel this required gate.
+  # Ignored workflow_run events (PR Core CI) must not claim that shared slot.
+  group: ${{ github.event_name == 'pull_request' && format('ugo-test-rpc-pr-{0}', github.event.pull_request.number) || github.event_name == 'workflow_run' && github.event.workflow_run.event != 'push' && format('ugo-test-rpc-skip-{0}', github.run_id) || 'ugo-test-shared-provider-fixture' }}
   cancel-in-progress: false
 
 env:

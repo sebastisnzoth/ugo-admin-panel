@@ -20,6 +20,7 @@ on:
     branches: [main]
     paths:
       - "scripts/p0-client-provider-e2e.mjs"
+      - "scripts/autonomous-uploaded-media-runtime.mjs"
       - "scripts/lib/p0-test-read-retry.mjs"
       - "scripts/lib/waitForClientProfileUi.mjs"
       - "tests/contracts/client-notifications-profile-ui-recovery.test.mjs"
@@ -40,6 +41,7 @@ permissions:
   contents: read
 
 concurrency:
+  # Isolated P0 accounts must not replace pending RPC/RLS jobs in GitHub concurrency.
   group: ugo-p0-client-provider-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
@@ -51,6 +53,8 @@ env:
 jobs:
   e2e:
     name: P0 Cliente -> Oferta -> Proveedor -> Asignado
+    # Fork PRs cannot access TEST credentials and must never run privileged E2E.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
