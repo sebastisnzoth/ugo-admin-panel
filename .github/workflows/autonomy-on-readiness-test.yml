@@ -106,7 +106,14 @@ jobs:
         run: node scripts/autonomous-launch-gate-runtime.mjs
       - name: Contract test AUTONOMY_ON
         run: node --test tests/contracts/autonomy-on-readiness.test.mjs
-      - name: Verify persistent ON state
+      - name: Verify persistent OFF state after automatic TEST checks
+        if: ${{ github.event_name == 'push' }}
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/assert-autonomy-off-test.mjs
+      - name: Verify persistent ON state only when explicitly dispatched
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
