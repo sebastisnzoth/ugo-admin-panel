@@ -48,7 +48,7 @@ try{
  await page.locator('[data-testid="auth-password"]').fill(password)
  await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
- await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000})
+ await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
  await page.getByRole('button',{name:/Trabajo activo:/}).first().click()
  await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
 
