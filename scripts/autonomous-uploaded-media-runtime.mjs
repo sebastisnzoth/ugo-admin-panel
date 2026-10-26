@@ -17,17 +17,29 @@ const{data:services,error:serviceError}=await db
  .limit(30)
 if(serviceError)throw serviceError
 
+// Load evidence once for the bounded set of completed services. The previous
+// per-service query loop amplified PostgREST traffic during concurrent TEST CI.
+const serviceIds=(services||[]).map(service=>service.id)
+if(!serviceIds.length)throw new Error('NO_COMPLETED_DEMO_SERVICE_WITH_FETCHABLE_INITIAL_AND_FINAL_STORAGE_BYTES')
+const{data:evidenceRows,error:evidenceError}=await db
+ .from('evidencias_servicio')
+ .select('servicio_id,tipo,storage_path,created_at')
+ .in('servicio_id',serviceIds)
+ .in('tipo',['antes','despues'])
+ .order('created_at',{ascending:false})
+if(evidenceError)throw evidenceError
+const evidenceByService=new Map()
+for(const row of evidenceRows||[]){
+ const key=String(row.servicio_id)
+ if(!evidenceByService.has(key))evidenceByService.set(key,[])
+ evidenceByService.get(key).push(row)
+}
+console.log('UPLOADED_MEDIA_EVIDENCE_BATCH_LOADED',JSON.stringify({services:serviceIds.length,evidenceRows:evidenceRows?.length||0}))
 let selected=null
 for(const service of services||[]){
- const{data:rows,error}=await db
-  .from('evidencias_servicio')
-  .select('tipo,storage_path,created_at')
-  .eq('servicio_id',service.id)
-  .in('tipo',['antes','despues'])
-  .order('created_at',{ascending:false})
- if(error)throw error
- const before=rows?.find(x=>x.tipo==='antes')
- const after=rows?.find(x=>x.tipo==='despues')
+ const rows=evidenceByService.get(String(service.id))||[]
+ const before=rows.find(x=>x.tipo==='antes')
+ const after=rows.find(x=>x.tipo==='despues')
  if(!before||!after)continue
  const checks=[]
  for(const row of [before,after]){
