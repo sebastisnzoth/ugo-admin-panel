@@ -26,7 +26,7 @@ try{
  const c=await admin.auth.admin.createUser({email:clientEmail,password,email_confirm:true,user_metadata:{nombre:'UGO Evidence Client',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
  assert.ifError((await admin.from('usuarios').upsert({id:providerId,nombre:'UGO Evidence Provider',tipo:'proveedor',activo:true,es_demo:true},{onConflict:'id'})).error)
  assert.ifError((await admin.from('usuarios').upsert({id:clientId,nombre:'UGO Evidence Client',tipo:'cliente',activo:true,es_demo:true},{onConflict:'id'})).error)
- assert.ifError((await admin.from('perfiles_proveedor').insert({usuario_id:providerId,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100,zona_radio_km:20})).error)
+ assert.ifError((await admin.from('perfiles_proveedor').upsert({usuario_id:providerId,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100,zona_radio_km:20},{onConflict:'usuario_id'})).error)
  const{data:service,error:serviceError}=await admin.from('servicios').insert({
   numero:Math.floor(Date.now()/1000),cliente_id:clientId,proveedor_id:providerId,categoria_id:category.id,estado:'llegado',
   descripcion:'UGO TEST provider evidence fresh runtime',direccion_cliente:'Rua UGO TEST Evidence 100, Florianópolis',
