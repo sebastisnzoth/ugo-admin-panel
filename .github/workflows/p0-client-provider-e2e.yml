@@ -41,8 +41,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Serialize TEST database load with the isolated RPC/RLS gate.
-  group: ugo-test-shared-provider-fixture
+  # Isolated P0 accounts must not replace pending RPC/RLS jobs in GitHub concurrency.
+  group: ugo-p0-client-provider-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 env:
