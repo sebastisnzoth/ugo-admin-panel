@@ -560,6 +560,18 @@ Se actualizó el E2E existente en PR #580 para que un pedido en modo browser naz
 - Se incorpora contrato `tests/contracts/provider-chat-client-parity.test.mjs` y prueba Chromium `scripts/provider-chat-visual-runtime.mjs` sobre CSS compilado del mismo SHA, con tamaños 320/360/390/430 px, overflow horizontal contenido en las respuestas, tap target mínimo 44 px, colores calculados, input, envío y captura de pantalla. Se ejecuta mediante el workflow Cross-role existente; sin activar servicios ni manipular datos TEST.
 - Base de trabajo `main=da5f3b0bf5a282dd3c7dc50cc7be893d3178e78f`; PR #584. Estado: corrección implementada en rama, CI/Chromium/Preview/fusión/publicación aún a validar sobre HEAD definitivo. Producción Supabase intocable.
 
+### 2026-10-25 — Admin Responsive main #40181556614: fallo Super Admin (en reparacion)
+- El run `40181556614`, SHA `f3b97ad004616a8480b2191aface42de58fb8e42`, finalizo con FAIL en `Execute responsive browser proof`, al esperar 20 s por el texto `Super Admin`; los pasos de TEST, contrato, build y Chromium anteriores aprobaron. `curl: (7)` ocurrio durante el inicio de Vite, pero el script navegador llego a ejecutar la prueba; no se prueba aun un fallo de servidor definitivo.
+- La navegacion en el Admin es localizada; se reemplaza el selector por texto traducido por `data-testid="admin-superadmin-nav"` aplicado exclusivamente al boton condicionado por `isSuperAdmin`; un usuario no autorizado NO recibe boton. La prueba sigue esperando su visibilidad real y navegacion, sin omitir Super Admin ni los siete viewports. Contrato agregado en `tests/contracts/admin-responsive-browser-bootstrap.test.mjs`.
+- **HIPOTESIS PENDIENTE DE PROBAR**: cambio de idioma/etiqueta; si el boton no aparece tras el ajuste, revisar la propagacion de rol/sesion de Supabase TEST con evidencia del navegador. No alterar RLS ni produccion. Requiere nuevo runtime success en SHA de rama, gate de merge y validacion de main.
+
+
+### 2026-10-25 — Runtime Admin #41, error Supabase Auth 522
+- Run `40182824431` sobre SHA `f99c748ecfed5ef9ddb2c00c7bd02bd5ffecbe5c`: `signInWithPassword()` fallo antes del navegador con `AuthRetryableFetchError`, status HTTP 522; los pasos de contrato y build aprobaron. `Upload immutable responsive evidence` no encontro archivos porque el script creaba los artefactos luego del inicio de sesion. No demuestra fallo del menu Super Admin en esta ejecucion.
+- Reparacion en PR #586: crear carpeta de evidencia antes de autenticar; persistir `admin-responsive-auth-diagnostic.json` con errorName/status/code/retryable/duracion/sha, sin credenciales ni tokens; mantener `assert.ifError(loginError)` para que un 522 NO sea un PASS artificial. Contrato de regresion agregado.
+- Validacion pendiente: CI en HEAD nuevo de rama y `workflow_dispatch` de Admin Responsive Runtime TEST. Si TEST Auth sigue indisponible, marcar BLOCKED por dependencia externa y comprobar salud sin modificar PROD.
+
+
 ### Continuidad 2026-10-25 — Primer fallo pendiente: sincronización del estado Cliente
 - **Base:** `main=e60231a01f3ee935c11e95dc1a70678c0800aa8b`. PR [#587](https://github.com/sebastisnzoth/ugo-admin-panel/pull/587), rama `fix/p0-client-status-stale-realtime-20261025`. No mezclar con PR #586 (Super Admin).
 - **Reproducción:** run [40241537487](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/40241537487), artefacto 12617008898: `servicios.estado=en_progreso` para un servicio TEST y lectura RLS Cliente HTTP 200, pero timeline visible `llegado/arrived` y E2E timeout; `page_errors=[]`. No se atribuye sin evidencia una causa única a Realtime.
