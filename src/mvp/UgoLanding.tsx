@@ -63,8 +63,8 @@ export function UgoLanding(){
       </div>
       <button onClick={()=>goRole('client')}>{t('landing.viewPros')} <b>→</b></button>
      </div>
-     <p className="ugo-demo-disclaimer">Prévia ilustrativa · disponibilidade e valores são confirmados no aplicativo.</p>
     </div>
+    <p className="ugo-demo-disclaimer">Prévia ilustrativa · disponibilidade e valores são confirmados no aplicativo.</p>
     <div className="ugo-float-card a" aria-hidden="true"><small>{t('landing.pro')}</small><strong>João P.</strong><span>{t('landing.verifiedShort')}</span></div>
     <div className="ugo-float-card b" aria-hidden="true"><small>{t('landing.status')}</small><strong>{t('landing.onTheWay')}</strong><span>ETA 8 min</span></div>
    </div>
