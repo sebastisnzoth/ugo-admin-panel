@@ -15,3 +15,16 @@ test('provider evidence runtime proof is fresh, UI-backed, and tied to the prote
  assert.match(runtime,/autonomous_record_uploaded_media_runtime/)
  assert.match(runtime,/productionTouched:false/)
 })
+
+test('provider evidence workflow provisions Chromium, serves built TEST UI, and gates PR evidence writes',async()=>{
+ const workflow=await read('.github/workflows/provider-evidence-runtime.yml')
+ assert.match(workflow,/npm install --no-save --package-lock=false playwright@1\.56\.1/)
+ assert.match(workflow,/npx playwright install --with-deps chromium/)
+ assert.match(workflow,/npm run preview -- --host 127\.0\.0\.1 --port 4173/)
+ assert.match(workflow,/curl -fsS "\$UGO_UI_BASE_URL\/\?app=provider"/)
+ assert.match(workflow,/github\.event\.pull_request\.head\.sha \|\| github\.sha/)
+ assert.match(workflow,/github\.event\.pull_request\.head\.repo\.full_name == github\.repository/)
+ assert.match(workflow,/persist-evidence:\s*needs: sentinel[\s\S]*?if: github\.event_name != 'pull_request'/)
+ assert.match(workflow,/https:\/\/tmossnqfwfwjrtzwcbmm\.supabase\.co/)
+ assert.doesNotMatch(workflow,/trfsjuseqjxlhrxuvdsm/)
+})
