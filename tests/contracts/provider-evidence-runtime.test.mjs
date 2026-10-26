@@ -14,6 +14,9 @@ test('provider evidence runtime proof is fresh, UI-backed, and tied to the prote
  assert.match(runtime,/service-evidence/)
  assert.match(runtime,/autonomous_record_uploaded_media_runtime/)
  assert.match(runtime,/productionTouched:false/)
+ // Auth user creation may auto-populate usuarios via database triggers.
+ assert.match(runtime,/usuarios'\)\.upsert\(\{id:providerId[\s\S]*?onConflict:'id'/)
+ assert.match(runtime,/usuarios'\)\.upsert\(\{id:clientId[\s\S]*?onConflict:'id'/)
 })
 
 test('provider evidence workflow provisions Chromium, serves built TEST UI, and gates PR evidence writes',async()=>{
