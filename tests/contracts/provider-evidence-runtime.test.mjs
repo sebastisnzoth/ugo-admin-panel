@@ -10,6 +10,7 @@ test('provider evidence runtime proof is fresh, UI-backed, and tied to the prote
  assert.match(runtime,/data-testid="auth-email"/)
  assert.match(runtime,/data-testid="auth-password"/)
  assert.match(runtime,/ugo\.locale\.guest\.provider/)
+ assert.match(runtime,/getByText\('TRABAJO ACTIVO',\{exact:true\}\)/)
  assert.match(runtime,/setInputFiles/)
  assert.match(runtime,/evidencias_servicio/)
  assert.match(runtime,/tipo.*antes/)
