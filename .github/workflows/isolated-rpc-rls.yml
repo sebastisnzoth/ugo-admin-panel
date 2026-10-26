@@ -2,6 +2,13 @@ name: UGO Isolated RPC RLS
 # Same-SHA final gate: bind isolated RLS, Core, Worker, Model Router and Sentinel validation to the same final SHA.
 
 on:
+  # Revalidate authenticated QA changes on the existing PR (same exact head SHA).
+  # Never run privileged TEST integration for untrusted fork PRs.
+  pull_request:
+    paths:
+      - '.github/workflows/isolated-rpc-rls.yml'
+      - 'scripts/autonomous-qa-auth-runtime.mjs'
+      - 'tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs'
   workflow_dispatch:
   workflow_run:
     workflows: ["UGO Core CI"]
@@ -32,7 +39,7 @@ env:
 
 jobs:
   isolated-integration:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     name: Cliente ↔ Proveedor ↔ Admin isolated RPC/RLS
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -40,7 +47,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -133,7 +140,7 @@ jobs:
       - name: GPS geofence independent QA evidence
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         env:
-          UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
         run: node scripts/autonomous-qa-gps-runtime.mjs
 
       - name: Verify autonomous department registry and persisted I/O
@@ -191,7 +198,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: super-admin-ui-runtime-${{ github.event.workflow_run.head_sha || github.sha }}
+          name: super-admin-ui-runtime-${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.sha }}
           path: |
             artifacts/super-admin-ui-runtime.*
             artifacts/ugo-empresas-runtime.png
