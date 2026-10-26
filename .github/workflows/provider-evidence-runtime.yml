@@ -3,6 +3,12 @@ name: UGO Provider Evidence Runtime TEST
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-evidence-runtime.yml'
+      - 'scripts/provider-evidence-runtime.mjs'
+      - 'tests/contracts/provider-evidence-runtime.test.mjs'
   push:
     branches: [main]
     paths:
@@ -34,12 +40,14 @@ concurrency:
 
 jobs:
   provider-evidence-runtime:
-    runs-on: ubuntu-latest
+    # TEST credentials must never run for forked pull requests.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
     environment: test
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -57,22 +65,38 @@ jobs:
         run: node --test tests/contracts/provider-evidence-panel-service.test.mjs tests/contracts/provider-evidence-recovery.test.mjs tests/contracts/provider-evidence-service-extraction.test.mjs tests/contracts/provider-evidence-state-guard.test.mjs tests/contracts/android-evidence-camera.test.mjs tests/contracts/provider-evidence-runtime.test.mjs
       - name: Build exact SHA
         env:
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
+      - name: Install browser harness
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
       - name: Execute protected Storage evidence runtime
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts
+          export UGO_UI_BASE_URL=http://127.0.0.1:4173
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/ugo-provider-evidence-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 45); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
           node scripts/provider-evidence-runtime.mjs | tee artifacts/provider-evidence-runtime.json
+      - name: Browser runtime failure diagnostics
+        if: failure()
+        run: tail -n 80 /tmp/ugo-provider-evidence-vite.log 2>/dev/null || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: provider-evidence-runtime-${{ github.sha }}
+          name: provider-evidence-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/provider-evidence-runtime.json
           if-no-files-found: error
           retention-days: 90
@@ -83,18 +107,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/download-artifact@v4
         with:
-          name: provider-evidence-runtime-${{ github.sha }}
+          name: provider-evidence-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts
       - name: Judge provider evidence
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/provider-evidence-judge.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: provider-evidence-judge-${{ github.sha }}
+          name: provider-evidence-judge-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/provider-evidence-judge.json
           if-no-files-found: error
           retention-days: 90
@@ -105,22 +129,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/download-artifact@v4
         with:
-          name: provider-evidence-runtime-${{ github.sha }}
+          name: provider-evidence-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts
       - uses: actions/download-artifact@v4
         with:
-          name: provider-evidence-judge-${{ github.sha }}
+          name: provider-evidence-judge-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts
       - name: Sentinel provider evidence
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node scripts/provider-evidence-sentinel.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: provider-evidence-sentinel-${{ github.sha }}
+          name: provider-evidence-sentinel-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/provider-evidence-sentinel.json
           if-no-files-found: error
           retention-days: 90
@@ -128,29 +152,31 @@ jobs:
 
   persist-evidence:
     needs: sentinel
+    # PR validation must never write evidence directly to main.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/download-artifact@v4
         with:
-          name: provider-evidence-runtime-${{ github.sha }}
+          name: provider-evidence-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts
       - uses: actions/download-artifact@v4
         with:
-          name: provider-evidence-judge-${{ github.sha }}
+          name: provider-evidence-judge-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts
       - uses: actions/download-artifact@v4
         with:
-          name: provider-evidence-sentinel-${{ github.sha }}
+          name: provider-evidence-sentinel-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts
       - name: Persist VERIFIED evidence and close readiness lock
         env:
-          TESTED_SHA: ${{ github.sha }}
+          TESTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           WORKFLOW_RUN_ID: ${{ github.run_id }}
           WORKFLOW_NAME: ${{ github.workflow }}
         shell: bash
