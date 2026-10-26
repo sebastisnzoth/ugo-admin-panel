@@ -4,19 +4,19 @@
   "control": "Seguimiento del profesional",
   "environment": "UGO TEST",
   "production_touched": false,
-  "runtime_validated_sha": "d6e116dd017619be9d57677f8c816896687e8bbf",
-  "workflow_run_id": 36707466051,
-  "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+  "runtime_validated_sha": "1ab70ae83d3780439c59ef4e7c663e6ad8b7b93b",
+  "workflow_run_id": 40247579342,
+  "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
   "fixture": "disposable",
   "cleanup": {
     "ok": true,
-    "mode": "deleted",
+    "mode": "cancelled",
     "error": null
   },
   "cleanup_ok": true,
   "sequence": [
     {
-      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
       "state": "asignado",
       "stage": "accepted",
       "backend_state": "asignado",
@@ -26,14 +26,14 @@
         "Asignado",
         "Aceptado",
         "En camino",
-        "Llegó",
-        "Trabajando",
+        "En el lugar",
+        "En curso",
         "Finalizado"
       ],
       "result": "PASS"
     },
     {
-      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
       "state": "en_camino",
       "stage": "route",
       "backend_state": "en_camino",
@@ -43,14 +43,14 @@
         "Asignado",
         "Aceptado",
         "En camino",
-        "Llegó",
-        "Trabajando",
+        "En el lugar",
+        "En curso",
         "Finalizado"
       ],
       "result": "PASS"
     },
     {
-      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
       "state": "llegado",
       "stage": "arrived",
       "backend_state": "llegado",
@@ -60,14 +60,14 @@
         "Asignado",
         "Aceptado",
         "En camino",
-        "Llegó",
-        "Trabajando",
+        "En el lugar",
+        "En curso",
         "Finalizado"
       ],
       "result": "PASS"
     },
     {
-      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
       "state": "en_progreso",
       "stage": "working",
       "backend_state": "en_progreso",
@@ -77,14 +77,14 @@
         "Asignado",
         "Aceptado",
         "En camino",
-        "Llegó",
-        "Trabajando",
+        "En el lugar",
+        "En curso",
         "Finalizado"
       ],
       "result": "PASS"
     },
     {
-      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
       "state": "esperando_aprobacion",
       "stage": "finished",
       "backend_state": "esperando_aprobacion",
@@ -94,14 +94,14 @@
         "Asignado",
         "Aceptado",
         "En camino",
-        "Llegó",
-        "Trabajando",
+        "En el lugar",
+        "En curso",
         "Finalizado"
       ],
       "result": "PASS"
     },
     {
-      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "service_id": "68e9b6f6-34b4-4825-855f-4b681c462596",
       "state": "completado",
       "stage": "finished",
       "backend_state": "completado",
@@ -111,8 +111,8 @@
         "Asignado",
         "Aceptado",
         "En camino",
-        "Llegó",
-        "Trabajando",
+        "En el lugar",
+        "En curso",
         "Finalizado"
       ],
       "result": "PASS"
@@ -124,5 +124,5 @@
     "Sentinel": "PASS"
   },
   "result": "PASS",
-  "verified_at": "2026-09-30T11:17:24.784Z"
+  "verified_at": "2026-10-26T00:36:11.839Z"
 }
