@@ -42,14 +42,14 @@ export function UgoLanding(){
     </div>
    </div>
 
-   <div className="ugo-hero-demo">
+   <div className="ugo-hero-demo" aria-label="Prévia ilustrativa do aplicativo">
     <div className="ugo-demo-shell">
      <div className="ugo-demo-top">
       <div><small><LocalizedText id="ugoWebRemaining.brand"/></small><strong>{t('landing.demoQuestion')}</strong></div>
       <div className="ugo-avatar">SZ</div>
      </div>
      <div className="ugo-demo-search"><span>⌕</span><b>{t('landing.demoSearch')}</b></div>
-     <div className="ugo-demo-map">
+     <div className="ugo-demo-map" role="img" aria-label="Ilustração do aplicativo UGO, não representa profissionais disponíveis em tempo real">
       <div className="road r1"/><div className="road r2"/><div className="road r3"/>
       <div className="ugo-user-dot"><i/></div>
       <div className="ugo-pro pro1"><b>JP</b><span>8 min</span></div>
@@ -58,14 +58,15 @@ export function UgoLanding(){
      </div>
      <div className="ugo-demo-sheet">
       <div className="ugo-hugo">
-       <div className="ugo-orb">H</div>
+       
        <div><small>HUGO</small><strong>{t('landing.foundPros')}</strong><span>{t('landing.arrival')}</span></div>
       </div>
       <button onClick={()=>goRole('client')}>{t('landing.viewPros')} <b>→</b></button>
      </div>
+     <p className="ugo-demo-disclaimer">Prévia ilustrativa · disponibilidade e valores são confirmados no aplicativo.</p>
     </div>
-    <div className="ugo-float-card a"><small>{t('landing.pro')}</small><strong>João P.</strong><span>{t('landing.verifiedShort')}</span></div>
-    <div className="ugo-float-card b"><small>{t('landing.status')}</small><strong>{t('landing.onTheWay')}</strong><span>ETA 8 min</span></div>
+    <div className="ugo-float-card a" aria-hidden="true"><small>{t('landing.pro')}</small><strong>João P.</strong><span>{t('landing.verifiedShort')}</span></div>
+    <div className="ugo-float-card b" aria-hidden="true"><small>{t('landing.status')}</small><strong>{t('landing.onTheWay')}</strong><span>ETA 8 min</span></div>
    </div>
   </section>
 
@@ -134,7 +135,7 @@ export function UgoLanding(){
   </section>
 
   <section className="ugo-final">
-   <div className="ugo-final-orb">H</div>
+   
    <span>{t('landing.hugoReady')}</span>
    <h2>{t('landing.tellMe')}<br/>{t('landing.ugoHandles')}</h2>
    <button onClick={()=>goRole('client')}>{t('landing.startNow')} <b>→</b></button>
