@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/isolated-rpc-rls.yml'
       - 'scripts/autonomous-qa-auth-runtime.mjs'
+      - 'scripts/autonomous-uploaded-media-runtime.mjs'
       - 'tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs'
   workflow_dispatch:
   workflow_run:

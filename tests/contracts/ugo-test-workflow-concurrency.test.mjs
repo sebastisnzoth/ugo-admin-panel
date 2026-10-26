@@ -45,3 +45,11 @@ test('isolated RPC gate shares the TEST fixture concurrency group without timing
  assert.match(worker,/cancel-in-progress: false/)
  assert.doesNotMatch(isolated,/sleep 90/)
 })
+
+
+test('P0 browser journey and isolated RPC/RLS gate share the TEST concurrency lease',()=>{
+ const p0=fs.readFileSync('.github/workflows/p0-client-provider-e2e.yml','utf8')
+ assert.match(p0,/group: ugo-test-shared-provider-fixture/)
+ assert.match(p0,/cancel-in-progress: false/)
+ assert.match(isolated,/pull_request:[\s\S]*?scripts\/autonomous-uploaded-media-runtime\.mjs/)
+})

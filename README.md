@@ -139,3 +139,4 @@ Un cambio no está DONE sólo porque compile, exista un PR o un workflow haya co
 UGO sigue en fase de integración y cierre de P0. Los principales frentes de producto deben verificarse con evidencia real: GPS proveedor, matching/alertas, lifecycle Cliente-Proveedor, notificaciones, pagos/deuda, evidencias, ratings y operación Admin.
 
 No usar este README como prueba de readiness; la fuente de verdad es el estado actual del repositorio, CI y runtime.
+# Test skip

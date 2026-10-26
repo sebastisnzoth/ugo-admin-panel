@@ -37,3 +37,9 @@ test('P0 real TEST journey executes after matching/provider/client changes reach
  assert.match(workflow,/concurrency:[\s\S]*?cancel-in-progress: false/)
  assert.match(workflow,/name: Upload P0 evidence[\s\S]*?if: always\(\)/)
 })
+
+
+test('private-media PR changes re-run the real P0 browser proof, only for trusted PRs',()=>{
+ assert.match(workflow,/pull_request:[\s\S]*?scripts\/autonomous-uploaded-media-runtime\.mjs/)
+ assert.match(workflow,/if: \$\{\{ github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.full_name == github\.repository \}\}/)
+})
