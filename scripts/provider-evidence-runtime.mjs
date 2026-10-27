@@ -73,7 +73,17 @@ try{
  
  // Upload second evidence (despues)
  await evidenceInput.setInputFiles({name:'evidence-after.png',mimeType:'image/png',buffer:fixture})
- await page.waitForTimeout(1000)
+ 
+ // Wait for service to complete (onUploaded calls d.completeService())
+ await page.waitForTimeout(3000)
+ await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:15000})
+ 
+ // Verify service reached completado state via DB
+ for(let attempt=1; attempt<=30; attempt++){
+   const{data:svc}=await admin.from('servicios').select('estado').eq('id',serviceId).single()
+   if(svc?.estado==='completado')break
+   await new Promise(r=>setTimeout(r,1000))
+ }
  
  const{data:final,error:finalError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','despues')
  assert.ifError(finalError);assert.equal(final?.length,1,'FINAL_EVIDENCE_COUNT_INVALID');paths.push(final[0].storage_path)
