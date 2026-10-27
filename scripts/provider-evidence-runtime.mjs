@@ -28,7 +28,7 @@ async function diagnosePage(page, context) {
     await page.screenshot({path:`artifacts/diagnose-${context}.png`,fullPage:true})
     const buttons = await page.locator('button').allTextContents()
     const headings = await page.locator('h1,h2,h3,h4,h5,h6').allTextContents()
-    const texts = await page.locator('text=/trabajo|active|job/i').allTextContents()
+    const texts = await page.locator('text=/trabajo|active|job|continuar/i').allTextContents()
     console.log(`DIAGNOSE ${context}: buttons=${JSON.stringify(buttons.slice(0,20))}`)
     console.log(`DIAGNOSE ${context}: headings=${JSON.stringify(headings.slice(0,20))}`)
     console.log(`DIAGNOSE ${context}: texts=${JSON.stringify(texts.slice(0,20))}`)
@@ -71,14 +71,15 @@ try{
  // DIAGNOSE: log what buttons/headings exist before clicking
  await diagnosePage(page, 'before-active-job-click')
  
- const activeJobBtn = page.getByRole('button',{name:/Trabajo activo:/}).first()
+ // The nav shows "Trabajo activo" as a tab, the actual action button is "Continuar trabajo"
+ const continuarBtn = page.getByRole('button',{name:/Continuar trabajo/i}).first()
  try {
-   await activeJobBtn.waitFor({state:'visible',timeout:15000})
-   await activeJobBtn.click()
+   await continuarBtn.waitFor({state:'visible',timeout:15000})
+   await continuarBtn.click()
  } catch (e) {
-   // Try alternative locators
+   // Try alternative: button with text "Continuar trabajo"
    console.log('Primary locator failed, trying alternatives...')
-   const altBtn = page.locator('button:has-text("Trabajo")').first()
+   const altBtn = page.locator('button:has-text("Continuar trabajo")').first()
    try {
      await altBtn.waitFor({state:'visible',timeout:5000})
      await altBtn.click()
