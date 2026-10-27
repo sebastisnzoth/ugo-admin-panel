@@ -111,17 +111,46 @@ try{
 
  // After "Ya llegaste al lugar" / "Llegaste al lugar", click "EMPEZAR TRABAJO" to start the job
  await diagnosePage(page, 'before-empezar-click')
- const empezarBtn = page.getByRole('button',{name:/EMPEZAR TRABAJO/i}).first()
- try {
-   await empezarBtn.waitFor({state:'visible',timeout:15000})
-   await empezarBtn.click()
- } catch (e) {
-   console.log('EMPEZAR TRABAJO button not found, trying alternatives...')
-   const altBtn = page.locator('button:has-text("EMPEZAR")').first()
-   await altBtn.waitFor({state:'visible',timeout:5000})
-   await altBtn.click()
+ 
+ // Try multiple locator strategies for EMPEZAR TRABAJO
+ let empezarClicked = false
+ const empezarLocators = [
+   page.getByRole('button',{name:/EMPEZAR TRABAJO/i}).first(),
+   page.getByText('EMPEZAR TRABAJO', {exact:true}).first(),
+   page.locator('button:has-text("EMPEZAR TRABAJO")').first(),
+   page.locator('a:has-text("EMPEZAR TRABAJO")').first(),
+ ]
+ 
+ for (const locator of empezarLocators) {
+   try {
+     await locator.waitFor({state:'visible',timeout:5000})
+     await locator.click()
+     empezarClicked = true
+     console.log('EMPEZAR TRABAJO clicked successfully')
+     break
+   } catch (e) {
+     // try next locator
+   }
  }
+ if (!empezarClicked) {
+   await diagnosePage(page, 'empezar-click-failed')
+   throw new Error('Could not click EMPEZAR TRABAJO button')
+ }
+ 
+ // Wait for UI transition
+ await page.waitForTimeout(3000)
  await diagnosePage(page, 'after-empezar-click')
+ 
+ // Verify the click worked by checking for new content
+ const evidenceHeading = page.getByRole('heading',{name:/Resolvé el problema/i}).first()
+ try {
+   await evidenceHeading.waitFor({state:'visible',timeout:10000})
+ } catch (e) {
+   console.log('Resolvé el problema heading not found, checking for other evidence UI...')
+   // The evidence upload might be on the same screen - check for file input
+   const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
+   await fileInput.waitFor({state:'visible',timeout:10000})
+ }
 
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
