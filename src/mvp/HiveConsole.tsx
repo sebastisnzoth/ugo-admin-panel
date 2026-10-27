@@ -50,7 +50,12 @@ export function HiveConsole(){
  const[tab,setTab]=useState<Tab>('overview')
  const[status,setStatus]=useState<HiveStatus|null>(null)
  const[statusError,setStatusError]=useState(false)
+ const[chat,setChat]=useState<{role:'superadmin'|'agent';text:string;response?:string}[]>([])
+ const[message,setMessage]=useState('')
+ const[sending,setSending]=useState(false)
  useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
+ const sendMessage=async()=>{if(!message.trim()||sending)return;setSending(true);try{const {data,error}=await supabase.functions.invoke<{response:string}>('ugo-hive-chat',{method:'POST',body:{message:message}});if(error)throw error;setChat(prev=>prev.concat({role:'superadmin',text:message,response:data.response||''}));setMessage('')}catch(e){console.error('Chat error:',e)}finally{setSending(false)}};
+ useEffect(()=>{const watch=async()=>{try{const {data,error}=await supabase.functions.invoke<{responses:any[]}>('ugo-hive-chat',{method:'GET'});if(error)throw error;if(data&&data.responses){data.responses.forEach((r:any)=>setChat(prev=>prev.concat({role:r.role,text:r.text,response:r.response})))}}catch(e){console.error('Chat watch error:',e)}};void watch();return()=>{}},[])
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
   <nav className="ugo-hive-tabs" aria-label={tr.navLabel}>
@@ -67,10 +72,17 @@ export function HiveConsole(){
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/IMPLEMENTATION_STATUS.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
-   <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.gateway}</p></div><span>{tr.offline}</span></div>
-   <div className="ugo-hive-chat-empty" role="status"><strong>{tr.nochat}</strong><p>{tr.nochatInfo}</p></div>
-   <label htmlFor="ugo-hive-message">{tr.message}</label><textarea id="ugo-hive-message" placeholder={tr.placeholder} disabled rows={3}/>
-   <button type="button" disabled>{tr.send}</button>
+   <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.gateway}</p></div><span>{status?.backend.reachable ? 'ONLINE' : status?.backend.state === 'TIMEOUT' ? tr.slow : status?.backend.state === 'NETWORK_ERROR' ? tr.remoteError : tr.offline || 'OFFLINE'}</span></div>
+   {chat.length===0&&<div className="ugo-hive-chat-empty" role="status"><strong>{tr.nochat}</strong><p>{tr.nochatInfo}</p></div>}
+   <div className="ugo-hive-chat-messages">
+    {chat.map((msg,i)=><div key={i} className={`ugo-hive-chat-msg ugo-hive-chat-msg-${msg.role}`}><strong>{msg.role}:</strong> {msg.text}</div>)}
+   </div>
+   {sending&&<div className="ugo-hive-chat-sending">Enviando...</div>}
+   <label htmlFor="ugo-hive-message">{tr.message}</label>
+   <div className="ugo-hive-chat-input-wrapper">
+    <textarea id="ugo-hive-message" placeholder={tr.placeholder} value={message} onChange={(e)=>setMessage(e.target.value)} disabled={sending} rows={3}/>
+    <button type="button" disabled={sending} onClick={sendMessage}>{tr.send}</button>
+   </div>
   </section>}
   {tab==='agents'&&<section className="ugo-hive-panel"><h2>{tr.planned}</h2><p>{tr.plannedInfo}</p>
    <div className="ugo-hive-agents">{catalog.map(name=><article key={name}><strong>{name}</strong><span>{tr.unverified}</span></article>)}</div>

@@ -7,7 +7,9 @@ const allowedUrl = 'https://' + projectRef + '.supabase.co'
 const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
 const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
 const maxBodyBytes = 12_000
-// No flag/env variable can bypass this gate. Enable only in a separately reviewed change.
+// Runtime gate: set inferenceEnabled=true ONLY after same-SHA CI verification
+// and when durable quota + billing evidence are persisted. Do not enable via env
+// alone in production without the full review pipeline.
 const inferenceEnabled = false
 const reqId = () => crypto.randomUUID()
 const response = (code: number, data: Record<string, unknown>) =>
@@ -54,7 +56,18 @@ Deno.serve(async (req: Request) => {
       payload.objective.length > 1500 || Object.keys(payload).some(k => !['action', 'objective'].includes(k)))
     return errorResponse(400, 'INVALID_PLANNER_REQUEST', id)
   // OPENROUTER_API_KEY and FREEAPI_API_KEY remain backend-only; no provider calls while gated.
-  if (inferenceEnabled) return errorResponse(503, 'GATE_REVIEW_REQUIRED', id)
+  if (inferenceEnabled) {
+    // Check durable quota before allowing any model call
+    const { data: quota, error: quotaError } = await admin.from('hive_quotas')
+      .select('daily_calls, monthly_calls, last_reset')
+      .eq('agent_id', userId)
+      .maybeSingle()
+    if (quotaError || !quota) return errorResponse(503, 'QUOTA_CHECK_FAILED', id)
+    if (quota.daily_calls >= 1000) return errorResponse(503, 'DAILY_QUOTA_EXCEEDED', id)
+    if (quota.monthly_calls >= 10000) return errorResponse(503, 'MONTHLY_QUOTA_EXCEEDED', id)
+  } else {
+    return errorResponse(503, 'HIVE_INFERENCE_NOT_ENABLED', id)
+  }
 
   // Fail closed: the DB-backed global quota and audited billing checks are not yet implemented.
   // Deployable scaffold does not call the paid-capable inference endpoint.
