@@ -610,3 +610,9 @@ Se actualizó el E2E existente en PR #580 para que un pedido en modo browser naz
 - Preview de Vercel READY: https://ugo-admin-panel-mz78yn487-sebastisnzoths-projects.vercel.app; revisión visual basada en captura aportada por usuario.
 - PR #591 para respetar los gates de CI; el primer error `UGO Roadmap Traceability` detectó que se debían actualizar roadmap y continuidad en la misma PR. Este registro satisface trazabilidad, no certifica runtime ni pruebas humanas.
 - No tocar producción/Supabase; comprobar CI sobre último SHA y smoke post-merge antes de declarar cierre.
+
+
+### 26/10/2026 — Continuidad: scroll bloqueado en landing móvil
+- Reporte tras merge PR #591: landing no desplaza hacia abajo en celulares. Causa localizada en `mobile-runtime-fixes.css` (bloqueo global de `html,body,#root` para <=760px).
+- Rama `fix/landing-mobile-scroll-20261026`: override acotado a la landing `:has(.ugo-landing)` para scroll natural; no relajar el bloqueo de las shells transaccionales.
+- Requerido: CI, preview TEST, comprobar scroll táctil a 320/360/390/430px, integrar y confirmar producción sobre SHA verificado; si faltan pruebas, marcar HUMAN_REQUIRED.
