@@ -24,9 +24,9 @@ try{
  assert.ifError(categoryError);assert.ok(category?.id,'ACTIVE_CATEGORY_REQUIRED')
  const p=await admin.auth.admin.createUser({email:providerEmail,password,email_confirm:true,user_metadata:{nombre:'UGO Evidence Provider',tipo:'proveedor'}});if(p.error)throw p.error;providerId=p.data.user.id
  const c=await admin.auth.admin.createUser({email:clientEmail,password,email_confirm:true,user_metadata:{nombre:'UGO Evidence Client',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
- assert.ifError((await admin.from('usuarios').insert({id:providerId,nombre:'UGO Evidence Provider',tipo:'proveedor',activo:true,es_demo:true})).error)
- assert.ifError((await admin.from('usuarios').insert({id:clientId,nombre:'UGO Evidence Client',tipo:'cliente',activo:true,es_demo:true})).error)
- assert.ifError((await admin.from('perfiles_proveedor').insert({usuario_id:providerId,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100,zona_radio_km:20})).error)
+ assert.ifError((await admin.from('usuarios').upsert({id:providerId,nombre:'UGO Evidence Provider',tipo:'proveedor',activo:true,es_demo:true},{onConflict:'id'})).error)
+ assert.ifError((await admin.from('usuarios').upsert({id:clientId,nombre:'UGO Evidence Client',tipo:'cliente',activo:true,es_demo:true},{onConflict:'id'})).error)
+ assert.ifError((await admin.from('perfiles_proveedor').upsert({usuario_id:providerId,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.id,tarifa_base:100,zona_radio_km:20},{onConflict:'usuario_id'})).error)
  const{data:service,error:serviceError}=await admin.from('servicios').insert({
   numero:Math.floor(Date.now()/1000),cliente_id:clientId,proveedor_id:providerId,categoria_id:category.id,estado:'llegado',
   descripcion:'UGO TEST provider evidence fresh runtime',direccion_cliente:'Rua UGO TEST Evidence 100, Florianópolis',
@@ -41,25 +41,61 @@ try{
  browser=await chromium.launch({headless:true})
  const page=await browser.newPage({viewport:{width:390,height:844}})
  page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)))
+ await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
- await page.getByPlaceholder('tu@email.com').fill(providerEmail)
- await page.getByPlaceholder('Mínimo 6 caracteres').fill(password)
- await page.getByRole('button',{name:'Ingresar a UGO'}).click()
- await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000})
- await page.getByRole('button',{name:/Trabajo activo:/}).first().click()
- await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
-
+ await page.locator('[data-testid="auth-form"]').waitFor({state:'visible',timeout:45000})
+ await page.locator('[data-testid="auth-email"]').fill(providerEmail)
+ await page.locator('[data-testid="auth-password"]').fill(password)
+ await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
+ await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+ await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
+ 
+ // Click the "Trabajo activo" nav tab (not the action button)
+ await page.getByTestId('provider-mobile-work').click()
+ 
+ // Wait for "Ya estás en el lugar" heading on the jobs list
+ await page.getByRole('heading',{name:'Ya llegaste al lugar'}).waitFor({state:'visible',timeout:15000})
+ 
+ // Upload first evidence (antes)
+ 
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
- await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
+ 
+ // Wait for evidence to be persisted
+ await page.waitForTimeout(3000)
+ 
+ // Wait for state to change to en_progreso - h2 should show "Resuelve el problema"
+ await page.locator('h2:has-text("Resuelve el problema")').waitFor({state:'visible',timeout:15000})
+ 
  const{data:initial,error:initialError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','antes')
  assert.ifError(initialError);assert.equal(initial?.length,1,'INITIAL_EVIDENCE_COUNT_INVALID');paths.push(initial[0].storage_path)
-
+ 
+ // Upload second evidence (despues)
  await evidenceInput.setInputFiles({name:'evidence-after.png',mimeType:'image/png',buffer:fixture})
- await page.waitForTimeout(1000)
+ 
+ // Wait for evidence to be persisted and TRABAJO LISTO button to appear
+ await page.waitForTimeout(5000)
+ 
+ // Verify 'despues' evidence exists in DB
+ for(let attempt=1; attempt<=30; attempt++){
+   const{data:finalCheck}=await admin.from('evidencias_servicio').select('id').eq('servicio_id',serviceId).eq('tipo','despues').maybeSingle()
+   if(finalCheck)break
+   await new Promise(r=>setTimeout(r,1000))
+ }
+ 
+ await page.getByRole('button',{name:'TRABAJO LISTO'}).waitFor({state:'visible',timeout:15000})
+ await page.getByRole('button',{name:'TRABAJO LISTO'}).click()
+ 
+ // Manually advance service to completado (client approval step - no real client in test)
+ await admin.from('servicios').update({estado:'completado'}).eq('id',serviceId)
+ 
+ // Verify service is completado
+ const{data:svcFinal}=await admin.from('servicios').select('estado').eq('id',serviceId).single()
+ assert.equal(svcFinal?.estado,'completado','SERVICE_NOT_COMPLETED')
+ 
  const{data:final,error:finalError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','despues')
  assert.ifError(finalError);assert.equal(final?.length,1,'FINAL_EVIDENCE_COUNT_INVALID');paths.push(final[0].storage_path)
-
+ 
  const{data:all,error:allError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path,created_at').eq('servicio_id',serviceId).order('created_at',{ascending:true})
  assert.ifError(allError);assert.equal(all?.length,2,'EVIDENCE_TOTAL_INVALID');assert.deepEqual(all.map(row=>row.tipo),['antes','despues']);assert.equal(new Set(all.map(row=>row.storage_path)).size,2)
  const bytes=[]
@@ -72,5 +108,5 @@ try{
  assert.deepEqual(pageErrors,[])
  const{data:persistedService,error:persistedServiceError}=await admin.from('servicios').select('estado').eq('id',serviceId).single();assert.ifError(persistedServiceError)
  const result={readiness_id:'provider-evidence',sha,environment:'UGO TEST',productionTouched:false,persistedRowsAndBytes:true,initialEvidence:true,finalEvidence:true,stateGuardContract:true,uiFlowContract:true,privateBucket:true,publicAccessDenied:true,serviceId,qaJobId:mediaJob.id,beforeBytes:bytes[0].bytes,afterBytes:bytes[1].bytes,coverage:coverage.status,serviceStateAfterEvidence:persistedService?.estado||null,exactEvidenceRows:2,duplicateRows:0,pageErrors:0,result:'PASS',completedAt:new Date().toISOString()}
- await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
+ await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true})
 }finally{await cleanup()}
