@@ -1,4 +1,4 @@
-import React from'react'
+import React,{useState} from'react'
 import{useLocale,LocalizedText}from'../i18n/locale'
 import'./ugo-landing.css'
 
@@ -9,7 +9,10 @@ const jump=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'s
 
 export function UgoLanding(){
  const{t}=useLocale()
- const services=[['svcCleaning','svcCleaningCopy'],['svcElectricity','svcElectricityCopy'],['svcPlumbing','svcPlumbingCopy'],['svcRepairs','svcRepairsCopy'],['svcAssembly','svcAssemblyCopy'],['svcMore','svcMoreCopy']] as const
+ const [serviceQuery,setServiceQuery]=useState('')
+ const [serviceRegion,setServiceRegion]=useState('Florianópolis, SC')
+ const searchService=(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();try{sessionStorage.setItem('ugo_landing_service_intent',JSON.stringify({service:serviceQuery.trim(),region:serviceRegion.trim()}))}catch{}goRole('client')}
+ const services=[['Faxina','Ambientes mais limpos e organizados.','https://images.pexels.com/photos/7513163/pexels-photo-7513163.jpeg?auto=compress&cs=tinysrgb&w=700'],['Marido de aluguel','Pequenos reparos, grandes soluções.','https://images.pexels.com/photos/7285918/pexels-photo-7285918.jpeg?auto=compress&cs=tinysrgb&w=700'],['Ar-condicionado','Instalação e manutenção com cuidado.','https://images.pexels.com/photos/33958627/pexels-photo-33958627.jpeg?auto=compress&cs=tinysrgb&w=700'],['Jardinagem','Seu jardim sempre bem cuidado.','https://images.pexels.com/photos/24595771/pexels-photo-24595771.jpeg?auto=compress&cs=tinysrgb&w=700']] as const
  return <main className="ugo-landing">
   <header className="ugo-nav">
    <button className="ugo-logo" onClick={()=>window.scrollTo({top:0,behavior:'smooth'})}>U.GO</button>
@@ -25,12 +28,19 @@ export function UgoLanding(){
   </header>
 
   <section className="ugo-hero">
+   <div className="ugo-reference-photo" aria-hidden="true"/>
    <div className="ugo-hero-glow one"/>
    <div className="ugo-hero-glow two"/>
    <div className="ugo-hero-copy">
-    <div className="ugo-live-pill"><i/> {t('landing.live')}</div>
-    <h1>{t('landing.headline1')}<br/><span>{t('landing.headline2')}</span><br/>{t('landing.headline3')}</h1>
-    <p>{t('landing.intro')}</p>
+    <div className="ugo-live-pill">UGO · Serviços a domicílio em Florianópolis</div>
+    <h1>Um pedido.<br/>Um profissional.<br/><span>Sem complicação.</span></h1>
+    <p>Encontre profissionais para cuidar da sua casa em Florianópolis. Faça seu pedido pelo aplicativo UGO.</p>
+    <form className="ugo-reference-search" onSubmit={searchService} role="search">
+      <label><span>Qual serviço você precisa?</span><input type="search" value={serviceQuery} onChange={e=>setServiceQuery(e.target.value)} placeholder="Ex.: Faxina, marido de aluguel" list="ugo-service-choices"/></label>
+      <datalist id="ugo-service-choices"><option value="Faxina"/><option value="Marido de aluguel"/><option value="Ar-condicionado"/><option value="Jardinagem"/></datalist>
+      <label><span>Sua região</span><input value={serviceRegion} onChange={e=>setServiceRegion(e.target.value)} placeholder="Florianópolis, SC"/></label>
+      <button type="submit">Encontrar profissional →</button>
+    </form>
     <div className="ugo-hero-actions">
      <button className="ugo-cta primary" onClick={()=>goRole('client')}>{t('landing.findPro')} <b>→</b></button>
      <button className="ugo-cta secondary" onClick={()=>goRole('provider')}>{t('landing.iAmPro')}</button>
@@ -77,13 +87,13 @@ export function UgoLanding(){
   <section className="ugo-services" id="servicios">
    <div className="ugo-section-kicker">{t('landing.nearbyServices')}</div>
    <div className="ugo-section-title">
-    <h2>{t('landing.everything')}<br/><span>{t('landing.saveTime')}</span></h2>
-    <p>{t('landing.serviceIntro')}</p>
+    <h2>Serviços mais buscados</h2>
+    <p>Encontre o serviço certo para a sua casa em Florianópolis.</p>
    </div>
    <div className="ugo-services-grid">
-    {services.map(([title,copy],i)=><button key={title} className={"ugo-service-card card-"+(i+1)} onClick={()=>goRole('client')}>
-     <span className="ugo-service-index">0{i+1}</span>
-     <div><h3>{t('landing.'+title)}</h3><p>{t('landing.'+copy)}</p></div>
+    {services.map(([title,copy,photo],i)=><button key={title} className={"ugo-service-card card-"+(i+1)} onClick={()=>goRole('client')}>
+     <img className="ugo-service-photo" src={photo} alt="" loading="lazy"/><span className="ugo-service-index">0{i+1}</span>
+     <div><h3>{title}</h3><p>{copy}</p></div>
      <b>↗</b>
     </button>)}
    </div>
