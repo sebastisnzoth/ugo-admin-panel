@@ -162,3 +162,13 @@
  .ugo-reference-search input{font-size:13px}
  .ugo-section-title h2{font-size:34px}
 }
+
+/* Public landing scroll: the operational mobile shell locks document scrolling.
+   Restore native page scrolling only while the public landing is mounted. */
+.ugo-landing{overflow:visible;overflow-x:clip;min-height:100svh;touch-action:pan-y}
+@media(max-width:760px){
+ html:has(.ugo-landing),body:has(.ugo-landing),#root:has(.ugo-landing){height:auto!important;min-height:100%!important;max-height:none!important;overflow-y:auto!important;overflow-x:clip!important;overscroll-behavior-y:auto!important}
+ body:has(.ugo-landing){position:static!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch}
+ #root:has(.ugo-landing){display:block;min-height:100svh!important}
+ .ugo-landing{height:auto!important;max-height:none!important;overflow-y:visible!important;overflow-x:clip!important;-webkit-overflow-scrolling:touch}
+}
