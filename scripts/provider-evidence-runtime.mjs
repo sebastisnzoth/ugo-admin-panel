@@ -54,7 +54,7 @@ try{
  await page.getByTestId('provider-mobile-work').click()
  
  // Wait for "Ya estás en el lugar" heading on the jobs list
- await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
+ await page.getByRole('heading',{name:'Ya llegaste al lugar'}).waitFor({state:'visible',timeout:15000})
  
  // Upload first evidence (antes)
  console.log('Uploading first evidence...')
