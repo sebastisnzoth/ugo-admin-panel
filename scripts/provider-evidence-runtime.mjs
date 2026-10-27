@@ -109,6 +109,20 @@ try{
    throw new Error('No expected heading found after clicking Continuar trabajo')
  }
 
+ // After "Ya llegaste al lugar" / "Llegaste al lugar", click "EMPEZAR TRABAJO" to start the job
+ await diagnosePage(page, 'before-empezar-click')
+ const empezarBtn = page.getByRole('button',{name:/EMPEZAR TRABAJO/i}).first()
+ try {
+   await empezarBtn.waitFor({state:'visible',timeout:15000})
+   await empezarBtn.click()
+ } catch (e) {
+   console.log('EMPEZAR TRABAJO button not found, trying alternatives...')
+   const altBtn = page.locator('button:has-text("EMPEZAR")').first()
+   await altBtn.waitFor({state:'visible',timeout:5000})
+   await altBtn.click()
+ }
+ await diagnosePage(page, 'after-empezar-click')
+
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
  await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
