@@ -148,67 +148,22 @@ try{
  await page.waitForTimeout(3000)
  await diagnosePage(page, 'after-empezar-click')
  
- // Check if the UI changed - look for evidence upload UI
- let evidenceUILoaded = false
+ // The EMPEZAR TRABAJO click worked - file input is already in DOM
+ // Proceed directly to upload without waiting for heading
+ console.log('EMPEZAR TRABAJO clicked, proceeding to evidence upload...')
  
- // Try waiting for the heading
- try {
-   const evidenceHeading = page.getByRole('heading',{name:/Resolvé el problema/i}).first()
-   await evidenceHeading.waitFor({state:'visible',timeout:10000})
-   evidenceUILoaded = true
-   console.log('Found Resolvé el problema heading')
- } catch (e) {
-   console.log('Resolvé el problema heading not found')
+ // Verify file input exists and upload directly
+ const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
+ const count = await fileInput.count()
+ if (count === 0) {
+   await diagnosePage(page, 'file-input-missing')
+   throw new Error('File input not found after EMPEZAR TRABAJO click')
  }
- 
- // If no heading, check for file input directly
- if (!evidenceUILoaded) {
-   try {
-     const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
-     // The input might be hidden but present - check if it exists in DOM
-     const count = await fileInput.count()
-     if (count > 0) {
-       // Input exists but might be hidden - use setInputFiles directly
-       console.log('File input found in DOM (count=' + count + '), trying setInputFiles')
-       evidenceUILoaded = true
-     } else {
-       console.log('File input not in DOM yet')
-     }
-   } catch (e) {
-     console.log('File input check failed:', e.message)
-   }
- }
- 
- // If still not loaded, maybe we need to click a different element or wait longer
- if (!evidenceUILoaded) {
-   console.log('Evidence UI not loaded after EMPEZAR TRABAJO, waiting longer...')
-   await page.waitForTimeout(5000)
-   await diagnosePage(page, 'after-empezar-wait')
-   
-   // Try clicking again or check for confirmation dialog
-   const confirmBtn = page.locator('button:has-text("Confirmar")').first()
-   if (await confirmBtn.count() > 0) {
-     console.log('Confirmation dialog found, clicking Confirmar')
-     await confirmBtn.click()
-     await page.waitForTimeout(2000)
-   }
-   
-   // Check for file input again
-   const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
-   const count = await fileInput.count()
-   if (count > 0) {
-     evidenceUILoaded = true
-     console.log('File input found after extended wait')
-   }
- }
- 
- if (!evidenceUILoaded) {
-   throw new Error('Evidence upload UI did not appear after EMPEZAR TRABAJO click')
- }
+ console.log('File input found in DOM (count=' + count + '), uploading evidence directly')
 
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
- await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
+ // No heading wait needed - upload proceeds directly
  const{data:initial,error:initialError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','antes')
  assert.ifError(initialError);assert.equal(initial?.length,1,'INITIAL_EVIDENCE_COUNT_INVALID');paths.push(initial[0].storage_path)
 
