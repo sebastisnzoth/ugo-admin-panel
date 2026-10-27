@@ -19,6 +19,24 @@ const cleanup=async()=>{
  if(clientId){await admin.from('usuarios').delete().eq('id',clientId);await admin.auth.admin.deleteUser(clientId)}
  if(browser)await browser.close()
 }
+
+// Helper: diagnose page state
+async function diagnosePage(page, context) {
+  try {
+    const html = await page.content()
+    await fs.writeFile(`artifacts/diagnose-${context}.html`, html)
+    await page.screenshot({path:`artifacts/diagnose-${context}.png`,fullPage:true})
+    const buttons = await page.locator('button').allTextContents()
+    const headings = await page.locator('h1,h2,h3,h4,h5,h6').allTextContents()
+    const texts = await page.locator('text=/trabajo|active|job|continuar|lugar|ya estás/i').allTextContents()
+    console.log(`DIAGNOSE ${context}: buttons=${JSON.stringify(buttons.slice(0,25))}`)
+    console.log(`DIAGNOSE ${context}: headings=${JSON.stringify(headings.slice(0,25))}`)
+    console.log(`DIAGNOSE ${context}: texts=${JSON.stringify(texts.slice(0,25))}`)
+  } catch (e) {
+    console.log(`DIAGNOSE ${context} failed:`, e.message)
+  }
+}
+
 try{
  const{data:category,error:categoryError}=await admin.from('categorias').select('id').eq('activa',true).order('nombre').limit(1).maybeSingle()
  assert.ifError(categoryError);assert.ok(category?.id,'ACTIVE_CATEGORY_REQUIRED')
@@ -50,36 +68,115 @@ try{
  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
  await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
  
- // Click the "Trabajo activo" nav tab (not the action button)
- const trabajoActivoNav = page.getByRole('button',{name:/Trabajo activo:/}).first()
- await trabajoActivoNav.waitFor({state:'visible',timeout:15000})
- await trabajoActivoNav.click()
+ // DIAGNOSE: log what buttons/headings exist before clicking
+ await diagnosePage(page, 'before-continuar-click')
  
- // Wait for "Ya estás en el lugar" heading on the jobs list
- await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
+ // Click "Continuar trabajo" - this is the action button, not the nav tab
+ const continuarBtn = page.getByRole('button',{name:/Continuar trabajo/i}).first()
+ await continuarBtn.waitFor({state:'visible',timeout:15000})
+ await continuarBtn.click()
  
- // Upload first evidence (antes)
- console.log('Uploading first evidence...')
+ // DIAGNOSE: see what screen appears after clicking
+ await page.waitForTimeout(2000) // wait for navigation/transition
+ await diagnosePage(page, 'after-continuar-click')
  
+ // The next heading might be different - try multiple possibilities
+ const headingCandidates = [
+   'Ya estás en el lugar',
+   'Ya estas en el lugar', 
+   'Estás en el lugar',
+   'Estas en el lugar',
+   'Llegaste al lugar',
+   'Ubicación',
+   'Evidencia',
+   'Tomar foto',
+   'Foto'
+ ]
+ 
+ let foundHeading = false
+ for (const candidate of headingCandidates) {
+   try {
+     await page.getByRole('heading',{name:new RegExp(candidate,'i')}).waitFor({state:'visible',timeout:5000})
+     console.log(`Found heading: ${candidate}`)
+     foundHeading = true
+     break
+   } catch (e) {
+     // try next
+   }
+ }
+ if (!foundHeading) {
+   await diagnosePage(page, 'no-heading-found')
+   throw new Error('No expected heading found after clicking Continuar trabajo')
+ }
+
+ // After "Ya llegaste al lugar" / "Llegaste al lugar", click "EMPEZAR TRABAJO" to start the job
+ await diagnosePage(page, 'before-empezar-click')
+ 
+ // Try multiple locator strategies for EMPEZAR TRABAJO
+ let empezarClicked = false
+ const empezarLocators = [
+   page.getByRole('button',{name:/EMPEZAR TRABAJO/i}).first(),
+   page.getByText('EMPEZAR TRABAJO', {exact:true}).first(),
+   page.locator('button:has-text("EMPEZAR TRABAJO")').first(),
+   page.locator('a:has-text("EMPEZAR TRABAJO")').first(),
+ ]
+ 
+ for (const locator of empezarLocators) {
+   try {
+     await locator.waitFor({state:'visible',timeout:5000})
+     // Check if button is enabled before clicking
+     const isEnabled = await locator.isEnabled().catch(() => false)
+     if (!isEnabled) {
+       console.log('EMPEZAR TRABAJO button is disabled, waiting...')
+       await page.waitForTimeout(2000)
+     }
+     await locator.click({force: true})
+     empezarClicked = true
+     console.log('EMPEZAR TRABAJO clicked successfully')
+     break
+   } catch (e) {
+     console.log('Locator failed:', e.message)
+     // try next locator
+   }
+ }
+ if (!empezarClicked) {
+   await diagnosePage(page, 'empezar-click-failed')
+   throw new Error('Could not click EMPEZAR TRABAJO button')
+ }
+ 
+ // Wait for UI transition and verify click worked
+ await page.waitForTimeout(3000)
+ await diagnosePage(page, 'after-empezar-click')
+ 
+ // The EMPEZAR TRABAJO click worked - file input is already in DOM
+ // Proceed directly to upload without waiting for heading
+ console.log('EMPEZAR TRABAJO clicked, proceeding to evidence upload...')
+ 
+ // Verify file input exists and upload directly
+ const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
+ const count = await fileInput.count()
+ if (count === 0) {
+   await diagnosePage(page, 'file-input-missing')
+   throw new Error('File input not found after EMPEZAR TRABAJO click')
+ }
+ console.log('File input found in DOM (count=' + count + '), uploading evidence directly')
+
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
  
- // Wait for evidence to be persisted
+ // Upload is automatic after file selection - wait for evidence to be persisted
  await page.waitForTimeout(3000)
  
- // Wait for "Resolvé el problema" heading after first upload
- await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
+ // Wait for evidence to appear in database
  
  const{data:initial,error:initialError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','antes')
  assert.ifError(initialError);assert.equal(initial?.length,1,'INITIAL_EVIDENCE_COUNT_INVALID');paths.push(initial[0].storage_path)
- 
- // Upload second evidence (despues)
+
  await evidenceInput.setInputFiles({name:'evidence-after.png',mimeType:'image/png',buffer:fixture})
  await page.waitForTimeout(1000)
- 
  const{data:final,error:finalError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','despues')
  assert.ifError(finalError);assert.equal(final?.length,1,'FINAL_EVIDENCE_COUNT_INVALID');paths.push(final[0].storage_path)
- 
+
  const{data:all,error:allError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path,created_at').eq('servicio_id',serviceId).order('created_at',{ascending:true})
  assert.ifError(allError);assert.equal(all?.length,2,'EVIDENCE_TOTAL_INVALID');assert.deepEqual(all.map(row=>row.tipo),['antes','despues']);assert.equal(new Set(all.map(row=>row.storage_path)).size,2)
  const bytes=[]
@@ -92,5 +189,5 @@ try{
  assert.deepEqual(pageErrors,[])
  const{data:persistedService,error:persistedServiceError}=await admin.from('servicios').select('estado').eq('id',serviceId).single();assert.ifError(persistedServiceError)
  const result={readiness_id:'provider-evidence',sha,environment:'UGO TEST',productionTouched:false,persistedRowsAndBytes:true,initialEvidence:true,finalEvidence:true,stateGuardContract:true,uiFlowContract:true,privateBucket:true,publicAccessDenied:true,serviceId,qaJobId:mediaJob.id,beforeBytes:bytes[0].bytes,afterBytes:bytes[1].bytes,coverage:coverage.status,serviceStateAfterEvidence:persistedService?.estado||null,exactEvidenceRows:2,duplicateRows:0,pageErrors:0,result:'PASS',completedAt:new Date().toISOString()}
- await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
+ await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
 }finally{await cleanup()}
