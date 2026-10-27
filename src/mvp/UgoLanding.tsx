@@ -32,14 +32,14 @@ export function UgoLanding(){
    <div className="ugo-hero-glow one"/>
    <div className="ugo-hero-glow two"/>
    <div className="ugo-hero-copy">
-    <div className="ugo-live-pill">UGO · Serviços a domicílio em Florianópolis</div>
-    <h1>Um pedido.<br/>Um profissional.<br/><span>Sem complicação.</span></h1>
-    <p>Encontre profissionais para cuidar da sua casa em Florianópolis. Faça seu pedido pelo aplicativo UGO.</p>
+    <div className="ugo-live-pill"><LocalizedText id="landing.livePill"/></div>
+    <h1><LocalizedText id="landing.headline1"/><br/><LocalizedText id="landing.headline2"/><br/><span><LocalizedText id="landing.headline3"/></span></h1>
+    <p><LocalizedText id="landing.heroIntro"/></p>
     <form className="ugo-reference-search" onSubmit={searchService} role="search">
-      <label><span>Qual serviço você precisa?</span><input type="search" value={serviceQuery} onChange={e=>setServiceQuery(e.target.value)} placeholder="Ex.: Faxina, marido de aluguel" list="ugo-service-choices"/></label>
+      <label><span><LocalizedText id="landing.searchLabel"/></span><input type="search" value={serviceQuery} onChange={e=>setServiceQuery(e.target.value)} placeholder={t('landing.searchPlaceholder')} list="ugo-service-choices"/></label>
       <datalist id="ugo-service-choices"><option value="Faxina"/><option value="Marido de aluguel"/><option value="Ar-condicionado"/><option value="Jardinagem"/></datalist>
-      <label><span>Sua região</span><input value={serviceRegion} onChange={e=>setServiceRegion(e.target.value)} placeholder="Florianópolis, SC"/></label>
-      <button type="submit">Encontrar profissional →</button>
+      <label><span><LocalizedText id="landing.regionLabel"/></span><input value={serviceRegion} onChange={e=>setServiceRegion(e.target.value)} placeholder={t('landing.regionPlaceholder')}/></label>
+      <button type="submit"><LocalizedText id="landing.submitButton"/></button>
     </form>
     <div className="ugo-hero-actions">
      <button className="ugo-cta secondary" onClick={()=>goRole('provider')}>{t('landing.iAmPro')}</button>
@@ -51,14 +51,14 @@ export function UgoLanding(){
     </div>
    </div>
 
-   <div className="ugo-hero-demo" aria-label="Prévia ilustrativa do aplicativo">
+   <div className="ugo-hero-demo" aria-label={t('landing.demoAria')}>
     <div className="ugo-demo-shell">
      <div className="ugo-demo-top">
       <div><small><LocalizedText id="ugoWebRemaining.brand"/></small><strong>{t('landing.demoQuestion')}</strong></div>
       <div className="ugo-avatar">SZ</div>
      </div>
      <div className="ugo-demo-search"><span>⌕</span><b>{t('landing.demoSearch')}</b></div>
-     <div className="ugo-demo-map" role="img" aria-label="Ilustração do aplicativo UGO, não representa profissionais disponíveis em tempo real">
+     <div className="ugo-demo-map" role="img" aria-label={t('landing.demoAria')}>
       <div className="road r1"/><div className="road r2"/><div className="road r3"/>
       <div className="ugo-user-dot"><i/></div>
       <div className="ugo-pro pro1"><b>JP</b><span>8 min</span></div>
@@ -73,7 +73,7 @@ export function UgoLanding(){
       <button onClick={()=>goRole('client')}>{t('landing.viewPros')} <b>→</b></button>
      </div>
     </div>
-    <p className="ugo-demo-disclaimer">Prévia ilustrativa · disponibilidade e valores são confirmados no aplicativo.</p>
+    <p className="ugo-demo-disclaimer"><LocalizedText id="landing.demoDisclaimer"/></p>
     <div className="ugo-float-card a" aria-hidden="true"><small>{t('landing.pro')}</small><strong>João P.</strong><span>{t('landing.verifiedShort')}</span></div>
     <div className="ugo-float-card b" aria-hidden="true"><small>{t('landing.status')}</small><strong>{t('landing.onTheWay')}</strong><span>ETA 8 min</span></div>
    </div>
@@ -86,8 +86,8 @@ export function UgoLanding(){
   <section className="ugo-services" id="servicios">
    <div className="ugo-section-kicker">{t('landing.nearbyServices')}</div>
    <div className="ugo-section-title">
-    <h2>Serviços mais buscados</h2>
-    <p>Encontre o serviço certo para a sua casa em Florianópolis.</p>
+    <h2><LocalizedText id="landing.sectionServices"/></h2>
+    <p><LocalizedText id="landing.sectionServicesIntro"/></p>
    </div>
    <div className="ugo-services-grid">
     {services.map(([title,copy,photo],i)=><button key={title} className={"ugo-service-card card-"+(i+1)} onClick={()=>goRole('client')}>
@@ -101,7 +101,7 @@ export function UgoLanding(){
   <section className="ugo-how" id="como">
    <div className="ugo-how-copy">
     <div className="ugo-section-kicker light">{t('landing.navHow').toLocaleUpperCase()}</div>
-    <h2>Peça do seu jeito.<br/>A UGO organiza.</h2>
+    <h2><LocalizedText id="landing.howHeadline1"/><br/><LocalizedText id="landing.howHeadline2"/></h2>
     <p>{t('landing.howCopy')}</p>
     <button onClick={()=>goRole('client')}>{t('landing.tryUgo')} <span>→</span></button>
    </div>
@@ -116,13 +116,13 @@ export function UgoLanding(){
    <div className="ugo-confidence-card">
     <div className="ugo-confidence-left">
      <span>{t('landing.trust')}</span>
-     <h2>{t('landing.clear')}<br/>{t('landing.recorded')}</h2>
-     <p>{t('landing.trustCopy')}</p>
+    <h2><LocalizedText id="landing.clear"/><br/><LocalizedText id="landing.recorded"/></h2>
+    <p>{t('landing.trustCopy')}</p>
     </div>
     <div className="ugo-confidence-metrics">
-     <article><strong>01</strong><span>Peça um serviço pelo aplicativo</span></article>
-     <article><strong>02</strong><span>Acompanhe o andamento</span></article>
-     <article><strong>03</strong><span>Confirme a conclusão do pedido</span></article>
+     <article><strong>01</strong><span><LocalizedText id="landing.step1Label"/></span></article>
+     <article><strong>02</strong><span><LocalizedText id="landing.step2Label"/></span></article>
+     <article><strong>03</strong><span><LocalizedText id="landing.step3Label"/></span></article>
     </div>
    </div>
   </section>
@@ -131,8 +131,8 @@ export function UgoLanding(){
    <div className="ugo-provider-art">
     <div className="ugo-provider-phone">
      <div className="ugo-provider-head"><span>{t('landing.providerApp')}</span><b><LocalizedText id="providerRoot.online"/></b></div>
-     <div className="ugo-provider-money"><small>Aplicativo para profissionais</small><strong>Seus serviços</strong><span>Organize oportunidades e acompanhe pedidos</span></div>
-     <div className="ugo-provider-job"><small>{t('landing.newOpportunity')}</small><strong>{t('landing.electricalInstall')}</strong><span>Exemplo ilustrativo</span><button type="button" onClick={()=>goRole('provider')}>Conhecer UGO Pro</button></div>
+     <div className="ugo-provider-money"><small><LocalizedText id="landing.providerAppLabel"/></small><strong><LocalizedText id="landing.providerServicesLabel"/></strong><span><LocalizedText id="landing.providerDescription"/></span></div>
+     <div className="ugo-provider-job"><small>{t('landing.newOpportunity')}</small><strong>{t('landing.electricalInstall')}</strong><span><LocalizedText id="landing.providerIllustrative"/></span><button type="button" onClick={()=>goRole('provider')}><LocalizedText id="landing.providerCTA"/></button></div>
     </div>
    </div>
    <div className="ugo-provider-copy">
@@ -146,7 +146,7 @@ export function UgoLanding(){
   <section className="ugo-final">
    
    <span>{t('landing.hugoReady')}</span>
-   <h2>Precisa de ajuda em casa?<br/>Faça seu pedido na UGO.</h2>
+   <h2><LocalizedText id="landing.finalQuestion"/><br/><LocalizedText id="landing.finalCTA"/></h2>
    <button onClick={()=>goRole('client')}>{t('landing.startNow')} <b>→</b></button>
   </section>
 
