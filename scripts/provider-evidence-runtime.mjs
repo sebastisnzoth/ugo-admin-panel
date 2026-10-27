@@ -8,7 +8,7 @@ const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL);assert.ok(serviceKey&&sha)
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
-const token=sha.slice(0,8)+'-'+Date.now(),password='UGO-Test-'+token+'-A9!'
+const token=***'-'+Date.now(),password='***'+token+'-A9!'
 const providerEmail=`ugo-evidence-provider-${token}@example.test`,clientEmail=`ugo-evidence-client-${token}@example.test`
 const fixture=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNg+M8AAAACAAHiIbwzAAAAAElFTkSuQmCC','base64')
 let providerId,clientId,serviceId,browser,paths=[]
@@ -20,7 +20,7 @@ const cleanup=async()=>{
  if(browser)await browser.close()
 }
 
-// Helper: diagnose page state on failure
+// Helper: diagnose page state
 async function diagnosePage(page, context) {
   try {
     const html = await page.content()
@@ -28,10 +28,10 @@ async function diagnosePage(page, context) {
     await page.screenshot({path:`artifacts/diagnose-${context}.png`,fullPage:true})
     const buttons = await page.locator('button').allTextContents()
     const headings = await page.locator('h1,h2,h3,h4,h5,h6').allTextContents()
-    const texts = await page.locator('text=/trabajo|active|job|continuar/i').allTextContents()
-    console.log(`DIAGNOSE ${context}: buttons=${JSON.stringify(buttons.slice(0,20))}`)
-    console.log(`DIAGNOSE ${context}: headings=${JSON.stringify(headings.slice(0,20))}`)
-    console.log(`DIAGNOSE ${context}: texts=${JSON.stringify(texts.slice(0,20))}`)
+    const texts = await page.locator('text=/trabajo|active|job|continuar|lugar|ya estás/i').allTextContents()
+    console.log(`DIAGNOSE ${context}: buttons=${JSON.stringify(buttons.slice(0,25))}`)
+    console.log(`DIAGNOSE ${context}: headings=${JSON.stringify(headings.slice(0,25))}`)
+    console.log(`DIAGNOSE ${context}: texts=${JSON.stringify(texts.slice(0,25))}`)
   } catch (e) {
     console.log(`DIAGNOSE ${context} failed:`, e.message)
   }
@@ -68,28 +68,46 @@ try{
  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
  await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
  
- // DIAGNOSE: log what buttons/headings exist before clicking
- await diagnosePage(page, 'before-active-job-click')
+ await diagnosePage(page, 'before-continuar-click')
  
- // The nav shows "Trabajo activo" as a tab, the actual action button is "Continuar trabajo"
+ // Click "Continuar trabajo" - this is the action button, not the nav tab
  const continuarBtn = page.getByRole('button',{name:/Continuar trabajo/i}).first()
- try {
-   await continuarBtn.waitFor({state:'visible',timeout:15000})
-   await continuarBtn.click()
- } catch (e) {
-   // Try alternative: button with text "Continuar trabajo"
-   console.log('Primary locator failed, trying alternatives...')
-   const altBtn = page.locator('button:has-text("Continuar trabajo")').first()
+ await continuarBtn.waitFor({state:'visible',timeout:15000})
+ await continuarBtn.click()
+ 
+ // DIAGNOSE: see what screen appears after clicking
+ await page.waitForTimeout(2000) // wait for navigation/transition
+ await diagnosePage(page, 'after-continuar-click')
+ 
+ // The next heading might be different - try multiple possibilities
+ const headingCandidates = [
+   'Ya estás en el lugar',
+   'Ya estas en el lugar', 
+   'Estás en el lugar',
+   'Estas en el lugar',
+   'Llegaste al lugar',
+   'Ubicación',
+   'Evidencia',
+   'Tomar foto',
+   'Foto'
+ ]
+ 
+ let foundHeading = false
+ for (const candidate of headingCandidates) {
    try {
-     await altBtn.waitFor({state:'visible',timeout:5000})
-     await altBtn.click()
-   } catch (e2) {
-     await diagnosePage(page, 'after-alt-fail')
-     throw e
+     await page.getByRole('heading',{name:new RegExp(candidate,'i')}).waitFor({state:'visible',timeout:5000})
+     console.log(`Found heading: ${candidate}`)
+     foundHeading = true
+     break
+   } catch (e) {
+     // try next
    }
  }
- await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
-
+ if (!foundHeading) {
+   await diagnosePage(page, 'no-heading-found')
+   throw new Error('No expected heading found after clicking Continuar trabajo')
+ }
+ 
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
  await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
