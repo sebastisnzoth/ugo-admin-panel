@@ -991,4 +991,20 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 
 - **2026-10-26 — aislamiento del gate RPC/RLS en PR:** runs `40274937577` y `40275069225` terminaron `cancelled` sin jobs, aunque el PR disparó correctamente la suite; el grupo global `ugo-test-shared-provider-fixture` admite un solo pending y recibe múltiples workflows, incluso eventos `workflow_run` que luego hacen `SKIPPED`. El workflow RPC/RLS mantiene el grupo canónico para los jobs reales de `main`, usa cola por PR para revisión y asigna grupo efímero a los `workflow_run` no-push descartados. Contratos verifican las tres rutas y `cancel-in-progress: false`. Esto evita cancelaciones espurias, pero la suite RPC/RLS y los E2E deben aprobar en TEST antes de merge; no se relajan los checks ni se habilita autonomía. **NO MERGE** hasta resultados exact-SHA.
 
-- **2026-10-26 — PR #590 / Provider Evidence Runtime TEST (reparación del harness):** baseline `main=8d5e55536f5779084253c6f1724aa11e040cbda2`; run `40275921856` FALLÓ antes de ejecutar el runtime con `ERR_MODULE_NOT_FOUND: Cannot find package 'playwright'`. El script exige Chromium y UI local `127.0.0.1:4173`, pero el workflow no instalaba navegador ni levantaba servidor. PR #590 instala Playwright 1.56.1 y Chromium en Ubuntu 24.04, sirve el build exact-SHA con Vite Preview, espera HTTP 200 y agrega diagnóstico. La validación de PR se limita a ramas internas y el job `persist-evidence` no puede escribir a `main` desde PR. Contrato antirregresión incluido. **ESTADO: FIX EN PR / CI, runtime/Judge/Sentinel y regresiones sobre SHA final PENDIENTES; NO MERGE / NO CUSTOMER_1.** No se modifican Supabase PROD ni Empresa Autónoma; estado OFF previo no equivale a lectura SQL nueva.
+## 2026-10-26 — PR #590 / Provider Evidence Runtime TEST (reparación del harness)
+- **Baseline:** `main=8d5e55536f5779084253c6f1724aa11e040cbda2`; run `40275921856` FALLÓ antes de ejecutar el runtime con `ERR_MODULE_NOT_FOUND: Cannot find package 'playwright'`. El script exige Chromium y UI local `127.0.0.1:4173`, pero el workflow no instalaba navegador ni levantaba servidor. PR #590 instala Playwright 1.56.1 y Chromium en Ubuntu 24.04, sirve el build exact-SHA con Vite Preview, espera HTTP 200 y agrega diagnóstico. La validación de PR se limita a ramas internas y el job `persist-evidence` no puede escribir a `main` desde PR. Contrato antirregresión incluido.
+- **Estado actual:** Runtime TEST, Judge y Sentinel **APROBADOS** en SHA `d23d3bff` (run `40460067174`). Core CI **APROBADO**. Evidence persistida en `docs/evidence/readiness-provider-evidence-latest.json`.
+- **Restricciones:** TEST-only; no modifica Supabase PROD ni Empresa Autónoma. El gate `human_final_required` permanece `PENDING` — requiere verificación física en dispositivo real de proveedor.
+- **NO MERGE** hasta rebase/merge conflict-free con `main` y gates exact-SHA sobre nuevo SHA.
+
+## Landing pública UGO — concepto H (26/10/2026)
+- Aprobación visual expresa para integrar a `main`: concepto Premium + Clean, adaptación de referencia HTML del usuario.
+- Alcance: `src/mvp/UgoLanding.tsx` y `src/mvp/ugo-landing.css`; preservadas las rutas `?app=client` y `?app=provider`; sin migraciones ni cambios de Supabase.
+- Vista previa Vercel `READY`, SHA `3db33e9e03ae4cb5f686e594dc68c2774426173c`: https://ugo-admin-panel-mz78yn487-sebastisnzoths-projects.vercel.app
+- Estado: aprobado visualmente por usuario, pendiente CI de PR #591 y validación post-merge/runtime SAME-SHA antes de marcar RELEASED. No asumir E2E Cliente→Proveedor ni verificación de todos los anchos responsive por el deploy.
+
+
+### 26/10/2026 — P0 Landing pública: scroll móvil
+- Incidente reproducible por CSS: `src/mvp/mobile-runtime-fixes.css` fuerza `html,body,#root {overflow:hidden!important}` bajo 760px; la landing carecía de scroll propio.
+- Reparación aislada en `src/mvp/ugo-landing.css`, `:has(.ugo-landing)` restituye scroll vertical sólo en la ruta pública y preserva shells operativas Cliente/Proveedor.
+- Estado: corrección de código realizada en rama, pendiente de build CI, verificación real de gesto táctil y despliegue SAME-SHA. No afirmar prueba móvil antes de hacerla.

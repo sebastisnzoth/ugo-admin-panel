@@ -603,4 +603,21 @@ Se actualizó el E2E existente en PR #580 para que un pedido en modo browser naz
 
 - **2026-10-26 — aislamiento del gate RPC/RLS en PR:** runs `40274937577` y `40275069225` terminaron `cancelled` sin jobs, aunque el PR disparó correctamente la suite; el grupo global `ugo-test-shared-provider-fixture` admite un solo pending y recibe múltiples workflows, incluso eventos `workflow_run` que luego hacen `SKIPPED`. El workflow RPC/RLS mantiene el grupo canónico para los jobs reales de `main`, usa cola por PR para revisión y asigna grupo efímero a los `workflow_run` no-push descartados. Contratos verifican las tres rutas y `cancel-in-progress: false`. Esto evita cancelaciones espurias, pero la suite RPC/RLS y los E2E deben aprobar en TEST antes de merge; no se relajan los checks ni se habilita autonomía. **NO MERGE** hasta resultados exact-SHA.
 
-- **2026-10-26 — PR #590 / Provider Evidence Runtime TEST (reparación del harness):** baseline `main=8d5e55536f5779084253c6f1724aa11e040cbda2`; run `40275921856` FALLÓ antes de ejecutar el runtime con `ERR_MODULE_NOT_FOUND: Cannot find package 'playwright'`. El script exige Chromium y UI local `127.0.0.1:4173`, pero el workflow no instalaba navegador ni levantaba servidor. PR #590 instala Playwright 1.56.1 y Chromium en Ubuntu 24.04, sirve el build exact-SHA con Vite Preview, espera HTTP 200 y agrega diagnóstico. La validación de PR se limita a ramas internas y el job `persist-evidence` no puede escribir a `main` desde PR. Contrato antirregresión incluido. **ESTADO: FIX EN PR / CI, runtime/Judge/Sentinel y regresiones sobre SHA final PENDIENTES; NO MERGE / NO CUSTOMER_1.** No se modifican Supabase PROD ni Empresa Autónoma; estado OFF previo no equivale a lectura SQL nueva.
+## 2026-10-26 — PR #590 / Provider Evidence Runtime TEST (reparación del harness)
+- **Baseline:** `main=8d5e55536f5779084253c6f1724aa11e040cbda2`; run `40275921856` FALLÓ antes de ejecutar el runtime con `ERR_MODULE_NOT_FOUND: Cannot find package 'playwright'`. El script exige Chromium y UI local `127.0.0.1:4173`, pero el workflow no instalaba navegador ni levantaba servidor. PR #590 instala Playwright 1.56.1 y Chromium en Ubuntu 24.04, sirve el build exact-SHA con Vite Preview, espera HTTP 200 y agrega diagnóstico. La validación de PR se limita a ramas internas y el job `persist-evidence` no puede escribir a `main` desde PR. Contrato antirregresión incluido.
+- **Estado actual:** Runtime TEST, Judge y Sentinel **APROBADOS** en SHA `d23d3bff` (run `40460067174`). Core CI **APROBADO**. Evidence persistida en `docs/evidence/readiness-provider-evidence-latest.json`.
+- **Restricciones:** TEST-only; no modifica Supabase PROD ni Empresa Autónoma. El gate `human_final_required` permanece `PENDING` — requiere verificación física en dispositivo real de proveedor.
+- **NO MERGE** hasta rebase/merge conflict-free con `main` y gates exact-SHA sobre nuevo SHA.
+
+## Continuidad — Landing concepto H (26/10/2026)
+- Usuario aprobó explícitamente el rediseño de landing para `main`.
+- Rama: `design/landing-hybrid-responsive-20261026`; SHA anterior `3db33e9e03ae4cb5f686e594dc68c2774426173c`.
+- Preview de Vercel READY: https://ugo-admin-panel-mz78yn487-sebastisnzoths-projects.vercel.app; revisión visual basada en captura aportada por usuario.
+- PR #591 para respetar los gates de CI; el primer error `UGO Roadmap Traceability` detectó que se debían actualizar roadmap y continuidad en la misma PR. Este registro satisface trazabilidad, no certifica runtime ni pruebas humanas.
+- No tocar producción/Supabase; comprobar CI sobre último SHA y smoke post-merge antes de declarar cierre.
+
+
+### 26/10/2026 — Continuidad: scroll bloqueado en landing móvil
+- Reporte tras merge PR #591: landing no desplaza hacia abajo en celulares. Causa localizada en `mobile-runtime-fixes.css` (bloqueo global de `html,body,#root` para <=760px).
+- Rama `fix/landing-mobile-scroll-20261026`: override acotado a la landing `:has(.ugo-landing)` para scroll natural; no relajar el bloqueo de las shells transaccionales.
+- Requerido: CI, preview TEST, comprobar scroll táctil a 320/360/390/430px, integrar y confirmar producción sobre SHA verificado; si faltan pruebas, marcar HUMAN_REQUIRED.

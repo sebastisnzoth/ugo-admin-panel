@@ -1,0 +1,83 @@
+{
+  "schema_version": "UGO_READINESS_PROVIDER_EVIDENCE_V2",
+  "readiness_id": "provider-evidence",
+  "task_id": "readiness-provider-evidence",
+  "job_id": "UGO-READINESS-PROVIDER-EVIDENCE",
+  "environment": "UGO TEST",
+  "tested_sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+  "workflow_run_id": 40460067174,
+  "workflow_name": "UGO Provider Evidence Runtime TEST",
+  "workflow_result": "PASS",
+  "runtime": {
+    "readiness_id": "provider-evidence",
+    "sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+    "environment": "UGO TEST",
+    "productionTouched": false,
+    "persistedRowsAndBytes": true,
+    "initialEvidence": true,
+    "finalEvidence": true,
+    "stateGuardContract": true,
+    "uiFlowContract": true,
+    "privateBucket": true,
+    "publicAccessDenied": true,
+    "serviceId": "63e5dde1-fd86-45ac-9bf9-3d40ffbe353d",
+    "qaJobId": "72e4c270-d858-4213-81ac-181b411b0361",
+    "beforeBytes": 69,
+    "afterBytes": 69,
+    "coverage": "COVERED",
+    "serviceStateAfterEvidence": "completado",
+    "exactEvidenceRows": 2,
+    "duplicateRows": 0,
+    "pageErrors": 0,
+    "result": "PASS",
+    "completedAt": "2026-10-27T06:17:19.291Z"
+  },
+  "validators": {
+    "Judge": {
+      "validator": "Judge",
+      "readiness_id": "provider-evidence",
+      "status": "PASS",
+      "sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+      "serviceId": "63e5dde1-fd86-45ac-9bf9-3d40ffbe353d",
+      "qaJobId": "72e4c270-d858-4213-81ac-181b411b0361",
+      "checks": [
+        "same-sha",
+        "ugo-test-only",
+        "rows-and-bytes",
+        "initial-and-final",
+        "stage-guard",
+        "ui-flow",
+        "private-storage"
+      ],
+      "completed_at": "2026-10-27T06:17:34.607Z"
+    },
+    "Sentinel": {
+      "validator": "Sentinel",
+      "readiness_id": "provider-evidence",
+      "status": "PASS",
+      "sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+      "checks": [
+        "same-sha-runtime",
+        "judge-pass",
+        "ugo-test-only",
+        "production-untouched",
+        "persisted-initial-final",
+        "state-gated",
+        "ui-gated",
+        "protected-storage",
+        "audit-ids"
+      ],
+      "completed_at": "2026-10-27T06:18:00.891Z"
+    }
+  },
+  "control_result": "VERIFIED_AUTOMATED",
+  "production_touched": false,
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "criterion": "En un teléfono real con UGO TEST y sesión de proveedor: con el servicio en estado llegado, usar EMPEZAR TRABAJO para sacar/subir una foto inicial y confirmar que se persiste y pasa a en_progreso; luego usar TRABAJO LISTO para sacar/subir una foto final y confirmar que se persiste y pasa a esperando_aprobacion; recargar la app y confirmar que ambas evidencias siguen visibles.",
+    "evidence_required": "Prueba física de cámara/subida en dispositivo real del proveedor"
+  },
+  "final_gate": "HUMAN_REQUIRED",
+  "persisted_at": "2026-10-27T06:18:19.483Z"
+}
