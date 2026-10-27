@@ -8,7 +8,7 @@ const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL);assert.ok(serviceKey&&sha)
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
-const token=***'-'+Date.now(),password='***'+token+'-A9!'
+const token=sha.slice(0,8)+'-'+Date.now(),password='UGO-Test-'+token+'-A9!'
 const providerEmail=`ugo-evidence-provider-${token}@example.test`,clientEmail=`ugo-evidence-client-${token}@example.test`
 const fixture=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNg+M8AAAACAAHiIbwzAAAAAElFTkSuQmCC','base64')
 let providerId,clientId,serviceId,browser,paths=[]
@@ -68,6 +68,7 @@ try{
  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
  await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
  
+ // DIAGNOSE: log what buttons/headings exist before clicking
  await diagnosePage(page, 'before-continuar-click')
  
  // Click "Continuar trabajo" - this is the action button, not the nav tab
@@ -107,7 +108,7 @@ try{
    await diagnosePage(page, 'no-heading-found')
    throw new Error('No expected heading found after clicking Continuar trabajo')
  }
- 
+
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
  await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
@@ -131,5 +132,5 @@ try{
  assert.deepEqual(pageErrors,[])
  const{data:persistedService,error:persistedServiceError}=await admin.from('servicios').select('estado').eq('id',serviceId).single();assert.ifError(persistedServiceError)
  const result={readiness_id:'provider-evidence',sha,environment:'UGO TEST',productionTouched:false,persistedRowsAndBytes:true,initialEvidence:true,finalEvidence:true,stateGuardContract:true,uiFlowContract:true,privateBucket:true,publicAccessDenied:true,serviceId,qaJobId:mediaJob.id,beforeBytes:bytes[0].bytes,afterBytes:bytes[1].bytes,coverage:coverage.status,serviceStateAfterEvidence:persistedService?.estado||null,exactEvidenceRows:2,duplicateRows:0,pageErrors:0,result:'PASS',completedAt:new Date().toISOString()}
- await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
+ await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
 }finally{await cleanup()}
