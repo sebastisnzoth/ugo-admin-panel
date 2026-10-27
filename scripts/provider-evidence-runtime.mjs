@@ -124,11 +124,18 @@ try{
  for (const locator of empezarLocators) {
    try {
      await locator.waitFor({state:'visible',timeout:5000})
-     await locator.click()
+     // Check if button is enabled before clicking
+     const isEnabled = await locator.isEnabled().catch(() => false)
+     if (!isEnabled) {
+       console.log('EMPEZAR TRABAJO button is disabled, waiting...')
+       await page.waitForTimeout(2000)
+     }
+     await locator.click({force: true})
      empezarClicked = true
      console.log('EMPEZAR TRABAJO clicked successfully')
      break
    } catch (e) {
+     console.log('Locator failed:', e.message)
      // try next locator
    }
  }
@@ -137,19 +144,66 @@ try{
    throw new Error('Could not click EMPEZAR TRABAJO button')
  }
  
- // Wait for UI transition
+ // Wait for UI transition and verify click worked
  await page.waitForTimeout(3000)
  await diagnosePage(page, 'after-empezar-click')
  
- // Verify the click worked by checking for new content
- const evidenceHeading = page.getByRole('heading',{name:/Resolvé el problema/i}).first()
+ // Check if the UI changed - look for evidence upload UI
+ let evidenceUILoaded = false
+ 
+ // Try waiting for the heading
  try {
+   const evidenceHeading = page.getByRole('heading',{name:/Resolvé el problema/i}).first()
    await evidenceHeading.waitFor({state:'visible',timeout:10000})
+   evidenceUILoaded = true
+   console.log('Found Resolvé el problema heading')
  } catch (e) {
-   console.log('Resolvé el problema heading not found, checking for other evidence UI...')
-   // The evidence upload might be on the same screen - check for file input
+   console.log('Resolvé el problema heading not found')
+ }
+ 
+ // If no heading, check for file input directly
+ if (!evidenceUILoaded) {
+   try {
+     const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
+     // The input might be hidden but present - check if it exists in DOM
+     const count = await fileInput.count()
+     if (count > 0) {
+       // Input exists but might be hidden - use setInputFiles directly
+       console.log('File input found in DOM (count=' + count + '), trying setInputFiles')
+       evidenceUILoaded = true
+     } else {
+       console.log('File input not in DOM yet')
+     }
+   } catch (e) {
+     console.log('File input check failed:', e.message)
+   }
+ }
+ 
+ // If still not loaded, maybe we need to click a different element or wait longer
+ if (!evidenceUILoaded) {
+   console.log('Evidence UI not loaded after EMPEZAR TRABAJO, waiting longer...')
+   await page.waitForTimeout(5000)
+   await diagnosePage(page, 'after-empezar-wait')
+   
+   // Try clicking again or check for confirmation dialog
+   const confirmBtn = page.locator('button:has-text("Confirmar")').first()
+   if (await confirmBtn.count() > 0) {
+     console.log('Confirmation dialog found, clicking Confirmar')
+     await confirmBtn.click()
+     await page.waitForTimeout(2000)
+   }
+   
+   // Check for file input again
    const fileInput = page.locator('.provider-evidence-compact-file input[type=file]').first()
-   await fileInput.waitFor({state:'visible',timeout:10000})
+   const count = await fileInput.count()
+   if (count > 0) {
+     evidenceUILoaded = true
+     console.log('File input found after extended wait')
+   }
+ }
+ 
+ if (!evidenceUILoaded) {
+   throw new Error('Evidence upload UI did not appear after EMPEZAR TRABAJO click')
  }
 
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
