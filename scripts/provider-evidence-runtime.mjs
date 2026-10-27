@@ -65,8 +65,8 @@ try{
  // Wait for evidence to be persisted
  await page.waitForTimeout(3000)
  
- // Wait for "Resolvé el problema" heading after first upload
- await page.getByRole('heading',{name:'Resolvé el problema'}).waitFor({state:'visible',timeout:15000})
+ // Wait for "Resuelve el problema" heading after first upload
+ await page.getByRole('heading',{name:'Resuelve el problema'}).waitFor({state:'visible',timeout:15000})
  
  const{data:initial,error:initialError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','antes')
  assert.ifError(initialError);assert.equal(initial?.length,1,'INITIAL_EVIDENCE_COUNT_INVALID');paths.push(initial[0].storage_path)
