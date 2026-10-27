@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 const url=process.env.UGO_TEST_SUPABASE_URL,key=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY;
-if(!url?.includes('tmossnqfwfwjrtzwcbmm.supabase.co')||!key) throw new Error('UGO_TEST_ONLY');
+const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY;
+const clientEmail=process.env.UGO_TEST_CLIENT_EMAIL;
+const clientPassword=process.env.UGO_TEST_CLIENT_PASSWORD;
+const providerEmail=process.env.UGO_TEST_PROVIDER_EMAIL;
+const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD;
+const adminEmail=process.env.UGO_TEST_ADMIN_EMAIL;
+const adminPassword=process.env.UGO_TEST_ADMIN_PASSWORD;
+if(!url?.includes('tmossnqfwfwjrtzwcbmm.supabase.co')||!key||!anon||!clientEmail||!clientPassword||!providerEmail||!providerPassword||!adminEmail||!adminPassword) throw new Error('UGO_TEST_ONLY');
 const db=createClient(url,key,{auth:{persistSession:false}});
 const required=['provider-radius','gps-geofence','payments','realtime','roles','permissions-rls','service-lifecycle'];
 const {data:sc,error}=await db.from('autonomous_qa_scenarios').select('id,scenario_key,service_id,coverage_key').in('scenario_key',required);
@@ -13,6 +20,25 @@ for(const s of sc.filter(s=>s.service_id)){
  const {data:svc,error:se}=await db.from('servicios').select('id,estado,cliente_id,proveedor_id,ambiente').eq('id',s.service_id).maybeSingle();
  if(se)throw se;if(!svc)throw new Error('QA_SERVICE_NOT_FOUND:'+s.scenario_key);
  if(svc.ambiente!=='demo')throw new Error('QA_NON_TEST_SERVICE_REJECTED:'+s.scenario_key);
+}
+// Record authenticated simulator actions for service-lifecycle before running the scenario
+const lifecycleScenario=sc.find(s=>s.scenario_key==='service-lifecycle');
+if(lifecycleScenario?.service_id){
+ const svcId=lifecycleScenario.service_id;
+ async function login(email,password){
+  const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}});
+  const r=await sb.auth.signInWithPassword({email,password});
+  if(r.error)throw r.error;
+  return sb;
+ }
+ const clientSb=await login(clientEmail,clientPassword);
+ const providerSb=await login(providerEmail,providerPassword);
+ const adminSb=await login(adminEmail,adminPassword);
+ for(const [actorSb,simulatorKey] of [[clientSb,'qa-client-simulator'],[providerSb,'qa-provider-simulator'],[adminSb,'qa-admin-system-simulator']]){
+  const {error:be}=await actorSb.rpc('autonomous_qa_record_actor_action',{p_service_id:svcId,p_simulator_key:simulatorKey,p_action_key:'observe_service'});
+  if(be)throw be;
+ }
+ await Promise.allSettled([clientSb.auth.signOut(),providerSb.auth.signOut(),adminSb.auth.signOut()]);
 }
 for(const s of sc.filter(s=>persisted.includes(s.scenario_key))){
  const {error:re}=await db.rpc('autonomous_run_qa_service_scenario',{p_scenario_id:s.id,p_simulator_results:{runtime:'github-actions'},p_chaos_result:{}});
