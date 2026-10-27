@@ -997,3 +997,9 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Alcance: `src/mvp/UgoLanding.tsx` y `src/mvp/ugo-landing.css`; preservadas las rutas `?app=client` y `?app=provider`; sin migraciones ni cambios de Supabase.
 - Vista previa Vercel `READY`, SHA `3db33e9e03ae4cb5f686e594dc68c2774426173c`: https://ugo-admin-panel-mz78yn487-sebastisnzoths-projects.vercel.app
 - Estado: aprobado visualmente por usuario, pendiente CI de PR #591 y validación post-merge/runtime SAME-SHA antes de marcar RELEASED. No asumir E2E Cliente→Proveedor ni verificación de todos los anchos responsive por el deploy.
+
+
+### 26/10/2026 — P0 Landing pública: scroll móvil
+- Incidente reproducible por CSS: `src/mvp/mobile-runtime-fixes.css` fuerza `html,body,#root {overflow:hidden!important}` bajo 760px; la landing carecía de scroll propio.
+- Reparación aislada en `src/mvp/ugo-landing.css`, `:has(.ugo-landing)` restituye scroll vertical sólo en la ruta pública y preserva shells operativas Cliente/Proveedor.
+- Estado: corrección de código realizada en rama, pendiente de build CI, verificación real de gesto táctil y despliegue SAME-SHA. No afirmar prueba móvil antes de hacerla.
