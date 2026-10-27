@@ -602,3 +602,11 @@ Se actualizó el E2E existente en PR #580 para que un pedido en modo browser naz
 - **2026-10-26 — corrección inmediata del scheduler:** al compartir el `concurrency.group` entre P0 y RPC/RLS, GitHub marcó `UGO Isolated RPC RLS` run `40274937577` como `cancelled` sin jobs (regla de un solo `pending` por grupo), mientras P0 `40274937487` ejecutaba. Se revierte únicamente el grupo P0 a su grupo por PR; se mantienen triggers exact-SHA, protección de forks y test antirregresión que impide volver a cancelar el gate RPC. **NO MERGE** hasta que ambos E2E se ejecuten y aprueben sobre el mismo SHA; la cancelación NO cuenta como PASS.
 
 - **2026-10-26 — aislamiento del gate RPC/RLS en PR:** runs `40274937577` y `40275069225` terminaron `cancelled` sin jobs, aunque el PR disparó correctamente la suite; el grupo global `ugo-test-shared-provider-fixture` admite un solo pending y recibe múltiples workflows, incluso eventos `workflow_run` que luego hacen `SKIPPED`. El workflow RPC/RLS mantiene el grupo canónico para los jobs reales de `main`, usa cola por PR para revisión y asigna grupo efímero a los `workflow_run` no-push descartados. Contratos verifican las tres rutas y `cancel-in-progress: false`. Esto evita cancelaciones espurias, pero la suite RPC/RLS y los E2E deben aprobar en TEST antes de merge; no se relajan los checks ni se habilita autonomía. **NO MERGE** hasta resultados exact-SHA.
+
+
+## Continuidad — Landing concepto H (26/10/2026)
+- Usuario aprobó explícitamente el rediseño de landing para `main`.
+- Rama: `design/landing-hybrid-responsive-20261026`; SHA anterior `3db33e9e03ae4cb5f686e594dc68c2774426173c`.
+- Preview de Vercel READY: https://ugo-admin-panel-mz78yn487-sebastisnzoths-projects.vercel.app; revisión visual basada en captura aportada por usuario.
+- PR #591 para respetar los gates de CI; el primer error `UGO Roadmap Traceability` detectó que se debían actualizar roadmap y continuidad en la misma PR. Este registro satisface trazabilidad, no certifica runtime ni pruebas humanas.
+- No tocar producción/Supabase; comprobar CI sobre último SHA y smoke post-merge antes de declarar cierre.
