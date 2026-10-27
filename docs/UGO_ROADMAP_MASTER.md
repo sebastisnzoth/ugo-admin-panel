@@ -990,3 +990,10 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - **2026-10-26 — corrección inmediata del scheduler:** al compartir el `concurrency.group` entre P0 y RPC/RLS, GitHub marcó `UGO Isolated RPC RLS` run `40274937577` como `cancelled` sin jobs (regla de un solo `pending` por grupo), mientras P0 `40274937487` ejecutaba. Se revierte únicamente el grupo P0 a su grupo por PR; se mantienen triggers exact-SHA, protección de forks y test antirregresión que impide volver a cancelar el gate RPC. **NO MERGE** hasta que ambos E2E se ejecuten y aprueben sobre el mismo SHA; la cancelación NO cuenta como PASS.
 
 - **2026-10-26 — aislamiento del gate RPC/RLS en PR:** runs `40274937577` y `40275069225` terminaron `cancelled` sin jobs, aunque el PR disparó correctamente la suite; el grupo global `ugo-test-shared-provider-fixture` admite un solo pending y recibe múltiples workflows, incluso eventos `workflow_run` que luego hacen `SKIPPED`. El workflow RPC/RLS mantiene el grupo canónico para los jobs reales de `main`, usa cola por PR para revisión y asigna grupo efímero a los `workflow_run` no-push descartados. Contratos verifican las tres rutas y `cancel-in-progress: false`. Esto evita cancelaciones espurias, pero la suite RPC/RLS y los E2E deben aprobar en TEST antes de merge; no se relajan los checks ni se habilita autonomía. **NO MERGE** hasta resultados exact-SHA.
+
+
+## Landing pública UGO — concepto H (26/10/2026)
+- Aprobación visual expresa para integrar a `main`: concepto Premium + Clean, adaptación de referencia HTML del usuario.
+- Alcance: `src/mvp/UgoLanding.tsx` y `src/mvp/ugo-landing.css`; preservadas las rutas `?app=client` y `?app=provider`; sin migraciones ni cambios de Supabase.
+- Vista previa Vercel `READY`, SHA `3db33e9e03ae4cb5f686e594dc68c2774426173c`: https://ugo-admin-panel-mz78yn487-sebastisnzoths-projects.vercel.app
+- Estado: aprobado visualmente por usuario, pendiente CI de PR #591 y validación post-merge/runtime SAME-SHA antes de marcar RELEASED. No asumir E2E Cliente→Proveedor ni verificación de todos los anchos responsive por el deploy.
