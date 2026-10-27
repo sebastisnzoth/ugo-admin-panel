@@ -19,6 +19,24 @@ const cleanup=async()=>{
  if(clientId){await admin.from('usuarios').delete().eq('id',clientId);await admin.auth.admin.deleteUser(clientId)}
  if(browser)await browser.close()
 }
+
+// Helper: diagnose page state on failure
+async function diagnosePage(page, context) {
+  try {
+    const html = await page.content()
+    await fs.writeFile(`artifacts/diagnose-${context}.html`, html)
+    await page.screenshot({path:`artifacts/diagnose-${context}.png`,fullPage:true})
+    const buttons = await page.locator('button').allTextContents()
+    const headings = await page.locator('h1,h2,h3,h4,h5,h6').allTextContents()
+    const texts = await page.locator('text=/trabajo|active|job/i').allTextContents()
+    console.log(`DIAGNOSE ${context}: buttons=${JSON.stringify(buttons.slice(0,20))}`)
+    console.log(`DIAGNOSE ${context}: headings=${JSON.stringify(headings.slice(0,20))}`)
+    console.log(`DIAGNOSE ${context}: texts=${JSON.stringify(texts.slice(0,20))}`)
+  } catch (e) {
+    console.log(`DIAGNOSE ${context} failed:`, e.message)
+  }
+}
+
 try{
  const{data:category,error:categoryError}=await admin.from('categorias').select('id').eq('activa',true).order('nombre').limit(1).maybeSingle()
  assert.ifError(categoryError);assert.ok(category?.id,'ACTIVE_CATEGORY_REQUIRED')
@@ -49,7 +67,26 @@ try{
  await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
  await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
- await page.getByRole('button',{name:/Trabajo activo:/}).first().click()
+ 
+ // DIAGNOSE: log what buttons/headings exist before clicking
+ await diagnosePage(page, 'before-active-job-click')
+ 
+ const activeJobBtn = page.getByRole('button',{name:/Trabajo activo:/}).first()
+ try {
+   await activeJobBtn.waitFor({state:'visible',timeout:15000})
+   await activeJobBtn.click()
+ } catch (e) {
+   // Try alternative locators
+   console.log('Primary locator failed, trying alternatives...')
+   const altBtn = page.locator('button:has-text("Trabajo")').first()
+   try {
+     await altBtn.waitFor({state:'visible',timeout:5000})
+     await altBtn.click()
+   } catch (e2) {
+     await diagnosePage(page, 'after-alt-fail')
+     throw e
+   }
+ }
  await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
 
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
@@ -75,5 +112,5 @@ try{
  assert.deepEqual(pageErrors,[])
  const{data:persistedService,error:persistedServiceError}=await admin.from('servicios').select('estado').eq('id',serviceId).single();assert.ifError(persistedServiceError)
  const result={readiness_id:'provider-evidence',sha,environment:'UGO TEST',productionTouched:false,persistedRowsAndBytes:true,initialEvidence:true,finalEvidence:true,stateGuardContract:true,uiFlowContract:true,privateBucket:true,publicAccessDenied:true,serviceId,qaJobId:mediaJob.id,beforeBytes:bytes[0].bytes,afterBytes:bytes[1].bytes,coverage:coverage.status,serviceStateAfterEvidence:persistedService?.estado||null,exactEvidenceRows:2,duplicateRows:0,pageErrors:0,result:'PASS',completedAt:new Date().toISOString()}
- await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
+ await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
 }finally{await cleanup()}
