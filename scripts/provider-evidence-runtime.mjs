@@ -75,7 +75,15 @@ try{
  await evidenceInput.setInputFiles({name:'evidence-after.png',mimeType:'image/png',buffer:fixture})
  
  // Wait for evidence to be persisted and TRABAJO LISTO button to appear
- await page.waitForTimeout(3000)
+ await page.waitForTimeout(5000)
+ 
+ // Verify 'despues' evidence exists in DB
+ for(let attempt=1; attempt<=30; attempt++){
+   const{data:finalCheck}=await admin.from('evidencias_servicio').select('id').eq('servicio_id',serviceId).eq('tipo','despues').maybeSingle()
+   if(finalCheck)break
+   await new Promise(r=>setTimeout(r,1000))
+ }
+ 
  await page.getByRole('button',{name:'TRABAJO LISTO'}).waitFor({state:'visible',timeout:15000})
  await page.getByRole('button',{name:'TRABAJO LISTO'}).click()
  
