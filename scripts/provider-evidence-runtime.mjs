@@ -51,9 +51,7 @@ try{
  await page.getByText('TRABAJO ACTIVO',{exact:true}).waitFor({state:'visible',timeout:30000})
  
  // Click the "Trabajo activo" nav tab (not the action button)
- const trabajoActivoNav = page.getByRole('button',{name:/Trabajo activo:/}).first()
- await trabajoActivoNav.waitFor({state:'visible',timeout:15000})
- await trabajoActivoNav.click()
+ await page.getByTestId('provider-mobile-work').click()
  
  // Wait for "Ya estás en el lugar" heading on the jobs list
  await page.getByRole('heading',{name:'Ya estás en el lugar'}).waitFor({state:'visible',timeout:15000})
