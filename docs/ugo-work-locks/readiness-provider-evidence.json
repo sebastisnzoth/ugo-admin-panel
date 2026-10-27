@@ -5,8 +5,8 @@
   "title": "Verify provider initial/final service evidence persistence and UI flow",
   "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T18:56:00Z",
-  "heartbeat_at": "2026-10-01T19:02:00Z",
-  "lease_expires_at": "2026-10-01T19:02:00Z",
+  "heartbeat_at": "2026-10-27T06:18:19.483Z",
+  "lease_expires_at": "2026-10-27T06:18:19.483Z",
   "started_sha": "f860d721a0185aaea932608af979a3b570e1e5c3",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -34,24 +34,28 @@
     "github-artifact:11187580230:sentinel-pass",
     "service:9839cc0c-7ba3-472e-a115-98ffdb96bbe3",
     "qa-job:80b31dbe-d1bd-4b79-8446-7cfacf4af201",
-    "docs/evidence/readiness-provider-evidence-20261001.json"
+    "docs/evidence/readiness-provider-evidence-20261001.json",
+    "github-actions:run:40460067174",
+    "repo:docs/evidence/readiness-provider-evidence-latest.json",
+    "judge-pass:d23d3bff88a9",
+    "sentinel-pass:d23d3bff88a9"
   ],
   "production_touched": false,
   "last_failure": null,
   "automated_closure": {
-    "candidate_sha": "63b95ce794d04e4987b78c97fdc2d5f87fc2585b",
-    "workflow_run_id": 36911092364,
+    "candidate_sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+    "workflow_run_id": 40460067174,
     "runtime": "PASS",
     "judge": "PASS",
     "sentinel": "PASS",
     "production_touched": false,
-    "service_id": "9839cc0c-7ba3-472e-a115-98ffdb96bbe3",
-    "qa_job_id": "80b31dbe-d1bd-4b79-8446-7cfacf4af201",
-    "before_bytes": 67,
-    "after_bytes": 67,
+    "service_id": "63e5dde1-fd86-45ac-9bf9-3d40ffbe353d",
+    "qa_job_id": "72e4c270-d858-4213-81ac-181b411b0361",
+    "before_bytes": 69,
+    "after_bytes": 69,
     "private_storage": true
   },
-  "evidence_path": "docs/evidence/readiness-provider-evidence-20261001.json",
+  "evidence_path": "docs/evidence/readiness-provider-evidence-latest.json",
   "evidence_commit_sha": "b744b646377e9ea0e3788ed5ca6367f8d61cd8be",
   "validators_result": {
     "Judge": "PASS",
@@ -66,5 +70,25 @@
   "human_runtime_evidence": {
     "result": "PENDING",
     "symptom": ""
-  }
+  },
+  "verified_sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+  "runtime_validated_sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+  "result": "VERIFIED_AUTOMATED",
+  "validator_results": {
+    "Judge": {
+      "validator": "Judge",
+      "verdict": "PASS",
+      "checked_at": "2026-10-27T06:17:34.607Z",
+      "runtime_sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+      "readiness_id": "provider-evidence"
+    },
+    "Sentinel": {
+      "validator": "Sentinel",
+      "verdict": "PASS",
+      "checked_at": "2026-10-27T06:18:00.891Z",
+      "runtime_sha": "d23d3bff88a931b0f6fef1c5519492794f28d416",
+      "readiness_id": "provider-evidence"
+    }
+  },
+  "result_summary": "UGO TEST verified automated Provider initial/final evidence, protected Storage bytes, lifecycle guards, private-bucket access, Judge PASS and Sentinel PASS on the same SHA. The remaining gate is physical camera/upload verification on a real provider device."
 }
