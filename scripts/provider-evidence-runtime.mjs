@@ -57,7 +57,6 @@ try{
  await page.getByRole('heading',{name:'Ya llegaste al lugar'}).waitFor({state:'visible',timeout:15000})
  
  // Upload first evidence (antes)
- console.log('Uploading first evidence...')
  
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
@@ -109,5 +108,5 @@ try{
  assert.deepEqual(pageErrors,[])
  const{data:persistedService,error:persistedServiceError}=await admin.from('servicios').select('estado').eq('id',serviceId).single();assert.ifError(persistedServiceError)
  const result={readiness_id:'provider-evidence',sha,environment:'UGO TEST',productionTouched:false,persistedRowsAndBytes:true,initialEvidence:true,finalEvidence:true,stateGuardContract:true,uiFlowContract:true,privateBucket:true,publicAccessDenied:true,serviceId,qaJobId:mediaJob.id,beforeBytes:bytes[0].bytes,afterBytes:bytes[1].bytes,coverage:coverage.status,serviceStateAfterEvidence:persistedService?.estado||null,exactEvidenceRows:2,duplicateRows:0,pageErrors:0,result:'PASS',completedAt:new Date().toISOString()}
- await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true});console.log(JSON.stringify(result))
+ await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-evidence-runtime.json',JSON.stringify(result,null,2)+'\n');await page.screenshot({path:'artifacts/provider-evidence-runtime.png',fullPage:true})
 }finally{await cleanup()}
