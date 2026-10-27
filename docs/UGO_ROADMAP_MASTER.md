@@ -1008,3 +1008,45 @@ Cambio aplicado en `src/mvp/shared.tsx` (`ad695b4f`) y contrato ajustado (`71074
 - Incidente reproducible por CSS: `src/mvp/mobile-runtime-fixes.css` fuerza `html,body,#root {overflow:hidden!important}` bajo 760px; la landing carecía de scroll propio.
 - Reparación aislada en `src/mvp/ugo-landing.css`, `:has(.ugo-landing)` restituye scroll vertical sólo en la ruta pública y preserva shells operativas Cliente/Proveedor.
 - Estado: corrección de código realizada en rama, pendiente de build CI, verificación real de gesto táctil y despliegue SAME-SHA. No afirmar prueba móvil antes de hacerla.
+
+---
+
+## Checkpoint 27/10/2026 · Integridad de evidencia autónoma en inserción
+
+**PR #593** · Rama: `fix/test-evidence-hash-on-insert-20261027`
+
+### Cambios
+- Trigger `autonomous_evidence_hash_insert` (BEFORE INSERT) en `autonomous_evidence_ledger`
+- Función `private.autonomous_evidence_hash_on_insert()` — SHA-256 determinista sobre `job_id`, `evidence_type`, `reference`, `metadata`, `correlation_id`, `created_at`
+- Provenance marker `_ugo_hash_provenance: generated_at_insert_v1` en `metadata`
+- **No reescritura de historial**: 2,952 filas históricas `DEPARTMENT_CONNECTIVITY_PROOF` sin hash permanecen BLOCKED intencional
+- Protección append-only (`autonomous_evidence_immutable`) preservada
+
+### Validación
+- Migración aplicada en UGO TEST (`tmossnqfwfwjrtzwcbmm`)
+- Test contractual `autonomous-evidence-insert-hash-guard.test.mjs` verifica:
+  - Hash generado en INSERT para filas nuevas sin hash
+  - Hashes suministrados no sobrescritos
+  - No UPDATE/DELETE/DISABLE TRIGGER/ALTER TABLE DISABLE en migración
+  - Protección append-only intacta
+
+### Estado de madurez
+```text
+Backend migration             APPLIED en UGO TEST
+Trigger hash-on-insert        ACTIVE
+Test contractual              IMPLEMENTADO
+Historial hashless (2,952)    BLOCKED — remediación auditable separada
+CI VALIDATED                  pendiente (Roadmap Traceability)
+RUNTIME VALIDATED             pendiente
+```
+
+### Próximo cierre
+1. CI Roadmap Traceability verde
+2. Suite test completa verde (grupos controlados)
+3. Auditoría histórica 2,952 filas → remediación separada con evidencia
+4. Merge PR #593 a `main` tras controles aprobados
+
+### Referencias
+- Commit migración: `794941a249823a3770fe2a949f1fa1c64d6cc3c4`
+- Commit test: `8b61c5242435156219b6e9014a3cdec4993e4bd1`
+- Commit reporte déficit: `1211af5aebacda72c1fad7418c10433883187bb4`
