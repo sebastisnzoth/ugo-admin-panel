@@ -42,7 +42,6 @@ export function UgoLanding(){
       <button type="submit">Encontrar profissional →</button>
     </form>
     <div className="ugo-hero-actions">
-     <button className="ugo-cta primary" onClick={()=>goRole('client')}>{t('landing.findPro')} <b>→</b></button>
      <button className="ugo-cta secondary" onClick={()=>goRole('provider')}>{t('landing.iAmPro')}</button>
     </div>
     <div className="ugo-hero-trust">
@@ -102,7 +101,7 @@ export function UgoLanding(){
   <section className="ugo-how" id="como">
    <div className="ugo-how-copy">
     <div className="ugo-section-kicker light">{t('landing.navHow').toLocaleUpperCase()}</div>
-    <h2>{t('landing.howTitle').split('<br/>')[0]}<br/>{t('landing.howTitle').split('<br/>')[1]}</h2>
+    <h2>Peça do seu jeito.<br/>A UGO organiza.</h2>
     <p>{t('landing.howCopy')}</p>
     <button onClick={()=>goRole('client')}>{t('landing.tryUgo')} <span>→</span></button>
    </div>
@@ -121,9 +120,9 @@ export function UgoLanding(){
      <p>{t('landing.trustCopy')}</p>
     </div>
     <div className="ugo-confidence-metrics">
-     <article><strong>24/7</strong><span>{t('landing.tracking')}</span></article>
-     <article><strong>1</strong><span>{t('landing.simpleFlow')}</span></article>
-     <article><strong>✓</strong><span>{t('landing.verifiedDocs')}</span></article>
+     <article><strong>01</strong><span>Peça um serviço pelo aplicativo</span></article>
+     <article><strong>02</strong><span>Acompanhe o andamento</span></article>
+     <article><strong>03</strong><span>Confirme a conclusão do pedido</span></article>
     </div>
    </div>
   </section>
@@ -132,8 +131,8 @@ export function UgoLanding(){
    <div className="ugo-provider-art">
     <div className="ugo-provider-phone">
      <div className="ugo-provider-head"><span>{t('landing.providerApp')}</span><b><LocalizedText id="providerRoot.online"/></b></div>
-     <div className="ugo-provider-money"><small>{t('landing.today')}</small><strong>R$ 486</strong><span>{t('landing.completed')}</span></div>
-     <div className="ugo-provider-job"><small>{t('landing.newOpportunity')}</small><strong>{t('landing.electricalInstall')}</strong><span>2,4 km · R$ 180</span><button>{t('landing.acceptJob')}</button></div>
+     <div className="ugo-provider-money"><small>Aplicativo para profissionais</small><strong>Seus serviços</strong><span>Organize oportunidades e acompanhe pedidos</span></div>
+     <div className="ugo-provider-job"><small>{t('landing.newOpportunity')}</small><strong>{t('landing.electricalInstall')}</strong><span>Exemplo ilustrativo</span><button type="button" onClick={()=>goRole('provider')}>Conhecer UGO Pro</button></div>
     </div>
    </div>
    <div className="ugo-provider-copy">
@@ -147,7 +146,7 @@ export function UgoLanding(){
   <section className="ugo-final">
    
    <span>{t('landing.hugoReady')}</span>
-   <h2>{t('landing.tellMe')}<br/>{t('landing.ugoHandles')}</h2>
+   <h2>Precisa de ajuda em casa?<br/>Faça seu pedido na UGO.</h2>
    <button onClick={()=>goRole('client')}>{t('landing.startNow')} <b>→</b></button>
   </section>
 
