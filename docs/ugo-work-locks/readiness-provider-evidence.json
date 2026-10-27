@@ -5,8 +5,8 @@
   "title": "Verify provider initial/final service evidence persistence and UI flow",
   "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T18:56:00Z",
-  "heartbeat_at": "2026-10-27T06:40:23.432Z",
-  "lease_expires_at": "2026-10-27T06:40:23.432Z",
+  "heartbeat_at": "2026-10-27T13:18:59.855Z",
+  "lease_expires_at": "2026-10-27T13:18:59.855Z",
   "started_sha": "f860d721a0185aaea932608af979a3b570e1e5c3",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -41,19 +41,22 @@
     "sentinel-pass:d23d3bff88a9",
     "github-actions:run:40461555219",
     "judge-pass:5f621ec05bc4",
-    "sentinel-pass:5f621ec05bc4"
+    "sentinel-pass:5f621ec05bc4",
+    "github-actions:run:40510158554",
+    "judge-pass:6dba40ee5f96",
+    "sentinel-pass:6dba40ee5f96"
   ],
   "production_touched": false,
   "last_failure": null,
   "automated_closure": {
-    "candidate_sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
-    "workflow_run_id": 40461555219,
+    "candidate_sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
+    "workflow_run_id": 40510158554,
     "runtime": "PASS",
     "judge": "PASS",
     "sentinel": "PASS",
     "production_touched": false,
-    "service_id": "1acf9166-f037-4cf8-b3d6-83b4f450cd18",
-    "qa_job_id": "1c31f6a6-0c0c-4bc5-9934-27353d6f6061",
+    "service_id": "419e3ec1-9a86-42dc-bee9-cfde67a8f05a",
+    "qa_job_id": "c25502ca-067e-418b-a5bb-0c415497cc26",
     "before_bytes": 69,
     "after_bytes": 69,
     "private_storage": true
@@ -74,22 +77,22 @@
     "result": "PENDING",
     "symptom": ""
   },
-  "verified_sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
-  "runtime_validated_sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
+  "verified_sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
+  "runtime_validated_sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
   "result": "VERIFIED_AUTOMATED",
   "validator_results": {
     "Judge": {
       "validator": "Judge",
       "verdict": "PASS",
-      "checked_at": "2026-10-27T06:39:53.878Z",
-      "runtime_sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
+      "checked_at": "2026-10-27T13:18:28.377Z",
+      "runtime_sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
       "readiness_id": "provider-evidence"
     },
     "Sentinel": {
       "validator": "Sentinel",
       "verdict": "PASS",
-      "checked_at": "2026-10-27T06:40:07.887Z",
-      "runtime_sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
+      "checked_at": "2026-10-27T13:18:42.473Z",
+      "runtime_sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
       "readiness_id": "provider-evidence"
     }
   },

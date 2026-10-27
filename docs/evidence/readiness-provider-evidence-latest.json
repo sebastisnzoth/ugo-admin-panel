@@ -4,13 +4,13 @@
   "task_id": "readiness-provider-evidence",
   "job_id": "UGO-READINESS-PROVIDER-EVIDENCE",
   "environment": "UGO TEST",
-  "tested_sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
-  "workflow_run_id": 40461555219,
+  "tested_sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
+  "workflow_run_id": 40510158554,
   "workflow_name": "UGO Provider Evidence Runtime TEST",
   "workflow_result": "PASS",
   "runtime": {
     "readiness_id": "provider-evidence",
-    "sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
+    "sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
     "environment": "UGO TEST",
     "productionTouched": false,
     "persistedRowsAndBytes": true,
@@ -20,8 +20,8 @@
     "uiFlowContract": true,
     "privateBucket": true,
     "publicAccessDenied": true,
-    "serviceId": "1acf9166-f037-4cf8-b3d6-83b4f450cd18",
-    "qaJobId": "1c31f6a6-0c0c-4bc5-9934-27353d6f6061",
+    "serviceId": "419e3ec1-9a86-42dc-bee9-cfde67a8f05a",
+    "qaJobId": "c25502ca-067e-418b-a5bb-0c415497cc26",
     "beforeBytes": 69,
     "afterBytes": 69,
     "coverage": "COVERED",
@@ -30,16 +30,16 @@
     "duplicateRows": 0,
     "pageErrors": 0,
     "result": "PASS",
-    "completedAt": "2026-10-27T06:39:34.754Z"
+    "completedAt": "2026-10-27T13:18:05.403Z"
   },
   "validators": {
     "Judge": {
       "validator": "Judge",
       "readiness_id": "provider-evidence",
       "status": "PASS",
-      "sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
-      "serviceId": "1acf9166-f037-4cf8-b3d6-83b4f450cd18",
-      "qaJobId": "1c31f6a6-0c0c-4bc5-9934-27353d6f6061",
+      "sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
+      "serviceId": "419e3ec1-9a86-42dc-bee9-cfde67a8f05a",
+      "qaJobId": "c25502ca-067e-418b-a5bb-0c415497cc26",
       "checks": [
         "same-sha",
         "ugo-test-only",
@@ -49,13 +49,13 @@
         "ui-flow",
         "private-storage"
       ],
-      "completed_at": "2026-10-27T06:39:53.878Z"
+      "completed_at": "2026-10-27T13:18:28.377Z"
     },
     "Sentinel": {
       "validator": "Sentinel",
       "readiness_id": "provider-evidence",
       "status": "PASS",
-      "sha": "5f621ec05bc4874eb451f6646ccd84ab8c089965",
+      "sha": "6dba40ee5f9616c75cfa1c7fe649496ec46f7cb8",
       "checks": [
         "same-sha-runtime",
         "judge-pass",
@@ -67,7 +67,7 @@
         "protected-storage",
         "audit-ids"
       ],
-      "completed_at": "2026-10-27T06:40:07.887Z"
+      "completed_at": "2026-10-27T13:18:42.473Z"
     }
   },
   "control_result": "VERIFIED_AUTOMATED",
@@ -79,5 +79,5 @@
     "evidence_required": "Prueba física de cámara/subida en dispositivo real del proveedor"
   },
   "final_gate": "HUMAN_REQUIRED",
-  "persisted_at": "2026-10-27T06:40:23.432Z"
+  "persisted_at": "2026-10-27T13:18:59.855Z"
 }
