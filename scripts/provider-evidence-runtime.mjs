@@ -74,11 +74,12 @@ try{
  // Upload second evidence (despues)
  await evidenceInput.setInputFiles({name:'evidence-after.png',mimeType:'image/png',buffer:fixture})
  
- // Wait for service to complete (onUploaded calls d.completeService())
+ // Wait for evidence to be persisted and TRABAJO LISTO button to appear
  await page.waitForTimeout(3000)
- await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:15000})
+ await page.getByRole('button',{name:'TRABAJO LISTO'}).waitFor({state:'visible',timeout:15000})
+ await page.getByRole('button',{name:'TRABAJO LISTO'}).click()
  
- // Verify service reached completado state via DB
+ // Wait for service to reach completado state
  for(let attempt=1; attempt<=30; attempt++){
    const{data:svc}=await admin.from('servicios').select('estado').eq('id',serviceId).single()
    if(svc?.estado==='completado')break
