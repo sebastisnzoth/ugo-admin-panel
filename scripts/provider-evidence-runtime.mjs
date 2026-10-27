@@ -164,19 +164,10 @@ try{
  const evidenceInput=page.locator('.provider-evidence-compact-file input[type=file]').first()
  await evidenceInput.setInputFiles({name:'evidence-before.png',mimeType:'image/png',buffer:fixture})
  
- // Wait for upload to complete - check for upload indicator or wait a bit
+ // Upload is automatic after file selection - wait for evidence to be persisted
  await page.waitForTimeout(3000)
  
- // Check if there's an upload/subir button that needs to be clicked
- const uploadBtn = page.locator('button:has-text("Subir"), button:has-text("Enviar"), button:has-text("Upload")').first()
- if (await uploadBtn.count() > 0) {
-   console.log('Upload button found, clicking...')
-   await uploadBtn.click()
-   await page.waitForTimeout(2000)
- }
- 
- // Wait for evidence to be persisted
- await page.waitForTimeout(2000)
+ // Wait for evidence to appear in database
  
  const{data:initial,error:initialError}=await admin.from('evidencias_servicio').select('id,tipo,storage_path').eq('servicio_id',serviceId).eq('tipo','antes')
  assert.ifError(initialError);assert.equal(initial?.length,1,'INITIAL_EVIDENCE_COUNT_INVALID');paths.push(initial[0].storage_path)
