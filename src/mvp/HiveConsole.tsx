@@ -99,7 +99,7 @@ export function HiveConsole(){
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/IMPLEMENTATION_STATUS.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
-   <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.queueInfo}</p></div><span>{worker?.connected?tr.workerConnected:tr.workerDisconnected}</span></div>
+   <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.queueInfo}</p></div><span>{worker?.connected?tr.workerOnline:tr.workerOffline}</span></div>
    <p role="status">{worker?.connected?tr.workerOnline:tr.workerOffline}</p>
    <div className="ugo-hive-agents">
     {jobs.map(job=><article key={job.id}><strong>{job.agent} · {job.status}</strong><p>{job.id}</p>{job.answer&&<p>{job.answer}</p>}{job.error_code&&<p role="alert">{job.error_code}</p>}{job.model&&<small>{job.model}</small>}</article>)}
