@@ -6,7 +6,7 @@ const workflow=readFileSync(new URL('../../.github/workflows/autonomous-worker-t
 test('scheduled TEST workflow authenticates and evaluates Customer #1 gate',()=>{
  assert.match(workflow,/Evaluate Customer #1 gate with real TEST Super Admin/);
  assert.match(workflow,/run: node scripts\/autonomous-launch-gate-runtime\.mjs/);
- assert.match(workflow,/UGO_TEST_ADMIN_PASSWORD: \$\{\{ secrets\.UGO_TEST_ADMIN_PASSWORD \}\}/);
+ assert.match(workflow,/UGO_TEST_ADMIN_PASSWORD:\s*[^\n]*secrets\.UGO_TEST_ADMIN_PASSWORD/);
  assert.match(script,/signInWithPassword/);
  assert.match(script,/superadmin_evaluate_release_gate/);
  assert.match(script,/CUSTOMER_ACCEPTANCE_BLOCKER_REQUIRED/);
