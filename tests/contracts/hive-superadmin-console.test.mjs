@@ -18,7 +18,8 @@ test('Hive Super Admin chat invokes existing TEST-only job queue and shows real 
  assert.match(consoleCode,/action:'list'/)
  assert.match(consoleCode,/action:'worker_status'/)
  assert.ok(consoleCode.includes('idempotency_key:crypto.randomUUID()'))
- assert.match(consoleCode,/workerDisconnected/)
+ assert.match(consoleCode,/workerOffline:'[^']+'/)
+ assert.match(consoleCode,/worker\?\.connected\?tr\.workerOnline:tr\.workerOffline/) 
  assert.ok(!consoleCode.includes('signInWithPassword('));assert.ok(!consoleCode.includes('localStorage'));assert.ok(!consoleCode.includes('OPENROUTER_API_KEY'))
 })
 test('Hive multilingual UI copy is present and no fictional metrics are rendered',()=>{
