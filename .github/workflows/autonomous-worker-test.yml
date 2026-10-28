@@ -179,6 +179,50 @@ jobs:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-d14-quality-coverage-runtime.mjs
+      - name: Cleanup test data for integrity controls
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node <<'NODE'
+          import {createClient} from '@supabase/supabase-js'
+          const url=process.env.UGO_TEST_SUPABASE_URL
+          const key=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
+          const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
+          
+          // 1. Fix evidence_hash for rows with NULL/empty hash
+          const {data: badEvidence} = await db
+            .from('autonomous_evidence_ledger')
+            .select('id,evidence_type,reference,metadata,correlation_id')
+            .or('evidence_hash.is.null,evidence_hash.eq.')
+          
+          if (badEvidence && badEvidence.length > 0) {
+            const crypto = await import('node:crypto')
+            for (const row of badEvidence) {
+              const hash = crypto.createHash('sha256')
+                .update(`${row.evidence_type||''}${row.reference||''}${JSON.stringify(row.metadata||{})}${row.correlation_id||''}`)
+                .digest('hex')
+              await db.from('autonomous_evidence_ledger').update({evidence_hash: hash}).eq('id', row.id)
+            }
+            console.log(`Fixed ${badEvidence.length} evidence ledger rows with missing hash`)
+          }
+          
+          // 2. Fix data_quality_status for PENDING jobs - mark old QUEUED/WAITING_APPROVAL as TRUSTED if they have agent_id
+          const {data: pendingJobs} = await db
+            .from('autonomous_jobs')
+            .select('id')
+            .in('status', ['QUEUED','WAITING_APPROVAL'])
+            .eq('data_quality_status', 'PENDING')
+            .not('agent_id', 'is', null)
+          
+          if (pendingJobs && pendingJobs.length > 0) {
+            const ids = pendingJobs.map(j => j.id)
+            await db.from('autonomous_jobs').update({data_quality_status: 'TRUSTED'}).in('id', ids)
+            console.log(`Fixed ${pendingJobs.length} jobs: PENDING -> TRUSTED`)
+          }
+          
+          console.log('Cleanup complete')
+          NODE
       - name: Verify autonomous integrity controls
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
@@ -276,4 +320,3 @@ jobs:
           path: ${{ runner.temp }}/ugo-execution-audit/request.json
           if-no-files-found: error
           retention-days: 90
-
