@@ -44,12 +44,41 @@ const translations={
 const catalog=['Hugo','Architect','Developer','QA','Security','DevOps','Judge','Sentinel','Research'] as const
 type HiveStatus={environment:string;backend:{reachable:boolean;state?:'ONLINE'|'TIMEOUT'|'HTTP_ERROR'|'NETWORK_ERROR';http_status?:number|null;checked_at:string;latency_ms:number};backup:{state:string;version?:string;bytes?:number;created_at?:string};inference:{state:string};autonomy:{state:string}}
 type Tab='overview'|'chat'|'agents'
+type HiveJob={id:string;status:string;agent:string;answer?:string|null;model?:string|null;error_code?:string|null;created_at:string}
+type WorkerStatus={enrolled:boolean;connected:boolean;last_seen_at:string|null}
+
 export function HiveConsole(){
  const{locale}=useLocale()
  const tr=locale.startsWith('pt')?translations['pt-BR']:locale.startsWith('es')?translations.es:translations.en
  const[tab,setTab]=useState<Tab>('overview')
  const[status,setStatus]=useState<HiveStatus|null>(null)
  const[statusError,setStatusError]=useState(false)
+ const[message,setMessage]=useState('')
+ const[agent,setAgent]=useState('Hugo')
+ const[jobs,setJobs]=useState<HiveJob[]>([])
+ const[worker,setWorker]=useState<WorkerStatus|null>(null)
+ const[busy,setBusy]=useState(false)
+ const[queueError,setQueueError]=useState('')
+ const refresh=async()=>{try{
+  const [j,w]=await Promise.all([
+   supabase.functions.invoke<{jobs:HiveJob[]}>('ugo-hive-local-jobs',{body:{action:'list'}}),
+   supabase.functions.invoke<WorkerStatus>('ugo-hive-local-jobs',{body:{action:'worker_status'}})
+  ])
+  if(j.error||!j.data||w.error||!w.data)throw new Error('HIVE_QUEUE_UNAVAILABLE')
+  setJobs(j.data.jobs??[]);setWorker(w.data);setQueueError('')
+ }catch{setQueueError('No se pudo consultar la cola de Hive. Comprobá la sesión Super Admin.')}}
+ const submit=async()=>{if(!message.trim()||busy)return;setBusy(true);setQueueError('')
+  try{
+   const {data,error}=await supabase.functions.invoke<{job:{id:string}}>('ugo-hive-local-jobs',{
+    body:{action:'create',prompt:message.trim(),agent,idempotency_key:crypto.randomUUID()}
+   })
+   if(error||!data?.job?.id)throw new Error('HIVE_CREATE_FAILED')
+   setMessage('');await refresh()
+  }catch{setQueueError('No se pudo enviar el trabajo. No se creó una respuesta simulada.')}
+  finally{setBusy(false)}
+ }
+ useEffect(()=>{if(tab==='chat')void refresh()},[tab])
+
  useEffect(()=>{let active=true;const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET'});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError(false)}catch{if(active){setStatus(null);setStatusError(true)}}};void load();return()=>{active=false}},[])
  return <div className="ugo-hive">
   <header className="ugo-hive-header"><div><small>{tr.brand}</small><h1>UGO Hive</h1><p>{tr.heading}</p></div><strong className="ugo-hive-state">{tr.disabled}</strong></header>
@@ -67,10 +96,18 @@ export function HiveConsole(){
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/IMPLEMENTATION_STATUS.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
   </section></div>}
   {tab==='chat'&&<section className="ugo-hive-panel ugo-hive-chat">
-   <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>{tr.gateway}</p></div><span>{tr.offline}</span></div>
-   <div className="ugo-hive-chat-empty" role="status"><strong>{tr.nochat}</strong><p>{tr.nochatInfo}</p></div>
-   <label htmlFor="ugo-hive-message">{tr.message}</label><textarea id="ugo-hive-message" placeholder={tr.placeholder} disabled rows={3}/>
-   <button type="button" disabled>{tr.send}</button>
+   <div className="ugo-hive-chat-title"><div><h2>{tr.conversation}</h2><p>Trabajos autenticados en TEST; ejecución de solo lectura por worker local.</p></div><span>{worker?.connected?'WORKER ONLINE':'WORKER OFFLINE'}</span></div>
+   <p role="status">{worker?.connected?'OpenClaw conectado':'El worker local no está conectado. Los trabajos quedan pendientes en la cola.'}</p>
+   <div className="ugo-hive-agents">
+    {jobs.map(job=><article key={job.id}><strong>{job.agent} · {job.status}</strong><p>{job.id}</p>{job.answer&&<p>{job.answer}</p>}{job.error_code&&<p role="alert">{job.error_code}</p>}{job.model&&<small>{job.model}</small>}</article>)}
+   </div>
+   {queueError&&<p role="alert">{queueError}</p>}
+   <label htmlFor="ugo-hive-agent">Agente</label>
+   <select id="ugo-hive-agent" value={agent} onChange={e=>setAgent(e.target.value)}>{catalog.map(name=><option key={name} value={name}>{name}</option>)}</select>
+   <label htmlFor="ugo-hive-message">{tr.message}</label>
+   <textarea id="ugo-hive-message" value={message} onChange={e=>setMessage(e.target.value)} placeholder="Trabajo de análisis de solo lectura" maxLength={4000} rows={3}/>
+   <button type="button" onClick={()=>void submit()} disabled={busy||!message.trim()}>Enviar trabajo</button>
+   <button type="button" onClick={()=>void refresh()} disabled={busy}>Actualizar resultados</button>
   </section>}
   {tab==='agents'&&<section className="ugo-hive-panel"><h2>{tr.planned}</h2><p>{tr.plannedInfo}</p>
    <div className="ugo-hive-agents">{catalog.map(name=><article key={name}><strong>{name}</strong><span>{tr.unverified}</span></article>)}</div>
