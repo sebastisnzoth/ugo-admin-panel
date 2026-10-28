@@ -190,69 +190,20 @@ jobs:
           const key=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
           const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
           
-          // 1. Fix evidence_hash for rows with NULL/empty hash - handle pagination
-          let totalFixed = 0
-          let lastId = null
-          const batchSize = 1000
-          
-          while (true) {
-            let query = db
-              .from('autonomous_evidence_ledger')
-              .select('id,evidence_type,reference,metadata,correlation_id')
-              .or('evidence_hash.is.null,evidence_hash.eq.')
-              .order('id')
-              .limit(batchSize)
-            
-            if (lastId) {
-              query = query.gt('id', lastId)
-            }
-            
-            const {data: badEvidence, error} = await query
-            
-            if (error) {
-              console.error('Error fetching evidence:', error)
-              break
-            }
-            
-            if (!badEvidence || badEvidence.length === 0) {
-              break
-            }
-            
-            const crypto = await import('node:crypto')
-            for (const row of badEvidence) {
-              const hash = crypto.createHash('sha256')
-                .update(`${row.evidence_type||''}${row.reference||''}${JSON.stringify(row.metadata||{})}${row.correlation_id||''}`)
-                .digest('hex')
-              await db.from('autonomous_evidence_ledger').update({evidence_hash: hash}).eq('id', row.id)
-            }
-            
-            totalFixed += badEvidence.length
-            lastId = badEvidence[badEvidence.length - 1].id
-            console.log(`Fixed batch of ${badEvidence.length} evidence ledger rows (total: ${totalFixed})`)
-            
-            if (badEvidence.length < batchSize) {
-              break
-            }
+          // 1. Backfill evidence_hash for legacy rows using SECURITY DEFINER function
+          const {data: evidenceFixed, error: evidenceError} = await db.rpc('autonomous_backfill_evidence_hashes')
+          if (evidenceError) {
+            console.error('Error fixing evidence hashes:', evidenceError)
+          } else if (evidenceFixed && evidenceFixed > 0) {
+            console.log(`Fixed ${evidenceFixed} evidence ledger rows with missing hash`)
           }
           
-          if (totalFixed > 0) {
-            console.log(`Fixed ${totalFixed} evidence ledger rows with missing hash`)
-          }
-          
-          // 2. Fix data_quality_status for PENDING jobs - mark old QUEUED/WAITING_APPROVAL as TRUSTED if they have agent_id
-          const {data: pendingJobs, error: jobsError} = await db
-            .from('autonomous_jobs')
-            .select('id')
-            .in('status', ['QUEUED','WAITING_APPROVAL'])
-            .eq('data_quality_status', 'PENDING')
-            .not('agent_id', 'is', null)
-          
+          // 2. Fix data_quality_status for PENDING jobs using SECURITY DEFINER function
+          const {data: jobsFixed, error: jobsError} = await db.rpc('autonomous_fix_pending_job_quality')
           if (jobsError) {
-            console.error('Error fetching jobs:', jobsError)
-          } else if (pendingJobs && pendingJobs.length > 0) {
-            const ids = pendingJobs.map(j => j.id)
-            await db.from('autonomous_jobs').update({data_quality_status: 'TRUSTED'}).in('id', ids)
-            console.log(`Fixed ${pendingJobs.length} jobs: PENDING -> TRUSTED`)
+            console.error('Error fixing job quality:', jobsError)
+          } else if (jobsFixed && jobsFixed > 0) {
+            console.log(`Fixed ${jobsFixed} jobs: PENDING -> TRUSTED`)
           }
           
           console.log('Cleanup complete')
