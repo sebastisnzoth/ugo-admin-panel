@@ -12,14 +12,14 @@ test('Hive navigation is Super Admin only and auth gate enforces this section',(
  assert.match(shell,/section==='hive'&&isSuperAdmin/)
 })
 test('Hive Super Admin chat invokes existing TEST-only job queue and shows real worker status',()=>{
- assert.match(consoleCode,/supabase\\.functions\\.invoke<HiveStatus>\\('ugo-hive-status'/)
+ assert.ok(consoleCode.includes("supabase.functions.invoke<HiveStatus>('ugo-hive-status'"))
  assert.match(consoleCode,/ugo-hive-local-jobs/)
  assert.match(consoleCode,/action:'create'/)
  assert.match(consoleCode,/action:'list'/)
  assert.match(consoleCode,/action:'worker_status'/)
- assert.match(consoleCode,/idempotency_key:crypto\\.randomUUID\\(\\)/)
+ assert.ok(consoleCode.includes('idempotency_key:crypto.randomUUID()'))
  assert.match(consoleCode,/WORKER OFFLINE/)
- assert.doesNotMatch(consoleCode,/signInWithPassword\\(|localStorage|OPENROUTER_API_KEY/)
+ assert.ok(!consoleCode.includes('signInWithPassword('));assert.ok(!consoleCode.includes('localStorage'));assert.ok(!consoleCode.includes('OPENROUTER_API_KEY'))
 })
 test('Hive multilingual UI copy is present and no fictional metrics are rendered',()=>{
  assert.match(consoleCode,/'pt-BR':/)
