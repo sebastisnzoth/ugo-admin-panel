@@ -1050,3 +1050,12 @@ RUNTIME VALIDATED             pendiente
 - Commit migración: `794941a249823a3770fe2a949f1fa1c64d6cc3c4`
 - Commit test: `8b61c5242435156219b6e9014a3cdec4993e4bd1`
 - Commit reporte déficit: `1211af5aebacda72c1fad7418c10433883187bb4`
+
+
+## 2026-10-28 — PR #594 Hive Console → cola local autenticada (TEST)
+
+- La consola Super Admin usa la Edge Function existente `ugo-hive-local-jobs` para `create`, `list` y `worker_status`; no crea infraestructura paralela.
+- Cada solicitud usa `idempotency_key`; se visualizan respuestas y errores persistidos y el estado reportado del worker.
+- Backend y trabajador OpenClaw no se declaran operativos sin heartbeat reciente y una prueba end-to-end autenticada.
+- Estado: IMPLEMENTADO EN RAMA; CI y prueba Super Admin TEST pendientes. Empresa Autónoma OFF; PROD no modificada.
+- Gate de aceptación: CI vigente aprobado, sesión Super Admin autorizada, worker conectado, job real terminado y respuesta visible.
