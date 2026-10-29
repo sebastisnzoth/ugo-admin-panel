@@ -62,14 +62,16 @@ function acquireFreshBrowserPosition():Promise<GeolocationPosition>{
 }
 
 // Share a single acquisition across the manual retry and foreground heartbeats.
-// Every settled result clears this slot, allowing a genuine new retry.
+// When refreshGps() is explicitly called (manual refresh), always start a fresh acquisition
+// regardless of pending state, to avoid GPS staleness beyond the 90s matching window.
 let pendingFreshPosition:Promise<GeolocationPosition>|null=null
-async function getFreshBrowserPosition():Promise<GeolocationPosition>{
- if(pendingFreshPosition)return pendingFreshPosition
+let forcedRefreshToken:number=0
+async function getFreshBrowserPosition(force:boolean=false):Promise<GeolocationPosition>{
+ if(!force && pendingFreshPosition)return pendingFreshPosition
+ const token=++forcedRefreshToken
  const request=acquireFreshBrowserPosition()
  pendingFreshPosition=request
- try{return await request}finally{if(pendingFreshPosition===request)pendingFreshPosition=null}
-}
+ try{return await request}finally{if(pendingFreshPosition===request){pendingFreshPosition=null;forcedRefreshToken=0}}
 
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
