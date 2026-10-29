@@ -59,12 +59,14 @@ export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
  const formatFee=(n:number)=>new Intl.NumberFormat(locale,{style:'currency',currency:'BRL'}).format(n)
  useEffect(()=>{if(!service?.id||!service.proveedor_id||!suppliesRequested||suppliesApproved){setFeeQuote(null);return}
   let alive=true;setFeeLoading(true);setFeeError('')
-  void supabase.rpc('cotizar_productos_faxina',{p_servicio_id:service.id}).then(({data,error})=>{
+  void(async()=>{try{
+   const{data,error}=await supabase.rpc('cotizar_productos_faxina',{p_servicio_id:service.id})
    if(!alive)return
-   if(error){setFeeError(error.message);setFeeQuote(null);return}
+   if(error)throw error
    const amount=data==null?null:Number(data)
    setFeeQuote(amount!=null&&Number.isFinite(amount)&&amount>0?amount:null)
-  }).catch(error=>{if(alive){setFeeError(error instanceof Error?error.message:'No se pudo obtener el precio de productos.');setFeeQuote(null)}}).finally(()=>{if(alive)setFeeLoading(false)})
+  }catch(error){if(alive){setFeeError(error instanceof Error?error.message:'No se pudo obtener el precio de productos.');setFeeQuote(null)}}
+  finally{if(alive)setFeeLoading(false)}})()
   return()=>{alive=false}
  },[service?.id,service?.proveedor_id,suppliesRequested,suppliesApproved,supabase])
  const approveSupplies=async()=>{if(!service?.id||!feeQuote||busy)return;setBusy(true);setFeeError('')
