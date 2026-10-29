@@ -72,6 +72,7 @@ async function getFreshBrowserPosition(force:boolean=false):Promise<GeolocationP
  const request=acquireFreshBrowserPosition()
  pendingFreshPosition=request
  try{return await request}finally{if(pendingFreshPosition===request){pendingFreshPosition=null;forcedRefreshToken=0}}
+}
 
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
