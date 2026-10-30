@@ -736,3 +736,12 @@ RUNTIME VALIDATED             pendiente
 ## Atención IA pública — checkpoint TEST 2026-10-30
 
 Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backend Gemini en Vercel. La migración del limitador en Supabase TEST fue aplicada y sus privilegios verificados. El despliegue Preview y la respuesta HTTP real continúan sujetos a validación, y el backend debe permanecer cerrado hasta configurar claves de TEST y Turnstile. Este bloque no autoriza cambios de Supabase PROD ni exposición de secretos de servidores. La prueba de lanzamiento debe registrar SHA, CI, validación antiabuso y respuesta auténtica de Gemini.
+
+
+## 2026-10-30 — Neon TEST Auth en PR #605 (P0, no GO-LIVE)
+
+- SHA implementado: `4e05d718cd3095f2f32a6b0af44add4eaae9dbdd` (React login aislado mediante `?neon-test-login=1`).
+- Neon TEST `br-tiny-field-b6v07tb3`: trigger `ugo_neon_auth_signup_profile` y política `ugo_neon_self_select` creados y comprobados. 99 tablas estructurales, sin datos originales de Arena; Auth inicial sin usuarios.
+- GitHub Actions: TypeScript/build y Auth Isolation PASS al revisar el run `41138311565` / `41138311557`; Core CI completo y prueba funcional con sesión real no certificados todavía.
+- Riesgos pendientes: alta/inicio de sesión físico, token JWT desde navegador y CORS, perfil UGO, login persistente, acceso Cliente/Proveedor, ausencia Neon Realtime y Storage en región actual. No fusionar ni publicar hasta superar pruebas y no-regresión.
+- Arena TEST suspendida para consultas de carga; Supabase PROD y Neon production sin modificaciones. Rollback: no activar el acceso alternativo ni cambiar endpoints del frontend existente.
