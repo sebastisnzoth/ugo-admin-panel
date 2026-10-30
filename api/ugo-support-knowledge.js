@@ -19,14 +19,15 @@ export const UGO_FAQ=Object.freeze([
  {audience:'all',q:'Esqueci a senha, como faço?',a:'Abra o aplicativo correspondente e use as opções oficiais de acesso ou recuperação de senha. Nunca informe sua senha aqui.'}
 ]);
 export const UGO_KNOWLEDGE=`UGO atende inicialmente Florianópolis com Faxina e Marido de Aluguel. A disponibilidade real, as tarifas, as políticas de reembolso e o status de pedidos não são acessíveis neste atendimento público. Os formulários de Faxina pedem casa/apartamento/outro, ambientes, quartos, banheiros, 1–12 horas e necessidade de produtos; produtos com preço extra configurado pelo profissional dependem de aprovação do cliente. O profissional vê cadastro, ofertas e questões de GPS no aplicativo autenticado. Não solicitar senhas, documentos ou informações bancárias; não executar ações ou prometer preços.\nLinks oficiais de login: Cliente: ${UGO_LINKS.client} ; Profissional: ${UGO_LINKS.provider}.\nPerguntas frequentes e respostas verificadas:\n${UGO_FAQ.map(x=>`[${x.audience}] ${x.q} — ${x.a}`).join('\\n')}`;
-export function routeAccessQuestion(message){
- const m=String(message||'').toLowerCase();
- const wantsAccess=/login|logar|loguear|iniciar sesi[oó]n|entrar|acessar|acceso|cadastro|registr|criar conta|contrase[nñ]a|senha|password|recuperar conta/.test(m);
+export function routeAccessQuestion(message,locale='pt-BR'){
+ const m=String(message||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const wantsAccess=/(?:login|logar|loguear|log in|sign in|sign up|iniciar sesion|acceder|ingresar|entrar|acessar|acceso|cadastro|registr|criar conta|crear cuenta|contrase|senha|password|recuperar conta|acceso a la app)/.test(m);
  if(!wantsAccess)return null;
- const isPro=/profiss|proveed|prestador|worker|trabajad|oferecer servi|ofrecer servi/.test(m);
- const isClient=/cliente|client|contratar|pedir servi|solicitar servi/.test(m);
- const lang=/\b(login|senha|entrar|profissional|cadastro)\b/.test(m)?'pt':/\b(log in|sign in|provider)\b/.test(m)?'en':'es';
- if(isPro&&!isClient)return lang==='pt'? `Para entrar ou cadastrar-se como profissional, abra: ${UGO_LINKS.provider} . Não envie sua senha aqui.`:lang==='en'? `Sign in or register as a professional: ${UGO_LINKS.provider} . Never share your password here.`:`Para iniciar sesión o registrarte como profesional, entrá aquí: ${UGO_LINKS.provider} . No compartas tu contraseña en este chat.`;
- if(isClient&&!isPro)return lang==='pt'?`Para entrar como cliente, abra: ${UGO_LINKS.client} . Não envie sua senha aqui.`:lang==='en'?`Sign in or register as a customer: ${UGO_LINKS.client} . Never share your password here.`:`Para iniciar sesión o registrarte como cliente, entrá aquí: ${UGO_LINKS.client} . No compartas tu contraseña en este chat.`;
- return lang==='pt'?`Você pode acessar a UGO aqui: Cliente: ${UGO_LINKS.client} . Profissional: ${UGO_LINKS.provider} . Qual perfil você deseja usar?`:lang==='en'?`Choose your UGO access: Customer: ${UGO_LINKS.client} . Professional: ${UGO_LINKS.provider} .`:`Elegí cómo ingresar a UGO: Cliente: ${UGO_LINKS.client} . Profesional: ${UGO_LINKS.provider} .`;
+ const isPro=/(?:profiss|proveed|prestador|worker|trabajad|oferecer servi|ofrecer servi|professional|provider)/.test(m);
+ const isClient=/(?:cliente|client|customer|contratar|pedir servi|solicitar servi)/.test(m);
+ const lang=locale==='es'?'es':locale==='en'?'en':'pt';
+ const both=lang==='es'?`Para ingresar a UGO, elegí tu aplicación:\nCliente: ${UGO_LINKS.client}\nProfesional: ${UGO_LINKS.provider}\nNo compartas tu contraseña aquí.`:lang==='en'?`Choose your UGO app:\nCustomer: ${UGO_LINKS.client}\nProfessional: ${UGO_LINKS.provider}\nNever share passwords here.`:`Para entrar na UGO, escolha o aplicativo:\nCliente: ${UGO_LINKS.client}\nProfissional: ${UGO_LINKS.provider}\nNão envie sua senha aqui.`;
+ if(isPro===isClient)return both;
+ if(isPro)return lang==='es'?`Para ingresar o registrarte como profesional: ${UGO_LINKS.provider}\nNo compartas tu contraseña aquí.`:lang==='en'?`Sign in or register as a professional: ${UGO_LINKS.provider}\nNever share your password here.`:`Para entrar ou cadastrar-se como profissional: ${UGO_LINKS.provider}\nNão envie sua senha aqui.`;
+ return lang==='es'?`Para ingresar o registrarte como cliente: ${UGO_LINKS.client}\nNo compartas tu contraseña aquí.`:lang==='en'?`Sign in or register as a customer: ${UGO_LINKS.client}\nNever share your password here.`:`Para entrar ou cadastrar-se como cliente: ${UGO_LINKS.client}\nNão envie sua senha aqui.`;
 }
