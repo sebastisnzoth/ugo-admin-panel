@@ -58,3 +58,10 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - Test de contrato añadido (`tests/contracts/service-chat.test.mjs`) en commit `98a0dbf1`.
 - **ADVERTENCIA**: esto conecta el cliente Supabase por rol, **no demuestra** que todas las consultas, RPC, funciones serverless, Storage y Realtime de las aplicaciones usen el mismo proyecto. Prohibido desplegar o habilitar la variable públicamente hasta auditar dependencias, backups, RLS y Auth y pasar E2E.
 - Autenticación Cliente/Proveedor en PROD no probada. Ninguna modificación de base realizada. CI de commit pendiente.
+
+## Verificación posterior — 2026-10-30 16:49 BRT
+- SHA inspeccionado: `dc8645dafcd2b02f43db3386a9c4388c81a61d54`; PR #603 OPEN/DRAFT. 7 workflows: Roadmap PASS, Groq SKIPPED, Core CI + Cross Security + Admin Realtime + Hugo Timeout + Cross-role UI FAIL.
+- **Causa raíz comprobada en logs:** todos los cinco FAIL terminan en `npm run verify:test-env`: `src/lib/roleSupabase.ts` contenía referencia directa al ref de Supabase PROD. El opt-in `VITE_UGO_ROLE_DATABASE_TARGET=prod-preview` y la clave publicable PROD introducidos en esta rama contradecían el guard TEST, aunque no hubiera cutover activo.
+- **Corrección:** commit `6db01445` elimina la ruta opcional PROD y mantiene `UGO_SUPABASE_URL`/`UGO_SUPABASE_PUBLISHABLE_KEY` con almacenamiento aislado por entorno/rol. Commit `ae25733c` reemplaza el contrato de opt-in por aserciones de aislamiento TEST y prohibición de override. Sin escrituras de base ni cambio de secretos, despliegue o tráfico.
+- **Gates:** nuevo CI exact-SHA pendiente; tras superar guard, comprobar si Auth TEST vuelve a devolver HTTP 504 en runtimes. No marcar PASS antes de ejecución. Backups, compatibilidad RPC/RLS y E2E reales pendientes. **NO MERGE** mientras no haya garantías completas.
+- Siguiente acción verificable: observar Core CI y los 4 runtimes del nuevo SHA, leer logs de fallos reales y corregirlos en la misma rama, sin relajar assertions.
