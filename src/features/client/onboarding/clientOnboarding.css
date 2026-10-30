@@ -53,3 +53,23 @@
  .ugo-client-field input,.ugo-client-field select{font-size:16px;scroll-margin-bottom:140px}
  .ugo-client-actions{position:static;margin:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:#202b23}
 }
+
+
+/* Android portrait onboarding scroll container: independent of locked html/body/#root. */
+@media (max-width:820px){
+ .ugo-client-stitch-scope .ugo-client-onboarding,
+ .ugo-client-onboarding{
+  position:fixed!important;inset:0!important;z-index:100!important;
+  display:block!important;width:100%!important;height:100dvh!important;
+  min-height:0!important;max-height:100dvh!important;
+  overflow-x:hidden!important;overflow-y:scroll!important;
+  -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+  overscroll-behavior-y:contain!important;padding:0!important;
+ }
+ .ugo-client-stitch-scope .ugo-client-onboarding-card,
+ .ugo-client-onboarding-card{
+  height:auto!important;min-height:100%!important;max-height:none!important;
+  overflow:visible!important;margin:0 auto!important;
+ }
+ .ugo-client-onboarding-body{padding-bottom:calc(48px + env(safe-area-inset-bottom))!important}
+}
