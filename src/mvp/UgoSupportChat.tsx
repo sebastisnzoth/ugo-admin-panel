@@ -51,7 +51,7 @@ export function UgoSupportChat(){
   const timeoutId=window.setTimeout(()=>abort.abort(),25000)
   setBusy(true)
   try{
-   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:next.slice(-12).map(m=>({role:m.role,content:m.content.slice(0,2000)})),channel:'landing',locale:navigator.language,turnstileToken:captchaToken}),signal:abort.signal,credentials:'omit'})
+   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:next.slice(-12).map(m=>({role:m.role,content:m.content.slice(0,2000)})),channel:'landing',locale:navigator.language,turnstileToken:captchaToken}),signal:abort.signal,credentials:'same-origin'})
    if(!response.ok){
     if(response.status===404)throw new Error('Endpoint do atendimento não encontrado (404).')
     if(response.status===405)throw new Error('O servidor recusou o método da solicitação (405).')
