@@ -156,6 +156,6 @@ export function UgoLanding(){
    <div className="ugo-footer-links"><button onClick={()=>goRole('client')}>{t('landing.client')}</button><button onClick={()=>goRole('provider')}>{t('landing.provider')}</button><button onClick={()=>goRole('admin')}>{t('landing.admin')}</button></div>
    <small><LocalizedText id="landing.footer" params={{year:2026}}/></small>
   </footer>
-  <UgoSupportChat/>
+  {import.meta.env.VITE_UGO_SUPPORT_CHAT_ENABLED==='true'&&<UgoSupportChat/>}
  </main>
 }
