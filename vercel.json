@@ -12,22 +12,77 @@
     "SUPABASE_ANON_KEY": "sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl"
   },
   "rewrites": [
-    {"source":"/api/admin/create-user","destination":"/api/proxy?admin_create_user=1"},
-    {"source":"/api/hugo/gemini","destination":"/api/test"},
-    {"source":"/api/pagos/efectivo","destination":"/api/operations?op=cash-select"},
-    {"source":"/api/pagos/confirmar-efectivo","destination":"/api/operations?op=cash-confirm"},
-    {"source":"/api/kyc/verify","destination":"/api/operations?op=kyc-verify"},
-    {"source":"/api/calendar/start","destination":"/api/test?ugo_calendar=start"},
-    {"source":"/api/calendar/callback","destination":"/api/test?ugo_calendar=callback"},
-    {"source":"/api/calendar/status","destination":"/api/test?ugo_calendar=status"},
-    {"source":"/api/calendar/sync","destination":"/api/test?ugo_calendar=sync"},
-    {"source":"/api/calendar/disconnect","destination":"/api/test?ugo_calendar=disconnect"},
-    {"source":"/api/disputes/analyze","destination":"/api/test?ugo_dispute_ai=1"},
-    {"source":"/api/scout/gmail","destination":"/api/scout/places?ugo_scout_gmail=1"},
-    {"source":"/api/(.*)","destination":"/api/$1"},
-    {"source":"/provider.html","destination":"/provider.html"},
-    {"source":"/client.html","destination":"/client.html"},
-    {"source":"/scout.html","destination":"/scout.html"},
-    {"source":"/(.*)","destination":"/index.html"}
+    {
+      "source": "/api/ugo-support",
+      "destination": "/api/ugo-support"
+    },
+    {
+      "source": "/api/admin/create-user",
+      "destination": "/api/proxy?admin_create_user=1"
+    },
+    {
+      "source": "/api/hugo/gemini",
+      "destination": "/api/test"
+    },
+    {
+      "source": "/api/pagos/efectivo",
+      "destination": "/api/operations?op=cash-select"
+    },
+    {
+      "source": "/api/pagos/confirmar-efectivo",
+      "destination": "/api/operations?op=cash-confirm"
+    },
+    {
+      "source": "/api/kyc/verify",
+      "destination": "/api/operations?op=kyc-verify"
+    },
+    {
+      "source": "/api/calendar/start",
+      "destination": "/api/test?ugo_calendar=start"
+    },
+    {
+      "source": "/api/calendar/callback",
+      "destination": "/api/test?ugo_calendar=callback"
+    },
+    {
+      "source": "/api/calendar/status",
+      "destination": "/api/test?ugo_calendar=status"
+    },
+    {
+      "source": "/api/calendar/sync",
+      "destination": "/api/test?ugo_calendar=sync"
+    },
+    {
+      "source": "/api/calendar/disconnect",
+      "destination": "/api/test?ugo_calendar=disconnect"
+    },
+    {
+      "source": "/api/disputes/analyze",
+      "destination": "/api/test?ugo_dispute_ai=1"
+    },
+    {
+      "source": "/api/scout/gmail",
+      "destination": "/api/scout/places?ugo_scout_gmail=1"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/provider.html",
+      "destination": "/provider.html"
+    },
+    {
+      "source": "/client.html",
+      "destination": "/client.html"
+    },
+    {
+      "source": "/scout.html",
+      "destination": "/scout.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
