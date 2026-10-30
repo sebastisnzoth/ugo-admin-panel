@@ -53,6 +53,8 @@ export function UgoSupportChat(){
   try{
    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:next.slice(-12).map(m=>({role:m.role,content:m.content.slice(0,2000)})),channel:'landing',locale:navigator.language,turnstileToken:captchaToken}),signal:abort.signal,credentials:'omit'})
    if(!response.ok){
+    if(response.status===404)throw new Error('Endpoint do atendimento não encontrado (404).')
+    if(response.status===405)throw new Error('O servidor recusou o método da solicitação (405).')
     const body=await response.json().catch(()=>null) as {error?:string}|null
     if(response.status===429)throw new Error('Limite de mensagens atingido. Aguarde um minuto e tente novamente.')
     if(response.status===403)throw new Error('Não foi possível confirmar a verificação de segurança. Tente novamente.')
@@ -66,7 +68,7 @@ export function UgoSupportChat(){
    if(typeof reply!=='string'||!reply.trim())throw new Error('Resposta inválida')
    setMessages(old=>[...old,{role:'assistant',content:reply.slice(0,5000)}])
   }catch(e){setNotice(abort.signal.aborted?'O atendimento está demorando mais que o normal. Tente novamente em instantes.':e instanceof Error&&e.message!=='Failed to fetch'?e.message:'Não foi possível conectar ao atendimento. Tente novamente mais tarde.')}
-  finally{window.clearTimeout(timeoutId);setBusy(false);if(controller.current===abort)controller.current=null;if(captchaId.current&&window.turnstile)window.turnstile.reset(captchaId.current);setCaptchaToken('')}
+  finally{window.clearTimeout(timeoutId);setBusy(false);if(controller.current===abort)controller.current=null;/* Keep the challenge stable on network errors; new token will be requested when used/expired. */}
  }
  return <div className="ugo-support-root">
   {open&&<section className="ugo-support-panel" role="dialog" aria-label={t.header}>
