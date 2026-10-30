@@ -41,3 +41,14 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - El estado Vercel del SHA inspeccionado sigue `pending`; PR #603 continúa `draft`, abierta y sin merge.
 - Gates de release aún no cumplidos: CI completo, runtime real TEST, respaldo verificable, Auth/RLS y validación de no regresión. PROD no modificada; sin cambio de URL, secretos ni tráfico.
 - Próximo paso: reejecutar y verificar Core CI tras la corrección de traducciones; recuperar salud de TEST para validar Admin Realtime sin generar consultas de monitoreo en bucle. Solo considerar merge cuando se cumplan las garantías del PR.
+
+## Verificación independiente PR #603 — 2026-10-30 15:17 BRT
+
+- SHA HEAD comprobado: `bf006265bd032f01cea07528365d4b96396f2d8b`. PR sigue **OPEN / DRAFT / mergeable**, sin fusión.
+- GitHub Actions en ese SHA: **UGO Core CI PASS** (`41104354246`), **Roadmap Traceability PASS** (`41104354276`), **Cross Security Runtime TEST PASS** (`41104354288`), **Hugo Timeout Runtime TEST PASS** (`41104354255`); Groq smoke **SKIPPED** (`41104354213`).
+- **Cross-role UI Runtime TEST FAIL** (`41104354263`): `scripts/role-ui-fixtures.mjs:44`, `auth.admin.createUser` devuelve `AuthRetryableFetchError: Gateway Timeout`, HTTP **504**; el escenario browser real no alcanzó a ejecutarse por falta de identidad TEST.
+- **Admin Realtime Runtime TEST FAIL** (`41104354264`): 10/10 contratos PASS, pero `scripts/admin-realtime-runtime.mjs:20` no pudo obtener sesión `signInWithPassword` debido a **504 Gateway Timeout** de Supabase Auth TEST. No se obtuvo prueba runtime completa.
+- Diagnóstico corroborado por logs de Supabase TEST, ventana **18:09–18:14 UTC**: 12 registros `auth_logs` con `status=504` y `level=error`. La API de gestión declara proyecto `ACTIVE_HEALTHY`, lo que **no** equivale a Auth funcional. No se imprimen direcciones IP ni credenciales.
+- Conclusión: fallos de integración bloqueados por dependencia externa **Supabase TEST Auth**, no evidencia de regresión en el aislamiento de sesiones. No maquillar con skips, mocks o relajación de assertions; evitar reintentos en bucle que saturen TEST.
+- Estado Vercel para ese SHA: `pending`. Backups, matriz completa Auth/RLS/RPC y E2E por rol continúan pendientes. **NO MERGE**, no cambio de PROD, secretos ni tráfico.
+- Próximo gate verificable: recuperar disponibilidad de Auth TEST, reejecutar ambos runtimes en el mismo SHA, confirmar PASS y evidencia de limpieza de fixtures; luego evaluar aprobación de PR y fusión segura.
