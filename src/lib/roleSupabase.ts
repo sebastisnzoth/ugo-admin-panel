@@ -34,7 +34,7 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
 
   const client = createClient(UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY, {
     auth: {
-      storageKey: `ugo-test-${role}-auth`,
+      storageKey: `ugo-${UGO_SUPABASE_URL.includes('trfsjuseqjxlhrxuvdsm') ? 'prod' : 'test'}-${role}-auth`,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
