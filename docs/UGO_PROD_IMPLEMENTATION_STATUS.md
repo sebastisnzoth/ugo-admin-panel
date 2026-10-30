@@ -87,3 +87,13 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - Inventario agregado de fixtures `role-ui-%@example.com` en TEST: **35** identidades Auth y **34** perfiles `usuarios`; **1** identidad Auth sin perfil y **0** perfiles sin Auth. No atribuir todos esos registros a esta PR sin auditar fecha/propietario. No eliminar masivamente ni modificar PROD.
 - Estado externo Vercel para ese SHA: **pending**. Backup/rollback, revisión de Auth/RLS/RPC y runtime E2E continúan sin certificación. **NO MERGE**.
 - Siguiente paso verificable: diagnosticar latencia y timeout en Auth/PostgREST TEST, identificar el único fixture Auth sin perfil y su origen mediante lectura, preparar limpieza TEST acotada y auditable, y repetir ambos runtimes exact-SHA cuando TEST esté estable. Mantener assertions de limpieza y no saturar TEST con reintentos.
+
+## Seguimiento exact-SHA — 2026-10-30 20:37 BRT
+
+- PR #603 sigue **OPEN/DRAFT**, mergeable, HEAD previo a este informe `a835e85c3272cc0a7dce4ccf3292a498e2515a1b`; **NO MERGE**.
+- GitHub Actions exact-SHA: Core CI **PASS** (`41131465068`), Cross Security **PASS** (`41131465012`), Hugo Timeout **PASS** (`41131465127`), Roadmap **PASS** (`41131465140`); Groq **SKIPPED**. Admin Realtime **FAIL** (`41131465030`) y Cross-role UI **FAIL** (`41131465075`).
+- Admin Realtime: `signInWithPassword` devolvió HTTP 504 `Gateway Timeout` en `scripts/admin-realtime-runtime.mjs:20`; sin prueba realtime real aprobada.
+- Cross-role UI: chat Proveedor visual **PASS** en 360/390/430 px; `ADMIN_SESSION_FAILURE admin desktop` y `ROLE_UI_FIXTURE_CLEANUP_FAILED`. La limpieza reportó timeout SQL y 504 Auth para fixture `0b8d87ac-9a1a-4c61-8b8d-44991aa60f8e`.
+- **Nuevo hallazgo material:** consulta SQL **solo lectura** posterior en Supabase TEST confirmó `auth_exists=true` y `profile_exists=true` para ese fixture específico. A diferencia del fixture de la ejecución previa, este **sí permanece** en ambos stores. La misma conexión TEST permitió leer `pg_stat_activity` (4 idle ClientRead, 2 active, 2 Extension), lo cual no prueba salud de Auth ni descarta timeouts.
+- **Bloqueo de integridad:** no repetir masivamente creación de usuarios temporales ni borrar cuentas por patrón; primero identificar y limpiar exclusivamente fixtures atribuibles a pruebas, con control de propietario, respaldo y verificación posterior. No se efectuaron DELETE, cambios de secretos, cutover ni escrituras en PROD.
+- Siguiente paso verificable: aislar y limpiar de manera auditable ese fixture TEST cuando Auth/PostgREST respondan; investigar 504 y latencia, repetir ambos runtimes en el **mismo SHA** con limpieza comprobada, verificar backups y Auth/RLS. No forzar merge ni convertir tests en SKIP.
