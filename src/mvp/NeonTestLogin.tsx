@@ -31,7 +31,9 @@ export function NeonTestLogin() {
       setMessage('Ingresá para acceder a Neon TEST')
       return
     }
-    // The Neon Auth JWT is delivered through a response header, not the session cookie.\n    // Never send the Better Auth session ID to the Data API as a bearer token.\n    const jwt = response.headers.get('set-auth-jwt')
+    // The Neon Auth JWT is delivered through a response header, not the session cookie.
+    // Never send the Better Auth session ID to the Data API as a bearer token.
+    const jwt = response.headers.get('set-auth-jwt')
     if (!jwt || jwt.split('.').length !== 3) {
       setMessage('Sesión de Neon válida; falta token autorizado para recuperar el perfil. Verificá CORS y JWT en Neon.')
       return
