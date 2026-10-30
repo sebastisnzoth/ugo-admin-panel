@@ -32,7 +32,7 @@ export function ProviderFaxinaSuppliesSettings(){
   }catch(error){setMessage(error instanceof Error?error.message:'No se pudo guardar el valor.')}
   finally{setSaving(false)}
  }
- return <section className="provider-card" style={{marginTop:16,padding:16,border:'1px solid #cfe3d8',borderRadius:16}} aria-label="Faxina · produtos">
+ return <section className="provider-card" style={{marginTop:16,padding:16,border:'1px solid #cfe3d8',borderRadius:16}} aria-label={t('faxina.providerFaxinaSuppliesSettings.3')}>
   <strong style={{display:'block',marginBottom:12}}>{t('faxina.providerFaxinaSuppliesSettings.3')}</strong>
   {loading?<p>{t('faxina.providerFaxinaSuppliesSettings.4')}</p>:<>
    <label style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,lineHeight:1.4}}><input type="checkbox" checked={suppliesEnabled} disabled={saving} onChange={event=>{setSuppliesEnabled(event.target.checked);setMessage('')}} style={{width:20,height:20}}/><span>{t('faxina.providerFaxinaSuppliesSettings.5')}</span></label>
