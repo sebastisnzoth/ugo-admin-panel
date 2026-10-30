@@ -1,6 +1,7 @@
 import React from'react'
 import ReactDOM from'react-dom/client'
 import{MvpApp}from'./mvp/MvpApp'
+import{NeonTestLogin}from'./mvp/NeonTestLogin'
 import{installApiRuntimeBase}from'./lib/apiRuntime'
 import{installSentinel}from'./lib/sentinel'
 import{installAccessibilityRuntime}from'./lib/accessibilityRuntime'
@@ -18,6 +19,6 @@ installAccessibilityRuntime()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
  <React.StrictMode>
- <MvpApp/>
+ {new URLSearchParams(window.location.search).get('neon-test-login') === '1' ? <NeonTestLogin/> : <MvpApp/>}
  </React.StrictMode>,
 )
