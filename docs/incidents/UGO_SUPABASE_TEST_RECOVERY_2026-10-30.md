@@ -38,3 +38,8 @@ Según Supabase, cuando se agota Disk I/O Budget, la instancia vuelve a su throu
 Acción conservadora: mantener pausadas consultas repetitivas de monitores, evitar scans de logs y sentencias estadísticas pesadas, no alterar cron de matching ni RLS sin prueba. No borrar datos ni logs y no cambiar de plan. Tras recuperar acceso: respaldo y análisis breve de consultas lentas e índices antes de optimizaciones persistentes.
 
 **Comprobación en esta revisión:** `SELECT 1` en TEST sigue fallando con `Connection terminated due to connection timeout`. P0 continúa BLOCKED. La documentación no prueba pérdida de datos.
+
+## Confirmación del bloqueo de conexión — 2026-10-30
+Lectura directa del conector de Supabase: PgBouncer registra `connect timeout (age=15s)` hacia PostgreSQL local (`[::1]:5432`), `server login has been failing` para `supabase_storage_admin` y `query_wait_timeout`. PostgreSQL registra cancelaciones repetidas por `statement timeout`. Dos consultas de Observability para tamaños de relaciones tardaron ~46.97s y ~53.59s. Esto confirma bloqueo de disponibilidad de conexiones y consultas, pero **no determina causa raíz** (Disk I/O, saturación de recursos, locks o infraestructura). Conector actual no expone `restart database` ni creación de tickets. No se realizó reinicio, restore, pause, ni modificación de datos.
+
+**Escalamiento requerido:** solicitar a Supabase revisión/reinicio asistido de PostgreSQL/pooler con preservación de datos; verificar respaldos y estado del servicio primero. No repetir consultas a ciegas ni usar pause/restore como sustituto de restart.
