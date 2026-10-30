@@ -31,3 +31,13 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - Se confirmaron en TEST los tipos exactos de diferencias conocidas: `faxina_productos_lleva boolean NOT NULL DEFAULT false`, `faxina_productos_valor numeric NOT NULL DEFAULT 0`, `pilot_capabilities jsonb NOT NULL DEFAULT '{}'::jsonb` y `servicios.zona text NULL`.
 - Preparado el candidato de migración **no ejecutable automáticamente** en `docs/sql/UGO_PROD_COMPATIBILITY_CANDIDATE_REVIEW_ONLY.sql`, commit `359e584f`. No se alteró PROD.
 - Gates todavía pendientes: backup validado, comparación de RPC/RLS/identidades, CI PASS, Auth y E2E por rol. Próxima tarea: validar compatibilidad funcional y seguridad sin escribir en PROD.
+
+## PR #603 — seguimiento de CI y corrección concreta (2026-10-30)
+
+- SHA inspeccionado: `02723eeea6318c32f37dde6f552a1a79adf0c9ce`.
+- UGO Roadmap Traceability, UGO Hugo Timeout Runtime TEST y UGO Cross Security Runtime TEST: `success` en ese SHA. UGO Groq authenticated smoke: `skipped`.
+- UGO Core CI run `41100584983`: `failure` por **2 literales JSX accionables** en `src/mvp/UgoSupportChat.tsx` (enlaces a app cliente/proveedor). Se reemplazaron por etiquetas pt/es/en en commit `2c0483eec54d5f73bfd039b81888ea409bbe5f6d`. Requiere revalidación en nuevo SHA; no marcar CI PASS anticipadamente.
+- UGO Admin Realtime Runtime TEST run `41100585019`: `failure` durante lectura del perfil admin de TEST, `Could not query the database for the schema cache. Retrying.` en `scripts/admin-realtime-runtime.mjs:23`. Los 10 contratos Admin Realtime pasaron; la prueba física/runtime quedó sin completar por dependencia TEST. No se relajaron assertions ni se omitió el runtime.
+- El estado Vercel del SHA inspeccionado sigue `pending`; PR #603 continúa `draft`, abierta y sin merge.
+- Gates de release aún no cumplidos: CI completo, runtime real TEST, respaldo verificable, Auth/RLS y validación de no regresión. PROD no modificada; sin cambio de URL, secretos ni tráfico.
+- Próximo paso: reejecutar y verificar Core CI tras la corrección de traducciones; recuperar salud de TEST para validar Admin Realtime sin generar consultas de monitoreo en bucle. Solo considerar merge cuando se cumplan las garantías del PR.
