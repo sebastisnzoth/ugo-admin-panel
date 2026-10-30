@@ -60,7 +60,7 @@ export function useDashboardMetrics() {
   }, []);
   useEffect(() => {
     fetch();
-    const t = setInterval(fetch, 30_000);
+    const t = setInterval(() => { if (document.visibilityState === 'visible' && navigator.onLine) void fetch(); }, 120_000);
     const u = ['servicios','pagos','retiros','disputas','documentos','usuarios'].map(tb => subscribe(tb, fetch));
     return () => { clearInterval(t); u.forEach(f => f()); };
   }, [fetch]);
@@ -86,7 +86,7 @@ export function useSystemAlerts() {
   useEffect(() => {
     fetch();
     const sync=()=>{if(document.visibilityState==='visible')void fetch()};
-    const t = setInterval(sync, 10_000);
+    const t = setInterval(sync, 60_000);
     const u = ['servicios','servicio_estado_eventos','usuarios','perfiles_proveedor','deudas_ugo_proveedor','disputas','pagos','retiros'].map(tb => subscribe(tb, fetch));
     const onOnline=()=>void fetch();
     const onVisibility=()=>sync();
