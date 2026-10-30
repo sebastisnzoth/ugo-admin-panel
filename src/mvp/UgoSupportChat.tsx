@@ -56,7 +56,9 @@ export function UgoSupportChat(){
     const body=await response.json().catch(()=>null) as {error?:string}|null
     if(response.status===429)throw new Error('Limite de mensagens atingido. Aguarde um minuto e tente novamente.')
     if(response.status===403)throw new Error('Não foi possível confirmar a verificação de segurança. Tente novamente.')
-    if(response.status===503||body?.error==='PROTECTION_NOT_CONFIGURED')throw new Error('O atendimento está temporariamente indisponível enquanto configuramos a segurança.')
+    if(response.status===503)throw new Error('Serviço de segurança temporariamente indisponível (503).')
+    if(response.status===502)throw new Error('Gemini ou servidor indisponível (502).')
+    if(response.status===504)throw new Error('Tempo de resposta esgotado (504).')
     throw new Error('O atendimento não está disponível no momento. Tente novamente mais tarde.')
    }
    const data:unknown=await response.json()
