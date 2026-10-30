@@ -3,7 +3,7 @@ import './UgoSupportChat.css'
 
 type Message={role:'user'|'assistant';content:string}
 const initial:Message={role:'assistant',content:'Olá! 👋 Sou o atendimento virtual UGO. Posso ajudar clientes e profissionais com dúvidas sobre Faxina, Marido de Aluguel e o funcionamento da plataforma.'}
-const endpoint=import.meta.env.VITE_UGO_SUPPORT_CHAT_URL as string|undefined
+const endpoint='/api/ugo-support'
 
 export function UgoSupportChat(){
  const [open,setOpen]=useState(false)
