@@ -65,3 +65,14 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - **Corrección:** commit `6db01445` elimina la ruta opcional PROD y mantiene `UGO_SUPABASE_URL`/`UGO_SUPABASE_PUBLISHABLE_KEY` con almacenamiento aislado por entorno/rol. Commit `ae25733c` reemplaza el contrato de opt-in por aserciones de aislamiento TEST y prohibición de override. Sin escrituras de base ni cambio de secretos, despliegue o tráfico.
 - **Gates:** nuevo CI exact-SHA pendiente; tras superar guard, comprobar si Auth TEST vuelve a devolver HTTP 504 en runtimes. No marcar PASS antes de ejecución. Backups, compatibilidad RPC/RLS y E2E reales pendientes. **NO MERGE** mientras no haya garantías completas.
 - Siguiente acción verificable: observar Core CI y los 4 runtimes del nuevo SHA, leer logs de fallos reales y corregirlos en la misma rama, sin relajar assertions.
+
+
+## Verificación CI exact-SHA — 2026-10-30 17:25 BRT
+
+- PR #603 continúa **OPEN/DRAFT**, mergeable pero `mergeable_state=unstable`. HEAD evaluado `5095c9bc926dd34c64215383414b95cbfdaf35aa`; `main` permanece `9d07fcee653b6035b9aa3977134d40e442e89b01`.
+- GitHub Actions para ese HEAD: **Core CI PASS** (`41118615102`), **Cross Security PASS** (`41118615023`), **Hugo Timeout PASS** (`41118614921`), **Roadmap Traceability PASS** (`41118615031`), Groq smoke SKIPPED (`41118615176`).
+- **Admin Realtime FAIL** (`41118614941`): build + contratos PASS; browser runtime `scripts/admin-realtime-runtime.mjs:110` agotó 20 s esperando `.ugo-admin2-status` después del login. No se probó el cambio realtime ni se generó evidencia runtime aprobada. No afirmar causa interna de la sesión sin trazas adicionales.
+- **Cross-role UI FAIL** (`41118615020`): `ADMIN_SESSION_FAILURE operator desktop` y `ROLE_UI_FIXTURE_CLEANUP_FAILED`; `usuarios` DELETE reportó `canceling statement due to statement timeout` y Auth DELETE `Gateway Timeout`. La comprobación posterior reportó identidad/registro TEST remanentes. Esto constituye un **riesgo de fixtures huérfanos**; no volver a ejecutar creación masiva de fixtures hasta verificar/limpiar en TEST de manera controlada. Nunca intentar limpiar en PROD.
+- La evidencia muestra indisponibilidad o degradación de operaciones TEST, pero no permite demostrar que el frontend sea libre de regresiones. No suavizar aserciones ni marcar fallos como PASS.
+- **NO MERGE**: runtime Auth/UI/Realtime, limpieza verificable de fixtures, backup, RLS/RPC y E2E pendientes. Sin modificaciones de PROD, secretos ni tráfico.
+- **Próximo paso verificable**: consulta acotada y solo lectura en TEST para comprobar el fixture huérfano y disponibilidad de Auth/DB; ejecutar cleanup TEST controlado solo cuando el servicio responda, y repetir runtimes exact-SHA con evidencia. Si TEST sigue degradado, mantener bloqueo y trabajar en aislamiento de CI offline sin fingir E2E.
