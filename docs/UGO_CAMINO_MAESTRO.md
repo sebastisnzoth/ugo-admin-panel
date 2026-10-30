@@ -673,3 +673,7 @@ RUNTIME VALIDATED             pendiente
 - SQL TEST: columnas aditivas en perfiles_proveedor y RPCs `cotizar_productos_faxina` / `aprobar_productos_faxina`. Validación estricta de propietario, estado asignado, precio exacto, ausencia de pagos y aprobación idempotente.
 - UGO TEST (tmossnqfwfwjrtzwcbmm) recibió la migración; PROD (trfsjuseqjxlhrxuvdsm) permanece intacto. `src/lib/supabaseProject.ts` mantiene frontend de main contra TEST.
 - No modificar GPS ni los P0 validados; ejecución de CI, contrato y revisión desde aplicación antes de declarar cierre. Si falla CI: reparar primero en rama, no fusionar.
+
+## Atención IA pública — checkpoint TEST 2026-10-30
+
+Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backend Gemini en Vercel. La migración del limitador en Supabase TEST fue aplicada y sus privilegios verificados. El despliegue Preview y la respuesta HTTP real continúan sujetos a validación, y el backend debe permanecer cerrado hasta configurar claves de TEST y Turnstile. Este bloque no autoriza cambios de Supabase PROD ni exposición de secretos de servidores. La prueba de lanzamiento debe registrar SHA, CI, validación antiabuso y respuesta auténtica de Gemini.
