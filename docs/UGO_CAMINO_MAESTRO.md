@@ -665,3 +665,11 @@ RUNTIME VALIDATED             pendiente
 - Commit test: `8b61c5242435156219b6e9014a3cdec4993e4bd1`
 - Commit reporte déficit: `1211af5aebacda72c1fad7418c10433883187bb4`
 - Commit roadmap/continuity: `c5621be5a389ff49946cae847091cc81f41f4e43`
+
+
+### 2026-10-29 · Cambio aislado Faxina (horas + productos)
+- Pedido de usuario confirmado: solo formulario Faxina; duración de 1–12 h y checkbox de productos, adicional BRL fijado por el proveedor de limpieza.
+- Implementación en PR #596: ClientNeedScreen, ClientSummaryScreen, ClientPostConfirmFlow, ProviderCategoriesEditor y ProviderFaxinaSuppliesSettings; metadata de servicio conserva duración y requerimiento.
+- SQL TEST: columnas aditivas en perfiles_proveedor y RPCs `cotizar_productos_faxina` / `aprobar_productos_faxina`. Validación estricta de propietario, estado asignado, precio exacto, ausencia de pagos y aprobación idempotente.
+- UGO TEST (tmossnqfwfwjrtzwcbmm) recibió la migración; PROD (trfsjuseqjxlhrxuvdsm) permanece intacto. `src/lib/supabaseProject.ts` mantiene frontend de main contra TEST.
+- No modificar GPS ni los P0 validados; ejecución de CI, contrato y revisión desde aplicación antes de declarar cierre. Si falla CI: reparar primero en rama, no fusionar.
