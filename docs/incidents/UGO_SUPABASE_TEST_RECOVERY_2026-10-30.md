@@ -49,3 +49,11 @@ Se envió un correo desde el Gmail conectado a `support@supabase.com` con asunto
 
 ## Recuperación inicial de conectividad SQL — 2026-10-30
 **Cambio confirmado:** `SELECT 1 AS ok` responde `ok=1` desde el conector Supabase en TEST (sin cambios de esquema). Conteos de solo lectura: `auth.users=153`, `public.usuarios=148`, `public.perfiles_cliente=87`, `public.perfiles_proveedor=34`, `public.servicios=1752`, `public.ofertas_servicio=1372`, `public.eventos_servicio=107`, `public.evidencias_servicio=2256`, `public.pagos=1282`. Estos conteos corroboran presencia de datos, **no** integridad exhaustiva, funcionamiento Auth/RLS ni recuperación E2E. No se ha creado dump ni restaurado backup. **Estado: DEGRADED / SQL RECOVERED**, no GO-LIVE. Mantener pruebas de carga y supervisores de polling pausados hasta respaldo y validación de estabilidad, Auth y E2E.
+
+## Verificación adicional tras recuperación parcial — 2026-10-30
+- `SELECT 1 AS ok`: PASS, `ok=1`.
+- Lectura de `pg_tables` para RLS: timeout de conexión.
+- Lectura de `pg_proc` para funciones de onboarding: timeout de conexión.
+- **Interpretación:** conexión intermitente; no es seguro declarar estabilidad, Auth o E2E aprobados.
+- **Acción:** detener verificaciones repetidas; mantener pausados monitores de TEST, sin ejecutar `pg_dump` pesado ni cambios DDL durante el estado degradado. Verificar backups disponibles por Dashboard y esperar ventana de estabilidad para exportación supervisada.
+- Cuando esté estable, hacer dump con herramientas oficiales y conexión del proyecto TEST, almacenar localmente con permisos restrictivos, revisar existencia/tamaño y restaurabilidad en entorno aislado si fuera posible; nunca copiar secretos ni datos sensibles al repositorio GitHub.
