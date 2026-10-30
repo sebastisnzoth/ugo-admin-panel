@@ -76,3 +76,14 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - La evidencia muestra indisponibilidad o degradación de operaciones TEST, pero no permite demostrar que el frontend sea libre de regresiones. No suavizar aserciones ni marcar fallos como PASS.
 - **NO MERGE**: runtime Auth/UI/Realtime, limpieza verificable de fixtures, backup, RLS/RPC y E2E pendientes. Sin modificaciones de PROD, secretos ni tráfico.
 - **Próximo paso verificable**: consulta acotada y solo lectura en TEST para comprobar el fixture huérfano y disponibilidad de Auth/DB; ejecutar cleanup TEST controlado solo cuando el servicio responda, y repetir runtimes exact-SHA con evidencia. Si TEST sigue degradado, mantener bloqueo y trabajar en aislamiento de CI offline sin fingir E2E.
+
+## Seguimiento exact-SHA — 2026-10-30 18:28 BRT
+
+- PR #603 **OPEN / DRAFT**, mergeable, HEAD `8d4aa92fd902ac6ab82b0bc5d1be2978bdb5898f`. No merge.
+- GitHub Actions del HEAD: Core CI **PASS** (`41123157630`), Cross Security **PASS** (`41123157597`), Hugo Timeout **PASS** (`41123157818`), Roadmap Traceability **PASS** (`41123158025`), Groq smoke **SKIPPED** (`41123158112`). Admin Realtime **FAIL** (`41123157459`) y Cross-role UI **FAIL** (`41123157838`).
+- Admin Realtime: build y 10/10 contratos PASS, pero el runtime abortó al iniciar sesión `signInWithPassword` por HTTP **504 Gateway Timeout** (`scripts/admin-realtime-runtime.mjs:20`). No hay prueba de Realtime completa.
+- Cross-role UI: build y prueba visual de chat Proveedor en anchos 390 y 430 px PASS, pero la preparación de fixtures abortó con `ROLE_UI_FIXTURE_CLEANUP_FAILED`: `usuarios.delete` reportó `canceling statement due to statement timeout`. No hay E2E por roles aprobado.
+- **Verificación posterior de solo lectura en Supabase TEST:** para el fixture `5b3a76fd-f45d-4c18-8426-4ed7c3cbf884`, `profile_exists=false` y `auth_exists=false`. Por lo tanto, ese fixture específico **ya no existe** en ninguno de los dos stores al momento de la consulta, aunque el test falló legítimamente al no poder verificar limpieza durante su ejecución. No declarar PASS retrospectivo.
+- Inventario agregado de fixtures `role-ui-%@example.com` en TEST: **35** identidades Auth y **34** perfiles `usuarios`; **1** identidad Auth sin perfil y **0** perfiles sin Auth. No atribuir todos esos registros a esta PR sin auditar fecha/propietario. No eliminar masivamente ni modificar PROD.
+- Estado externo Vercel para ese SHA: **pending**. Backup/rollback, revisión de Auth/RLS/RPC y runtime E2E continúan sin certificación. **NO MERGE**.
+- Siguiente paso verificable: diagnosticar latencia y timeout en Auth/PostgREST TEST, identificar el único fixture Auth sin perfil y su origen mediante lectura, preparar limpieza TEST acotada y auditable, y repetir ambos runtimes exact-SHA cuando TEST esté estable. Mantener assertions de limpieza y no saturar TEST con reintentos.
