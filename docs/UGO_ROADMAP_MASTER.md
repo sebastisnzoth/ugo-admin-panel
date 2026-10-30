@@ -1059,3 +1059,11 @@ RUNTIME VALIDATED             pendiente
 - **Aprobación:** el cliente ve precio del proveedor asignado y confirma el adicional por RPC idempotente, antes del cobro y traslado; se recalculan importes y comisión sobre tarifa aprobada. No se factura solo por marcar checkbox.
 - **Evidencia:** PR #596, migración aditiva `20261029213000_faxina_hours_supplies_pricing.sql` aplicada en UGO TEST; pruebas de contratos en `tests/contracts/faxina-hours-supplies.test.mjs`. Supabase PROD no modificado.
 - **Gate:** CI/compilación y revisión visual de Vercel requeridos antes de aprobar el flujo; merge a main solo con gates verdes. No afirmar E2E físico de este nuevo campo todavía.
+
+## 2026-10-30 — Atendimento UGO (PR #597 · TEST)
+
+- Chat público de atendimento com base de conhecimento Faxina/Marido de Aluguel: frontend + endpoint Gemini server-side implementados na PR #597.
+- Migração TEST para rate limit atômico aplicada e permissões RPC verificadas; sem acesso anon/authenticated.
+- Turnstile frontend/backend implementado, configuração de widget e credenciais específicas ainda pendentes.
+- Gate: impedir habilitação pública antes de QA Preview, prova real Gemini, limite de abuso e secrets de TEST.
+- Nunca usar credenciais PROD nem declarar GO-LIVE a partir de build apenas.
