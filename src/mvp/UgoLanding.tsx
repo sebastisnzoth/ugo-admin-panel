@@ -9,7 +9,7 @@ const jump=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'s
 
 
 export function UgoLanding(){
- const{t}=useLocale()
+ const{t,locale,setLocale}=useLocale()
  const [serviceQuery,setServiceQuery]=useState('')
  const [serviceRegion,setServiceRegion]=useState('Florianópolis, SC')
  const searchService=(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();try{sessionStorage.setItem('ugo_landing_service_intent',JSON.stringify({service:serviceQuery.trim(),region:serviceRegion.trim()}))}catch{}goRole('client')}
@@ -23,6 +23,7 @@ export function UgoLanding(){
     <button onClick={()=>jump('proveedores')}>{t('landing.navProfessionals')}</button>
    </nav>
    <div className="ugo-nav-actions">
+    <label style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:12,fontWeight:600}}>{t("language.label")}<select aria-label={t("language.label")} value={locale} onChange={e=>setLocale(e.target.value as "pt-BR"|"es"|"en")} style={{border:"1px solid #b9c9c0",borderRadius:8,padding:"7px",background:"#fff",color:"#163b2a"}}><option value="pt-BR">PT</option><option value="es">ES</option><option value="en">EN</option></select></label>
     <button className="ghost" onClick={()=>goRole('client')}>{t('landing.signIn')}</button>
     <button className="solid" onClick={()=>goRole('client')}>{t('landing.requestNow')}</button>
    </div>
