@@ -9,3 +9,22 @@
  .ugo-provider-grid,.ugo-provider-field,.ugo-provider-step{min-width:0}
  .ugo-provider-field input,.ugo-provider-field select,.ugo-provider-field textarea{min-width:0;max-width:100%;font-size:16px;scroll-margin-bottom:140px}
 }
+
+
+/* Android portrait provider scroll container: independent of locked html/body/#root. */
+@media (max-width:820px){
+ .ugo-provider-onboarding{
+  position:fixed!important;inset:0!important;z-index:100!important;
+  display:block!important;width:100%!important;height:100dvh!important;
+  min-height:0!important;max-height:100dvh!important;
+  overflow-x:hidden!important;overflow-y:scroll!important;
+  -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+  overscroll-behavior-y:contain!important;padding:0!important;
+ }
+ .ugo-provider-onboarding-card{
+  width:100%!important;height:auto!important;min-height:100%!important;
+  max-height:none!important;overflow:visible!important;
+ }
+ .ugo-provider-step{height:auto!important;min-height:0!important;overflow:visible!important}
+ .ugo-provider-actions{position:static!important;padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+}
