@@ -76,7 +76,7 @@ test('client and provider keep separate auth storage while sharing the same role
  const roleClient=await read('src/lib/roleSupabase.ts')
  const shared=await read('src/mvp/shared.tsx')
  const component=await read('src/mvp/ServiceChat.tsx')
- assert.match(roleClient,/storageKey: `ugo-test-\$\{role\}-auth`/)
+ assert.match(roleClient,/storageKey: `ugo-\$\{UGO_ENVIRONMENT\}-\$\{role\}-auth`/)
  assert.match(shared,/getRoleSupabase\(role\)/)
  assert.match(component,/getRoleSupabase\(role\)/)
 })
