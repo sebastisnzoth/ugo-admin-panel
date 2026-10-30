@@ -15,7 +15,7 @@ export default async function handler(req,res){
  const db=process.env.UGO_SUPPORT_SUPABASE_URL;
  const publicKey=process.env.UGO_SUPPORT_SUPABASE_ANON_KEY;
  const salt=process.env.UGO_SUPPORT_RATE_SECRET;
- if(!db||!publicKey||!salt||!db.startsWith('https://tmossnqfwfwfwjrtzwcbmm.supabase.co'))
+ if(!db||!publicKey||!salt||!db.startsWith('https://tmossnqfwfwjrtzwcbmm.supabase.co'))
   return res.status(503).json({error:'PROTECTION_NOT_CONFIGURED'});
  const ip=String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim();
  const fingerprint=createHmac('sha256',salt).update(ip).digest('hex');
