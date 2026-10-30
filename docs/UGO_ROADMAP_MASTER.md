@@ -1059,3 +1059,11 @@ RUNTIME VALIDATED             pendiente
 - **Aprobación:** el cliente ve precio del proveedor asignado y confirma el adicional por RPC idempotente, antes del cobro y traslado; se recalculan importes y comisión sobre tarifa aprobada. No se factura solo por marcar checkbox.
 - **Evidencia:** PR #596, migración aditiva `20261029213000_faxina_hours_supplies_pricing.sql` aplicada en UGO TEST; pruebas de contratos en `tests/contracts/faxina-hours-supplies.test.mjs`. Supabase PROD no modificado.
 - **Gate:** CI/compilación y revisión visual de Vercel requeridos antes de aprobar el flujo; merge a main solo con gates verdes. No afirmar E2E físico de este nuevo campo todavía.
+
+
+### 2026-10-29 · Faxina: características de la vivienda (ampliación)
+
+- Solicitud del cliente: tipo de residencia (casa/apartamento/otro), ambientes (1–12), dormitorios (0–10) y baños (1–8), mediante selects nativos accesibles. Campos requeridos solo para Faxina/Limpieza; el flujo conserva horas y checkbox de productos aprobados.
+- Resumen muestra los cuatro valores; el pedido lleva metadata `faxina_residence_type`, `faxina_rooms`, `faxina_bedrooms` y `faxina_bathrooms`, y preferencias legibles por proveedor. No se crea columna ni cambia el precio, la comisión o el matching.
+- El asistente de voz no salta el formulario Faxina antes de completar los datos requeridos. Traducciones pt-BR/es/en y contrato de regresión en la suite Faxina.
+- Alcance: TEST/UI con PR de revisión; **NO aceptar como publicado antes de CI exact-SHA, revisión responsive y confirmación humana del nuevo formulario**. Sin cambios en Supabase PROD, Auth, GPS ni pagos.
