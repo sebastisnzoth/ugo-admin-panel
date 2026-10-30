@@ -736,3 +736,13 @@ RUNTIME VALIDATED             pendiente
 ## Atención IA pública — checkpoint TEST 2026-10-30
 
 Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backend Gemini en Vercel. La migración del limitador en Supabase TEST fue aplicada y sus privilegios verificados. El despliegue Preview y la respuesta HTTP real continúan sujetos a validación, y el backend debe permanecer cerrado hasta configurar claves de TEST y Turnstile. Este bloque no autoriza cambios de Supabase PROD ni exposición de secretos de servidores. La prueba de lanzamiento debe registrar SHA, CI, validación antiabuso y respuesta auténtica de Gemini.
+
+
+## Checkpoint — 2026-10-30 — PR #603 (UGO PROD safe activation)
+
+- Gate actual: **PREPARACIÓN EN RAMA, NO CUTOVER**. `main` y los frontends continúan usando Supabase TEST; PROD `trfsjuseqjxlhrxuvdsm` protegido.
+- Sesiones de Cliente, Proveedor y Admin aisladas por entorno mediante `UGO_ENVIRONMENT`; ninguna cuenta real migrada ni autenticada en PROD.
+- Contratos de CI actualizados para reflejar polling con backpressure y almacenamiento Auth por entorno, sin disminuir validaciones de seguridad. Validación completa pendiente de nuevo workflow.
+- Cuatro columnas detectadas como ausentes en PROD; SQL de compatibilidad preparado **solo para revisión**, no aplicado.
+- **BLOQUEOS:** backup verificable PROD, matriz RPC/RLS/Auth, CI PASS, pruebas E2E reales y aprobación para cambios persistentes.
+- Evidencia de proceso: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, `docs/sql/UGO_PROD_COMPATIBILITY_CANDIDATE_REVIEW_ONLY.sql`, PR #603.
