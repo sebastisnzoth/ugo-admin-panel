@@ -1,6 +1,6 @@
 // UGO public support — TEST. No access to OpenClaw, tools, Supabase or private data.
 import {createHmac,timingSafeEqual} from 'node:crypto';
-import {UGO_KNOWLEDGE,routeAccessQuestion} from './ugo-support-knowledge.js';
+import {UGO_KNOWLEDGE,routeAccessQuestion} from '../lib/ugo-support-knowledge.js';
 const LIMIT=6;
 // Emergency guard per function instance; not a replacement for the shared TEST limiter.
 const localWindows=new Map();
