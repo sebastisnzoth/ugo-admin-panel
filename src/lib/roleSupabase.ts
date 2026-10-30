@@ -1,6 +1,16 @@
 import { createClient, type AuthChangeEvent, type SupabaseClient } from '@supabase/supabase-js'
 import { UGO_ENVIRONMENT, UGO_SUPABASE_PUBLISHABLE_KEY, UGO_SUPABASE_URL } from './supabaseProject'
 
+// Opt-in only for an authorized, restricted preview. Default remains TEST.
+// This never redirects the Admin client or server-side integrations.
+const roleDatabaseTarget = import.meta.env.VITE_UGO_ROLE_DATABASE_TARGET === 'prod-preview' ? 'prod' : UGO_ENVIRONMENT
+const roleSupabaseUrl = roleDatabaseTarget === 'prod'
+  ? 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
+  : UGO_SUPABASE_URL
+const roleSupabaseKey = roleDatabaseTarget === 'prod'
+  ? 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
+  : UGO_SUPABASE_PUBLISHABLE_KEY
+
 export type UgoRole = 'client' | 'provider'
 
 const clients = new Map<UgoRole, SupabaseClient>()
@@ -32,9 +42,9 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
   const existing = clients.get(role)
   if (existing) return existing
 
-  const client = createClient(UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY, {
+  const client = createClient(roleSupabaseUrl, roleSupabaseKey, {
     auth: {
-      storageKey: `ugo-${UGO_ENVIRONMENT}-${role}-auth`,
+      storageKey: `ugo-${roleDatabaseTarget}-${role}-auth`,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
