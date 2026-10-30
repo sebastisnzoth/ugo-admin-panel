@@ -76,7 +76,18 @@ test('client and provider keep separate auth storage while sharing the same role
  const roleClient=await read('src/lib/roleSupabase.ts')
  const shared=await read('src/mvp/shared.tsx')
  const component=await read('src/mvp/ServiceChat.tsx')
- assert.match(roleClient,/storageKey: `ugo-\$\{UGO_ENVIRONMENT\}-\$\{role\}-auth`/)
+ assert.match(roleClient,/storageKey: `ugo-\$\{roleDatabaseTarget\}-\$\{role\}-auth`/)
  assert.match(shared,/getRoleSupabase\(role\)/)
  assert.match(component,/getRoleSupabase\(role\)/)
+})
+
+
+test('Client and Provider PROD preview is explicit and does not alter Admin connection',async()=>{
+ const roleClient=await read('src/lib/roleSupabase.ts')
+ const admin=await read('src/lib/supabase.ts')
+ assert.match(roleClient,/VITE_UGO_ROLE_DATABASE_TARGET === 'prod-preview'/)
+ assert.match(roleClient,/roleDatabaseTarget === 'prod'/)
+ assert.match(roleClient,/createClient\(roleSupabaseUrl, roleSupabaseKey/)
+ assert.match(roleClient,/storageKey: `ugo-\$\{roleDatabaseTarget\}-\$\{role\}-auth`/)
+ assert.doesNotMatch(admin,/VITE_UGO_ROLE_DATABASE_TARGET/)
 })
