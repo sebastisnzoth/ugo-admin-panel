@@ -1125,3 +1125,13 @@ RUNTIME VALIDATED             pendiente
 - Turnstile frontend/backend implementado, configuração de widget e credenciais específicas ainda pendentes.
 - Gate: impedir habilitação pública antes de QA Preview, prova real Gemini, limite de abuso e secrets de TEST.
 - Nunca usar credenciais PROD nem declarar GO-LIVE a partir de build apenas.
+
+
+## Checkpoint — 2026-10-30 — PR #603 (UGO PROD safe activation)
+
+- Gate actual: **PREPARACIÓN EN RAMA, NO CUTOVER**. `main` y los frontends continúan usando Supabase TEST; PROD `trfsjuseqjxlhrxuvdsm` protegido.
+- Sesiones de Cliente, Proveedor y Admin aisladas por entorno mediante `UGO_ENVIRONMENT`; ninguna cuenta real migrada ni autenticada en PROD.
+- Contratos de CI actualizados para reflejar polling con backpressure y almacenamiento Auth por entorno, sin disminuir validaciones de seguridad. Validación completa pendiente de nuevo workflow.
+- Cuatro columnas detectadas como ausentes en PROD; SQL de compatibilidad preparado **solo para revisión**, no aplicado.
+- **BLOQUEOS:** backup verificable PROD, matriz RPC/RLS/Auth, CI PASS, pruebas E2E reales y aprobación para cambios persistentes.
+- Evidencia de proceso: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, `docs/sql/UGO_PROD_COMPATIBILITY_CANDIDATE_REVIEW_ONLY.sql`, PR #603.
