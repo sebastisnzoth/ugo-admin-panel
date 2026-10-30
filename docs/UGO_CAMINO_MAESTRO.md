@@ -675,9 +675,64 @@ RUNTIME VALIDATED             pendiente
 - No modificar GPS ni los P0 validados; ejecución de CI, contrato y revisión desde aplicación antes de declarar cierre. Si falla CI: reparar primero en rama, no fusionar.
 
 
+## Checkpoint 27/10/2026 · Integridad de evidencia autónoma en inserción (PR #593)
+
+**Rama:** `fix/test-evidence-hash-on-insert-20261027`  
+**PR:** #593 — `fix(test): generate evidence hashes at insertion without altering immutable history`
+
+### Cambios técnicos
+- Trigger `autonomous_evidence_hash_insert` (BEFORE INSERT) en `autonomous_evidence_ledger`
+- Función `private.autonomous_evidence_hash_on_insert()` — SHA-256 determinista sobre `job_id`, `evidence_type`, `reference`, `metadata`, `correlation_id`, `created_at`
+- Provenance marker `_ugo_hash_provenance: generated_at_insert_v1` en `metadata`
+- **No reescritura de historial**: 2,952 filas históricas `DEPARTMENT_CONNECTIVITY_PROOF` sin hash permanecen BLOCKED intencional
+- Protección append-only (`autonomous_evidence_immutable`) preservada
+
+### Validación
+- Migración aplicada en UGO TEST (`tmossnqfwfwjrtzwcbmm`)
+- Test contractual `autonomous-evidence-insert-hash-guard.test.mjs` verifica:
+  - Hash generado en INSERT para filas nuevas sin hash
+  - Hashes suministrados no sobrescritos
+  - No UPDATE/DELETE/DISABLE TRIGGER/ALTER TABLE DISABLE en migración
+  - Protección append-only intacta
+
+### Estado de madurez
+```text
+Backend migration             APPLIED en UGO TEST
+Trigger hash-on-insert        ACTIVE
+Test contractual              IMPLEMENTADO
+Historial hashless (2,952)    BLOCKED — remediación auditable separada
+CI VALIDATED                  pendiente (Roadmap Traceability)
+RUNTIME VALIDATED             pendiente
+```
+
+### Próximo cierre
+1. CI Roadmap Traceability verde
+2. Suite test completa verde (grupos controlados)
+3. Auditoría histórica 2,952 filas → remediación separada con evidencia
+4. Merge PR #593 a `main` tras controles aprobados
+
+### Referencias
+- Commit migración: `794941a249823a3770fe2a949f1fa1c64d6cc3c4`
+- Commit test: `8b61c5242435156219b6e9014a3cdec4993e4bd1`
+- Commit reporte déficit: `1211af5aebacda72c1fad7418c10433883187bb4`
+- Commit roadmap/continuity: `c5621be5a389ff49946cae847091cc81f41f4e43`
+
+
+### 2026-10-29 · Cambio aislado Faxina (horas + productos)
+- Pedido de usuario confirmado: solo formulario Faxina; duración de 1–12 h y checkbox de productos, adicional BRL fijado por el proveedor de limpieza.
+- Implementación en PR #596: ClientNeedScreen, ClientSummaryScreen, ClientPostConfirmFlow, ProviderCategoriesEditor y ProviderFaxinaSuppliesSettings; metadata de servicio conserva duración y requerimiento.
+- SQL TEST: columnas aditivas en perfiles_proveedor y RPCs `cotizar_productos_faxina` / `aprobar_productos_faxina`. Validación estricta de propietario, estado asignado, precio exacto, ausencia de pagos y aprobación idempotente.
+- UGO TEST (tmossnqfwfwjrtzwcbmm) recibió la migración; PROD (trfsjuseqjxlhrxuvdsm) permanece intacto. `src/lib/supabaseProject.ts` mantiene frontend de main contra TEST.
+- No modificar GPS ni los P0 validados; ejecución de CI, contrato y revisión desde aplicación antes de declarar cierre. Si falla CI: reparar primero en rama, no fusionar.
+
+
 ### 2026-10-29 · Handoff Faxina vivienda (nuevo requerimiento)
 
 - Cliente solicitó cuatro campos nuevos solo en Faxina/Limpieza: tipo de residencia (Casa/Apartamento/Otro), ambientes, habitaciones y baños; menús desplegables sin retirar horas ni productos ya aprobados.
 - Se implementa en la rama `feat/faxina-residence-details-20261029`: formulario con validación, recuperación del borrador, resumen, metadata del servicio y preferencias del proveedor; traducciones ES/PT-BR/EN; no hay migración de base de datos.
 - Gates antes de integrar a main: contrato Faxina, TypeScript/build, auditoría i18n, CI exact SHA y revisión del formulario en móvil. No declararlo ACCEPTED por aprobación previa del bloque horas/productos.
 - Seguridad: aislado a Faxina; TEST para validar; Supabase PROD, GPS, matching y pagos intactos.
+
+## Atención IA pública — checkpoint TEST 2026-10-30
+
+Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backend Gemini en Vercel. La migración del limitador en Supabase TEST fue aplicada y sus privilegios verificados. El despliegue Preview y la respuesta HTTP real continúan sujetos a validación, y el backend debe permanecer cerrado hasta configurar claves de TEST y Turnstile. Este bloque no autoriza cambios de Supabase PROD ni exposición de secretos de servidores. La prueba de lanzamiento debe registrar SHA, CI, validación antiabuso y respuesta auténtica de Gemini.
