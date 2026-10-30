@@ -1,6 +1,6 @@
 // UGO public support — TEST. No access to OpenClaw, tools, Supabase or private data.
-const LIMIT=6, WINDOW=60_000;
-const buckets=new Map();
+import {createHmac} from 'node:crypto';
+const LIMIT=6;
 const handbook=`UGO piloto Florianópolis: Faxina e Marido de Aluguel. Faxina: tipo casa/apartamento/outro; ambientes, quartos e banheiros; duração de 1 a 12 horas. Cliente pode solicitar produtos de limpeza; profissional define valor extra e cliente precisa aprovar antes da cobrança. Sem oferta de produtos não há cobrança automática. Não inventar disponibilidade, preços, políticas, reservas ou pagamentos. Para dados privados, recomendar login nos fluxos oficiais. Não pedir senhas, documentos nem dados bancários. Não executar ações.`;
 export default async function handler(req,res){
  res.setHeader('Cache-Control','no-store');
@@ -11,12 +11,35 @@ export default async function handler(req,res){
  if(origin){try{if(new URL(origin).host!==host)return res.status(403).json({error:'ORIGIN_DENIED'})}catch{return res.status(403).json({error:'ORIGIN_DENIED'})}}
  const size=Number(req.headers['content-length']||0);
  if(size>14000)return res.status(413).json({error:'PAYLOAD_TOO_LARGE'});
- const ip=String(req.headers['x-forwarded-for']||'unknown').split(',')[0].trim();
- const now=Date.now(),bucket=buckets.get(ip)||{at:now,count:0};
- if(now-bucket.at>WINDOW){bucket.at=now;bucket.count=0}
- bucket.count++;buckets.set(ip,bucket);
- if(buckets.size>2000)for(const [k,v] of buckets){if(now-v.at>WINDOW)buckets.delete(k)}
- if(bucket.count>LIMIT)return res.status(429).json({error:'RATE_LIMIT'});
+ // Rate limiting is enforced atomically in the TEST database; never fall back to in-memory.
+ const db=process.env.UGO_SUPPORT_SUPABASE_URL;
+ const serviceKey=process.env.UGO_SUPPORT_SUPABASE_SERVICE_KEY;
+ const salt=process.env.UGO_SUPPORT_RATE_SECRET;
+ if(!db||!serviceKey||!salt||!db.startsWith('https://tmossnqfwfwfwjrtzwcbmm.supabase.co'))
+  return res.status(503).json({error:'PROTECTION_NOT_CONFIGURED'});
+ const ip=String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim();
+ const fingerprint=createHmac('sha256',salt).update(ip).digest('hex');
+ try{
+  const limited=await fetch(db+'/rest/v1/rpc/ugo_support_check_limit',{
+   method:'POST',headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey,'Content-Type':'application/json'},
+   body:JSON.stringify({p_fingerprint:fingerprint,p_limit:LIMIT}),signal:AbortSignal.timeout(4000)
+  });
+  if(!limited.ok)return res.status(503).json({error:'PROTECTION_UNAVAILABLE'});
+  if((await limited.json())!==true)return res.status(429).json({error:'RATE_LIMIT'});
+ }catch{return res.status(503).json({error:'PROTECTION_UNAVAILABLE'})}
+ // Optional Turnstile verification when the rollout has configured a secret.
+ if(process.env.UGO_SUPPORT_TURNSTILE_SECRET){
+  const token=req.body?.turnstileToken;
+  if(typeof token!=='string'||token.length>2048)return res.status(403).json({error:'BOT_CHECK_REQUIRED'});
+  try{
+   const proof=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{
+    method:'POST',body:new URLSearchParams({secret:process.env.UGO_SUPPORT_TURNSTILE_SECRET,response:token,remoteip:ip}),signal:AbortSignal.timeout(4000)
+   });
+   const verdict=await proof.json();
+   if(!verdict.success)return res.status(403).json({error:'BOT_CHECK_FAILED'});
+  }catch{return res.status(503).json({error:'BOT_CHECK_UNAVAILABLE'})}
+ }
+ if(process.env.UGO_SUPPORT_ENABLED!=='true')return res.status(503).json({error:'SUPPORT_DISABLED'});
  if(!process.env.GEMINI_API_KEY)return res.status(503).json({error:'MODEL_UNAVAILABLE'});
  const messages=req.body?.messages;
  if(!Array.isArray(messages)||messages.length<1||messages.length>12||!messages.every(m=>m&&['user','assistant'].includes(m.role)&&typeof m.content==='string'&&m.content.length<=2000)||messages.at(-1).role!=='user')return res.status(400).json({error:'INVALID_MESSAGES'});
