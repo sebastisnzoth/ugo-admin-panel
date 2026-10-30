@@ -26,6 +26,7 @@ export function UgoSupportChat(){
  const captchaNode=useRef<HTMLDivElement>(null)
  const captchaId=useRef<string|null>(null)
  const [captchaToken,setCaptchaToken]=useState('')
+ const [verifiedSession,setVerifiedSession]=useState(false)
  useEffect(()=>{bottom.current?.scrollIntoView({behavior:'smooth',block:'nearest'})},[messages,open])
  useEffect(()=>()=>controller.current?.abort(),[])
  useEffect(()=>{
@@ -40,7 +41,7 @@ export function UgoSupportChat(){
  async function submit(event:React.FormEvent){
   event.preventDefault()
   const text=input.trim()
-  if(!text||busy||(turnstileSiteKey&&!captchaToken))return
+  if(!text||busy||(turnstileSiteKey&&!verifiedSession&&!captchaToken))return
   setInput('')
   setNotice('')
   const next=[...messages,{role:'user' as const,content:text}]
@@ -57,7 +58,7 @@ export function UgoSupportChat(){
     if(response.status===405)throw new Error('O servidor recusou o método da solicitação (405).')
     const body=await response.json().catch(()=>null) as {error?:string}|null
     if(response.status===429)throw new Error('Limite de mensagens atingido. Aguarde um minuto e tente novamente.')
-    if(response.status===403)throw new Error('Verificação de segurança recusada (HTTP 403).')
+    if(response.status===403){setVerifiedSession(false);if(captchaId.current&&window.turnstile)window.turnstile.reset(captchaId.current);setCaptchaToken('');throw new Error('Verificação de segurança recusada (HTTP 403).')}
     if(response.status===503)throw new Error('Serviço de segurança temporariamente indisponível (503).')
     if(response.status===502)throw new Error('Gemini ou servidor indisponível (502).')
     if(response.status===504)throw new Error('Tempo de resposta esgotado (504).')
@@ -66,7 +67,7 @@ export function UgoSupportChat(){
    const data:unknown=await response.json()
    const reply=(data&&typeof data==='object'&&'reply'in data)?(data as {reply:unknown}).reply:null
    if(typeof reply!=='string'||!reply.trim())throw new Error('Resposta inválida')
-   if(captchaId.current&&window.turnstile)window.turnstile.reset(captchaId.current)
+   if(turnstileSiteKey)setVerifiedSession(true)
    setCaptchaToken('')
    setMessages(old=>[...old,{role:'assistant',content:reply.slice(0,5000)}])
   }catch(e){setNotice(abort.signal.aborted?'O atendimento está demorando mais que o normal. Tente novamente em instantes.':e instanceof Error&&e.message!=='Failed to fetch'?e.message:'Não foi possível conectar ao atendimento. Tente novamente mais tarde.')}
@@ -81,8 +82,8 @@ export function UgoSupportChat(){
     {notice&&<p className="ugo-support-notice" role="status">{notice}</p>}
     <div ref={bottom}/>
    </div>
-   {turnstileSiteKey&&<div ref={captchaNode} style={{display:'flex',justifyContent:'center',padding:'6px'}} aria-label={t.captcha}/>}
-   <form className="ugo-support-form" onSubmit={submit}><label className="ugo-support-sr" htmlFor="ugo-support-input">{t.input}</label><input id="ugo-support-input" value={input} onChange={e=>setInput(e.target.value)} maxLength={2000} placeholder={t.placeholder} disabled={busy}/><button type="submit" disabled={!input.trim()||busy||Boolean(turnstileSiteKey&&!captchaToken)} aria-label={t.send}>➤</button></form>
+   {turnstileSiteKey&&<div ref={captchaNode} style={{display:verifiedSession?'none':'flex',justifyContent:'center',padding:'6px'}} aria-label={t.captcha}/>}
+   <form className="ugo-support-form" onSubmit={submit}><label className="ugo-support-sr" htmlFor="ugo-support-input">{t.input}</label><input id="ugo-support-input" value={input} onChange={e=>setInput(e.target.value)} maxLength={2000} placeholder={t.placeholder} disabled={busy}/><button type="submit" disabled={!input.trim()||busy||Boolean(turnstileSiteKey&&!verifiedSession&&!captchaToken)} aria-label={t.send}>➤</button></form>
    <small className="ugo-support-footer">{t.footer}</small>
   </section>}
   <button className="ugo-support-launcher" type="button" onClick={()=>setOpen(v=>!v)} aria-label={open?t.close:t.open} aria-expanded={open}>{open?'×':'☏'}<span>{open?t.closed:t.launcher}</span></button>
