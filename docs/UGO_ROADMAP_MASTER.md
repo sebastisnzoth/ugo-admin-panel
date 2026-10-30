@@ -1142,3 +1142,9 @@ RUNTIME VALIDATED             pendiente
 - HEAD `bf006265bd032f01cea07528365d4b96396f2d8b`: Core CI, Roadmap, Cross Security y Hugo Timeout PASS.
 - Cross-role UI y Admin Realtime TEST siguen bloqueados por HTTP 504 de Supabase TEST Auth; logs Auth TEST 18:09–18:14 UTC confirman 12 errores 504. La consola del proyecto puede mostrar ACTIVE_HEALTHY aun con Auth fallando.
 - No relajar runtime, no crear fixtures repetidos, no hacer cutover a PROD. PR continúa DRAFT sin merge hasta recuperación de Auth TEST y pruebas completas; detalles en `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`.
+
+
+### 2026-10-30 · PR #603 — restauración del guard de entorno TEST
+- SHA previo `dc8645da`: cinco workflows fallaron por el guard de entorno, que detectó un ref PROD incorporado en `roleSupabase.ts` mediante opt-in `prod-preview`. Roadmap PASS, Groq SKIPPED.
+- Corrección en la misma rama: `6db01445` elimina override PROD y usa exclusivamente URL/clave TEST; `ae25733c` reemplaza el test que exigía ese override por un contrato de aislamiento TEST.
+- No se cambió Supabase PROD, secretos ni tráfico. CI y runtimes exact-SHA deben revalidarse; no fusionar con gates abiertos (Auth TEST 504, backup, RPC/RLS, E2E).
