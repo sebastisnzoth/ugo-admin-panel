@@ -1125,3 +1125,10 @@ RUNTIME VALIDATED             pendiente
 - Turnstile frontend/backend implementado, configuração de widget e credenciais específicas ainda pendentes.
 - Gate: impedir habilitação pública antes de QA Preview, prova real Gemini, limite de abuso e secrets de TEST.
 - Nunca usar credenciais PROD nem declarar GO-LIVE a partir de build apenas.
+
+
+## 2026-10-30 — Issue #600: registro móvil Cliente y Proveedor
+
+- PR #601: ajuste CSS de desplazamiento vertical en onboarding Cliente y Proveedor y compactación de cabeceras móviles; cambios de interfaz en TEST únicamente, sin modificación de auth, RLS ni producción.
+- Estado: corrección propuesta, sujeta a CI completo y pruebas E2E/físicas en viewports 320/360/390/768 px. No certificar alta completa ni cierre del P0 hasta verificar ambos roles.
+- Pendiente posterior: simplificar los campos obligatorios del cliente de forma coherente con la RPC `completar_onboarding_cliente`; no modificar la validación del servidor sin contratos/test y revisión de seguridad.
