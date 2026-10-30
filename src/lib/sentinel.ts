@@ -109,7 +109,7 @@ export function installSentinel(){
  if(installed||UGO_ENVIRONMENT!=='test'||typeof window==='undefined')return
  installed=true
  void flushAnonymousQueue()
- window.setInterval(()=>void flushAnonymousQueue(),30000)
+ window.setInterval(()=>{if(document.visibilityState==='visible'&&navigator.onLine)void flushAnonymousQueue()},300000)
  window.addEventListener('online',()=>void flushAnonymousQueue())
  window.addEventListener('error',event=>{
   const target=event.target as HTMLElement|null
