@@ -8,7 +8,14 @@ const turnstileSiteKey=import.meta.env.VITE_UGO_SUPPORT_TURNSTILE_SITE_KEY as st
 type TurnstileApi={render:(element:HTMLElement,options:{sitekey:string;callback:(token:string)=>void;'expired-callback':()=>void;'error-callback':()=>void})=>string;reset:(id:string)=>void;remove:(id:string)=>void}
 declare global {interface Window {turnstile?:TurnstileApi}}
 
+const labels={
+ pt:{header:'Atendimento UGO',subtitle:'Assistente virtual · Clientes e profissionais',close:'Fechar atendimento',typing:'Escrevendo…',input:'Sua mensagem',placeholder:'Como podemos ajudar?',send:'Enviar mensagem',footer:'Não compartilhe senhas ou dados bancários.',launcher:'Atendimento IA',closed:'Fechar',open:'Abrir chat de atendimento',captcha:'Verificação anti-bot'},
+ es:{header:'Atención UGO',subtitle:'Asistente virtual · Clientes y profesionales',close:'Cerrar atención',typing:'Escribiendo…',input:'Tu mensaje',placeholder:'¿Cómo podemos ayudarte?',send:'Enviar mensaje',footer:'No compartas contraseñas ni datos bancarios.',launcher:'Atención IA',closed:'Cerrar',open:'Abrir chat de atención',captcha:'Verificación antibots'},
+ en:{header:'UGO Support',subtitle:'Virtual assistant · Customers and professionals',close:'Close support',typing:'Typing…',input:'Your message',placeholder:'How can we help?',send:'Send message',footer:'Do not share passwords or banking information.',launcher:'AI Support',closed:'Close',open:'Open support chat',captcha:'Bot verification'}
+} as const
+
 export function UgoSupportChat(){
+ const locale=(typeof navigator!=='undefined'?navigator.language:'pt').toLowerCase();const t=labels[locale.startsWith('es')?'es':locale.startsWith('en')?'en':'pt'];
  const [open,setOpen]=useState(false)
  const [messages,setMessages]=useState<Message[]>([initial])
  const [input,setInput]=useState('')
@@ -60,18 +67,18 @@ export function UgoSupportChat(){
   finally{window.clearTimeout(timeoutId);setBusy(false);if(controller.current===abort)controller.current=null;if(captchaId.current&&window.turnstile)window.turnstile.reset(captchaId.current);setCaptchaToken('')}
  }
  return <div className="ugo-support-root">
-  {open&&<section className="ugo-support-panel" role="dialog" aria-label="Atendimento UGO">
-   <header className="ugo-support-header"><div><strong>Atendimento UGO</strong><small>Assistente virtual · Clientes e profissionais</small></div><button type="button" onClick={()=>setOpen(false)} aria-label="Fechar atendimento">×</button></header>
+  {open&&<section className="ugo-support-panel" role="dialog" aria-label={t.header}>
+   <header className="ugo-support-header"><div><strong>{t.header}</strong><small>{t.subtitle}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label={t.close}>×</button></header>
    <div className="ugo-support-messages" role="log" aria-live="polite">
     {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.content}</p>)}
-    {busy&&<p className="ugo-support-bubble assistant">Escrevendo…</p>}
+    {busy&&<p className="ugo-support-bubble assistant">{t.typing}</p>}
     {notice&&<p className="ugo-support-notice" role="status">{notice}</p>}
     <div ref={bottom}/>
    </div>
-   {turnstileSiteKey&&<div ref={captchaNode} style={{display:'flex',justifyContent:'center',padding:'6px'}} aria-label="Verificação anti-bot"/>}
-   <form className="ugo-support-form" onSubmit={submit}><label className="ugo-support-sr" htmlFor="ugo-support-input">Sua mensagem</label><input id="ugo-support-input" value={input} onChange={e=>setInput(e.target.value)} maxLength={2000} placeholder="Como podemos ajudar?" disabled={busy}/><button type="submit" disabled={!input.trim()||busy||Boolean(turnstileSiteKey&&!captchaToken)} aria-label="Enviar mensagem">➤</button></form>
-   <small className="ugo-support-footer">Não compartilhe senhas ou dados bancários.</small>
+   {turnstileSiteKey&&<div ref={captchaNode} style={{display:'flex',justifyContent:'center',padding:'6px'}} aria-label={t.captcha}/>}
+   <form className="ugo-support-form" onSubmit={submit}><label className="ugo-support-sr" htmlFor="ugo-support-input">{t.input}</label><input id="ugo-support-input" value={input} onChange={e=>setInput(e.target.value)} maxLength={2000} placeholder={t.placeholder} disabled={busy}/><button type="submit" disabled={!input.trim()||busy||Boolean(turnstileSiteKey&&!captchaToken)} aria-label={t.send}>➤</button></form>
+   <small className="ugo-support-footer">{t.footer}</small>
   </section>}
-  <button className="ugo-support-launcher" type="button" onClick={()=>setOpen(v=>!v)} aria-label={open?'Fechar chat de atendimento':'Abrir chat de atendimento'} aria-expanded={open}>{open?'×':'☏'}<span>{open?'Fechar':'Atendimento IA'}</span></button>
+  <button className="ugo-support-launcher" type="button" onClick={()=>setOpen(v=>!v)} aria-label={open?t.close:t.open} aria-expanded={open}>{open?'×':'☏'}<span>{open?t.closed:t.launcher}</span></button>
  </div>
 }
