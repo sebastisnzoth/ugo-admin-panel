@@ -1,5 +1,5 @@
 import { createClient, type AuthChangeEvent, type SupabaseClient } from '@supabase/supabase-js'
-import { UGO_SUPABASE_PUBLISHABLE_KEY, UGO_SUPABASE_URL } from './supabaseProject'
+import { UGO_ENVIRONMENT, UGO_SUPABASE_PUBLISHABLE_KEY, UGO_SUPABASE_URL } from './supabaseProject'
 
 export type UgoRole = 'client' | 'provider'
 
@@ -34,7 +34,7 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
 
   const client = createClient(UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY, {
     auth: {
-      storageKey: `ugo-test-${role}-auth`,
+      storageKey: `ugo-${UGO_ENVIRONMENT}-${role}-auth`,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
