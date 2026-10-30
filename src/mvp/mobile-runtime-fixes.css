@@ -57,3 +57,19 @@ html,body,#root{width:100%!important;max-width:none!important;min-height:100%!im
  }
  body:has(.ugo-client-onboarding),body:has(.ugo-provider-onboarding){position:static!important}
 }
+
+/* Registration/login on Android: release document scroll locks for BOTH roles.
+   The auth screen is outside onboarding, so onboarding-only fixes cannot reach it. */
+@media(max-width:820px){
+ html:has(.mvp-auth-page.role-client),html:has(.mvp-auth-page.role-provider),
+ body:has(.mvp-auth-page.role-client),body:has(.mvp-auth-page.role-provider),
+ #root:has(.mvp-auth-page.role-client),#root:has(.mvp-auth-page.role-provider){
+  height:auto!important;min-height:100%!important;max-height:none!important;
+  overflow-x:hidden!important;overflow-y:auto!important;touch-action:pan-y!important;
+  overscroll-behavior-y:auto!important
+ }
+ .mvp-auth-page.role-client,.mvp-auth-page.role-provider{
+  height:auto!important;min-height:100dvh!important;max-height:none!important;
+  overflow:visible!important;touch-action:pan-y!important
+ }
+}
