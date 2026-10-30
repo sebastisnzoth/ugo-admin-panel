@@ -26,6 +26,7 @@ export function UgoSupportChat(){
   if(!endpoint){setNotice('O atendimento por IA ainda não está disponível. Tente novamente mais tarde.');return}
   const abort=new AbortController()
   controller.current=abort
+  const timeoutId=window.setTimeout(()=>abort.abort(),25000)
   setBusy(true)
   try{
    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:next.slice(-12).map(m=>({role:m.role,content:m.content.slice(0,2000)})),channel:'landing',locale:navigator.language}),signal:abort.signal,credentials:'omit'})
@@ -34,8 +35,8 @@ export function UgoSupportChat(){
    const reply=(data&&typeof data==='object'&&'reply'in data)?(data as {reply:unknown}).reply:null
    if(typeof reply!=='string'||!reply.trim())throw new Error('Resposta inválida')
    setMessages(old=>[...old,{role:'assistant',content:reply.slice(0,5000)}])
-  }catch(e){if(!abort.signal.aborted)setNotice('Não foi possível conectar ao atendimento. Tente novamente mais tarde.')}
-  finally{setBusy(false);controller.current=null}
+  }catch(e){setNotice(abort.signal.aborted?'O atendimento está demorando mais que o normal. Tente novamente em instantes.':'Não foi possível conectar ao atendimento. Tente novamente mais tarde.')}
+  finally{window.clearTimeout(timeoutId);setBusy(false);if(controller.current===abort)controller.current=null}
  }
  return <div className="ugo-support-root">
   {open&&<section className="ugo-support-panel" role="dialog" aria-label="Atendimento UGO">
