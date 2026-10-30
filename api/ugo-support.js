@@ -13,16 +13,18 @@ export default async function handler(req,res){
  if(size>14000)return res.status(413).json({error:'PAYLOAD_TOO_LARGE'});
  // Rate limiting is enforced atomically in the TEST database; never fall back to in-memory.
  const db=process.env.UGO_SUPPORT_SUPABASE_URL;
- const serviceKey=process.env.UGO_SUPPORT_SUPABASE_SERVICE_KEY;
+ const publicKey=process.env.UGO_SUPPORT_SUPABASE_ANON_KEY;
  const salt=process.env.UGO_SUPPORT_RATE_SECRET;
- if(!db||!serviceKey||!salt||!db.startsWith('https://tmossnqfwfwfwjrtzwcbmm.supabase.co'))
+ if(!db||!publicKey||!salt||!db.startsWith('https://tmossnqfwfwfwjrtzwcbmm.supabase.co'))
   return res.status(503).json({error:'PROTECTION_NOT_CONFIGURED'});
  const ip=String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim();
  const fingerprint=createHmac('sha256',salt).update(ip).digest('hex');
+ const stamp=Math.floor(Date.now()/1000);
+ const signature=createHmac('sha256',salt).update(`${fingerprint}:${LIMIT}:${stamp}`).digest('hex');
  try{
-  const limited=await fetch(db+'/rest/v1/rpc/ugo_support_check_limit',{
-   method:'POST',headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey,'Content-Type':'application/json'},
-   body:JSON.stringify({p_fingerprint:fingerprint,p_limit:LIMIT}),signal:AbortSignal.timeout(4000)
+  const limited=await fetch(db+'/rest/v1/rpc/ugo_support_check_limit_signed',{
+   method:'POST',headers:{apikey:publicKey,'Content-Type':'application/json'},
+   body:JSON.stringify({p_fingerprint:fingerprint,p_limit:LIMIT,p_stamp:stamp,p_signature:signature}),signal:AbortSignal.timeout(4000)
   });
   if(!limited.ok)return res.status(503).json({error:'PROTECTION_UNAVAILABLE'});
   if((await limited.json())!==true)return res.status(429).json({error:'RATE_LIMIT'});
