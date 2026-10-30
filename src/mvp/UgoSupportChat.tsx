@@ -14,6 +14,14 @@ const labels={
  en:{header:'UGO Support',subtitle:'Virtual assistant · Customers and professionals',close:'Close support',typing:'Typing…',input:'Your message',placeholder:'How can we help?',send:'Send message',footer:'Do not share passwords or banking information.',launcher:'AI Support',closed:'Close',open:'Open support chat',captcha:'Bot verification'}
 } as const
 
+const officialRoutes=['https://ugo-admin-panel.vercel.app/?app=client','https://ugo-admin-panel.vercel.app/?app=provider'] as const
+function renderSupportText(content:string){
+ const pieces=content.split(/(https:\/\/ugo-admin-panel\.vercel\.app\/\?app=(?:client|provider))/g)
+ return pieces.map((part,i)=>officialRoutes.some(route=>route===part)
+  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?'Abrir app profissional / proveedor':'Abrir app cliente'}</a>
+  :<React.Fragment key={i}>{part}</React.Fragment>)
+}
+
 export function UgoSupportChat(){
  const locale=(typeof navigator!=='undefined'?navigator.language:'pt').toLowerCase();const t=labels[locale.startsWith('es')?'es':locale.startsWith('en')?'en':'pt'];
  const [open,setOpen]=useState(false)
@@ -77,7 +85,7 @@ export function UgoSupportChat(){
   {open&&<section className="ugo-support-panel" role="dialog" aria-label={t.header}>
    <header className="ugo-support-header"><div><strong>{t.header}</strong><small>{t.subtitle}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label={t.close}>×</button></header>
    <div className="ugo-support-messages" role="log" aria-live="polite">
-    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.content}</p>)}
+    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content):message.content}</p>)}
     {busy&&<p className="ugo-support-bubble assistant">{t.typing}</p>}
     {notice&&<p className="ugo-support-notice" role="status">{notice}</p>}
     <div ref={bottom}/>
