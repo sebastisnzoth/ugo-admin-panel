@@ -1,6 +1,7 @@
 import React,{useState} from'react'
 import{useLocale,LocalizedText}from'../i18n/locale'
 import'./ugo-landing.css'
+import{UgoSupportChat}from'./UgoSupportChat'
 
 type LandingRole='client'|'provider'|'admin'
 const goRole=(role:LandingRole)=>{window.location.assign(`${window.location.pathname}?app=${role}`)}
@@ -155,5 +156,6 @@ export function UgoLanding(){
    <div className="ugo-footer-links"><button onClick={()=>goRole('client')}>{t('landing.client')}</button><button onClick={()=>goRole('provider')}>{t('landing.provider')}</button><button onClick={()=>goRole('admin')}>{t('landing.admin')}</button></div>
    <small><LocalizedText id="landing.footer" params={{year:2026}}/></small>
   </footer>
+  {import.meta.env.VITE_UGO_SUPPORT_CHAT_ENABLED==='true'&&<UgoSupportChat/>}
  </main>
 }
