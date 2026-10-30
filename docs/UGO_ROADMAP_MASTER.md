@@ -1135,3 +1135,10 @@ RUNTIME VALIDATED             pendiente
 - Cuatro columnas detectadas como ausentes en PROD; SQL de compatibilidad preparado **solo para revisión**, no aplicado.
 - **BLOQUEOS:** backup verificable PROD, matriz RPC/RLS/Auth, CI PASS, pruebas E2E reales y aprobación para cambios persistentes.
 - Evidencia de proceso: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, `docs/sql/UGO_PROD_COMPATIBILITY_CANDIDATE_REVIEW_ONLY.sql`, PR #603.
+
+
+### Gate PR #603 — evidencia runtime 2026-10-30
+
+- HEAD `bf006265bd032f01cea07528365d4b96396f2d8b`: Core CI, Roadmap, Cross Security y Hugo Timeout PASS.
+- Cross-role UI y Admin Realtime TEST siguen bloqueados por HTTP 504 de Supabase TEST Auth; logs Auth TEST 18:09–18:14 UTC confirman 12 errores 504. La consola del proyecto puede mostrar ACTIVE_HEALTHY aun con Auth fallando.
+- No relajar runtime, no crear fixtures repetidos, no hacer cutover a PROD. PR continúa DRAFT sin merge hasta recuperación de Auth TEST y pruebas completas; detalles en `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`.
