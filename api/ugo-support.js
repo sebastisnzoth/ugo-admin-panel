@@ -23,7 +23,7 @@ export default async function handler(req,res){
  const signature=createHmac('sha256',salt).update(`${fingerprint}:${LIMIT}:${stamp}`).digest('hex');
  try{
   const limited=await fetch(db+'/rest/v1/rpc/ugo_support_check_limit_signed',{
-   method:'POST',headers:{apikey:publicKey,'Content-Type':'application/json'},
+   method:'POST',headers:{apikey:publicKey,Authorization:'Bearer '+publicKey,'Content-Type':'application/json'},
    body:JSON.stringify({p_fingerprint:fingerprint,p_limit:LIMIT,p_stamp:stamp,p_signature:signature}),signal:AbortSignal.timeout(4000)
   });
   if(!limited.ok){console.error('ugo-support: rate RPC failed',limited.status);return res.status(503).json({error:'PROTECTION_UNAVAILABLE'});}
