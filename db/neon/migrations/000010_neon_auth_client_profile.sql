@@ -13,4 +13,4 @@ REVOKE ALL ON FUNCTION public.ugo_neon_auth_user_created() FROM PUBLIC;
 DROP TRIGGER IF EXISTS ugo_neon_auth_signup_profile ON neon_auth."user";
 CREATE TRIGGER ugo_neon_auth_signup_profile AFTER INSERT ON neon_auth."user"
 FOR EACH ROW EXECUTE FUNCTION public.ugo_neon_auth_user_created();
-CREATE POLICY ugo_neon_self_select ON public.usuarios FOR SELECT TO authenticated USING (id = (SELECT auth.user_id()));
+CREATE POLICY ugo_neon_self_select ON public.usuarios FOR SELECT TO authenticated USING (id = (SELECT auth.user_id()::uuid));
