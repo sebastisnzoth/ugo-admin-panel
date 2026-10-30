@@ -673,3 +673,11 @@ RUNTIME VALIDATED             pendiente
 - SQL TEST: columnas aditivas en perfiles_proveedor y RPCs `cotizar_productos_faxina` / `aprobar_productos_faxina`. Validación estricta de propietario, estado asignado, precio exacto, ausencia de pagos y aprobación idempotente.
 - UGO TEST (tmossnqfwfwjrtzwcbmm) recibió la migración; PROD (trfsjuseqjxlhrxuvdsm) permanece intacto. `src/lib/supabaseProject.ts` mantiene frontend de main contra TEST.
 - No modificar GPS ni los P0 validados; ejecución de CI, contrato y revisión desde aplicación antes de declarar cierre. Si falla CI: reparar primero en rama, no fusionar.
+
+
+### 2026-10-29 · Handoff Faxina vivienda (nuevo requerimiento)
+
+- Cliente solicitó cuatro campos nuevos solo en Faxina/Limpieza: tipo de residencia (Casa/Apartamento/Otro), ambientes, habitaciones y baños; menús desplegables sin retirar horas ni productos ya aprobados.
+- Se implementa en la rama `feat/faxina-residence-details-20261029`: formulario con validación, recuperación del borrador, resumen, metadata del servicio y preferencias del proveedor; traducciones ES/PT-BR/EN; no hay migración de base de datos.
+- Gates antes de integrar a main: contrato Faxina, TypeScript/build, auditoría i18n, CI exact SHA y revisión del formulario en móvil. No declararlo ACCEPTED por aprobación previa del bloque horas/productos.
+- Seguridad: aislado a Faxina; TEST para validar; Supabase PROD, GPS, matching y pagos intactos.
