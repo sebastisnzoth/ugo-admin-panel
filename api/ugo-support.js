@@ -1,5 +1,5 @@
 // UGO public support — TEST. No access to OpenClaw, tools, Supabase or private data.
-import {createHmac} from 'node:crypto';
+import {createHmac,timingSafeEqual} from 'node:crypto';
 const LIMIT=6;
 const handbook=`UGO piloto Florianópolis: Faxina e Marido de Aluguel. Faxina: tipo casa/apartamento/outro; ambientes, quartos e banheiros; duração de 1 a 12 horas. Cliente pode solicitar produtos de limpeza; profissional define valor extra e cliente precisa aprovar antes da cobrança. Sem oferta de produtos não há cobrança automática. Não inventar disponibilidade, preços, políticas, reservas ou pagamentos. Para dados privados, recomendar login nos fluxos oficiais. Não pedir senhas, documentos nem dados bancários. Não executar ações.`;
 export default async function handler(req,res){
@@ -29,8 +29,24 @@ export default async function handler(req,res){
   if(!limited.ok){console.error('ugo-support: rate RPC failed',limited.status);return res.status(503).json({error:'PROTECTION_UNAVAILABLE'});}
   if((await limited.json())!==true)return res.status(429).json({error:'RATE_LIMIT'});
  }catch(e){console.error('ugo-support: rate RPC exception',e instanceof Error?e.name:'unknown');return res.status(503).json({error:'PROTECTION_UNAVAILABLE'})}
+ // A verified visitor gets a short-lived, server-signed, HttpOnly support session.
+ // Turnstile tokens are single-use; do not request a new puzzle for each message.
+ const sessionName='ugo_support_verified';
+ const sessionSecret=salt;
+ const cookies=String(req.headers.cookie||'').split(';').map(v=>v.trim());
+ const rawCookie=cookies.find(v=>v.startsWith(sessionName+'='))?.slice(sessionName.length+1)||'';
+ const sessionParts=rawCookie.split('.');
+ let verifiedSession=false;
+ if(sessionParts.length===2&&/^\\d+$/.test(sessionParts[0])&&/^[a-f0-9]{64}$/.test(sessionParts[1])){
+  const expires=Number(sessionParts[0]);
+  if(expires>Date.now()&&expires<Date.now()+1200000+60000){
+   const expected=createHmac('sha256',sessionSecret).update(fingerprint+':'+expires).digest('hex');
+   verifiedSession=timingSafeEqual(Buffer.from(expected,'hex'),Buffer.from(sessionParts[1],'hex'));
+  }
+ }
+ let passedChallenge=false;
  // Optional Turnstile verification when the rollout has configured a secret.
- if(process.env.UGO_SUPPORT_TURNSTILE_SECRET){
+ if(process.env.UGO_SUPPORT_TURNSTILE_SECRET&&!verifiedSession){
   const token=req.body?.turnstileToken;
   if(typeof token!=='string'||token.length>2048)return res.status(403).json({error:'BOT_CHECK_REQUIRED'});
   try{
@@ -39,6 +55,7 @@ export default async function handler(req,res){
    });
    const verdict=await proof.json();
    if(!verdict.success){console.error('ugo-support: turnstile failed',verdict['error-codes']||[]);return res.status(403).json({error:'BOT_CHECK_FAILED'});}
+   passedChallenge=true;
   }catch{return res.status(503).json({error:'BOT_CHECK_UNAVAILABLE'})}
  }
  if(process.env.UGO_SUPPORT_ENABLED!=='true')return res.status(503).json({error:'SUPPORT_DISABLED'});
@@ -96,6 +113,11 @@ export default async function handler(req,res){
  // Free-only fallback; never pass paid model IDs to OpenRouter.
  const result=await getGemini()||await getOpenRouter();
  if(!result)return res.status(503).json({error:'ALL_AI_PROVIDERS_UNAVAILABLE'});
+ if(passedChallenge){
+  const expires=Date.now()+20*60*1000;
+  const signature=createHmac('sha256',sessionSecret).update(fingerprint+':'+expires).digest('hex');
+  res.setHeader('Set-Cookie',sessionName+'='+expires+'.'+signature+'; Path=/api/ugo-support; Max-Age=1200; HttpOnly; Secure; SameSite=Lax');
+ }
  res.setHeader('X-UGO-Support-Provider',result.provider);
  return res.status(200).json({reply:result.reply.slice(0,3500)});
 }
