@@ -11,15 +11,15 @@ declare global {interface Window {turnstile?:TurnstileApi}}
 
 const labels={
  pt:{header:'Atendimento UGO',subtitle:'Assistente virtual · Clientes e profissionais',close:'Fechar atendimento',typing:'Escrevendo…',input:'Sua mensagem',placeholder:'Como podemos ajudar?',send:'Enviar mensagem',footer:'Não compartilhe senhas ou dados bancários.',launcher:'Atendimento IA',closed:'Fechar',open:'Abrir chat de atendimento',captcha:'Verificação anti-bot'},
- es:{header:'Atención UGO',subtitle:'Asistente virtual · Clientes y profesionales',close:'Cerrar atención',typing:'Escribiendo…',input:'Tu mensaje',placeholder:'¿Cómo podemos ayudarte?',send:'Enviar mensaje',footer:'No compartas contraseñas ni datos bancarios.',launcher:'Atención IA',closed:'Cerrar',open:'Abrir chat de atención',captcha:'Verificación antibots'},
+ es:{header:'Atención UGO',subtitle:'Asistente virtual · Clientes y profesionales',close:'Cerrar atención',typing:'Escribiendo…',input:'Tu mensaje',placeholder:'¿Cómo podemos ayudarte?',send:'Enviar mensaje',footer:'No compartas contraseñas ni datos bancarios.',launcher:'Atención IA',closed:'Cerrar',open:'Abrir chat de atenção',captcha:'Verificação antibots'},
  en:{header:'UGO Support',subtitle:'Virtual assistant · Customers and professionals',close:'Close support',typing:'Typing…',input:'Your message',placeholder:'How can we help?',send:'Send message',footer:'Do not share passwords or banking information.',launcher:'AI Support',closed:'Close',open:'Open support chat',captcha:'Bot verification'}
 } as const
 
 const officialRoutes=['https://ugo-admin-panel.vercel.app/?app=client','https://ugo-admin-panel.vercel.app/?app=provider'] as const
-function renderSupportText(content:string){
+function renderSupportText(content:string,t:(key:string)=>string){
  const pieces=content.split(/(https:\/\/ugo-admin-panel\.vercel\.app\/\?app=(?:client|provider))/g)
  return pieces.map((part,i)=>officialRoutes.some(route=>route===part)
-  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?'Abrir aplicación profesional / Open professional app':'Abrir aplicación cliente / Open customer app'}</a>
+  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?t('sharedUi.support.openProfessionalApp'):t('sharedUi.support.openCustomerApp')}</a>
   :<React.Fragment key={i}>{part}</React.Fragment>)
 }
 
@@ -87,7 +87,7 @@ export function UgoSupportChat(){
   {open&&<section className="ugo-support-panel" role="dialog" aria-label={t.header}>
    <header className="ugo-support-header"><div><strong>{t.header}</strong><small>{t.subtitle}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label={t.close}>×</button></header>
    <div className="ugo-support-messages" role="log" aria-live="polite">
-    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content):message.content}</p>)}
+    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content,{t:(key)=>t(key)}):message.content}</p>)}
     {busy&&<p className="ugo-support-bubble assistant">{t.typing}</p>}
     {notice&&<p className="ugo-support-notice" role="status">{notice}</p>}
     <div ref={bottom}/>
