@@ -42,14 +42,15 @@ export default async function handler(req,res){
  // Turnstile tokens are single-use; do not request a new puzzle for each message.
  const sessionName='ugo_support_verified';
  const sessionSecret=salt;
+ const sessionBinding=createHmac('sha256',sessionSecret).update(String(req.headers['user-agent']||'browser')).digest('hex');
  const cookies=String(req.headers.cookie||'').split(';').map(v=>v.trim());
  const rawCookie=cookies.find(v=>v.startsWith(sessionName+'='))?.slice(sessionName.length+1)||'';
  const sessionParts=rawCookie.split('.');
  let verifiedSession=false;
- if(sessionParts.length===2&&/^\\d+$/.test(sessionParts[0])&&/^[a-f0-9]{64}$/.test(sessionParts[1])){
+ if(sessionParts.length===2&&/^\d+$/.test(sessionParts[0])&&/^[a-f0-9]{64}$/.test(sessionParts[1])){
   const expires=Number(sessionParts[0]);
   if(expires>Date.now()&&expires<Date.now()+1200000+60000){
-   const expected=createHmac('sha256',sessionSecret).update(fingerprint+':'+expires).digest('hex');
+   const expected=createHmac('sha256',sessionSecret).update(sessionBinding+':'+expires).digest('hex');
    verifiedSession=timingSafeEqual(Buffer.from(expected,'hex'),Buffer.from(sessionParts[1],'hex'));
   }
  }
@@ -124,7 +125,7 @@ export default async function handler(req,res){
  if(!result)return res.status(503).json({error:'ALL_AI_PROVIDERS_UNAVAILABLE'});
  if(passedChallenge){
   const expires=Date.now()+20*60*1000;
-  const signature=createHmac('sha256',sessionSecret).update(fingerprint+':'+expires).digest('hex');
+  const signature=createHmac('sha256',sessionSecret).update(sessionBinding+':'+expires).digest('hex');
   res.setHeader('Set-Cookie',sessionName+'='+expires+'.'+signature+'; Path=/api/ugo-support; Max-Age=1200; HttpOnly; Secure; SameSite=Lax');
  }
  res.setHeader('X-UGO-Support-Provider',result.provider);
