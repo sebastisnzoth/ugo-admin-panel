@@ -4,8 +4,7 @@ import{getRoleSupabase}from'../../lib/roleSupabase'
 
 /** Optional, provider-set BRL supplies fee. It never alters the GPS or the base service tariff. */
 export function ProviderFaxinaSuppliesSettings(){
- const{locale,t}=useLocale()
- const pt=locale.startsWith('pt'),es=locale.startsWith('es')
+ const{t}=useLocale()
  const[suppliesEnabled,setSuppliesEnabled]=useState(false),[fee,setFee]=useState(''),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[message,setMessage]=useState('')
  useEffect(()=>{let alive=true;void(async()=>{
   try{
