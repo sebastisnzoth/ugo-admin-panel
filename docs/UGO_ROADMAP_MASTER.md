@@ -1148,3 +1148,12 @@ RUNTIME VALIDATED             pendiente
 - SHA previo `dc8645da`: cinco workflows fallaron por el guard de entorno, que detectó un ref PROD incorporado en `roleSupabase.ts` mediante opt-in `prod-preview`. Roadmap PASS, Groq SKIPPED.
 - Corrección en la misma rama: `6db01445` elimina override PROD y usa exclusivamente URL/clave TEST; `ae25733c` reemplaza el test que exigía ese override por un contrato de aislamiento TEST.
 - No se cambió Supabase PROD, secretos ni tráfico. CI y runtimes exact-SHA deben revalidarse; no fusionar con gates abiertos (Auth TEST 504, backup, RPC/RLS, E2E).
+
+
+### 2026-10-30 17:25 BRT · PR #603 — CI exact-SHA, bloqueo runtime TEST
+
+- HEAD `5095c9bc926dd34c64215383414b95cbfdaf35aa`: Core CI, Cross Security, Hugo Timeout y Roadmap Traceability **PASS**; Admin Realtime y Cross-role UI **FAIL**; Groq smoke SKIPPED.
+- Admin Realtime: login/browser no alcanzó `.ugo-admin2-status` (timeout 20 s); contratos y build PASS, E2E realtime NO VALIDADO.
+- Cross-role UI: `ADMIN_SESSION_FAILURE operator desktop`; limpieza de fixture TEST falló por statement timeout en tabla `usuarios` y Gateway Timeout en Auth; posible fixture remanente confirmado por verificación del test. Evitar reintentos de creación hasta saneamiento seguro.
+- **Gate = BLOCKED / NO MERGE**: recuperar TEST Auth/DB, verificar cleanup y repetir pruebas runtime reales; backup/RLS/RPC/E2E completos aún no acreditados. Sin cambios en PROD ni redirección.
+- Evidencia detallada: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, runs `41118614941` y `41118615020`.
