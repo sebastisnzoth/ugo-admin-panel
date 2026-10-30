@@ -16,15 +16,15 @@ const labels={
 } as const
 
 const officialRoutes=['https://ugo-admin-panel.vercel.app/?app=client','https://ugo-admin-panel.vercel.app/?app=provider'] as const
-function renderSupportText(content:string,t:(key:string)=>string){
+function renderSupportText(content:string,translate:(key:string)=>string){
  const pieces=content.split(/(https:\/\/ugo-admin-panel\.vercel\.app\/\?app=(?:client|provider))/g)
  return pieces.map((part,i)=>officialRoutes.some(route=>route===part)
-  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?t('sharedUi.support.openProfessionalApp'):t('sharedUi.support.openCustomerApp')}</a>
+  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?translate('sharedUi.support.openProfessionalApp'):translate('sharedUi.support.openCustomerApp')}</a>
   :<React.Fragment key={i}>{part}</React.Fragment>)
 }
 
 export function UgoSupportChat(){
- const {locale}=useLocale();const t=labels[locale==='es'?'es':locale==='en'?'en':'pt'];
+ const {locale,t:translate}=useLocale();const labels_t=labels[locale==='es'?'es':locale==='en'?'en':'pt'];
  const [open,setOpen]=useState(false)
  const [messages,setMessages]=useState<Message[]>([initial])
  useEffect(()=>{setMessages(current=>current.length===1?[{role:'assistant',content:locale==='es'?'¡Hola! Soy el asistente virtual de UGO. Puedo ayudarte como cliente o profesional.':locale==='en'?'Hello! I am the UGO virtual assistant. I can help customers and professionals.':initial.content}]:current)},[locale])
@@ -84,18 +84,18 @@ export function UgoSupportChat(){
   finally{window.clearTimeout(timeoutId);setBusy(false);if(controller.current===abort)controller.current=null;/* Keep the challenge stable on network errors; new token will be requested when used/expired. */}
  }
  return <div className="ugo-support-root">
-  {open&&<section className="ugo-support-panel" role="dialog" aria-label={t.header}>
-   <header className="ugo-support-header"><div><strong>{t.header}</strong><small>{t.subtitle}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label={t.close}>×</button></header>
+  {open&&<section className="ugo-support-panel" role="dialog" aria-label={labels_t.header}>
+   <header className="ugo-support-header"><div><strong>{labels_t.header}</strong><small>{labels_t.subtitle}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label={labels_t.close}>×</button></header>
    <div className="ugo-support-messages" role="log" aria-live="polite">
-    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content,t):message.content}</p>)}
-    {busy&&<p className="ugo-support-bubble assistant">{t.typing}</p>}
+    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content,translate):message.content}</p>)}
+    {busy&&<p className="ugo-support-bubble assistant">{labels_t.typing}</p>}
     {notice&&<p className="ugo-support-notice" role="status">{notice}</p>}
     <div ref={bottom}/>
    </div>
-   {turnstileSiteKey&&<div ref={captchaNode} style={{display:verifiedSession?'none':'flex',justifyContent:'center',padding:'6px'}} aria-label={t.captcha}/>}
-   <form className="ugo-support-form" onSubmit={submit}><label className="ugo-support-sr" htmlFor="ugo-support-input">{t.input}</label><input id="ugo-support-input" value={input} onChange={e=>setInput(e.target.value)} maxLength={2000} placeholder={t.placeholder} disabled={busy}/><button type="submit" disabled={!input.trim()||busy||Boolean(turnstileSiteKey&&!verifiedSession&&!captchaToken)} aria-label={t.send}>➤</button></form>
-   <small className="ugo-support-footer">{t.footer}</small>
+   {turnstileSiteKey&&<div ref={captchaNode} style={{display:verifiedSession?'none':'flex',justifyContent:'center',padding:'6px'}} aria-label={labels_t.captcha}/>}
+   <form className="ugo-support-form" onSubmit={submit}><label className="ugo-support-sr" htmlFor="ugo-support-input">{labels_t.input}</label><input id="ugo-support-input" value={input} onChange={e=>setInput(e.target.value)} maxLength={2000} placeholder={labels_t.placeholder} disabled={busy}/><button type="submit" disabled={!input.trim()||busy||Boolean(turnstileSiteKey&&!verifiedSession&&!captchaToken)} aria-label={labels_t.send}>➤</button></form>
+   <small className="ugo-support-footer">{labels_t.footer}</small>
   </section>}
-  <button className="ugo-support-launcher" type="button" onClick={()=>setOpen(v=>!v)} aria-label={open?t.close:t.open} aria-expanded={open}>{open?'×':'☏'}<span>{open?t.closed:t.launcher}</span></button>
+  <button className="ugo-support-launcher" type="button" onClick={()=>setOpen(v=>!v)} aria-label={open?labels_t.close:labels_t.open} aria-expanded={open}>{open?'×':'☏'}<span>{open?labels_t.closed:labels_t.launcher}</span></button>
  </div>
 }
