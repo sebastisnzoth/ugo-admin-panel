@@ -1,3 +1,4 @@
+import { UGO_ENVIRONMENT } from '../lib/supabaseProject'
 import{LanguageSelector}from'../i18n/LanguageSelector'
 import{LocalizedText,useLocale}from'../i18n/locale'
 /* eslint-disable react-refresh/only-export-components -- design system barrel: exporta primitivas, constantes y hooks junto a los componentes (patrón intencional UGO) */
@@ -267,7 +268,7 @@ export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:Ugo
           <button type="button" role="tab" aria-selected={mode==='login'} className={mode==='login'?'active':''} onClick={()=>changeMode('login')}><LocalizedText id="adminSurface.enter"/></button>
           <button type="button" role="tab" aria-selected={mode==='register'} className={mode==='register'?'active':''} onClick={()=>changeMode('register')}><LocalizedText id="screen.admin_users.5"/></button>
         </div>}
-        {mode!=='recovery'&&<>
+        {mode!=='recovery'&&UGO_ENVIRONMENT!=='production'&&<>
           <button type="button" className="mvp-google-button" onClick={signInWithGoogle} disabled={busy}><span className="mvp-google-mark">G</span><b>{t('sharedUi.google')}</b></button>
           <div className="mvp-auth-divider"><span>{t('sharedUi.orEmail')}</span></div>
         </>}
