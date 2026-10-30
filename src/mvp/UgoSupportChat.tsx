@@ -87,7 +87,7 @@ export function UgoSupportChat(){
   {open&&<section className="ugo-support-panel" role="dialog" aria-label={t.header}>
    <header className="ugo-support-header"><div><strong>{t.header}</strong><small>{t.subtitle}</small></div><button type="button" onClick={()=>setOpen(false)} aria-label={t.close}>×</button></header>
    <div className="ugo-support-messages" role="log" aria-live="polite">
-    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content,{t:(key)=>t(key)}):message.content}</p>)}
+    {messages.map((message,i)=><p key={i} className={'ugo-support-bubble '+message.role}>{message.role==='assistant'?renderSupportText(message.content,t):message.content}</p>)}
     {busy&&<p className="ugo-support-bubble assistant">{t.typing}</p>}
     {notice&&<p className="ugo-support-notice" role="status">{notice}</p>}
     <div ref={bottom}/>
