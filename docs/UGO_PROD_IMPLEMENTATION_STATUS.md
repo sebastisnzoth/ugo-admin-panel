@@ -52,3 +52,9 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 - Conclusión: fallos de integración bloqueados por dependencia externa **Supabase TEST Auth**, no evidencia de regresión en el aislamiento de sesiones. No maquillar con skips, mocks o relajación de assertions; evitar reintentos en bucle que saturen TEST.
 - Estado Vercel para ese SHA: `pending`. Backups, matriz completa Auth/RLS/RPC y E2E por rol continúan pendientes. **NO MERGE**, no cambio de PROD, secretos ni tráfico.
 - Próximo gate verificable: recuperar disponibilidad de Auth TEST, reejecutar ambos runtimes en el mismo SHA, confirmar PASS y evidencia de limpieza de fixtures; luego evaluar aprobación de PR y fusión segura.
+
+## Cliente + Proveedor — conexión opt-in preparada
+- Commit `c8e96683`: `src/lib/roleSupabase.ts` permite usar la URL y clave **publicable** de UGO PROD solo al configurar `VITE_UGO_ROLE_DATABASE_TARGET=prod-preview`; sin esa variable se mantiene TEST. Las sesiones locales se separan por base y rol. Admin (`src/lib/supabase.ts`) sigue TEST.
+- Test de contrato añadido (`tests/contracts/service-chat.test.mjs`) en commit `98a0dbf1`.
+- **ADVERTENCIA**: esto conecta el cliente Supabase por rol, **no demuestra** que todas las consultas, RPC, funciones serverless, Storage y Realtime de las aplicaciones usen el mismo proyecto. Prohibido desplegar o habilitar la variable públicamente hasta auditar dependencias, backups, RLS y Auth y pasar E2E.
+- Autenticación Cliente/Proveedor en PROD no probada. Ninguna modificación de base realizada. CI de commit pendiente.
