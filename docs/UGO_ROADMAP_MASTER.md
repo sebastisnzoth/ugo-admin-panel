@@ -1061,9 +1061,67 @@ RUNTIME VALIDATED             pendiente
 - **Gate:** CI/compilación y revisión visual de Vercel requeridos antes de aprobar el flujo; merge a main solo con gates verdes. No afirmar E2E físico de este nuevo campo todavía.
 
 
+## Checkpoint 27/10/2026 · Integridad de evidencia autónoma en inserción
+
+**PR #593** · Rama: `fix/test-evidence-hash-on-insert-20261027`
+
+### Cambios
+- Trigger `autonomous_evidence_hash_insert` (BEFORE INSERT) en `autonomous_evidence_ledger`
+- Función `private.autonomous_evidence_hash_on_insert()` — SHA-256 determinista sobre `job_id`, `evidence_type`, `reference`, `metadata`, `correlation_id`, `created_at`
+- Provenance marker `_ugo_hash_provenance: generated_at_insert_v1` en `metadata`
+- **No reescritura de historial**: 2,952 filas históricas `DEPARTMENT_CONNECTIVITY_PROOF` sin hash permanecen BLOCKED intencional
+- Protección append-only (`autonomous_evidence_immutable`) preservada
+
+### Validación
+- Migración aplicada en UGO TEST (`tmossnqfwfwjrtzwcbmm`)
+- Test contractual `autonomous-evidence-insert-hash-guard.test.mjs` verifica:
+  - Hash generado en INSERT para filas nuevas sin hash
+  - Hashes suministrados no sobrescritos
+  - No UPDATE/DELETE/DISABLE TRIGGER/ALTER TABLE DISABLE en migración
+  - Protección append-only intacta
+
+### Estado de madurez
+```text
+Backend migration             APPLIED en UGO TEST
+Trigger hash-on-insert        ACTIVE
+Test contractual              IMPLEMENTADO
+Historial hashless (2,952)    BLOCKED — remediación auditable separada
+CI VALIDATED                  pendiente (Roadmap Traceability)
+RUNTIME VALIDATED             pendiente
+```
+
+### Próximo cierre
+1. CI Roadmap Traceability verde
+2. Suite test completa verde (grupos controlados)
+3. Auditoría histórica 2,952 filas → remediación separada con evidencia
+4. Merge PR #593 a `main` tras controles aprobados
+
+### Referencias
+- Commit migración: `794941a249823a3770fe2a949f1fa1c64d6cc3c4`
+- Commit test: `8b61c5242435156219b6e9014a3cdec4993e4bd1`
+- Commit reporte déficit: `1211af5aebacda72c1fad7418c10433883187bb4`
+
+
+### 2026-10-29 · Faxina: horas y productos (piloto TEST)
+- **Alcance exclusivo:** categorías `faxina`, `limpeza` y `limpieza`. No tocar GPS/geofence, auth ni otros rubros.
+- **Cliente:** formulario exige 1–12 horas de limpieza, pregunta opcional sobre si el profesional debe llevar productos. Guarda `faxina_hours`, `estimated_duration_minutes` y `faxina_supplies_requested` en `servicios.metadata`.
+- **Proveedor:** al seleccionar Faxina, habilita la oferta de productos y define adicional en BRL (`faxina_productos_lleva`, `faxina_productos_valor`).
+- **Aprobación:** el cliente ve precio del proveedor asignado y confirma el adicional por RPC idempotente, antes del cobro y traslado; se recalculan importes y comisión sobre tarifa aprobada. No se factura solo por marcar checkbox.
+- **Evidencia:** PR #596, migración aditiva `20261029213000_faxina_hours_supplies_pricing.sql` aplicada en UGO TEST; pruebas de contratos en `tests/contracts/faxina-hours-supplies.test.mjs`. Supabase PROD no modificado.
+- **Gate:** CI/compilación y revisión visual de Vercel requeridos antes de aprobar el flujo; merge a main solo con gates verdes. No afirmar E2E físico de este nuevo campo todavía.
+
+
 ### 2026-10-29 · Faxina: características de la vivienda (ampliación)
 
 - Solicitud del cliente: tipo de residencia (casa/apartamento/otro), ambientes (1–12), dormitorios (0–10) y baños (1–8), mediante selects nativos accesibles. Campos requeridos solo para Faxina/Limpieza; el flujo conserva horas y checkbox de productos aprobados.
 - Resumen muestra los cuatro valores; el pedido lleva metadata `faxina_residence_type`, `faxina_rooms`, `faxina_bedrooms` y `faxina_bathrooms`, y preferencias legibles por proveedor. No se crea columna ni cambia el precio, la comisión o el matching.
 - El asistente de voz no salta el formulario Faxina antes de completar los datos requeridos. Traducciones pt-BR/es/en y contrato de regresión en la suite Faxina.
 - Alcance: TEST/UI con PR de revisión; **NO aceptar como publicado antes de CI exact-SHA, revisión responsive y confirmación humana del nuevo formulario**. Sin cambios en Supabase PROD, Auth, GPS ni pagos.
+
+## 2026-10-30 — Atendimento UGO (PR #597 · TEST)
+
+- Chat público de atendimento com base de conhecimento Faxina/Marido de Aluguel: frontend + endpoint Gemini server-side implementados na PR #597.
+- Migração TEST para rate limit atômico aplicada e permissões RPC verificadas; sem acesso anon/authenticated.
+- Turnstile frontend/backend implementado, configuração de widget e credenciais específicas ainda pendentes.
+- Gate: impedir habilitação pública antes de QA Preview, prova real Gemini, limite de abuso e secrets de TEST.
+- Nunca usar credenciais PROD nem declarar GO-LIVE a partir de build apenas.
