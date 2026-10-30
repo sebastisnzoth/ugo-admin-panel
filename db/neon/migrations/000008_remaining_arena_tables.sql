@@ -1,5 +1,5 @@
 -- UGO Arena TEST verified table metadata 2026-10-30. Schema-only. Neon br-tiny-field-b6v07tb3 only.
--- Auth-dependent source defaults intentionally omitted pending Better Auth identity bridge; no data copied.
+-- Auth-dependent and column-referencing source defaults omitted pending explicit adaptation; no data copied.
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname='hugo_rol') THEN CREATE TYPE public."hugo_rol" AS ENUM ('cliente','proveedor','admin'); END IF; END $$;
 
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname='servicio_estado') THEN CREATE TYPE public."servicio_estado" AS ENUM ('borrador','buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado','cancelado','disputado'); END IF; END $$;
@@ -278,7 +278,7 @@ CREATE TABLE IF NOT EXISTS public."deudas_ugo_proveedor" (
  "monto_servicio" numeric NOT NULL CHECK (monto_servicio >= 0::numeric),
  "comision_ugo" numeric NOT NULL CHECK (comision_ugo >= 0::numeric),
  "monto_pagado_ugo" numeric DEFAULT 0 NOT NULL CHECK (monto_pagado_ugo >= 0::numeric),
- "saldo_pendiente" numeric DEFAULT GREATEST((comision_ugo - monto_pagado_ugo), (0)::numeric),
+ "saldo_pendiente" numeric,
  "moneda" character DEFAULT 'BRL'::bpchar NOT NULL,
  "ambiente" text DEFAULT 'real'::text NOT NULL CHECK (ambiente = ANY (ARRAY['real'::text, 'demo'::text])),
  "estado" text DEFAULT 'pendiente'::text NOT NULL CHECK (estado = ANY (ARRAY['pendiente'::text, 'informado'::text, 'parcial'::text, 'pagado'::text, 'anulado'::text])),
@@ -506,7 +506,7 @@ CREATE TABLE IF NOT EXISTS public."ip_evidence_ledger" (
  "author_id" uuid,
  "metadata" jsonb DEFAULT '{}'::jsonb NOT NULL,
  "created_at" timestamptz DEFAULT now() NOT NULL,
- "evidence_key" text DEFAULT COALESCE(evidence_hash, ''::text),
+ "evidence_key" text,
  PRIMARY KEY ("id")
 );
 
