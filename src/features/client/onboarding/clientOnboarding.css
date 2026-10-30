@@ -45,3 +45,57 @@
  .ugo-client-section-title{gap:8px}
  .ugo-client-field input,.ugo-client-field select{padding-left:10px;padding-right:10px}
 }
+
+/* Issue #600: onboarding owns the mobile viewport, even when app shells lock body scrolling.
+   Keep the form itself scrollable and leave room for the on-screen keyboard. */
+@media (max-width:640px) {
+  .ugo-client-stitch-scope:has(.ugo-client-onboarding) {
+    position:fixed;
+    inset:0;
+    z-index:100;
+    width:100%;
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+  }
+  .ugo-client-onboarding {
+    width:100%;
+    height:100%;
+    min-height:0;
+    max-height:100dvh;
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    padding:0 0 env(safe-area-inset-bottom);
+  }
+  .ugo-client-onboarding-card {
+    min-height:100%;
+    overflow:visible;
+    border-radius:0;
+  }
+  .ugo-client-onboarding-head {
+    padding:calc(14px + env(safe-area-inset-top)) 18px 14px;
+    gap:8px;
+  }
+  .ugo-client-onboarding-head h1 {
+    margin:5px 0;
+    font-size:clamp(23px,6vw,29px);
+    line-height:1.12;
+  }
+  .ugo-client-onboarding-head p {font-size:12px;line-height:1.4}
+  .ugo-client-time-pill {margin-top:8px;padding:5px 9px}
+  .ugo-client-onboarding-icon {display:none}
+  .ugo-client-onboarding-body {gap:10px;padding:12px 14px calc(24px + env(safe-area-inset-bottom))}
+  .ugo-client-section {gap:10px;padding:12px;border-radius:14px}
+  .ugo-client-field input,.ugo-client-field select {min-height:46px;border-radius:11px}
+  .ugo-client-actions {
+    position:static;
+    margin:0;
+    padding:8px 0 0;
+    background:none;
+  }
+  .ugo-client-primary {min-height:48px}
+  .ugo-client-field input:focus,.ugo-client-field select:focus {scroll-margin-bottom:160px}
+}
