@@ -29,3 +29,12 @@
 No tocar PROD; no resetear, pausar, restaurar, borrar, cambiar credenciales ni aplicar índices o migraciones sin conectividad y plan de reversión. No ejecutar sondeos de alta frecuencia. No declarar RECUPERADO hasta verificar SQL, Auth y el flujo Cliente → Pedido → Proveedor.
 
 **Nota:** La inexistencia de dumps en el workspace del agente no demuestra pérdida de la base original.
+
+## Evidencia oficial — High Disk I/O (Supabase KB, editado 2026-10-13)
+Fuente: https://supabase.com/kb/troubleshooting/exhaust-disk-io
+
+Según Supabase, cuando se agota Disk I/O Budget, la instancia vuelve a su throughput base (el documento menciona 5 MB/s para su caso descrito), puede aumentar el tiempo de respuesta y el I/O wait, perjudicar procesos internos y llegar a ser no responsiva. El presupuesto se repone cuando la demanda de I/O es igual o inferior a la capacidad base. **Hipótesis fuerte, no causa raíz demostrada para UGO Arena.** Se necesita evidencia temporal de métricas IOPS/throughput, CPU/iowait, RAM/swap, cache hit ratio y disponibilidad de Postgres para confirmarla.
+
+Acción conservadora: mantener pausadas consultas repetitivas de monitores, evitar scans de logs y sentencias estadísticas pesadas, no alterar cron de matching ni RLS sin prueba. No borrar datos ni logs y no cambiar de plan. Tras recuperar acceso: respaldo y análisis breve de consultas lentas e índices antes de optimizaciones persistentes.
+
+**Comprobación en esta revisión:** `SELECT 1` en TEST sigue fallando con `Connection terminated due to connection timeout`. P0 continúa BLOCKED. La documentación no prueba pérdida de datos.
