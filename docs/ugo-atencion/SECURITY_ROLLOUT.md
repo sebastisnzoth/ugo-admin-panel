@@ -1,26 +1,21 @@
-# UGO support chat — security rollout (TEST ONLY)
+# UGO Atendimento — implantação segura TEST
 
-## Current state
-Code is committed in PR #597. NOT operational until migration and server-only settings are installed and tested. Do not merge without preview verification.
+## Implementação confirmada
+- Supabase TEST `tmossnqfwfwfwjrtzwcbmm`: migrações de limite atômico e RPC assinado aplicadas.
+- `ugo_support_check_limit_signed`: controla seis chamadas por minuto por fingerprint. Teste SQL de sete chamadas confirmou seis autorizações e sétima rejeitada.
+- A RPC pública exige assinatura HMAC gerada apenas pelo servidor e segredos armazenados no schema privado de TEST; não depende da chave service_role de PROD.
+- Vercel Preview somente na branch `feat/ugo-landing-ai-support-chat`: configuradas URL e publishable key TEST, HMAC secreto, `UGO_SUPPORT_ENABLED=true`, `GEMINI_API_KEY` e credenciais Turnstile.
+- Cloudflare Turnstile: widget real (não chave de testes), restrito aos hostnames de Preview.
+- Nenhuma configuração da produção foi alterada nesta operação.
 
-## Rate limiting
-Atomic Supabase TEST RPC `ugo_support_check_limit`: 6 requests per minute per HMAC-anonymized network IP. No shared in-memory fallback. Missing or broken database => HTTP 503. Old buckets need scheduled cleanup. IP-level limiting is imperfect for carrier NAT, VPNs and adversaries; add provider firewall limits for broader abuse protection.
+## Evidências e limites
+- O deployment Vercel `dpl_CmbD2iyRMJihXAGkNrkoYTZJqy8Y`, SHA `488b421cc3804b9a0453433483f466f3cd72be8b`, ficou READY.
+- **Não confundir READY com um smoke test real**: validação com navegador e token Turnstile ainda é necessária para certificar Gemini E2E.
+- GitHub Core CI anterior falhou com 12 literais JSX; o frontend foi localizado em pt/es/en. Roadmap e continuidade foram atualizados para resolver outro gate. Reavaliar CI no SHA final.
+- A quota de seis/minuto por IP reduz abuso, mas limites podem afetar IPs compartilhados e não equivalem a um orçamento de cobrança no provedor Gemini.
+- A rota permanece proibida em produção sem credenciais independentes, revisão de privacidade e verificação de disponibilidade de Gemini.
 
-## Preview environment variables (server-side only; never VITE_*)
-- `UGO_SUPPORT_SUPABASE_URL=https://tmossnqfwfwfwjrtzwcbmm.supabase.co`
-- `UGO_SUPPORT_SUPABASE_SERVICE_KEY`: the service-role credential for **TEST**, not PROD.
-- `UGO_SUPPORT_RATE_SECRET`: random secret at least 32 bytes, generated privately.
-- `UGO_SUPPORT_ENABLED=true` only after rollout gates pass.
-- `GEMINI_API_KEY`: already present on Vercel Preview.
-- `UGO_SUPPORT_TURNSTILE_SECRET`: optional only after Turnstile widget is integrated and site key configured. If set, backend requires a valid token in `turnstileToken` and fails closed.
-
-**Important:** The frontend does not currently request a Turnstile token. Setting `UGO_SUPPORT_TURNSTILE_SECRET` right now blocks all conversations. Implement widget + verify browser origins before enabling.
-
-## Security gates
-1. Apply migration exclusively to Supabase TEST.
-2. Check RPC permissions: only service_role can execute; anon/authenticated cannot.
-3. Set three required backend variables in Vercel Preview only.
-4. Verify 503 when config missing, 429 on request seven within one minute, 405 GET, 403 invalid Origin and never echo API secrets.
-5. Verify client and provider content in Portuguese and Spanish and no private order reads.
-6. Validate deployment/CI, cross-instance rate limit and model costs before enabling `UGO_SUPPORT_ENABLED`.
-7. Production requires separate service credentials and a deliberate security review. Current implementation pins TEST URL and MUST NOT be enabled on production.
+## Smoke test manual
+Acessar URL de Preview, abrir Atendimento UGO, confirmar Turnstile e enviar `oi`.
+Verificar se a resposta vem da API (POST /api/ugo-support), sem simulação.
+Verificar 429 após limite e se GET retorna 405, além de proteção de origem e falha segura.
