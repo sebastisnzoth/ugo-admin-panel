@@ -63,7 +63,7 @@ export function RetryState(props:GlobalStateProps){const{t}=useLocale();return <
 export function SuccessState(props:GlobalStateProps){const{t}=useLocale();return <GlobalState kind="success" title={props.title||t('sharedUi.ready')} description={props.description} {...props}/>}
 export function OfflineState({onAction,className}:{onAction?:()=>void;className?:string}){const{t}=useLocale();return <div className={joinClasses('ugo-ds-offline',className)} role="status"><span aria-hidden="true">⌁</span><span>{t('sharedUi.offline')}</span>{onAction&&<button type="button" onClick={onAction}><LocalizedText id="screen.demand.18"/></button>}</div>}
 
-const AUTH_PROFILE_RETRY_DELAYS=[0,350,900,1800] as const
+const AUTH_PROFILE_RETRY_DELAYS=[0,1200] as const
 function transientProfileError(value:unknown){
   const text=value instanceof Error?value.message:String((value as any)?.message||value||'')
   return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst/i.test(text)
@@ -191,7 +191,7 @@ export function useRoleSession(role:UgoRole){
       // SUBSCRIBED can flap during a database outage; one read per 30 seconds
       // is sufficient to reconcile profile changes after reconnect.
       const now=Date.now()
-      if(now-realtimeProfileRefreshAt.current<30_000)return
+      if(now-realtimeProfileRefreshAt.current<120_000)return
       realtimeProfileRefreshAt.current=now
       refresh()
     }
