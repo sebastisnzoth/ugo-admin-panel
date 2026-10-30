@@ -1,0 +1,75 @@
+name: UGO Arena protected manual backup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-arena-manual-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: One connection / encrypted backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check required secrets without displaying them
+        env:
+          UGO_ARENA_DB_URL: ${{ secrets.UGO_ARENA_DB_URL }}
+          UGO_BACKUP_PASSPHRASE: ${{ secrets.UGO_BACKUP_PASSPHRASE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$UGO_ARENA_DB_URL" || { echo "::error::UGO_ARENA_DB_URL secret is missing"; exit 1; }
+          test -n "$UGO_BACKUP_PASSPHRASE" || { echo "::error::UGO_BACKUP_PASSPHRASE secret is missing"; exit 1; }
+          test "${#UGO_BACKUP_PASSPHRASE}" -ge 24 || { echo "::error::Backup passphrase must contain at least 24 characters"; exit 1; }
+          [[ "$UGO_ARENA_DB_URL" == postgresql://* || "$UGO_ARENA_DB_URL" == postgres://* ]] || { echo "::error::Expected PostgreSQL connection URL"; exit 1; }
+
+      - name: Create single-connection consistent dump (no retries)
+        env:
+          UGO_ARENA_DB_URL: ${{ secrets.UGO_ARENA_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/ugo-backup"
+          # Docker image pins pg_dump to PostgreSQL 17. No parallel jobs.
+          # The password is passed only through the environment, never as a CLI argument.
+          timeout --signal=TERM 25m docker run --rm \
+            -e UGO_ARENA_DB_URL="$UGO_ARENA_DB_URL" \
+            -e PGCONNECT_TIMEOUT=10 \
+            -e PGAPPNAME=ugo-arena-one-time-backup \
+            -e PGOPTIONS="-c lock_timeout=5000" \
+            -v "$RUNNER_TEMP/ugo-backup:/backup" \
+            postgres:17 \
+            sh -c 'pg_dump --dbname="$UGO_ARENA_DB_URL" --format=custom --compress=6 --no-owner --no-acl --file=/backup/ugo-arena.dump'
+          test -s "$RUNNER_TEMP/ugo-backup/ugo-arena.dump"
+
+      - name: Encrypt dump and remove plaintext
+        env:
+          UGO_BACKUP_PASSPHRASE: ${{ secrets.UGO_BACKUP_PASSPHRASE }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          file="$RUNNER_TEMP/ugo-backup/ugo-arena.dump"
+          printf '%s' "$UGO_BACKUP_PASSPHRASE" | \
+            gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
+              --symmetric --cipher-algo AES256 \
+              --output "$RUNNER_TEMP/ugo-backup/ugo-arena.dump.gpg" "$file"
+          rm -f "$file"
+          test -s "$RUNNER_TEMP/ugo-backup/ugo-arena.dump.gpg"
+          (cd "$RUNNER_TEMP/ugo-backup" && sha256sum ugo-arena.dump.gpg > SHA256SUMS)
+
+      - name: Upload encrypted backup only
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-arena-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/ugo-backup/ugo-arena.dump.gpg
+            ${{ runner.temp }}/ugo-backup/SHA256SUMS
+          retention-days: 7
+          if-no-files-found: error

@@ -365,3 +365,8 @@ acción manual exacta sólo si es imprescindible
 **Reporte obligatorio, sin frases tranquilizadoras vacías:** acción realmente realizada + evidencia/SHA/entorno + pendientes exactos + próximo paso ejecutable. Si no se ejecutó, decir NO EJECUTADO. Si el agente no puede activar trabajo 24/7, no fingir continuidad en segundo plano. Ningún chat debe obligar al usuario a reconstruir la conversación o repetir decisiones previas.
 
 **Secuencia de prioridades:** primero metodología, continuidad y la cola canónica cuando el pedido sea metodológico; inmediatamente después primer proceso P0 completo Cliente → Pedido → GPS/Matching → Alerta → Aceptación → Servicio → Cierre, incorporando navegación, agenda/reprogramación y pago según dependencias. No simular pruebas humanas, no tocar producción sin gates de seguridad y validación, no force push.
+
+
+## Neon TEST agent setup (2026-10-30)
+
+For work on the Supabase-to-Neon migration, follow [`docs/NEON_AGENT_SETUP_UGO.md`](docs/NEON_AGENT_SETUP_UGO.md). Always specify Neon project `patient-haze-05892538`, branch `br-tiny-field-b6v07tb3` and database `ugodbapp` explicitly; never run a SQL write on default/production branch. Neon Auth and Data API availability does not imply application login or complete backend readiness. Keep migration changes isolated in PR #605; preserve existing production and require evidence before merging.
