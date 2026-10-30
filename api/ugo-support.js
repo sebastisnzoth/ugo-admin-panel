@@ -1,6 +1,9 @@
 // UGO public support — TEST. No access to OpenClaw, tools, Supabase or private data.
 import {createHmac,timingSafeEqual} from 'node:crypto';
 const LIMIT=6;
+// Emergency guard per function instance; not a replacement for the shared TEST limiter.
+const localWindows=new Map();
+function localGuard(key){const now=Date.now(),window=Math.floor(now/60000);if(localWindows.size>3000){for(const [k,v] of localWindows)if(v.window<window)localWindows.delete(k);if(localWindows.size>3000)localWindows.clear()}const row=localWindows.get(key);const hits=row?.window===window?row.hits+1:1;localWindows.set(key,{window,hits});return hits<=3}
 const handbook=`UGO piloto Florianópolis: Faxina e Marido de Aluguel. Faxina: tipo casa/apartamento/outro; ambientes, quartos e banheiros; duração de 1 a 12 horas. Cliente pode solicitar produtos de limpeza; profissional define valor extra e cliente precisa aprovar antes da cobrança. Sem oferta de produtos não há cobrança automática. Não inventar disponibilidade, preços, políticas, reservas ou pagamentos. Para dados privados, recomendar login nos fluxos oficiais. Não pedir senhas, documentos nem dados bancários. Não executar ações.`;
 export default async function handler(req,res){
  res.setHeader('Cache-Control','no-store');
@@ -20,15 +23,21 @@ export default async function handler(req,res){
  const ip=String(req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim();
  const fingerprint=createHmac('sha256',salt).update(ip).digest('hex');
  const stamp=Math.floor(Date.now()/1000);
+ let sharedLimiterAvailable=true;
  const signature=createHmac('sha256',salt).update(`${fingerprint}:${LIMIT}:${stamp}`).digest('hex');
  try{
   const limited=await fetch(db+'/rest/v1/rpc/ugo_support_check_limit_signed',{
    method:'POST',headers:{apikey:publicKey,Authorization:'Bearer '+publicKey,'Content-Type':'application/json'},
    body:JSON.stringify({p_fingerprint:fingerprint,p_limit:LIMIT,p_stamp:stamp,p_signature:signature}),signal:AbortSignal.timeout(12000)
   });
-  if(!limited.ok){console.error('ugo-support: rate RPC failed',limited.status);return res.status(503).json({error:'PROTECTION_UNAVAILABLE'});}
-  if((await limited.json())!==true)return res.status(429).json({error:'RATE_LIMIT'});
- }catch(e){console.error('ugo-support: rate RPC exception',e instanceof Error?e.name:'unknown');return res.status(503).json({error:'PROTECTION_UNAVAILABLE'})}
+  if(!limited.ok){console.error('ugo-support: rate RPC failed',limited.status);sharedLimiterAvailable=false;}
+  if(sharedLimiterAvailable&&(await limited.json())!==true)return res.status(429).json({error:'RATE_LIMIT'});
+ }catch(e){console.error('ugo-support: rate RPC exception',e instanceof Error?e.name:'unknown');sharedLimiterAvailable=false}
+ if(!sharedLimiterAvailable){
+  if(!process.env.UGO_SUPPORT_TURNSTILE_SECRET)return res.status(503).json({error:'PROTECTION_UNAVAILABLE'});
+  if(!localGuard(fingerprint))return res.status(429).json({error:'RATE_LIMIT_DEGRADED'});
+  res.setHeader('X-UGO-Support-Protection','degraded');
+ }
  // A verified visitor gets a short-lived, server-signed, HttpOnly support session.
  // Turnstile tokens are single-use; do not request a new puzzle for each message.
  const sessionName='ugo_support_verified';
