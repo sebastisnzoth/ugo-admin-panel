@@ -24,3 +24,10 @@ Fecha: 2026-10-30. Rama: `feat/ugo-prod-safe-activation-audit`. Objetivo: Client
 3. Reconciliar funciones/constraints/roles/RLS, preparar migraciones aditivas en rama; no ejecutarlas en PROD.
 4. Implementar preview restringido y E2E de cada rol sin operaciones reales de pago.
 5. Solicitar autorización antes de cualquier cambio de producción o cutover.
+
+## Ejecución posterior al Prompt Maestro — 2026-10-30
+- PR #603 abierta, draft y mergeable; CI disponible: estado `pending` de Vercel para SHA `e9f9ab607d573c03186b645304776b5b82e8a030`. No equivale a CI PASS.
+- Configuración actual en la rama: sigue apuntando a TEST; sin cutover.
+- Se confirmaron en TEST los tipos exactos de diferencias conocidas: `faxina_productos_lleva boolean NOT NULL DEFAULT false`, `faxina_productos_valor numeric NOT NULL DEFAULT 0`, `pilot_capabilities jsonb NOT NULL DEFAULT '{}'::jsonb` y `servicios.zona text NULL`.
+- Preparado el candidato de migración **no ejecutable automáticamente** en `docs/sql/UGO_PROD_COMPATIBILITY_CANDIDATE_REVIEW_ONLY.sql`, commit `359e584f`. No se alteró PROD.
+- Gates todavía pendientes: backup validado, comparación de RPC/RLS/identidades, CI PASS, Auth y E2E por rol. Próxima tarea: validar compatibilidad funcional y seguridad sin escribir en PROD.
