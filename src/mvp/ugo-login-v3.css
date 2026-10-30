@@ -221,3 +221,28 @@
  .mvp-auth-page.role-provider .mvp-auth-intro,
  .mvp-auth-page.ugo-admin-auth .ugo-admin-auth-intro{min-height:110px!important}
 }
+
+/* Android login/register: dedicated scroll owner even when the document is locked.
+   This works independently of :has() and the parent #root overflow rules. */
+@media(max-width:820px){
+ .mvp-auth-page.role-client,.mvp-auth-page.role-provider{
+  display:block!important;box-sizing:border-box!important;
+  height:100dvh!important;min-height:0!important;max-height:none!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior-y:auto!important;touch-action:pan-y!important;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom))!important;
+ }
+ .mvp-auth-page.role-client .mvp-auth-shell,
+ .mvp-auth-page.role-provider .mvp-auth-shell{
+  height:auto!important;min-height:0!important;max-height:none!important;
+  overflow:visible!important;display:flex!important;flex-direction:column!important;
+ }
+ .mvp-auth-page.role-client .mvp-auth-card,
+ .mvp-auth-page.role-provider .mvp-auth-card{
+  flex:0 0 auto!important;height:auto!important;max-height:none!important;
+  overflow:visible!important;padding-bottom:calc(48px + env(safe-area-inset-bottom))!important;
+ }
+ .mvp-auth-page.role-client :is(input,select,textarea),
+ .mvp-auth-page.role-provider :is(input,select,textarea){scroll-margin-bottom:150px;font-size:16px!important}
+}
