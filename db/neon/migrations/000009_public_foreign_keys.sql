@@ -1,3 +1,5 @@
+-- Source requires development_checklist(code) to be unique for incidents FK.
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public.development_checklist'::regclass AND conname='development_checklist_code_key') THEN ALTER TABLE public.development_checklist ADD CONSTRAINT development_checklist_code_key UNIQUE (code); END IF; END $$;
 -- UGO Arena TEST metadata foreign keys. Existing Supabase auth/private relations excluded.
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public."whatsapp_conversaciones"'::regclass AND conname='whatsapp_conversaciones_usuario_id_fkey') THEN ALTER TABLE public."whatsapp_conversaciones" ADD CONSTRAINT "whatsapp_conversaciones_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES public."usuarios" ("id"); END IF; END $$;
 DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='public."hive_model_reservations"'::regclass AND conname='hive_model_reservations_actor_id_fkey') THEN ALTER TABLE public."hive_model_reservations" ADD CONSTRAINT "hive_model_reservations_actor_id_fkey" FOREIGN KEY ("actor_id") REFERENCES public."usuarios" ("id"); END IF; END $$;
