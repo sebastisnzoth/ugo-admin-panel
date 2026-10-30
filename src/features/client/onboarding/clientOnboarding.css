@@ -45,3 +45,11 @@
  .ugo-client-section-title{gap:8px}
  .ugo-client-field input,.ugo-client-field select{padding-left:10px;padding-right:10px}
 }
+/* Mobile registration: preserve access to fields and actions while the keyboard is visible. */
+@media(max-width:640px){
+ .ugo-client-onboarding{height:auto;min-height:100dvh;overflow-x:hidden;overflow-y:visible;-webkit-overflow-scrolling:touch}
+ .ugo-client-onboarding-card{overflow:visible}
+ .ugo-client-onboarding-body{min-width:0}
+ .ugo-client-field input,.ugo-client-field select{font-size:16px;scroll-margin-bottom:140px}
+ .ugo-client-actions{position:static;margin:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom));background:#202b23}
+}
