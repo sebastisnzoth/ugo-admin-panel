@@ -1,5 +1,6 @@
 import React,{useState,useEffect,useRef} from 'react'
 import './UgoSupportChat.css'
+import {useLocale} from '../i18n/locale'
 
 type Message={role:'user'|'assistant';content:string}
 const initial:Message={role:'assistant',content:'Olá! 👋 Sou o atendimento virtual UGO. Posso ajudar clientes e profissionais com dúvidas sobre Faxina, Marido de Aluguel e o funcionamento da plataforma.'}
@@ -18,14 +19,15 @@ const officialRoutes=['https://ugo-admin-panel.vercel.app/?app=client','https://
 function renderSupportText(content:string){
  const pieces=content.split(/(https:\/\/ugo-admin-panel\.vercel\.app\/\?app=(?:client|provider))/g)
  return pieces.map((part,i)=>officialRoutes.some(route=>route===part)
-  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?'Abrir app profissional / proveedor':'Abrir app cliente'}</a>
+  ?<a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.includes('provider')?'Abrir aplicación profesional / Open professional app':'Abrir aplicación cliente / Open customer app'}</a>
   :<React.Fragment key={i}>{part}</React.Fragment>)
 }
 
 export function UgoSupportChat(){
- const locale=(typeof navigator!=='undefined'?navigator.language:'pt').toLowerCase();const t=labels[locale.startsWith('es')?'es':locale.startsWith('en')?'en':'pt'];
+ const {locale}=useLocale();const t=labels[locale==='es'?'es':locale==='en'?'en':'pt'];
  const [open,setOpen]=useState(false)
  const [messages,setMessages]=useState<Message[]>([initial])
+ useEffect(()=>{setMessages(current=>current.length===1?[{role:'assistant',content:locale==='es'?'¡Hola! Soy el asistente virtual de UGO. Puedo ayudarte como cliente o profesional.':locale==='en'?'Hello! I am the UGO virtual assistant. I can help customers and professionals.':initial.content}]:current)},[locale])
  const [input,setInput]=useState('')
  const [busy,setBusy]=useState(false)
  const [notice,setNotice]=useState('')
@@ -60,7 +62,7 @@ export function UgoSupportChat(){
   const timeoutId=window.setTimeout(()=>abort.abort(),25000)
   setBusy(true)
   try{
-   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:next.slice(-12).map(m=>({role:m.role,content:m.content.slice(0,2000)})),channel:'landing',locale:navigator.language,turnstileToken:captchaToken}),signal:abort.signal,credentials:'same-origin'})
+   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:next.slice(-12).map(m=>({role:m.role,content:m.content.slice(0,2000)})),channel:'landing',locale,turnstileToken:captchaToken}),signal:abort.signal,credentials:'same-origin'})
    if(!response.ok){
     if(response.status===404)throw new Error('Endpoint do atendimento não encontrado (404).')
     if(response.status===405)throw new Error('O servidor recusou o método da solicitação (405).')
