@@ -47,3 +47,13 @@ html,body,#root{width:100%!important;max-width:none!important;min-height:100%!im
  .mvp-hugo-panel{left:8px!important;right:8px!important;bottom:calc(72px + env(safe-area-inset-bottom))!important;max-height:42dvh!important}
  .ugo-hugo-badge,.ugo-ref-hugo{right:12px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important}
 }
+
+/* Android registration: the onboarding route must scroll at document level.
+   The marketplace operational shell keeps its independent scroll container. */
+@media(max-width:760px){
+ html:has(.ugo-client-onboarding),body:has(.ugo-client-onboarding),#root:has(.ugo-client-onboarding),
+ html:has(.ugo-provider-onboarding),body:has(.ugo-provider-onboarding),#root:has(.ugo-provider-onboarding){
+  height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important;overscroll-behavior-y:auto!important;touch-action:pan-y!important
+ }
+ body:has(.ugo-client-onboarding),body:has(.ugo-provider-onboarding){position:static!important}
+}
