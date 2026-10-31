@@ -1157,3 +1157,11 @@ RUNTIME VALIDATED             pendiente
 - Cross-role UI: `ADMIN_SESSION_FAILURE operator desktop`; limpieza de fixture TEST falló por statement timeout en tabla `usuarios` y Gateway Timeout en Auth; posible fixture remanente confirmado por verificación del test. Evitar reintentos de creación hasta saneamiento seguro.
 - **Gate = BLOCKED / NO MERGE**: recuperar TEST Auth/DB, verificar cleanup y repetir pruebas runtime reales; backup/RLS/RPC/E2E completos aún no acreditados. Sin cambios en PROD ni redirección.
 - Evidencia detallada: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, runs `41118614941` y `41118615020`.
+
+
+### 2026-10-30 22:10 BRT · PR #603 — nueva verificación SQL y CI
+
+- SHA comprobado antes de este checkpoint: `b02207dad8382148db6efc683fb5beb7c5661341`; PR abierta/DRAFT, mergeable_state=unstable; Vercel status pending.
+- En ese SHA: Core CI, Roadmap, Cross Security y Hugo Timeout PASS; Admin Realtime FAIL (run `41145678997`: 10/10 contratos PASS, Auth `signInWithPassword` devuelve HTTP 504), Cross-role UI FAIL (run `41145679005`: `createUser` Auth TEST HTTP 504), Groq SKIPPED. Worker TEST push run `41145674671` FAIL sin jobs: investigar workflow/configuración por separado; no atribuir automáticamente al código de esta PR.
+- **Avance material:** Supabase TEST volvió a aceptar consultas SQL read-only a las 01:10 UTC del 31/10, aunque Auth sigue fallando en CI. Consulta exacta de dos fixtures previos: `0b8d87ac-9a1a-4c61-8b8d-44991aa60f8e` y `43d8188c-5dba-4be5-bef4-4387-8346-e54ce7572e6f` — ambos existen en `auth.users` y `public.usuarios`; `es_demo=true`, dominio de correo sintético. **No se eliminó nada**. El segundo ID se debe confirmar contra logs antes de cualquier limpieza.
+- **Gate BLOCKED / NO MERGE:** confirmar limpieza segura con Auth Admin y comprobación posterior de ambos lados; verificar Auth TEST sin 504, repetir Admin Realtime y Cross-role UI exact-SHA, backup y matriz RPC/RLS/identidades; no relajar assertions ni tocar PROD/secretos/tráfico.
