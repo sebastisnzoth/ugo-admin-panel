@@ -1165,3 +1165,12 @@ RUNTIME VALIDATED             pendiente
 - En ese SHA: Core CI, Roadmap, Cross Security y Hugo Timeout PASS; Admin Realtime FAIL (run `41145678997`: 10/10 contratos PASS, Auth `signInWithPassword` devuelve HTTP 504), Cross-role UI FAIL (run `41145679005`: `createUser` Auth TEST HTTP 504), Groq SKIPPED. Worker TEST push run `41145674671` FAIL sin jobs: investigar workflow/configuración por separado; no atribuir automáticamente al código de esta PR.
 - **Avance material:** Supabase TEST volvió a aceptar consultas SQL read-only a las 01:10 UTC del 31/10, aunque Auth sigue fallando en CI. Consulta exacta de dos fixtures previos: `0b8d87ac-9a1a-4c61-8b8d-44991aa60f8e` y `43d8188c-5dba-4be5-b8ef-884b8ca5226e` — ambos existen en `auth.users` y `public.usuarios`; `es_demo=true`, dominio de correo sintético. **No se eliminó nada**. Ambos ID provienen de verificaciones previas de fixtures; verificar su correspondencia exacta antes de cualquier limpieza.
 - **Gate BLOCKED / NO MERGE:** confirmar limpieza segura con Auth Admin y comprobación posterior de ambos lados; verificar Auth TEST sin 504, repetir Admin Realtime y Cross-role UI exact-SHA, backup y matriz RPC/RLS/identidades; no relajar assertions ni tocar PROD/secretos/tráfico.
+
+
+### 2026-10-30 23:11 BRT · PR #603 — recuperación E2E exact-SHA, gates aún pendientes
+
+- SHA verificado antes del checkpoint documental: `a90c56fa8f860dfa7911d32e660fd7275a7496ab`. Seis workflows GitHub Actions PASS en el mismo SHA: Core CI, Roadmap, Cross Security, Hugo Timeout, Admin Realtime TEST y Cross-role UI TEST. Groq smoke SKIPPED.
+- Admin Realtime validó 10/10 contratos, browser real, Judge y Sentinel PASS. Cross-role UI pasó pruebas browser de roles, Auth y responsive. Los errores HTTP 504 anteriores no se reprodujeron en esos dos jobs.
+- SQL read-only en TEST confirma que **dos fixtures históricos siguen presentes en Auth y perfiles**; el fixture creado por el job exitoso no quedó persistente. No se borraron datos.
+- Vercel commit status permanece PENDING y no se encontró despliegue por SHA/rama en consulta filtrada. Backup/restore, matriz RPC/RLS/Auth y cierre de fixtures históricos aún no verificados.
+- **NO MERGE**: PR abierta en draft, sin aprobación de los gates de release; producción, credenciales y tráfico intactos. Próximo paso: validar respaldo y restauración, permisos, cleanup acotado y estado de preview, y volver a comprobar CI en el nuevo SHA de documentación.
