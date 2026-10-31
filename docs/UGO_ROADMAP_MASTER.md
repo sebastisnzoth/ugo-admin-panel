@@ -1174,3 +1174,13 @@ RUNTIME VALIDATED             pendiente
 - SQL read-only en TEST confirma que **dos fixtures históricos siguen presentes en Auth y perfiles**; el fixture creado por el job exitoso no quedó persistente. No se borraron datos.
 - Vercel commit status permanece PENDING y no se encontró despliegue por SHA/rama en consulta filtrada. Backup/restore, matriz RPC/RLS/Auth y cierre de fixtures históricos aún no verificados.
 - **NO MERGE**: PR abierta en draft, sin aprobación de los gates de release; producción, credenciales y tráfico intactos. Próximo paso: validar respaldo y restauración, permisos, cleanup acotado y estado de preview, y volver a comprobar CI en el nuevo SHA de documentación.
+
+
+### 2026-10-30 23:18 BRT · PR #603 — matriz RLS parcial confirmada
+
+- Auditoría SQL **solo lectura** TEST ↔ PROD de 7 tablas críticas: RLS habilitado en ambas bases, 17 políticas por proyecto. **15 políticas equivalentes en nombre/comando/expresión y 2 diferencias detectadas**.
+- `eventos_servicio`: políticas SELECT con nombres y funciones distintas; equivalencia efectiva con identidades reales aún no demostrada.
+- `evidencias_servicio.evidencias_insert`: TEST verifica que el objeto Storage exista y corresponda a usuario/servicio; PROD no contiene esa condición. Es una diferencia real de integridad/seguridad que requiere revisión, no un permiso para modificar PROD.
+- Dos funciones auxiliares de TEST no existen en PROD: `private.is_service_participant` y `private.service_evidence_object_exists`. Auditoría RPC/RLS/Storage total sigue PENDIENTE.
+- CI del SHA `045d4b7f` al momento de la consulta: Core, Roadmap, Cross Security, Hugo Timeout y Admin Realtime PASS; Cross-role UI IN_PROGRESS, Groq SKIPPED; Vercel PENDING, sin preview encontrado por SHA.
+- **Gate = NO MERGE / DRAFT** hasta backup y restore verificables, permisos completos, cierre de fixtures TEST, preview y CI exact-SHA final. Sin cambios a Supabase PROD, credenciales o tráfico. Detalle en `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`.
