@@ -7,6 +7,7 @@ test('i18n JSX audit produces transparent remaining-backlog report',()=>{
  assert.ok(report.estimatedVisibleLiterals>=0)
  console.log('UGO_I18N_AUDIT_TOTAL',report.estimatedVisibleLiterals,'BY_AREA',JSON.stringify(report.byArea))
  assert.ok(Array.isArray(report.files))
+ if(report.actionableVisibleLiterals>0)console.error('UGO_I18N_ACTIONABLE_FILES',JSON.stringify(report.files))
  assert.equal(typeof report.byArea,'object')
  assert.equal(report.actionableVisibleLiterals,0,'all remaining JSX literals must be translated or specifically classified')
  assert.ok(report.excludedLiteralCount>0)

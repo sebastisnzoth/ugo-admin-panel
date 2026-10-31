@@ -39,7 +39,7 @@ test('profile timeout keeps compatibility with non-abortable promise test double
 
 test('Realtime reconnect failures never trigger immediate profile reads and resubscribe is rate limited',()=>{
   assert.match(source,/const realtimeProfileRefreshAt=useRef\(0\)/)
-  assert.match(source,/if\(now-realtimeProfileRefreshAt\.current<30_000\)return/)
+  assert.match(source,/if\(now-realtimeProfileRefreshAt\.current<120_000\)return/)
   // A successful subscription cancels a pending retry, resets backoff, then reconciles.
   assert.match(source,/if\(status==='SUBSCRIBED'\)\{if\(reconnectTimer!==undefined\)\{window\.clearTimeout\(reconnectTimer\);reconnectTimer=undefined\}profileReconnectState\.current\.failures=0;refreshRealtime\(\)\}/)
   assert.match(source,/if\(reconnectTimer!==undefined\)return/)
@@ -51,7 +51,7 @@ test('Realtime reconnect failures never trigger immediate profile reads and resu
 
 test('browser online and visibility bursts use the same bounded profile refresh as Realtime resubscribe',()=>{
   // Network restoration and tab focus can fire repeatedly during outages.
-  // These events must not bypass the existing 30s Realtime profile-read budget.
+  // These events must not bypass the existing 120s Realtime profile-read budget.
   assert.match(source,/const onOnline=\(\)=>\{[^\n]*refreshRealtime\(\);reconnect\(\)\}/)
   assert.match(source,/const onVisibility=\(\)=>\{if\(document\.visibilityState==='visible'\)refreshRealtime\(\)\}/)
   assert.doesNotMatch(source,/const onOnline=\(\)=>\{[^\n]*refresh\(\);reconnect\(\)\}/)

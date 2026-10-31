@@ -1125,3 +1125,70 @@ RUNTIME VALIDATED             pendiente
 - Turnstile frontend/backend implementado, configuração de widget e credenciais específicas ainda pendentes.
 - Gate: impedir habilitação pública antes de QA Preview, prova real Gemini, limite de abuso e secrets de TEST.
 - Nunca usar credenciais PROD nem declarar GO-LIVE a partir de build apenas.
+
+
+## Checkpoint — 2026-10-30 — PR #603 (UGO PROD safe activation)
+
+- Gate actual: **PREPARACIÓN EN RAMA, NO CUTOVER**. `main` y los frontends continúan usando Supabase TEST; PROD `trfsjuseqjxlhrxuvdsm` protegido.
+- Sesiones de Cliente, Proveedor y Admin aisladas por entorno mediante `UGO_ENVIRONMENT`; ninguna cuenta real migrada ni autenticada en PROD.
+- Contratos de CI actualizados para reflejar polling con backpressure y almacenamiento Auth por entorno, sin disminuir validaciones de seguridad. Validación completa pendiente de nuevo workflow.
+- Cuatro columnas detectadas como ausentes en PROD; SQL de compatibilidad preparado **solo para revisión**, no aplicado.
+- **BLOQUEOS:** backup verificable PROD, matriz RPC/RLS/Auth, CI PASS, pruebas E2E reales y aprobación para cambios persistentes.
+- Evidencia de proceso: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, `docs/sql/UGO_PROD_COMPATIBILITY_CANDIDATE_REVIEW_ONLY.sql`, PR #603.
+
+
+### Gate PR #603 — evidencia runtime 2026-10-30
+
+- HEAD `bf006265bd032f01cea07528365d4b96396f2d8b`: Core CI, Roadmap, Cross Security y Hugo Timeout PASS.
+- Cross-role UI y Admin Realtime TEST siguen bloqueados por HTTP 504 de Supabase TEST Auth; logs Auth TEST 18:09–18:14 UTC confirman 12 errores 504. La consola del proyecto puede mostrar ACTIVE_HEALTHY aun con Auth fallando.
+- No relajar runtime, no crear fixtures repetidos, no hacer cutover a PROD. PR continúa DRAFT sin merge hasta recuperación de Auth TEST y pruebas completas; detalles en `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`.
+
+
+### 2026-10-30 · PR #603 — restauración del guard de entorno TEST
+- SHA previo `dc8645da`: cinco workflows fallaron por el guard de entorno, que detectó un ref PROD incorporado en `roleSupabase.ts` mediante opt-in `prod-preview`. Roadmap PASS, Groq SKIPPED.
+- Corrección en la misma rama: `6db01445` elimina override PROD y usa exclusivamente URL/clave TEST; `ae25733c` reemplaza el test que exigía ese override por un contrato de aislamiento TEST.
+- No se cambió Supabase PROD, secretos ni tráfico. CI y runtimes exact-SHA deben revalidarse; no fusionar con gates abiertos (Auth TEST 504, backup, RPC/RLS, E2E).
+
+
+### 2026-10-30 17:25 BRT · PR #603 — CI exact-SHA, bloqueo runtime TEST
+
+- HEAD `5095c9bc926dd34c64215383414b95cbfdaf35aa`: Core CI, Cross Security, Hugo Timeout y Roadmap Traceability **PASS**; Admin Realtime y Cross-role UI **FAIL**; Groq smoke SKIPPED.
+- Admin Realtime: login/browser no alcanzó `.ugo-admin2-status` (timeout 20 s); contratos y build PASS, E2E realtime NO VALIDADO.
+- Cross-role UI: `ADMIN_SESSION_FAILURE operator desktop`; limpieza de fixture TEST falló por statement timeout en tabla `usuarios` y Gateway Timeout en Auth; posible fixture remanente confirmado por verificación del test. Evitar reintentos de creación hasta saneamiento seguro.
+- **Gate = BLOCKED / NO MERGE**: recuperar TEST Auth/DB, verificar cleanup y repetir pruebas runtime reales; backup/RLS/RPC/E2E completos aún no acreditados. Sin cambios en PROD ni redirección.
+- Evidencia detallada: `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`, runs `41118614941` y `41118615020`.
+
+
+### 2026-10-30 22:10 BRT · PR #603 — nueva verificación SQL y CI
+
+- SHA comprobado antes de este checkpoint: `b02207dad8382148db6efc683fb5beb7c5661341`; PR abierta/DRAFT, mergeable_state=unstable; Vercel status pending.
+- En ese SHA: Core CI, Roadmap, Cross Security y Hugo Timeout PASS; Admin Realtime FAIL (run `41145678997`: 10/10 contratos PASS, Auth `signInWithPassword` devuelve HTTP 504), Cross-role UI FAIL (run `41145679005`: `createUser` Auth TEST HTTP 504), Groq SKIPPED. Worker TEST push run `41145674671` FAIL sin jobs: investigar workflow/configuración por separado; no atribuir automáticamente al código de esta PR.
+- **Avance material:** Supabase TEST volvió a aceptar consultas SQL read-only a las 01:10 UTC del 31/10, aunque Auth sigue fallando en CI. Consulta exacta de dos fixtures previos: `0b8d87ac-9a1a-4c61-8b8d-44991aa60f8e` y `43d8188c-5dba-4be5-b8ef-884b8ca5226e` — ambos existen en `auth.users` y `public.usuarios`; `es_demo=true`, dominio de correo sintético. **No se eliminó nada**. Ambos ID provienen de verificaciones previas de fixtures; verificar su correspondencia exacta antes de cualquier limpieza.
+- **Gate BLOCKED / NO MERGE:** confirmar limpieza segura con Auth Admin y comprobación posterior de ambos lados; verificar Auth TEST sin 504, repetir Admin Realtime y Cross-role UI exact-SHA, backup y matriz RPC/RLS/identidades; no relajar assertions ni tocar PROD/secretos/tráfico.
+
+
+### 2026-10-30 23:11 BRT · PR #603 — recuperación E2E exact-SHA, gates aún pendientes
+
+- SHA verificado antes del checkpoint documental: `a90c56fa8f860dfa7911d32e660fd7275a7496ab`. Seis workflows GitHub Actions PASS en el mismo SHA: Core CI, Roadmap, Cross Security, Hugo Timeout, Admin Realtime TEST y Cross-role UI TEST. Groq smoke SKIPPED.
+- Admin Realtime validó 10/10 contratos, browser real, Judge y Sentinel PASS. Cross-role UI pasó pruebas browser de roles, Auth y responsive. Los errores HTTP 504 anteriores no se reprodujeron en esos dos jobs.
+- SQL read-only en TEST confirma que **dos fixtures históricos siguen presentes en Auth y perfiles**; el fixture creado por el job exitoso no quedó persistente. No se borraron datos.
+- Vercel commit status permanece PENDING y no se encontró despliegue por SHA/rama en consulta filtrada. Backup/restore, matriz RPC/RLS/Auth y cierre de fixtures históricos aún no verificados.
+- **NO MERGE**: PR abierta en draft, sin aprobación de los gates de release; producción, credenciales y tráfico intactos. Próximo paso: validar respaldo y restauración, permisos, cleanup acotado y estado de preview, y volver a comprobar CI en el nuevo SHA de documentación.
+
+
+### 2026-10-30 23:18 BRT · PR #603 — matriz RLS parcial confirmada
+
+- Auditoría SQL **solo lectura** TEST ↔ PROD de 7 tablas críticas: RLS habilitado en ambas bases, 17 políticas por proyecto. **15 políticas equivalentes en nombre/comando/expresión y 2 diferencias detectadas**.
+- `eventos_servicio`: políticas SELECT con nombres y funciones distintas; equivalencia efectiva con identidades reales aún no demostrada.
+- `evidencias_servicio.evidencias_insert`: TEST verifica que el objeto Storage exista y corresponda a usuario/servicio; PROD no contiene esa condición. Es una diferencia real de integridad/seguridad que requiere revisión, no un permiso para modificar PROD.
+- Dos funciones auxiliares de TEST no existen en PROD: `private.is_service_participant` y `private.service_evidence_object_exists`. Auditoría RPC/RLS/Storage total sigue PENDIENTE.
+- CI del SHA `045d4b7f` al momento de la consulta: Core, Roadmap, Cross Security, Hugo Timeout y Admin Realtime PASS; Cross-role UI IN_PROGRESS, Groq SKIPPED; Vercel PENDING, sin preview encontrado por SHA.
+- **Gate = NO MERGE / DRAFT** hasta backup y restore verificables, permisos completos, cierre de fixtures TEST, preview y CI exact-SHA final. Sin cambios a Supabase PROD, credenciales o tráfico. Detalle en `docs/UGO_PROD_IMPLEMENTATION_STATUS.md`.
+
+
+### 2026-10-31 00:17 BRT · PR #603 — CI exact-SHA PASS, inventario ampliado (solo lectura)
+
+- SHA verificado: `629599b00e2f669f262e4484c4e38a9c29fabaf0`, PR OPEN/DRAFT, sin merge. Los **seis workflows obligatorios observados** terminaron PASS en ese mismo SHA: Core CI `41159551449`, Roadmap `41159551569`, Cross Security `41159551451`, Hugo Timeout `41159551552`, Admin Realtime TEST `41159551477` y Cross-role UI TEST `41159551675`. Groq smoke `41159551518` SKIPPED; no se declara PASS. Los dos runtimes generaron artefactos de evidencia; steps de browser, Judge y Sentinel (Admin) PASS.
+- **Nueva brecha de inventario, NO equivalencia funcional**: consultas read-only de catálogo `pg_class`, `pg_policies` y `pg_proc` confirman TEST: 107 tablas en public/storage con RLS habilitado, 172 funciones public y 96 private; PROD: 41 tablas en public/storage con RLS habilitado, 61 funciones public y 41 private. La diferencia de conteos no prueba que todos los objetos deban migrarse, pero impide declarar compatibilidad completa sin inventario por objeto y dependencias. Storage.objects: 19 políticas TEST frente a 20 PROD; revisar diferencias de permisos. Se mantiene el hallazgo previo de dos diferencias RLS en siete tablas críticas.
+- Estado externo Vercel del SHA: PENDING. Búsqueda de deployments por SHA y rama en proyecto `ugo-admin-panel` no devolvió resultados; preview no acreditado. No hay reviews aprobatorias registradas en PR. Backup recuperable y prueba de restauración: SIN VERIFICAR. Dos fixtures históricos TEST siguen pendientes de saneamiento auditado.
+- **GATE BLOCKED / NO MERGE** pese a los seis PASS: faltan backup/restore, inventario y pruebas negativas Auth/RLS/RPC/Storage por rol, cleanup TEST y preview exact-SHA; PR continúa DRAFT. Próximo paso verificable: confirmar backups y prueba de restauración aislada, cerrar diferencias de permisos/funciones y fixtures, acreditar preview, revalidar CI exact-SHA final. No cambiar Supabase PROD, secretos ni tráfico; SQL candidato sigue REVIEW ONLY.

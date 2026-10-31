@@ -76,7 +76,20 @@ test('client and provider keep separate auth storage while sharing the same role
  const roleClient=await read('src/lib/roleSupabase.ts')
  const shared=await read('src/mvp/shared.tsx')
  const component=await read('src/mvp/ServiceChat.tsx')
- assert.match(roleClient,/storageKey: `ugo-test-\$\{role\}-auth`/)
+ assert.match(roleClient,/storageKey: `ugo-\$\{roleDatabaseTarget\}-\$\{role\}-auth`/)
  assert.match(shared,/getRoleSupabase\(role\)/)
  assert.match(component,/getRoleSupabase\(role\)/)
+})
+
+
+test('Client, Provider and Admin stay on the audited TEST target without a browser PROD override',async()=>{
+ const roleClient=await read('src/lib/roleSupabase.ts')
+ const admin=await read('src/lib/supabase.ts')
+ const project=await read('src/lib/supabaseProject.ts')
+ assert.match(roleClient,/const roleDatabaseTarget = UGO_ENVIRONMENT/)
+ assert.match(roleClient,/createClient\(UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY/)
+ assert.match(roleClient,/storageKey: `ugo-\$\{roleDatabaseTarget\}-\$\{role\}-auth`/)
+ assert.doesNotMatch(roleClient,/VITE_UGO_ROLE_DATABASE_TARGET|prod-preview|trfsjuseqjxlhrxuvdsm/)
+ assert.match(admin,/createClient<Database>\(UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY/)
+ assert.match(project,/UGO_ENVIRONMENT\s*=\s*['"]test['"]/)
 })
