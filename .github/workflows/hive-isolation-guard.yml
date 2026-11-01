@@ -1,0 +1,21 @@
+name: Hive Isolation Guard (no database)
+on:
+  pull_request:
+    paths:
+      - 'scripts/hive-isolation-preflight.mjs'
+      - 'tests/contracts/hive-isolation-preflight.test.mjs'
+      - '.github/workflows/hive-isolation-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prove fail-closed guard with hermetic fake credentials
+        run: node --test tests/contracts/hive-isolation-preflight.test.mjs
