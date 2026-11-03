@@ -2,6 +2,7 @@ import React,{useState} from'react'
 import{useLocale,LocalizedText}from'../i18n/locale'
 import'./ugo-landing.css'
 import{UgoSupportChat}from'./UgoSupportChat'
+import{UgoRetellVoiceWidget}from'./UgoRetellVoiceWidget'
 
 type LandingRole='client'|'provider'|'admin'
 const goRole=(role:LandingRole)=>{window.location.assign(`${window.location.pathname}?app=${role}`)}
@@ -158,5 +159,6 @@ export function UgoLanding(){
    <small><LocalizedText id="landing.footer" params={{year:2026}}/></small>
   </footer>
   {import.meta.env.VITE_UGO_SUPPORT_CHAT_ENABLED==='true'&&<UgoSupportChat/>}
+  <UgoRetellVoiceWidget/>
  </main>
 }
