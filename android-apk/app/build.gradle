@@ -22,6 +22,12 @@ android {
             resValue 'string', 'app_name', 'UGO Cliente'
             buildConfigField 'String', 'UGO_URL', '"https://ugo-admin-panel.vercel.app/?app=client"'
         }
+        tvclient {
+            dimension 'role'
+            applicationId 'com.ugo.client.tv'
+            resValue 'string', 'app_name', 'UGO Cliente TV'
+            buildConfigField 'String', 'UGO_URL', '"https://ugo-admin-panel.vercel.app/?app=client"'
+        }
         provider {
             dimension 'role'
             applicationId 'com.ugo.provider'
