@@ -1,6 +1,9 @@
 package com.ugo.mobile;
 
 import android.os.Bundle;
+import android.content.pm.ActivityInfo;
+import android.view.WindowManager;
+import android.view.View;
 import android.view.KeyEvent;
 import android.webkit.WebView;
 
@@ -10,10 +13,7 @@ import android.webkit.WebView;
  */
 public class TvActivity extends MainActivity {
     private static final String TV_CSS =
-        "(function(){if(document.getElementById('ugo-tv-style'))return;"
-      + "var s=document.createElement('style');s.id='ugo-tv-style';"
-      + "s.textContent=':focus-visible{outline:4px solid #40c9ff!important;outline-offset:4px!important}'"
-      + "+'html,body{scroll-behavior:smooth!important}';document.head.appendChild(s);})();";
+        "(function(){var s=document.getElementById('ugo-tv-style');if(!s){s=document.createElement('style');s.id='ugo-tv-style';document.head.appendChild(s);}s.textContent=\"html,body,#root{width:100%!important;max-width:none!important;min-height:100%!important;margin:0!important}\\n.mvp-auth-page.role-client{box-sizing:border-box!important;width:100%!important;min-height:100dvh!important;padding:14px!important;overflow-x:hidden!important;overflow-y:auto!important}\\n.mvp-auth-page.role-client .mvp-auth-shell{box-sizing:border-box!important;width:min(1480px,100%)!important;max-width:100%!important;min-height:calc(100dvh - 28px)!important;height:auto!important;margin:0 auto!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;border-radius:20px!important;overflow:hidden!important}\\n.mvp-auth-page.role-client .mvp-auth-intro,.mvp-auth-page.role-client .mvp-auth-card{min-width:0!important;max-width:none!important;padding:clamp(20px,3vw,42px)!important;overflow-wrap:anywhere!important}\\n.mvp-auth-page.role-client .mvp-auth-intro-copy{padding:20px 0!important}\\n.mvp-auth-page.role-client .mvp-auth-intro-copy h2{font-size:clamp(26px,3.5vw,48px)!important;max-width:100%!important}\\n.mvp-auth-page.role-client .mvp-auth-card h1{font-size:clamp(24px,3vw,42px)!important}\\n.mvp-auth-page.role-client .mvp-auth-card :is(input,button,select,textarea){min-height:48px}\\n:is(a,button,input,select,textarea,[tabindex],[role=button]):focus{outline:4px solid #40c9ff!important;outline-offset:3px!important}\\n@media(max-width:880px){.mvp-auth-page.role-client .mvp-auth-shell{grid-template-columns:minmax(0,1fr)!important}.mvp-auth-page.role-client .mvp-auth-intro{display:none!important}}\";})();";
 
     private static final String TV_NAV =
         "(function(key){"
@@ -38,6 +38,16 @@ public class TvActivity extends MainActivity {
       + "})(";
 
     @Override public void onCreate(Bundle state) {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         super.onCreate(state);
         if (webView != null) {
             webView.getSettings().setUseWideViewPort(true);
@@ -45,13 +55,12 @@ public class TvActivity extends MainActivity {
             webView.setFocusable(true);
             webView.setFocusableInTouchMode(true);
             webView.requestFocus();
-            webView.evaluateJavascript(TV_CSS, null);
-            webView.setWebViewClient(new android.webkit.WebViewClient() {
-                @Override public void onPageFinished(WebView view, String url) {
-                    view.evaluateJavascript(TV_CSS, null);
-                }
-            });
         }
+    }
+
+    @Override protected void onWebPageReady(WebView view) {
+        // Keep shared WebViewClient and loader dismissal from MainActivity.
+        view.evaluateJavascript(TV_CSS, null);
     }
 
     @Override public boolean dispatchKeyEvent(KeyEvent event) {
