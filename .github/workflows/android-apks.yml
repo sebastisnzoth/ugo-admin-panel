@@ -24,7 +24,7 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: gradle
-      - name: Build three APKs
+      - name: Build four APKs
         working-directory: android-apk
         run: |
           GRADLE_VERSION=8.11.1
@@ -67,6 +67,16 @@ jobs:
             if [[ "$package" != "${expected[$apk]}" ]]; then
               echo "Unexpected package for $apk: $package (expected ${expected[$apk]})"
               exit 1
+            fi
+            if [[ "$apk" == "UGO-Cliente-TV.apk" ]]; then
+              echo "$badging" | grep -q "^launchable-activity: name='com.ugo.mobile.TvActivity'"
+              manifest_tree="$("$AAPT" dump xmltree "$path" AndroidManifest.xml)"
+              if grep -q 'com.ugo.mobile.MainActivity' <<<"$manifest_tree"; then
+                echo "TV APK still declares portrait phone MainActivity"
+                exit 1
+              fi
+              grep -q 'com.ugo.mobile.TvActivity' <<<"$manifest_tree"
+              echo "TV launcher verified: only TvActivity is declared"
             fi
             printf '%s package=%s bytes=%s\n' "$apk" "$package" "$(stat -c%s "$path")"
           done
