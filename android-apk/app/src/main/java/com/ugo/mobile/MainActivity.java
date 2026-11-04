@@ -106,6 +106,7 @@ public class MainActivity extends Activity {
                     "})();",
                     null
                 );
+                onWebPageReady(view);
             }
         });
 
@@ -178,6 +179,10 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState == null) webView.loadUrl(BuildConfig.UGO_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    protected void onWebPageReady(WebView view) {
+        // TV-specific hook; unchanged for phone roles.
     }
 
     private boolean acceptsImage(WebChromeClient.FileChooserParams params) {
