@@ -17,7 +17,17 @@ try{
  browser=await chromium.launch({headless:true});page=await browser.newPage({viewport:{width:390,height:844}})
  await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(pe);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click()
- await page.locator('span.ugo-ui-status').filter({hasText:'TRABAJO ACTIVO'}).waitFor({state:'visible',timeout:30000})
+ const activeStatus=page.locator('span.ugo-ui-status').filter({hasText:'TRABAJO ACTIVO'})
+ try{
+  await activeStatus.waitFor({state:'visible',timeout:30000})
+ }catch(initialError){
+  // TEST profile sync can time out while the existing session is valid.
+  // Exercise the product's explicit recovery once, not a fake assignment.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  await activeStatus.waitFor({state:'visible',timeout:30000})
+ }
  await page.getByRole('button',{name:'Continuar trabajo'}).click()
  await page.getByRole('heading',{name:'Listo para salir'}).waitFor({state:'visible',timeout:10000})
  await page.getByText('Arreglar canilla de cocina').waitFor({state:'visible',timeout:10000})
