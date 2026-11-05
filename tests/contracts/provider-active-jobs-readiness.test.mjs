@@ -8,7 +8,9 @@ test('runtime proof targets the active-job status, not the sidebar navigation it
  // While a job is active the sidebar renders a "Trabajo activo" button; a case-insensitive
  // substring locator would match it too and fail Playwright strict mode.
  assert.match(sidebar,/t\('nav\.active'\)/)
- assert.match(runtime,/locator\('span\.ugo-ui-status'\)\.filter\(\{hasText:'TRABAJO ACTIVO'\}\)\.waitFor\(\{state:'visible',timeout:30000\}\)/)
+ assert.match(runtime,/locator\('span\.ugo-ui-status'\)\.filter\(\{hasText:'TRABAJO ACTIVO'\}\)/)
+ assert.match(runtime,/activeStatus\.waitFor\(\{state:'visible',timeout:30000\}\)/)
+ assert.match(runtime,/Reintentar carga del perfil/)
  assert.doesNotMatch(runtime,/getByText\('TRABAJO ACTIVO'\)/)
  for(const step of["getByRole('button',{name:'Continuar trabajo'}).click()","getByRole('heading',{name:'Listo para salir'})","getByText('Arreglar canilla de cocina')","getByText(/Rua UGO TEST 100/)","getByRole('button',{name:'ESTOY YENDO'})","assert.equal(await going.isDisabled(),false)","getByText('Fotos o detalles del cliente')"])assert.ok(runtime.includes(step),step)
 })
