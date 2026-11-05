@@ -1,0 +1,165 @@
+/* Provider dashboard aligned to the user-supplied UGO Pro HTML reference.
+   Operative data and handlers are owned by ProviderHome; these rules change layout only.
+   Mobile navigation continues to use the application's existing navigation contract. */
+.ugo-provider-root .provider-home {
+  --pro-reference-bg:#f3f5f4;
+  --pro-reference-ink:#18211e;
+  --pro-reference-soft:#718079;
+  --pro-reference-border:#e7ebe8;
+  --pro-reference-accent:#087b55;
+}
+.ugo-provider-root .provider-home .provider-home-overview {
+  display:grid !important;
+  grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr) !important;
+  grid-template-areas:"availability finance" "gps gps";
+  gap:18px !important;
+  align-items:stretch;
+}
+.ugo-provider-root .provider-home .provider-focus-card {
+  grid-area:availability;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  min-width:0;
+  min-height:260px !important;
+  padding:27px !important;
+  border:1px solid #244434 !important;
+  border-radius:18px !important;
+  background:
+    radial-gradient(circle at 103% -37%,transparent 0 100px,#ffffff0e 101px 102px,transparent 103px 145px,#ffffff0a 146px 147px,transparent 148px),
+    linear-gradient(100deg,#0d1e16 0%,#173a2b 100%) !important;
+  color:#fff !important;
+  box-shadow:none !important;
+}
+.ugo-provider-root .provider-home .provider-focus-card h2 {
+  color:#fff !important;
+  margin:14px 0 6px !important;
+  font-size:clamp(24px,3vw,30px) !important;
+  line-height:1.16 !important;
+  letter-spacing:-.035em !important;
+}
+.ugo-provider-root .provider-home .provider-focus-card p {
+  color:#c4d4c9 !important;
+  margin:0 0 18px !important;
+  max-width:48ch;
+  font-size:13px !important;
+  line-height:1.55 !important;
+}
+.ugo-provider-root .provider-home .provider-focus-card .provider-main-action {
+  min-height:48px !important;
+  width:auto !important;
+  margin-top:auto !important;
+  border:1px solid #ffffff40 !important;
+  background:#fff !important;
+  color:#15251d !important;
+  border-radius:10px !important;
+  font-size:13px !important;
+  font-weight:750 !important;
+}
+.ugo-provider-root .provider-home .provider-finance-summary {
+  grid-area:finance;
+  display:flex !important;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:16px;
+  padding:23px !important;
+  min-width:0;
+  border:1px solid var(--pro-reference-border) !important;
+  border-radius:16px !important;
+  background:#fff !important;
+  color:var(--pro-reference-ink) !important;
+}
+.ugo-provider-root .provider-finance-summary-top,
+.ugo-provider-root .provider-finance-summary-bottom {display:grid;gap:6px}
+.ugo-provider-root .provider-finance-summary-top small,
+.ugo-provider-root .provider-finance-summary-bottom small {color:#77867d;font-size:12px;font-weight:700}
+.ugo-provider-root .provider-finance-summary-top>strong {font-size:clamp(23px,2.4vw,29px);letter-spacing:-.045em;line-height:1.2;color:#18211e}
+.ugo-provider-root .provider-finance-summary-top p {margin:0;color:#79867e;font-size:12px}
+.ugo-provider-root .provider-finance-summary-top button {
+  justify-self:start;
+  min-height:42px;
+  padding:4px 0 !important;
+  background:transparent !important;
+  color:#087b55 !important;
+  border:0 !important;
+  box-shadow:none !important;
+  font-size:13px;
+  font-weight:750;
+}
+.ugo-provider-root .provider-finance-summary-bottom {
+  border-top:1px solid #edf0ee;
+  padding-top:14px;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+}
+.ugo-provider-root .provider-finance-summary-bottom strong {font-size:18px;color:#18211e}
+.ugo-provider-root .provider-finance-summary-bottom strong span {color:#e0a62d}
+.ugo-provider-root .provider-home .provider-status-card {
+  grid-area:gps;
+  min-width:0;
+  padding:18px 22px !important;
+  border:1px solid #f1e7d1 !important;
+  background:#fffdf8 !important;
+  box-shadow:none !important;
+  border-radius:16px !important;
+}
+.ugo-provider-root .provider-home .provider-status-card p {color:#796c56 !important}
+.ugo-provider-root .provider-home .provider-status-card .provider-wide {
+  width:auto !important;
+  min-height:46px !important;
+  padding-inline:18px !important;
+  background:#1b2821 !important;
+  color:#fff !important;
+  border-radius:9px !important;
+}
+.ugo-provider-root .provider-home .provider-home-section-title {
+  margin:30px 0 15px !important;
+  font-size:20px !important;
+  font-weight:750 !important;
+  letter-spacing:-.025em !important;
+  color:#18211e !important;
+}
+.ugo-provider-root .provider-home .provider-quick-grid {
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:16px !important;
+  max-width:none !important;
+}
+.ugo-provider-root .provider-home .provider-quick-card {
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  min-height:175px !important;
+  padding:21px !important;
+  gap:8px !important;
+  border:1px solid #e4ebe6 !important;
+  border-radius:16px !important;
+  background:#fff !important;
+  box-shadow:none !important;
+  text-align:left !important;
+}
+.ugo-provider-root .provider-home .provider-quick-card small {color:#087b55 !important;font-size:12px !important}
+.ugo-provider-root .provider-home .provider-quick-card strong {color:#18211e !important;font-size:16px !important}
+.ugo-provider-root .provider-home .provider-quick-card span {color:#79867e !important;font-size:12px !important;line-height:1.45}
+.ugo-provider-root .provider-home .provider-quick-card:hover {transform:translateY(-2px);border-color:#b8d6c1 !important;box-shadow:0 12px 28px #153d2710 !important}
+.ugo-provider-root .provider-home .provider-quick-card:focus-visible {outline:3px solid #27aa75 !important;outline-offset:3px}
+@media(min-width:1000px){
+  .ugo-provider-root .provider-home {max-width:1240px !important}
+  .ugo-provider-root .provider-home .provider-focus-card,
+  .ugo-provider-root .provider-home .provider-quick-grid {max-width:none !important}
+}
+@media(max-width:800px){
+  .ugo-provider-root .provider-home .provider-home-overview {
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-areas:"availability" "finance" "gps";
+    gap:12px !important;
+  }
+  .ugo-provider-root .provider-home .provider-focus-card {min-height:230px !important;padding:23px !important}
+  .ugo-provider-root .provider-home .provider-finance-summary {min-height:170px;padding:20px !important}
+  .ugo-provider-root .provider-home .provider-quick-grid {grid-template-columns:minmax(0,1fr) !important;gap:10px !important}
+  .ugo-provider-root .provider-home .provider-quick-card {min-height:140px !important;padding:18px !important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ugo-provider-root .provider-home .provider-quick-card {transition:none !important}
+  .ugo-provider-root .provider-home .provider-quick-card:hover {transform:none !important}
+}
