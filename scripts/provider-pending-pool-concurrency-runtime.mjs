@@ -29,13 +29,14 @@ async function checked(action,label){
  }
 }
 async function mk(kind,catId){
+ const role=kind.startsWith('proveedor')?'proveedor':'cliente'
  const email='ugo-pool-'+kind+'-'+token+'@example.test'
- const created=await admin.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{nombre:'UGO pool concurrency TEST',tipo:kind}})
+ const created=await admin.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{nombre:'UGO pool concurrency TEST',tipo:role}})
  if(created.error)throw created.error
  const id=created.data.user.id
  ownedUsers.push(id)
- await checked(()=>admin.from('usuarios').upsert({id,nombre:'UGO Pool TEST '+kind,tipo:kind,activo:true,es_demo:true,online:kind==='proveedor'},{onConflict:'id'}),'user setup')
- if(kind==='proveedor'){
+ await checked(()=>admin.from('usuarios').upsert({id,nombre:'UGO Pool TEST '+kind,tipo:role,activo:true,es_demo:true,online:role==='proveedor'},{onConflict:'id'}),'user setup')
+ if(role==='proveedor'){
   await checked(()=>admin.from('perfiles_proveedor').upsert({
    usuario_id:id,estado_verificacion:'verificado',online:true,disponible:true,
    onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),
@@ -47,7 +48,7 @@ async function mk(kind,catId){
  const login=await db.auth.signInWithPassword({email,password})
  if(login.error)throw login.error
  assert.equal(login.data.user.id,id)
- if(kind==='proveedor')await checked(()=>db.rpc('activar_disponibilidad_proveedor',{
+ if(role==='proveedor')await checked(()=>db.rpc('activar_disponibilidad_proveedor',{
   p_lat:lat,p_lng:lng,p_captured_at:new Date().toISOString(),p_accuracy_m:10
  }),'provider GPS setup')
  return {id,db}
