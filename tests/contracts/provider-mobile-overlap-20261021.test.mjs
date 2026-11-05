@@ -4,15 +4,17 @@ import fs from 'node:fs'
 
 const root=fs.readFileSync('src/mvp/provider/ProviderRoot.tsx','utf8')
 const css=fs.readFileSync('src/mvp/provider/provider-production-shell.css','utf8')
+const profile=fs.readFileSync('src/mvp/provider/ProviderProfile.tsx','utf8')
+const sidebar=fs.readFileSync('src/mvp/provider/ProviderStudioSidebar.tsx','utf8')
 const header=root.slice(root.indexOf('<header className="provider-client-topbar">'),root.indexOf('</header><div id="ugo-main-content"'))
 
-test('provider notification bell lives inside header actions, not floating over language',()=>{
+test('provider notification bell lives inside header actions, with no language selector in the header',()=>{
  assert.ok(header.includes('provider-client-topbar-main'))
  assert.ok(header.includes('provider-client-topbar-actions'))
  assert.ok(header.includes('<NotificationCenter role="provider"'))
- assert.ok(header.includes('provider-client-topbar-language'))
  assert.ok(header.indexOf('provider-client-topbar-actions')<header.indexOf('<NotificationCenter'))
- assert.ok(header.indexOf('<NotificationCenter')<header.indexOf('provider-client-topbar-language'))
+ // Product decision (2026-11-05): the provider language selector lives only in Profile.
+ assert.equal(header.includes('LanguageSelector'),false)
  assert.equal(root.slice(0,root.indexOf('<header className="provider-client-topbar">')).includes('<NotificationCenter role="provider"'),false)
  assert.match(css,/\.provider-client-topbar \.ugo-notification-center\.role-provider\{[\s\S]*?position:relative!important/)
 })
@@ -31,7 +33,8 @@ test('mobile dispute launcher is in flow and bottom nav has touch targets and sa
  assert.match(css,/padding-bottom:calc\(120px \+ env\(safe-area-inset-bottom\)\)!important/)
 })
 
-test('mobile language selector is in its own full-width header row',()=>{
- assert.match(header,/<div className="provider-client-topbar-language"><LanguageSelector\/><\/div>/)
- assert.match(css,/\.ugo-provider-root \.provider-client-topbar-language \.ugo-language-inline\{\s*display:grid;/)
+test('provider language selector lives only in Profile',()=>{
+ assert.match(profile,/htmlFor="ugo-provider-profile-language"/)
+ assert.match(profile,/<select id="ugo-provider-profile-language" value=\{locale\} onChange=\{e=>setLocale\(e\.target\.value as UgoLocale\)\}/)
+ for(const source of [root,sidebar]){assert.equal(source.includes('<LanguageSelector'),false);assert.equal(source.includes('setLocale('),false)}
 })
