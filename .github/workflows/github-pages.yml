@@ -319,6 +319,27 @@ jobs:
           test -s _site/preview/pr-571/index.html
           grep -q '/ugo-admin-panel/preview/pr-571/assets/' _site/preview/pr-571/index.html
 
+      # Isolated provider redesign preview, pinned to PR #610 snapshot.
+      # The canonical /app/ build and production configuration remain unchanged.
+      - name: Build isolated Provider PR 610 preview
+        continue-on-error: true
+        env:
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+          VITE_APP_REVISION: dae838c6f88e8a9f971397cdf551b13582ac67cb
+        shell: bash
+        run: |
+          git fetch --no-tags --depth=1 origin dae838c6f88e8a9f971397cdf551b13582ac67cb
+          git worktree add --detach /tmp/ugo-preview-pr610 FETCH_HEAD
+          (
+            cd /tmp/ugo-preview-pr610
+            npm ci --include=dev
+            npm run build -- --base=/ugo-admin-panel/preview/pr-610/
+          )
+          mkdir -p _site/preview/pr-610
+          cp -a /tmp/ugo-preview-pr610/dist/. _site/preview/pr-610/
+          test -s _site/preview/pr-610/index.html
+          grep -q '/ugo-admin-panel/preview/pr-610/assets/' _site/preview/pr-610/index.html
+
       - name: Build main HEAD snapshot
         env:
           GH_TOKEN: ${{ github.token }}
