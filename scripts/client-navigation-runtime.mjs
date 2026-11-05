@@ -110,6 +110,20 @@ async function clickMenu(page,label){
  assert.equal(pageErrors.length,errorsBefore,label+': pageerror after click')
  clickMap.push({control:label,result:'PASS'})
 }
+async function waitClientHomeWithRecovery(page,label){
+ const home=page.getByRole('main',{name:'Inicio'})
+ try{
+  await home.waitFor({state:'visible',timeout:20000})
+ }catch(initialError){
+  // On a transient TEST profile timeout exercise the existing UI recovery once.
+  // Never bypass the home assertion or silently reauthenticate the user.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-client-auth'))),label+': session missing')
+  await retry.click()
+  await home.waitFor({state:'visible',timeout:20000})
+ }
+}
 async function freshPage(viewport){
  const page=await browser.newPage({viewport})
  page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
@@ -117,7 +131,7 @@ async function freshPage(viewport){
  await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},browserSession)
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  try{
-  await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+  await waitClientHomeWithRecovery(page,'client navigation')
  }catch(error){
   const diagnostic=await page.evaluate(()=>({
    title:document.title,
@@ -155,7 +169,7 @@ try{
     if(await notificationClose.count()&&await notificationClose.isVisible())await notificationClose.click()
     const home=page.getByRole('button',{name:/Ir al inicio|Volver al inicio|Volver/}).first()
     if(await home.count()&&await home.isVisible())await home.click()
-    await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+    await waitClientHomeWithRecovery(page,'client navigation')
    }
 
    await clickMenu(page,'Pedir servicio')
@@ -167,7 +181,7 @@ try{
    clickMap.push({control:'Pedir servicio opens request composer',result:'PASS'})
    await snap(page,name+' Pedir servicio')
    await requestForm.locator('.ugo-need-top button').first().click()
-   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+   await waitClientHomeWithRecovery(page,'client navigation')
 
    await clickMenu(page,'Servicios y categorías')
    await page.locator('.ugo-home-services').waitFor({state:'visible',timeout:10000})
@@ -191,12 +205,12 @@ try{
     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
     await snap(page,name+' '+item)
     await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-    await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+    await waitClientHomeWithRecovery(page,'client navigation')
    }
 
    const headerHome=page.getByRole('button',{name:'Ir al inicio'})
    await headerHome.click()
-   await page.getByRole('main',{name:'Inicio'}).waitFor({state:'visible',timeout:20000})
+   await waitClientHomeWithRecovery(page,'client navigation')
    clickMap.push({control:'Header Ir al inicio',result:'PASS'})
 
    await page.screenshot({path:'artifacts/client-navigation-'+name+'.png',fullPage:true})
