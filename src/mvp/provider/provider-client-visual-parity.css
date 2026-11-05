@@ -1,0 +1,135 @@
+/* Provider ↔ Client visual parity, 2026-11-04.
+   Presentation only. Preserve provider workflow, dispatch, geolocation, payments and session.
+   Reuses the established Client home palette without changing canonical global tokens. */
+.ugo-provider-root,
+.ugo-provider-structural-home {
+  --provider-prod-bg: #f6f8f7;
+  --provider-prod-surface: #fff;
+  --provider-prod-ink: #18231e;
+  --provider-prod-muted: #718078;
+  --provider-prod-line: #e4ebe6;
+  --provider-prod-green: #16794f;
+  --provider-prod-green-dark: #105f3d;
+  --provider-prod-soft: #edf6f0;
+  --pro-ink: #18231e;
+  --pro-ink-soft: #718078;
+  --pro-green: #16794f;
+  --pro-green-dark: #105f3d;
+  --pro-mint: #edf6f0;
+  --pro-paper: #fff;
+  --pro-canvas: #f6f8f7;
+  --pro-muted: #718078;
+  --pro-line: #e4ebe6;
+  color: #18231e !important;
+  background: #f6f8f7 !important;
+  font-family: var(--ugo-font, Inter, ui-sans-serif, system-ui, sans-serif) !important;
+}
+
+/* Home and operational surfaces: match the Client card rhythm. */
+.ugo-provider-root .provider-card,
+.ugo-provider-root .ugo-ui-card,
+.ugo-provider-root .provider-quick-card,
+.ugo-provider-root .provider-offer-sheet,
+.ugo-provider-root .provider-job-summary,
+.ugo-provider-root .provider-job-control-card,
+.ugo-provider-root .provider-setting,
+.ugo-provider-root .provider-opportunity,
+.ugo-provider-root .provider-profile-form,
+.ugo-provider-root .provider-profile-identity,
+.ugo-provider-root .provider-earnings-complete .provider-card,
+.ugo-provider-root .provider-home .provider-focus-card {
+  color: #18231e !important;
+  background: #fff !important;
+  border: 1px solid #e4ebe6 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 3px 16px rgba(24,44,32,.035) !important;
+}
+.ugo-provider-root .provider-home .provider-focus-card h2,
+.ugo-provider-root .provider-profile-identity h2 {
+  color: #18231e !important;
+}
+.ugo-provider-root .provider-home .provider-focus-card p,
+.ugo-provider-root .provider-profile-identity p {
+  color: #718078 !important;
+}
+.ugo-provider-root .provider-home .provider-focus-card .provider-main-action,
+.ugo-provider-root .provider-primary,
+.ugo-provider-root .provider-main-action {
+  background: #16794f !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+.ugo-provider-root .provider-home .provider-quick-card small,
+.ugo-provider-root .provider-kicker {
+  color: #16794f !important;
+}
+.ugo-provider-root .provider-bottom-nav,
+.ugo-provider-root .provider-operational-dock {
+  background: rgba(255,255,255,.97) !important;
+  border-color: #e4ebe6 !important;
+  box-shadow: 0 5px 20px rgba(24,44,32,.07) !important;
+}
+.ugo-provider-root .provider-bottom-nav button.active,
+.ugo-provider-root .provider-bottom-nav button[aria-current="page"] {
+  background: #edf6f0 !important;
+  color: #16794f !important;
+}
+@media (min-width: 1000px) {
+  .ugo-provider-root .provider-studio-sidebar,
+  .provider-studio-sidebar {
+    background: #fff !important;
+    border-right: 1px solid #e4ebe6 !important;
+  }
+  .provider-studio-brand, .provider-studio-user strong { color: #18231e !important; }
+  .provider-studio-user small { color: #718078 !important; }
+  .provider-studio-nav button, .provider-studio-utility { color: #43534a !important; }
+  .provider-studio-nav button.is-active,
+  .provider-studio-nav button[aria-current="page"] {
+    background: #edf6f0 !important;
+    color: #16794f !important;
+  }
+  .provider-studio-availability { background: #16794f !important; color: #fff !important; }
+}
+/* Map-first structural experience retains map and live controls. */
+.ugo-provider-structural-header,
+.ugo-provider-structural-nav { background: #fff !important; border-color: #e4ebe6 !important; }
+.ugo-provider-structural-sheet { background: #f6f8f7 !important; }
+.ugo-provider-structural-opportunity,
+.ugo-provider-structural-service,
+.ugo-provider-structural-empty,
+.ugo-provider-structural-metrics > div,
+.ugo-provider-structural-rail span {
+  background: #fff !important;
+  border: 1px solid #e4ebe6 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 3px 16px rgba(24,44,32,.035) !important;
+}
+.ugo-provider-structural-sheet-head h1 { color: #18231e !important; }
+.ugo-provider-structural-sheet-head p,
+.ugo-provider-structural-empty p,
+.ugo-provider-structural-opportunity p { color: #718078 !important; }
+.ugo-provider-structural-kpi,
+.ugo-provider-structural-service-top span,
+.ugo-provider-structural-brand span {
+  background: #edf6f0 !important;
+  color: #16794f !important;
+}
+.ugo-provider-structural-presence.on,
+.ugo-provider-structural-cta,
+.ugo-provider-structural-actions button:last-child { background: #16794f !important; color: #fff !important; }
+.ugo-provider-structural-nav button.active { color: #16794f !important; }
+.ugo-provider-structural-hugo { background: #edf6f0 !important; color: #16794f !important; }
+.ugo-provider-root button:focus-visible,
+.ugo-provider-structural-home button:focus-visible {
+  outline: 3px solid #16794f66 !important;
+  outline-offset: 3px !important;
+}
+.ugo-provider-root button:disabled,
+.ugo-provider-structural-home button:disabled { cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .ugo-provider-root *, .ugo-provider-structural-home * {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
