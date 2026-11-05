@@ -11,7 +11,16 @@ const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshT
 let providerId=null,clientId=null,serviceId=null,browser=null;const noticeIds=[]
 const evidence={schema_version:'UGO_READINESS_EVIDENCE_V1',readiness_id:'provider-notifications',sha,environment:'UGO TEST',channels:{offer:false,assignment:false,change:false,message:false},realtime_without_refresh:false,attention:{tone:false,vibrate:false},offer_origin:'CLIENT_AUTH_AUTOMATIC_PROXIMITY',physical_gps_verified:false,physical_audio_verified:false,physical_vibration_verified:false,fixture_service_created_by:'TEST_SERVICE_ROLE',production_touched:false,result:'FAIL'}
 async function mk(kind){const email=`ugo-${kind}-notice-${token}@example.test`;const c=await admin.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{nombre:`UGO ${kind} Notice`,tipo:kind}});if(c.error)throw c.error;const id=c.data.user.id;let q=await admin.from('usuarios').upsert({id,nombre:`UGO ${kind} Notice`,tipo:kind,activo:true,es_demo:true,online:kind==='proveedor'},{onConflict:'id'});if(q.error)throw q.error;if(kind==='proveedor'){const cat=await admin.from('categorias').select('id').eq('activa',true).limit(1).single();if(cat.error)throw cat.error;q=await admin.from('perfiles_proveedor').upsert({usuario_id:id,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:cat.data.id,tarifa_base:100},{onConflict:'usuario_id'});if(q.error)throw q.error}return{id,email}}
-async function checkedCleanup(query,label){const{error}=await query;if(error)throw new Error(label+': '+error.message)}
+async function checkedCleanup(makeQuery,label){
+ // Postgres may abort a cleanup under competing TEST jobs. Retry only SQLSTATE 57014
+ // with bounded backoff; never mark cleanup successful unless the delete actually succeeds.
+ for(let attempt=0;attempt<3;attempt++){
+  const {error}=await makeQuery()
+  if(!error)return
+  if(error.code!=='57014'||attempt===2)throw new Error(label+': '+error.message)
+  await new Promise(resolve=>setTimeout(resolve,1000*(attempt+1)))
+ }
+}
 async function cleanup(){
  try{
   // Stop live consumers before removing the authenticated ephemeral actor.
@@ -26,16 +35,16 @@ async function cleanup(){
     assert.equal(owned.cliente_id,clientId,'CLEANUP_CLIENT')
     assert.ok(owned.proveedor_id===null||owned.proveedor_id===providerId,'CLEANUP_PROVIDER')
     // Payment-ready matching creates a payment row with a restrictive service FK.
-    await checkedCleanup(admin.from('pagos').delete().eq('servicio_id',serviceId),'payments cleanup')
-    await checkedCleanup(admin.from('servicios').delete().eq('id',serviceId),'service cleanup')
+    await checkedCleanup(()=>admin.from('pagos').delete().eq('servicio_id',serviceId),'payments cleanup')
+    await checkedCleanup(()=>admin.from('servicios').delete().eq('id',serviceId),'service cleanup')
    }
   }
   for(const id of [providerId,clientId]){
    if(!id)continue
-   await checkedCleanup(admin.from('notificaciones').delete().eq('usuario_id',id),'notices cleanup')
-   await checkedCleanup(admin.from('perfiles_proveedor').delete().eq('usuario_id',id),'profile cleanup')
-   await checkedCleanup(admin.from('usuarios').delete().eq('id',id),'user cleanup')
-   await checkedCleanup(admin.auth.admin.deleteUser(id),'auth cleanup')
+   await checkedCleanup(()=>admin.from('notificaciones').delete().eq('usuario_id',id),'notices cleanup')
+   await checkedCleanup(()=>admin.from('perfiles_proveedor').delete().eq('usuario_id',id),'profile cleanup')
+   await checkedCleanup(()=>admin.from('usuarios').delete().eq('id',id),'user cleanup')
+   await checkedCleanup(()=>admin.auth.admin.deleteUser(id),'auth cleanup')
   }
  }finally{if(browser)await browser.close()}
 }
