@@ -736,3 +736,11 @@ RUNTIME VALIDATED             pendiente
 ## Atención IA pública — checkpoint TEST 2026-10-30
 
 Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backend Gemini en Vercel. La migración del limitador en Supabase TEST fue aplicada y sus privilegios verificados. El despliegue Preview y la respuesta HTTP real continúan sujetos a validación, y el backend debe permanecer cerrado hasta configurar claves de TEST y Turnstile. Este bloque no autoriza cambios de Supabase PROD ni exposición de secretos de servidores. La prueba de lanzamiento debe registrar SHA, CI, validación antiabuso y respuesta auténtica de Gemini.
+
+## 2026-11-05 · Handoff PR #614 — bolsa de pedidos pendientes
+
+- Fase: recorrido Cliente → Oferta → Proveedor → Asignado, caso «nadie aceptó durante el ciclo de ofertas».
+- Estado comprobado: implementado en `arena/17f78bc1-ugo-admin-panel` (código en `cf7bf03`); migraciones `20261105120000` y `20261105130000` **sin aplicar** en TEST y PROD.
+- Evidencia: build OK; `npm test` 1663/1676; las 4 fallas también ocurren en `main` `4adc0a2` (polling de alertas Admin, capa final de estilos Proveedor, backpressure Realtime, auditoría i18n de `UgoSupportChat`). PGlite secuencial para aceptación fuera de agenda y bolsa.
+- Regresiones: ninguna nueva en la suite. Se alinearon 9 contratos existentes con cambios aprobados y se clasificó «UGO PRO» como nombre de producto en la auditoría i18n (commit separado en la PR).
+- Próximo paso: aplicar ambas migraciones en UGO TEST, probar dos proveedores simultáneos y permisos, E2E en navegador; confirmar el umbral de 5 min, la visibilidad de la bolsa fuera de agenda y los derechos de uso de las imágenes nuevas. No integrar a `main` sin esa evidencia.

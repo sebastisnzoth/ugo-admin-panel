@@ -1125,3 +1125,11 @@ RUNTIME VALIDATED             pendiente
 - Turnstile frontend/backend implementado, configuração de widget e credenciais específicas ainda pendentes.
 - Gate: impedir habilitação pública antes de QA Preview, prova real Gemini, limite de abuso e secrets de TEST.
 - Nunca usar credenciais PROD nem declarar GO-LIVE a partir de build apenas.
+
+## 2026-11-05 — Bolsa de pedidos pendientes + aceptación fuera de agenda (PR #614 · pendiente TEST)
+
+- Estado: **IMPLEMENTED** en la rama `arena/17f78bc1-ugo-admin-panel` (código en `cf7bf03`). No `CI VALIDATED`, no `RUNTIME VALIDATED`, no `PUBLISHED`.
+- Migraciones nuevas **sin aplicar**: `20261105120000_provider_accept_outside_availability` (aceptar una oferta ya recibida fuera de agenda; distribución y guardas de zona, deuda, expiración y solapamiento intactas) y `20261105130000_provider_pending_request_pool` (bolsa derivada de `servicios`, listado sanitizado y toma atómica con `FOR UPDATE` que reutiliza `private.aceptar_oferta_impl`).
+- La PR incluye además: recorrido Cliente de 3 pasos, selector de pedidos recientes, mejoras de perfil Cliente/Proveedor, idioma del Proveedor solo en Perfil y sección «Pedidos pendientes» en Oportunidades.
+- Evidencia local: build con `tsc -b` OK; `npm test` 1663/1676 con 4 fallas preexistentes también en `main` `4adc0a2`; PGlite (secuencial) para aceptación fuera de agenda y bolsa.
+- Gate: aplicar las migraciones en UGO TEST y validar con roles reales (elegibilidad, cancelación, vencidos, dos proveedores simultáneos, idempotencia, `anon` sin acceso) más E2E Cliente → Pedido → Proveedor → Aceptación antes de integrar. Sin escritura en PROD.
