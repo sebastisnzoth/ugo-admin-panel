@@ -1,0 +1,48 @@
+name: UGO Pending Pool Real Concurrency TEST
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/provider-pending-pool-concurrency-runtime.mjs'
+      - '.github/workflows/pending-pool-real-concurrency-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ugo-pending-pool-live-concurrency-test
+  cancel-in-progress: false
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+jobs:
+  test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Enforce TEST-only and available credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: node --check scripts/provider-pending-pool-concurrency-runtime.mjs
+      - name: Prove one-winner real PostgreSQL concurrency
+        run: node scripts/provider-pending-pool-concurrency-runtime.mjs
+      - name: Upload evidence and cleanup outcomes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-pending-pool-real-concurrency-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/pending-pool-concurrency.json
+          if-no-files-found: warn
+          retention-days: 60
