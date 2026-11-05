@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -14,11 +15,11 @@ assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&email&&password&&sha,'UGO_TEST_CLIENT_RUNTIME_INPUTS_REQUIRED')
 
 const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
-const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await signInForTestWithBoundedRetry(auth.auth,{email,password})
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
 async function freshTestSession(){
- const{data,error}=await auth.auth.signInWithPassword({email,password})
+ const{data,error}=await signInForTestWithBoundedRetry(auth.auth,{email,password})
  assert.ifError(error)
  assert.ok(data.session&&data.user,'UGO_TEST_CLIENT_FRESH_SESSION_REQUIRED')
  return data.session

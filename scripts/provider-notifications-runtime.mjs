@@ -5,6 +5,7 @@ import{execFile}from'node:child_process'
 import{promisify}from'node:util'
 const execFileAsync=promisify(execFile)
 import{chromium}from'playwright'
+import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||'unknown'
 assert.ok(url&&anon&&serviceKey);assert.match(url,/tmossnqfwfwjrtzwcbmm/)
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}}),token=sha.slice(0,8)+'-'+Date.now(),password='UGO-Test-'+token+'-A9!'
@@ -52,8 +53,8 @@ try{
  const provider=await mk('proveedor'),client=await mk('cliente');providerId=provider.id;clientId=client.id
  const cat=await admin.from('categorias').select('id').eq('activa',true).limit(1).single();if(cat.error)throw cat.error
  const providerAuth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}}),clientAuth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
- const pLogin=await providerAuth.auth.signInWithPassword({email:provider.email,password});if(pLogin.error)throw pLogin.error
- const cLogin=await clientAuth.auth.signInWithPassword({email:client.email,password});if(cLogin.error)throw cLogin.error
+ const pLogin=await signInForTestWithBoundedRetry(providerAuth.auth,{email:provider.email,password});if(pLogin.error)throw pLogin.error
+ const cLogin=await signInForTestWithBoundedRetry(clientAuth.auth,{email:client.email,password});if(cLogin.error)throw cLogin.error
  const latitude=-27.438,longitude=-48.477
  const online=await providerAuth.rpc('activar_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:new Date().toISOString(),p_accuracy_m:10});if(online.error)throw online.error
  const maxq=await admin.from('servicios').select('numero').order('numero',{ascending:false}).limit(1).single();if(maxq.error)throw maxq.error
