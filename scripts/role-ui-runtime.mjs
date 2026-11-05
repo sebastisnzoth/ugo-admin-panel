@@ -220,7 +220,10 @@ async function testProvider(viewport,name){
      page.getByRole('alert').filter({hasText:/error|inválid|incorrect|falló|falhou|failed/i}).waitFor({state:'visible',timeout:30000}).then(async()=>{throw new Error('PROVIDER_LOGIN_ERROR '+(await page.locator('body').innerText()).slice(0,1200))})
    ])
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
-   await page.getByTestId('language-selector').selectOption('es')
+   // Provider language is intentionally available only inside Profile.
+   await page.getByRole('button',{name:/^Perfil$/i}).first().click()
+   await page.locator('#ugo-provider-profile-language').selectOption('es')
+   await page.getByRole('button',{name:/^Inicio$/i}).first().click()
    await assertResponsive(page,'provider '+name+' home')
    let checkedItems=0
    if(viewport.width>=1000){
@@ -412,7 +415,8 @@ async function testTranslations(role,viewport,name){
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
    if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
-   const selector=page.getByTestId('language-selector').first()
+   if(role==='provider')await page.getByRole('button',{name:/^Perfil$|^Profile$/i}).first().click()
+   const selector=role==='provider'?page.locator('#ugo-provider-profile-language'):page.getByTestId('language-selector').first()
    await selector.selectOption(locale)
    await page.waitForFunction(value=>document.documentElement.lang===value,locale)
    await assertResponsive(page,role+' '+locale+' '+name)
