@@ -24,7 +24,10 @@ async function checked(action,label){
  for(let attempt=0;attempt<3;attempt++){
   const {data,error}=await action()
   if(!error)return data
-  if(error.code!=='57014'||attempt===2)throw new Error(label+': '+error.message)
+  // A congested TEST backend may receive a position after its 90s freshness gate.
+  // Only GPS calls may retry with a newly generated captured_at; never relax the gate.
+  const freshGpsRetry=label.includes('GPS')&&/Ubicación GPS antigua|reloj inválido/i.test(error.message||'')
+  if((error.code!=='57014'&&!freshGpsRetry)||attempt===2)throw new Error(label+': '+error.message)
   await pause((attempt+1)*1000)
  }
 }
