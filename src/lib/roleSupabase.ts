@@ -1,5 +1,9 @@
 import { createClient, type AuthChangeEvent, type SupabaseClient } from '@supabase/supabase-js'
-import { UGO_SUPABASE_PUBLISHABLE_KEY, UGO_SUPABASE_URL } from './supabaseProject'
+import { UGO_ENVIRONMENT, UGO_SUPABASE_PUBLISHABLE_KEY, UGO_SUPABASE_URL } from './supabaseProject'
+
+// Keep all browser role clients pinned to the audited TEST project.
+// Auth storage is scoped by environment and role without a PROD preview override.
+const roleDatabaseTarget = UGO_ENVIRONMENT
 
 export type UgoRole = 'client' | 'provider'
 
@@ -34,7 +38,7 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
 
   const client = createClient(UGO_SUPABASE_URL, UGO_SUPABASE_PUBLISHABLE_KEY, {
     auth: {
-      storageKey: `ugo-test-${role}-auth`,
+      storageKey: `ugo-${roleDatabaseTarget}-${role}-auth`,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,

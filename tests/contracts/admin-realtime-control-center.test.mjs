@@ -69,7 +69,7 @@ test('admin alert center reacts to service provider and debt changes with fallba
  assert.match(src,/servicio_estado_eventos/)
  assert.match(src,/perfiles_proveedor/)
  assert.match(src,/deudas_ugo_proveedor/)
- assert.match(src,/setInterval\(sync, 10_000\)/)
+ assert.match(src,/setInterval\(sync, 60_000\)/)
 })
 
 
