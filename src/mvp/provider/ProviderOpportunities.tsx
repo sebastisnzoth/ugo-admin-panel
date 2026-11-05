@@ -6,6 +6,10 @@ import{ProviderPendingRequests}from'./ProviderPendingRequests'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import type{ProviderOpportunity}from'./providerTypes'
 import{Button,Card,EmptyState,SectionHeader,StatusPill}from'../../shared/ui'
+import{isProviderPendingPoolEnabled}from'../../lib/featureFlags'
+
+// Bolsa de pedidos: apagada por defecto hasta aplicar y validar sus migraciones (PR #614).
+const PENDING_POOL_ENABLED=isProviderPendingPoolEnabled()
 
 function compareOpportunityPriority(a:ProviderOpportunity,b:ProviderOpportunity){const urgency=(b.urgency==='urgent'?1:0)-(a.urgency==='urgent'?1:0);if(urgency)return urgency;const distance=Math.max(a.distanceKm,0)-Math.max(b.distanceKm,0);if(distance)return distance;const value=Number(b.estimatedValue||0)-Number(a.estimatedValue||0);if(value)return value;return Number(a.matchScore??Number.MAX_SAFE_INTEGER)-Number(b.matchScore??Number.MAX_SAFE_INTEGER)}
 const formatCountdown=(ms:number)=>{const total=Math.max(0,Math.ceil(ms/1000)),minutes=Math.floor(total/60),seconds=total%60;return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
@@ -28,7 +32,7 @@ export function ProviderOpportunities(){
    </div>
    <Button variant="primary" className="provider-primary provider-wide" onClick={()=>flow.actions.openOpportunity(item.id)}>{t('screen.opportunities.9')}</Button>
   </Card>)}</div>}
-  {!d.debtBlocked&&<ProviderPendingRequests/>}
+  {!d.debtBlocked&&PENDING_POOL_ENABLED&&<ProviderPendingRequests/>}
  </section>
 }
 
