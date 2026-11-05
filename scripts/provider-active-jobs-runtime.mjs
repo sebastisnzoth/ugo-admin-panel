@@ -8,16 +8,26 @@ assert.equal(url,TEST_URL);assert.ok(serviceKey&&sha)
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const token=sha.slice(0,8)+'-'+Date.now(),password='UGO-Test-'+token+'-A9!'
 const pe=`ugo-active-provider-${token}@example.test`,ce=`ugo-active-client-${token}@example.test`
-let providerId,clientId,serviceId,browser
+let providerId,clientId,serviceId,browser,page
 async function cleanup(){if(serviceId){await admin.from('pagos').delete().eq('servicio_id',serviceId);await admin.from('servicios').delete().eq('id',serviceId)}for(const id of[providerId,clientId]){if(!id)continue;await admin.from('perfiles_proveedor').delete().eq('usuario_id',id);await admin.from('usuarios').delete().eq('id',id);await admin.auth.admin.deleteUser(id)}if(browser)await browser.close()}
 try{
  const p=await admin.auth.admin.createUser({email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Active Provider',tipo:'proveedor'}});if(p.error)throw p.error;providerId=p.data.user.id
  const c=await admin.auth.admin.createUser({email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Active Client',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
  const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId});assert.ifError(prep.error);assert.equal(prep.data.invalid_assignment_blocked,true);assert.equal(prep.data.state,'asignado');assert.equal(prep.data.payment_method,'efectivo');serviceId=prep.data.service_id
- browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}})
+ browser=await chromium.launch({headless:true});page=await browser.newPage({viewport:{width:390,height:844}})
  await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(pe);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click()
- await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000})
+ const activeStatus=page.locator('span.ugo-ui-status').filter({hasText:'TRABAJO ACTIVO'})
+ try{
+  await activeStatus.waitFor({state:'visible',timeout:30000})
+ }catch(initialError){
+  // TEST profile sync can time out while the existing session is valid.
+  // Exercise the product's explicit recovery once, not a fake assignment.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  await activeStatus.waitFor({state:'visible',timeout:30000})
+ }
  await page.getByRole('button',{name:'Continuar trabajo'}).click()
  await page.getByRole('heading',{name:'Listo para salir'}).waitFor({state:'visible',timeout:10000})
  await page.getByText('Arreglar canilla de cocina').waitFor({state:'visible',timeout:10000})
@@ -27,4 +37,13 @@ try{
  await page.getByText('Fotos o detalles del cliente').waitFor({state:'visible',timeout:10000})
  const evidence={readiness_id:'provider-active-jobs',sha,environment:'UGO TEST',production_touched:false,invalid_assignment_blocked:true,service_id:serviceId,state:'asignado',payment_method:'efectivo',description_visible:true,address_visible:true,evidence_entry_visible:true,primary_action_enabled:true,result:'PASS',completed_at:new Date().toISOString()}
  await fs.mkdir('artifacts',{recursive:true});await fs.writeFile('artifacts/provider-active-jobs-runtime.json',JSON.stringify(evidence,null,2)+'\n');await page.screenshot({path:'artifacts/provider-active-jobs-runtime.png',fullPage:true});console.log(JSON.stringify(evidence))
+}catch(error){
+ // Surface the exact failing step as a GitHub annotation (logs are not always retrievable).
+ // The fixture password and e-mails are ephemeral TEST values but are still redacted.
+ const redact=value=>String(value||'').split(password).join('[redacted]').split(pe).join('[provider]').split(ce).join('[client]')
+ const message=redact(error instanceof Error?error.message:error).split('\n').slice(0,6).join(' | ').slice(0,700)
+ const body=page?redact(await page.locator('body').innerText().catch(()=>'')).replace(/\s+/g,' ').slice(0,900):null
+ const payload=JSON.stringify({result:'FAIL',sha,message,url:page?page.url():null,body})
+ console.log(`::error title=Provider Active Jobs runtime::${payload.replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A')}`)
+ throw error
 }finally{await cleanup()}

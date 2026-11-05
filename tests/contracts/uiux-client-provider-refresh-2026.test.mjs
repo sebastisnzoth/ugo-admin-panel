@@ -61,8 +61,9 @@ test('client home shows real loading, order progress and repeat-last-service',as
 
 test('provider home explains availability and surfaces demand without new business actions',async()=>{
  const home=await read('src/mvp/provider/ProviderHome.tsx')
- assert.match(home,/provider-status-card/)
- assert.match(home,/provider-status-facts/)
+ assert.doesNotMatch(home,/provider-status-card|provider-status-facts/)
+ assert.match(home,/provider-focus-card/)
+ assert.match(home,/d\.toggleOnline/)
  assert.match(home,/provider-radar-glance/)
  assert.match(home,/screenHeading/)
  assert.match(home,/flow\.actions\.openDemand/)

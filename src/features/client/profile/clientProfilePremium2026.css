@@ -445,9 +445,9 @@
 
 .ugo-client-root .ugo-client-places article button:first-child,
 .ugo-client-root .ugo-client-place-new button{
-  border-color:#13c979!important;
-  background:#13c979!important;
-  color:#052215!important;
+  border-color:#146c48!important;
+  background:#146c48!important;
+  color:#fff!important;
 }
 
 .ugo-client-root .ugo-client-places article button.danger{

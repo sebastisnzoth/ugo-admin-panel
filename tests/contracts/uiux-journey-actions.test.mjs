@@ -15,10 +15,12 @@ test('client review stays editable without restarting the request', async () => 
     read('src/features/client/request/ClientSummaryScreen.tsx'),
   ])
   assert.match(need, /<ClientLocationScreen onBack=\{\(\)=>setStage\('need'\)\}/)
-  assert.match(location, /<ClientWhenScreen onBack=\{\(\)=>setStage\('location'\)\}/)
+  // Three-step journey: location is rendered inside the "when" step, so its back action returns to Need.
+  assert.match(location, /<ClientWhenScreen onBack=\{onBack\} onContinue=\{onContinue\} onEditNeed=\{onEditNeed\|\|onBack\}/)
   assert.match(when, /<ClientPaymentScreen onBack=\{\(\)=>setPayment\(false\)\}/)
-  assert.match(payment, /<ClientSummaryScreen onBack=\{\(\)=>setSummary\(false\)\}/)
-  assert.match(summary, /<button onClick=\{onBack\}>←<\/button>/)
+  // Payment wraps the summary: back returns to the previous step and every step stays editable in place.
+  assert.match(payment, /<ClientSummaryScreen onBack=\{onBack\} onConfirm=\{confirm\} onEditNeed=\{onEditNeed\} onEditLocation=\{onEditLocation\} onEditWhen=\{onEditWhen\}/)
+  assert.match(summary, /<button type="button" onClick=\{onBack\} aria-label=\{t\('screen\.need\.8'\)\}>←<\/button>/)
   assert.match(need, /ugo:guided-request-draft:/)
   assert.match(location, /ugo:guided-request-draft:/)
   assert.match(when, /ugo:guided-request-draft:/)

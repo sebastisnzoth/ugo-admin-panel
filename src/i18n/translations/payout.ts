@@ -1,6 +1,9 @@
 // Provider payout labels only; withdrawal checks and API are unchanged.
 export const payoutMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> = {
   "pt-BR": {
+    "providerPayout.loadingBalance": "Carregando saldo…",
+    "providerPayout.balanceUnavailable": "Não foi possível atualizar o saldo. Tente novamente antes de solicitar um saque.",
+    "providerPayout.retry": "Tentar novamente",
     "providerPayout.loadFailed": "Não foi possível carregar os repasses.",
     "providerPayout.accountSaved": "Conta de recebimento salva.",
     "providerPayout.minWithdrawal": "O saque mínimo é de R$ 50.",
@@ -30,6 +33,9 @@ export const payoutMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> = {
     "providerPayout.digitalHistory": "Histórico de pagamentos digitais ({count})"
   },
   "es": {
+    "providerPayout.loadingBalance": "Cargando saldo…",
+    "providerPayout.balanceUnavailable": "No pudimos actualizar el saldo. Reintentá antes de solicitar un retiro.",
+    "providerPayout.retry": "Reintentar",
     "providerPayout.loadFailed": "No se pudieron cargar los cobros.",
     "providerPayout.accountSaved": "Cuenta de cobro guardada.",
     "providerPayout.minWithdrawal": "El retiro mínimo es de R$ 50.",
@@ -59,6 +65,9 @@ export const payoutMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> = {
     "providerPayout.digitalHistory": "Historial de pagos digitales ({count})"
   },
   "en": {
+    "providerPayout.loadingBalance": "Loading balance…",
+    "providerPayout.balanceUnavailable": "Could not refresh your balance. Retry before requesting a withdrawal.",
+    "providerPayout.retry": "Retry",
     "providerPayout.loadFailed": "Could not load payouts.",
     "providerPayout.accountSaved": "Payout account saved.",
     "providerPayout.minWithdrawal": "Minimum withdrawal is R$ 50.",

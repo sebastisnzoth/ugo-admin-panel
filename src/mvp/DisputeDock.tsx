@@ -3,28 +3,32 @@ import React,{useEffect,useMemo,useState}from'react'
 import type{UgoRole}from'../lib/roleSupabase'
 import{useParticipantDispute,type PreAgreement}from'../hooks/useDisputes'
 import'./dispute-dock.css'
+import{useDialog}from'./dialogs'
 
 const label=(s:string)=>s==='abierta'?'Abierta':s==='en_revision'?'En revisión':s==='resuelta_cliente'?'Resuelta a favor del cliente':s==='resuelta_proveedor'?'Resuelta a favor del proveedor':s==='cerrada'?'Cerrada':s
 
-export function DisputeDock({role,openRequest=false,openRequestKey=0,serviceId=null,showLauncher=true}:{role:UgoRole;openRequest?:boolean;openRequestKey?:number;serviceId?:string|null;showLauncher?:boolean}){
+export function DisputeDock({role,openRequest=false,openRequestKey=0,serviceId=null,showLauncher=true,onClose}:{role:UgoRole;openRequest?:boolean;openRequestKey?:number;serviceId?:string|null;showLauncher?:boolean;onClose?:()=>void}){
  const{t,locale}=useLocale()
+ const{confirm,node:dialog}=useDialog()
  const{userId,service,dispute,messages,agreements,reasons,loading,error,ambiguous,uploadEvidence,open,reply,proposeAgreement,respondAgreement}=useParticipantDispute(role,serviceId)
  const[visible,setVisible]=useState(false),[text,setText]=useState(''),[reasonCode,setReasonCode]=useState(''),[files,setFiles]=useState<File[]>([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState<string|null>(null),[proposalType,setProposalType]=useState<PreAgreement['tipo']>('retrabajo'),[proposalText,setProposalText]=useState(''),[proposalAmount,setProposalAmount]=useState('')
  useEffect(()=>{if(openRequest||openRequestKey>0)setVisible(true)},[openRequest,openRequestKey])
  useEffect(()=>{if(!reasonCode&&reasons[0])setReasonCode(reasons[0].codigo)},[reasonCode,reasons])
  const pending=useMemo(()=>agreements.find(item=>item.estado==='propuesto')||null,[agreements])
- if(!service&&!dispute&&!ambiguous)return null
+ if(!service&&!dispute&&!ambiguous&&!(role==='provider'&&openRequest))return null
+ const close=()=>{setVisible(false);onClose?.()}
  const unresolved=Boolean(dispute&&['abierta','en_revision'].includes(dispute.estado))
- const submit=async()=>{if(!service)return setNotice('Elegí el pedido exacto desde Actividad antes de abrir una disputa.');const min=dispute?2:8;if(text.trim().length<min)return setNotice(dispute?'Escribí el mensaje que querés agregar.':'Contá un poco más qué pasó.');if(!dispute&&!reasonCode)return setNotice('Elegí el motivo del problema.');setBusy(true);setNotice(null);try{const evidence=await uploadEvidence(files);if(dispute)await reply(text.trim(),evidence);else await open(text.trim(),reasonCode,evidence);setText('');setFiles([]);setNotice(dispute?'Respuesta y evidencia agregadas al caso.':'Disputa abierta. UGO congeló el contexto del servicio para revisión.')}catch(e){setNotice(e instanceof Error?e.message:'No se pudo registrar la disputa.')}finally{setBusy(false)}}
+ const submit=async()=>{if(!service)return setNotice('Elegí el pedido exacto desde Actividad antes de abrir una disputa.');const min=dispute?2:8;if(text.trim().length<min)return setNotice(dispute?'Escribí el mensaje que querés agregar.':'Contá un poco más qué pasó.');if(!dispute&&!reasonCode)return setNotice('Elegí el motivo del problema.');if(role==='provider'&&!dispute&&!await confirm({title:t('providerSupportFlow.confirmTitle'),message:t('providerSupportFlow.confirmMessage'),confirmLabel:t('providerSupportFlow.confirmButton'),cancelLabel:t('providerSupportFlow.back'),danger:true}))return;setBusy(true);setNotice(null);try{const evidence=await uploadEvidence(files);if(dispute)await reply(text.trim(),evidence);else await open(text.trim(),reasonCode,evidence);setText('');setFiles([]);setNotice(dispute?'Respuesta y evidencia agregadas al caso.':'Disputa abierta. UGO congeló el contexto del servicio para revisión.')}catch(e){setNotice(e instanceof Error?e.message:'No se pudo registrar la disputa.')}finally{setBusy(false)}}
  const propose=async()=>{if(proposalText.trim().length<8)return setNotice('Explicá la propuesta con un poco más de detalle.');const amount=proposalType==='ajuste_precio'&&proposalAmount?Number(proposalAmount):null;if(amount!=null&&(!Number.isFinite(amount)||amount<0))return setNotice('Ingresá un monto válido.');setBusy(true);setNotice(null);try{await proposeAgreement(proposalType,proposalText.trim(),amount);setProposalText('');setProposalAmount('');setNotice('Propuesta enviada. La otra parte puede aceptarla o rechazarla.')}catch(e){setNotice(e instanceof Error?e.message:'No se pudo enviar la propuesta.')}finally{setBusy(false)}}
  const answerAgreement=async(accept:boolean)=>{if(!pending)return;setBusy(true);setNotice(null);try{await respondAgreement(pending.id,accept);setNotice(accept?'Acuerdo aceptado. Si el problema queda resuelto, no hace falta abrir una disputa.':'Propuesta rechazada. Podés continuar con una disputa formal.')}catch(e){setNotice(e instanceof Error?e.message:'No se pudo responder la propuesta.')}finally{setBusy(false)}}
  const reason=reasons.find(item=>item.codigo===reasonCode)
  return <>
   {showLauncher&&<button className={'ugo-dispute-launch '+(unresolved?'open-case':'')} onClick={()=>setVisible(true)}>{unresolved?t("uiCopy.expression182"):ambiguous?t("uiCopy.expression183"):t("uiCopy.expression184")}</button>}
-  {visible&&<div className="ugo-dispute-backdrop" onClick={()=>setVisible(false)}><section className="ugo-dispute-sheet" onClick={e=>e.stopPropagation()}><header><div><small>{t('dispute.heading')}</small><h3>{dispute?'Disputa #'+(dispute.numero||String(dispute.id).slice(0,8)):service?'Servicio #'+service.numero:t("clientWeb.selectService")}</h3></div><button onClick={()=>setVisible(false)}>×</button></header>
+  {visible&&<div className="ugo-dispute-backdrop" onClick={close}><section className="ugo-dispute-sheet" onClick={e=>e.stopPropagation()}><header><div><small>{t('dispute.heading')}</small><h3>{dispute?'Disputa #'+(dispute.numero||String(dispute.id).slice(0,8)):service?'Servicio #'+service.numero:t("clientWeb.selectService")}</h3></div><button type="button" onClick={close} aria-label={t('providerSupportFlow.close')}>×</button></header>
    {loading&&<p>{t('dispute.loading')}</p>}{error&&<div className="ugo-dispute-note error">{error}</div>}
+   {role==='provider'&&openRequest&&!loading&&!error&&!service&&!ambiguous&&<div className="ugo-dispute-note" role="status"><span>{t('providerSupportFlow.unavailable')}</span><button type="button" onClick={close}>{t('providerSupportFlow.back')}</button></div>}
    {ambiguous&&!service&&<div className="ugo-dispute-note"><b>{t('dispute.multiple')}</b><span>{t('dispute.openFromOrder')}</span></div>}
-   {service&&(dispute?<>
+   {service&&(!(role==='provider'&&openRequest)||(!loading&&!error))&&(dispute?<>
     <div className={'ugo-dispute-status '+dispute.estado}><b>{label(dispute.estado)}</b><span>{dispute.motivo}</span>{dispute.requiere_humano&&<em>{t('dispute.humanReview')}</em>}</div>
     {dispute.resolucion&&<div className="ugo-dispute-resolution"><small>{t('dispute.resolution')}</small><strong>{label(dispute.estado)}</strong><p>{dispute.resolucion}</p></div>}
     <div className="ugo-dispute-thread">{messages.map(m=><article key={m.id} className={m.autor_rol}><small>{m.autor_rol==='admin'?t("uiCopy.expression87"):m.autor_rol==='cliente'?t("providerReceipt.client"):t("screen.admin_native.12")} · {new Date(m.created_at).toLocaleString(locale,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</small><p>{m.mensaje}</p>{m.evidencias?.length?<em>{m.evidencias.length} {t('dispute.files')}</em>:null}</article>)}</div>
@@ -37,5 +41,6 @@ export function DisputeDock({role,openRequest=false,openRequestKey=0,serviceId=n
    </>)}
    {notice&&<div className="ugo-dispute-note info">{notice}</div>}<footer><b>{t('dispute.next')}</b> {t('dispute.guidance')}</footer>
   </section></div>}
+  {dialog&&<div className="ugo-dispute-confirm-layer">{dialog}</div>}
  </>
 }

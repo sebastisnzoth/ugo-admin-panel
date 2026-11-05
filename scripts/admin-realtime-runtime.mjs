@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
 import {createClient} from '@supabase/supabase-js'
+import {signInForTestWithBoundedRetry} from './lib/testAuthRetry.mjs'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -16,7 +17,7 @@ assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_ADMIN_REALTIME_INPUTS
 
 const root=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
-const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password})
+const {data:login,error:loginError}=await signInForTestWithBoundedRetry(user.auth,{email,password})
 assert.ifError(loginError)
 assert.ok(login.user&&login.session,'UGO_TEST_ADMIN_SESSION_REQUIRED')
 const {data:profile,error:profileError}=await root.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()

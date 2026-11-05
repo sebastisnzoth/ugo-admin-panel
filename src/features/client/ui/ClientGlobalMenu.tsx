@@ -19,12 +19,12 @@ export function ClientGlobalMenu(){
  const go=(screen:'home'|'history'|'profile'|'dispute')=>{close();flow.navigate(screen)}
  const after=(eventName:(typeof UGO_UI_EVENTS)[keyof typeof UGO_UI_EVENTS])=>window.setTimeout(()=>emitUgoUiEvent(eventName),60)
  const request=()=>{close();flow.navigate('request')}
- const categories=()=>{close();flow.navigate('home');after(UGO_UI_EVENTS.clientShowCategories)}
+ const categories=()=>{close();flow.navigate('home',null,()=>after(UGO_UI_EVENTS.clientShowCategories))}
  const addresses=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfileAddresses)}
  const payment=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfilePayment)}
  const hugo=()=>{close();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientHugo),80)}
  const notifications=()=>{close();window.setTimeout(()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click(),60)}
- const logout=async()=>{close();await supabase.auth.signOut({scope:'local'});window.location.replace(`${window.location.pathname}?app=client`)}
+ const logout=async()=>{close();if(!await flow.requestLeave())return;await supabase.auth.signOut({scope:'local'});window.location.replace(`${window.location.pathname}?app=client`)}
  const displayName=String(profile?.nombre||t('clientMenu.accountDefault')).trim()||t('clientMenu.accountDefault')
  const initials=useMemo(()=>displayName.split(/\s+/).map(part=>part[0]).filter(Boolean).slice(0,2).join('').toUpperCase()||'UG',[displayName])
  return <>

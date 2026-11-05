@@ -1,5 +1,5 @@
 import{LocalizedText}from'../../i18n/locale'
-import React from'react'
+import React,{useState}from'react'
 import{useLocale}from'../../i18n/locale'
 import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
@@ -8,11 +8,12 @@ import{Button}from'../../shared/ui'
 export function ProviderStudioSidebar(){
  const{t}=useLocale()
  const d=useProviderData(),f=useProviderFlow(),screen=f.screen
+ const [failedPhotoUrl,setFailedPhotoUrl]=useState<string|null>(null)
  const active=(...screens:string[])=>screens.includes(screen)?'is-active':''
  return <aside className="provider-studio-sidebar" aria-label={t('providerScreen.navMenu')}>
   <div className="provider-studio-brand"><LocalizedText id="ugoWebRemaining.brand"/></div>
   <div className="provider-studio-user">
-   <span className="provider-studio-avatar" aria-hidden="true">{(d.name||'P').slice(0,1).toUpperCase()}</span>
+   <span className="provider-studio-avatar" aria-hidden="true">{d.profilePhotoUrl&&d.profilePhotoUrl!==failedPhotoUrl?<img src={d.profilePhotoUrl} alt="" onError={()=>setFailedPhotoUrl(d.profilePhotoUrl)}/>:((d.name||'P').slice(0,1).toUpperCase())}</span>
    <div className="provider-studio-user-copy">
     <strong>{d.name||t('providerScreen.noName')}</strong>
     <small>★ {d.karma.toFixed(1)} · {d.online?t('nav.available'):t('nav.unavailable')}</small>

@@ -160,9 +160,16 @@ function watchLiveBanner(tipo){
  // A notification may use its persisted title when the locale catalog lacks
  // this type. Match the real service and notice type, then validate the exact
  // displayed title against the authenticated DB row in expectUi.
- const live=page.locator('.ugo-notification-live.is-client[data-ugo-notice-type="'+tipo+'"][data-ugo-notice-service-id="'+fixture.id+'"]')
- return live.waitFor({state:'visible',timeout:30000})
-  .then(()=>live.innerText())
+ const selector='.ugo-notification-live.is-client[data-ugo-notice-type="'+tipo+'"][data-ugo-notice-service-id="'+fixture.id+'"]'
+ // Read the visible text in the same browser evaluation that detects the banner.
+ // The banner auto-dismisses after five seconds; a subsequent innerText() can race it.
+ // Keep a strict 30s live-banner gate; no database polling is substituted for Realtime.
+ return page.waitForFunction(css=>{
+  const element=document.querySelector(css)
+  if(!element||!element.getClientRects().length||getComputedStyle(element).visibility==='hidden')return false
+  return element.textContent?.trim()||false
+ },selector,{timeout:30000,polling:100})
+  .then(handle=>handle.jsonValue())
   .then(text=>({text}),error=>({error}))
 }
 

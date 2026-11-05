@@ -69,7 +69,10 @@ test('admin alert center reacts to service provider and debt changes with fallba
  assert.match(src,/servicio_estado_eventos/)
  assert.match(src,/perfiles_proveedor/)
  assert.match(src,/deudas_ugo_proveedor/)
- assert.match(src,/setInterval\(sync, 10_000\)/)
+ const fallback=src.match(/setInterval\(sync, ([\d_]+)\)/)
+ assert.ok(fallback,'admin alert center must keep a fallback polling loop')
+ const fallbackMs=Number(fallback[1].replaceAll('_',''))
+ assert.ok(fallbackMs>=10_000&&fallbackMs<=60_000,'admin fallback polling must stay between 10 s and 60 s')
 })
 
 

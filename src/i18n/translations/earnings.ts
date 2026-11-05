@@ -1,6 +1,9 @@
 // Provider commission/debt copy only; existing debt blocking and payment rules are unchanged.
 export const earningsMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> = {
   "pt-BR": {
+    "providerEarnings.releasedTotal": "Pagamentos digitais liberados",
+    "providerEarnings.releasedExplanation": "Total histórico antes dos saques. Consulte o saldo disponível em Saldo e repasses.",
+    "providerEarnings.releasedAmount": "Liberado {amount}",
     "providerEarnings.promptTitle": "Informar pagamento à UGO",
     "providerEarnings.promptMessage": "Informe a referência do pagamento realizado. A UGO verificará a confirmação.",
     "providerEarnings.promptLabel": "Referência do pagamento",
@@ -34,6 +37,9 @@ export const earningsMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> =
     "providerEarnings.reportPayment": "Já paguei — informar"
   },
   "es": {
+    "providerEarnings.releasedTotal": "Pagos digitales liberados",
+    "providerEarnings.releasedExplanation": "Total histórico antes de retiros. Consultá el saldo disponible en Saldo y cobros.",
+    "providerEarnings.releasedAmount": "Liberado {amount}",
     "providerEarnings.promptTitle": "Informar pago a UGO",
     "providerEarnings.promptMessage": "Ingresá la referencia del pago realizado. UGO verificará la confirmación.",
     "providerEarnings.promptLabel": "Referencia del pago",
@@ -67,6 +73,9 @@ export const earningsMessages: Record<'pt-BR'|'es'|'en',Record<string,string>> =
     "providerEarnings.reportPayment": "Ya pagué — informar"
   },
   "en": {
+    "providerEarnings.releasedTotal": "Released digital payments",
+    "providerEarnings.releasedExplanation": "Historical total before withdrawals. Check the available balance under Balance and payouts.",
+    "providerEarnings.releasedAmount": "Released {amount}",
     "providerEarnings.promptTitle": "Report payment to UGO",
     "providerEarnings.promptMessage": "Enter the payment reference. UGO will verify the payment.",
     "providerEarnings.promptLabel": "Payment reference",

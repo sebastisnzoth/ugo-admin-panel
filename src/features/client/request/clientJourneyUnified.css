@@ -77,3 +77,21 @@
 @media(prefers-reduced-motion:reduce){
  :is(.ugo-need-screen,.ugo-location-screen,.ugo-when-screen,.ugo-payment-screen,.ugo-summary-screen) *{transition:none!important}
 }
+
+/* Accessible guidance remains readable at narrow widths and with long translations. */
+:is(.ugo-need-screen,.ugo-location-screen,.ugo-when-screen,.ugo-payment-screen,.ugo-summary-screen) .ugo-journey-hint{color:#405a50;line-height:1.5;font-size:14px;overflow-wrap:anywhere}
+.ugo-location-screen .ugo-journey-subheading{font-size:15px;color:#15332f;margin:18px 0 8px}
+:is(.ugo-need-screen,.ugo-location-screen,.ugo-when-screen,.ugo-payment-screen,.ugo-summary-screen) :is(button,select){min-height:44px}
+:is(.ugo-need-screen,.ugo-location-screen,.ugo-when-screen,.ugo-payment-screen,.ugo-summary-screen) :is(p,small,label,button){overflow-wrap:anywhere}
+@media (prefers-reduced-motion:reduce){:is(.ugo-need-screen,.ugo-location-screen,.ugo-when-screen,.ugo-payment-screen,.ugo-summary-screen) *{transition-duration:0s!important;animation-duration:0s!important}}
+.ugo-when-screen .ugo-journey-when-heading{font-size:21px;line-height:1.25;margin:28px 0 8px;color:#15332f}
+.ugo-summary-screen .ugo-review-payment{margin-top:16px;padding:16px;border:1px solid #d8e9e3;border-radius:16px;background:#fff}
+.ugo-summary-screen .ugo-review-payment h2{margin:0 0 8px;font-size:17px}
+.ugo-summary-screen .ugo-review-payment p{font-size:13px;color:#405a50;line-height:1.5;margin:0 0 12px}
+.ugo-summary-screen .ugo-review-payment-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ugo-summary-screen .ugo-review-payment-options button{display:grid;gap:4px;min-width:0;min-height:64px;padding:10px;border:1px solid #cbded2;border-radius:12px;background:#fff;color:#173b29;text-align:left}
+.ugo-summary-screen .ugo-review-payment-options button.selected{border:2px solid #146c48;background:#eff9f2}
+.ugo-summary-screen .ugo-review-payment-options small{color:#405a50;line-height:1.35}
+@media(max-width:360px){.ugo-summary-screen .ugo-review-payment-options{grid-template-columns:1fr}}
+.ugo-when-screen .ugo-when-progress i{background:#e1e7e4}
+.ugo-when-screen .ugo-when-progress i:nth-child(-n+2){background:#07966f}

@@ -2,9 +2,15 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-test('provider production shell is the final provider style layer',()=>{
+test('provider production shell overrides every earlier provider style layer',()=>{
   const styles=fs.readFileSync('src/features/provider/providerStyles.ts','utf8').trim().split(/\n+/)
-  assert.equal(styles.at(-1),"import'../../mvp/provider/provider-production-shell.css'")
+  const shellAt=styles.indexOf("import'../../mvp/provider/provider-production-shell.css'")
+  assert.ok(shellAt>0,'production shell must be imported after the base provider layers')
+  // Only these deliberate later layers may follow the shell (PR #610 visual parity, PR #612 reference dashboard).
+  assert.deepEqual(styles.slice(shellAt+1),[
+    "import'../../mvp/provider/provider-client-visual-parity.css'",
+    "import'../../mvp/provider/provider-reference-dashboard.css'",
+  ])
   assert.ok(fs.existsSync('src/mvp/provider/provider-production-shell.css'))
 })
 

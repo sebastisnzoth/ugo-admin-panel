@@ -15,3 +15,56 @@
 .ugo-client-profile-header-avatar img{border-radius:50%}
 .ugo-client-root .ugo-client-profile-photo-actions button{border-color:#cfe0d7;background:#fff;color:#087a50}
 .ugo-client-root .ugo-client-profile-photo-actions small{color:#6d7b73}
+
+/* Profile section and photo preview controls. */
+.ugo-client-root .ugo-client-profile-section-content{display:grid;gap:12px;padding:14px 16px;color:#405c4d;line-height:1.5}
+.ugo-client-root .ugo-client-profile-section-content label{display:grid;gap:7px;font-weight:700;font-size:13px}
+.ugo-client-root .ugo-client-profile-section-content select{min-height:46px;padding:8px 12px;border:1px solid #c9ddd1;border-radius:10px;background:#fff;color:#183d2b;font:inherit}
+.ugo-client-root .ugo-client-profile-section-content button,.ugo-client-root .ugo-client-photo-preview button,.ugo-client-root .ugo-client-profile-loading button{min-height:44px;padding:8px 14px;border:1px solid #b7d5c3;border-radius:10px;background:#fff;color:#075e3e;font-weight:700;cursor:pointer}
+.ugo-client-root .ugo-client-photo-preview{display:flex;gap:14px;align-items:center;margin:12px 0;padding:16px;background:#f0f8f3;border:1px solid #cde4d5;border-radius:16px;color:#1d3e2a}
+.ugo-client-root .ugo-client-photo-preview img{width:88px;height:88px;object-fit:cover;border-radius:14px;flex:none}
+.ugo-client-root .ugo-client-photo-preview>div{display:grid;gap:6px}.ugo-client-root .ugo-client-photo-preview small{color:#506b5a}.ugo-client-root .ugo-client-photo-preview>div>div{display:flex;gap:8px;flex-wrap:wrap}
+.ugo-client-root .ugo-client-profile-panel :is(button,input,select,summary):focus-visible{outline:3px solid #087b55;outline-offset:3px}
+.ugo-client-root .ugo-client-profile-security form>button[type=button]{min-height:44px;color:#086b47;background:#fff;border:1px solid #b7d5c3;border-radius:10px}
+.ugo-client-root .ugo-client-places article small{color:#526b5a;line-height:1.4}
+@media(max-width:480px){.ugo-client-root .ugo-client-photo-preview{align-items:flex-start}.ugo-client-root .ugo-client-photo-preview img{width:68px;height:68px}.ugo-client-root .ugo-client-photo-preview>div>div{flex-direction:column}}
+
+/* Profile details should grow independently and remain usable when expanded. */
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-sections{align-items:start!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-sections details{align-self:start!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-sections details[open] summary:after{transform:rotate(90deg);transform-origin:center}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security{padding:16px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;min-width:0}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form label{display:grid!important;gap:7px!important;color:#234b34!important;font-size:13px!important;font-weight:750!important;line-height:1.4}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form input{width:100%!important;min-width:0!important;min-height:48px!important;box-sizing:border-box!important;padding:0 12px!important;border:1px solid #cadcd0!important;border-radius:11px!important;background:#fff!important;color:#172d20!important;font:inherit!important;font-size:16px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form input::placeholder{color:#74867b!important;opacity:1}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form>button[type=button]{justify-self:start;min-height:44px!important;padding:0 12px!important;font-weight:750;cursor:pointer}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form>button[type=submit]{min-height:50px!important;border-radius:11px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security form p{margin:0;padding:11px;border-radius:10px;background:#eef8f1;color:#255a3a;font-size:13px;line-height:1.5}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-form>div{grid-template-columns:1fr!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-places article>div:last-child button{min-height:44px!important;font-size:11px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)!important;gap:10px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new input{font-size:14px!important;min-height:48px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new button{min-height:48px!important;white-space:normal!important;font-size:12px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-edit{grid-column:1 / -1!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-edit button:last-child{border:1px solid #cfe0d7!important;background:#fff!important;color:#315a43!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-integrations{margin-top:12px!important;grid-template-columns:1fr!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-integrations .ugo-user-calendar-connect{display:grid;gap:10px;padding:16px;color:#304f3c;line-height:1.5}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-integrations .ugo-user-calendar-connect strong{font-size:14px;color:#193c29}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-integrations .ugo-user-calendar-connect p{margin:0;color:#526b5a;font-size:13px;overflow-wrap:anywhere}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-integrations .ugo-user-calendar-connect button{justify-self:start;min-height:44px;padding:0 14px;border:1px solid #b7d7c3;border-radius:10px;background:#fff;color:#086b47;font-weight:750}
+@media(max-width:650px){.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new{grid-template-columns:1fr!important}.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-security{padding:14px!important}.ugo-client-root .ugo-client-profile-panel .ugo-client-places article>div:last-child{justify-content:flex-start!important}}
+
+/* Clear labels and readable, touch-friendly controls throughout the profile. */
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new label{display:grid!important;gap:6px!important;min-width:0;color:#234b34!important;font-size:13px!important;font-weight:700!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new label span{font-size:13px!important;color:#234b34!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new input{font-size:16px!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new button{align-self:end}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-place-message{margin:0;padding:10px 12px;border-radius:10px;background:#eef8f1;color:#234b34;font-size:13px;line-height:1.45}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-places .ugo-place-location.pending{color:#795400!important;font-weight:700}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-places article span,.ugo-client-root .ugo-client-profile-panel .ugo-client-places article small{font-size:12px!important;overflow-wrap:anywhere}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-payment button.selected{border-color:#146c48!important;box-shadow:0 0 0 1px #146c48 inset!important}
+.ugo-client-root .ugo-client-profile-panel .ugo-client-profile-photo-actions button{min-height:44px!important}
+.ugo-client-root .ugo-client-profile-panel :is(button,summary){cursor:pointer}
+.ugo-client-root .ugo-client-profile-panel button:disabled{cursor:not-allowed}
+@media(max-width:650px){.ugo-client-root .ugo-client-profile-panel .ugo-client-place-new button{width:100%}.ugo-client-root .ugo-client-profile-panel .ugo-client-places article>div:last-child button{flex:1 1 auto}}

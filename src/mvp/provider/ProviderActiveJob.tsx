@@ -45,25 +45,14 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
  const locationLabel=s.estado==='en_camino'?t('providerJob.locationActive'):s.estado==='llegado'||s.estado==='en_progreso'?t('providerJob.locationConfirmed'):t('providerJob.locationReady')
  const confirmArrival=async()=>{await d.advance('llegado')}
  const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!await confirm({title:t('providerAgenda.confirmCancel'),message:t('providerJob.cancelQuestion'),danger:true}))return;const reason=await prompt({title:t('providerAgenda.confirmCancel'),message:t('providerJob.cancelReasonPrompt'),label:t('providerJob.cancelReasonLabel'),required:true});if(reason===null)return;if(reason.trim().length<5){await alert({title:t('providerAgenda.confirmCancel'),message:t('providerJob.cancelReasonInvalid')});return}await d.cancelService(reason)}
- return <section className="provider-screen provider-active-job" aria-labelledby="provider-job-title">
-  <><Button variant="ghost" className="provider-back" onClick={flow.actions.openHome}>{t('screen.active.2')}</Button><SectionHeader eyebrow={t('providerJob.activeEyebrow')} title={stateLabel} description={t('providerJob.activeDescription')}/></>
-  <div className="provider-job-progress" aria-label={t('providerJob.progress')}>{FLOW_STEPS.map((step,index)=><div key={step.state} className={index<=progressIndex?'is-done':''}><span>{index<progressIndex?'✓':index+1}</span><small>{step.label}</small></div>)}</div>
+ return <section className="provider-screen provider-active-job" aria-label={t('providerJob.activeEyebrow')}>
+  <><Button variant="ghost" className="provider-back" onClick={flow.actions.openHome}>{t('screen.active.2')}</Button><SectionHeader screenHeading eyebrow={t('providerJob.activeEyebrow')} title={stateLabel} description={t('providerJob.activeDescription')}/></>
+  <div className="provider-job-progress" aria-label={t('providerJob.progress')}>{FLOW_STEPS.map((step,index)=><div key={step.state} className={index<progressIndex?'is-done':index===progressIndex&&!['disputado','completado'].includes(s.estado)?'is-current':index<=progressIndex?'is-done':''} aria-current={index===progressIndex&&!['disputado','completado'].includes(s.estado)?'step':undefined}><span>{index<progressIndex?'✓':index+1}</span><small>{step.label}</small></div>)}</div>
   <Card className="provider-card provider-mission-brief" aria-label={t('providerJob.whatNow')}>
    <div className="provider-mission-brief-head"><div><small>{t('screen.active.3')}</small><strong>{nextAction}</strong></div><span className="provider-mission-state">{stateLabel}</span></div>
    <div className="provider-mission-brief-chips"><span>{paymentLabel}</span><span>{locationLabel}</span><span>#{s.numero??String(s.id).slice(0,8)}</span></div>
    <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">{t('screen.active.4')}</a>}<span className="provider-mission-brief-hint">{t('screen.active.5')}</span></div>
   </Card>
-  <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
-  <Card className="provider-card provider-job-summary">
-   <div className="provider-job-problem"><small>{t('screen.active.6')}</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||t('providerJob.serviceDefault')}</h2><p>{s.descripcion}</p></div>
-   <div className="provider-job-facts">
-    <div><small>{t('screen.active.7')}</small><strong>📍 {address}</strong>{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">{t('screen.active.8')}</a>}</div>
-    {scheduledAt&&<div><small>{t('screen.active.9')}</small><strong>🗓 {scheduledLabel(scheduledAt,locale,t)}</strong></div>}
-    <div><small>{t('screen.active.10')}</small><strong>{formatMoney(s.ganancia_proveedor||s.tarifa,s.moneda||'BRL')}</strong><span>{s.tarifa?t('providerJob.paymentTotal',{total:formatMoney(s.tarifa||0,s.moneda||'BRL'),commission:formatMoney(s.comision_ugo||0,s.moneda||'BRL')}):t('providerJob.amountPending')} · {d.funded?t('providerJob.paymentProtectedBy'):d.cashSelected?t('providerJob.cashPayment'):t('providerJob.paymentMethodPending')}</span></div>
-   </div>
-   <details className="provider-secondary-details"><summary>{t('screen.active.11')}</summary><ProviderRequestEvidence serviceId={s.id}/></details>
-  </Card>
-
   <Card id="provider-primary-control" tabIndex={-1} className="provider-card provider-job-control-card provider-active-control" aria-label={t('providerJob.control')}>
    <small>{t('providerJob.control')} · #{s.numero??String(s.id).slice(0,8)}</small>
    {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>{t('screen.active.12')}</Button><div className="provider-simple-status" role="status"><strong>{t('screen.active.13')}</strong><span>{t('providerJob.paymentChoiceHelp')}</span></div></>}
@@ -80,12 +69,24 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    {!['esperando_aprobacion','disputado','completado'].includes(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide provider-dispute-entry" onClick={()=>flow.actions.openDispute(s.id)}>{t('screen.active.26')}</Button>}
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>{t('screen.active.27')}</Button>}
   </Card>
+  <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
+  <Card className="provider-card provider-job-summary">
+   <div className="provider-job-problem"><small>{t('screen.active.6')}</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||t('providerJob.serviceDefault')}</h2><p>{s.descripcion}</p></div>
+   <div className="provider-job-facts">
+    <div><small>{t('screen.active.7')}</small><strong>📍 {address}</strong>{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">{t('screen.active.8')}</a>}</div>
+    {scheduledAt&&<div><small>{t('screen.active.9')}</small><strong>🗓 {scheduledLabel(scheduledAt,locale,t)}</strong></div>}
+    <div><small>{t('screen.active.10')}</small><strong>{s.ganancia_proveedor!=null?formatMoney(s.ganancia_proveedor,s.moneda||'BRL'):t('providerJob.amountPending')}</strong><span>{s.tarifa?t('providerJob.paymentTotal',{total:formatMoney(s.tarifa||0,s.moneda||'BRL'),commission:formatMoney(s.comision_ugo||0,s.moneda||'BRL')}):t('providerJob.amountPending')} · {d.funded?t('providerJob.paymentProtectedBy'):d.cashSelected?t('providerJob.cashPayment'):t('providerJob.paymentMethodPending')}</span></div>
+   </div>
+   <details className="provider-secondary-details"><summary>{t('screen.active.11')}</summary><ProviderRequestEvidence serviceId={s.id}/></details>
+  </Card>
+
+
 
   <Card className="provider-card provider-job-chat" aria-label={t('providerJob.chatWithClient')}><div className="provider-job-chat-head"><small>{t('screen.active.28')}</small><strong>{t('screen.active.29')}</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></Card>
   {s.estado==='en_progreso'&&<details className="provider-exception"><summary>{t('screen.active.30')}</summary><p>{t('screen.active.31')}</p><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></details>}
   <div className="provider-sticky-step" role="status" aria-live="polite">
    <div className="provider-sticky-step-copy"><small>{t('providerJob.stickyNow',{state:stateLabel})}</small><strong>{nextAction}</strong></div>
-   <button type="button" onClick={()=>{const control=document.getElementById('provider-primary-control');control?.scrollIntoView({behavior:'smooth',block:'center'});control?.focus({preventScroll:true})}}>{t('screen.active.32')}</button>
+   <button type="button" onClick={()=>{const control=document.getElementById('provider-primary-control');control?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});control?.focus({preventScroll:true})}}>{t('screen.active.32')}</button>
   </div>
  {dialog}
  </section>
