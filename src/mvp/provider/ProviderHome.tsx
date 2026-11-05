@@ -47,6 +47,18 @@ export function ProviderHome(){
    </div>
    {!d.debtBlocked&&(!d.online||!d.matchingReady)&&<Button variant="primary" className="provider-primary provider-wide" disabled={d.busy} onClick={()=>void d.setOnline(true)}>{d.online?t('providerHome.updateLocation'):t('providerHome.setOnline')}</Button>}
   </Card>
+  <Card className="provider-card provider-finance-summary" aria-label={t('providerHome.money')}>
+   <div className="provider-finance-summary-top">
+    <small>{t('providerHome.money')}</small>
+    <strong>{money(d.released)}</strong>
+    <p>{t('providerHome.balance',{amount:money(d.released)})}</p>
+    <Button variant="ghost" type="button" onClick={flow.actions.openEarnings}>{t('providerHome.money')} →</Button>
+   </div>
+   <div className="provider-finance-summary-bottom">
+    <small>{t('provider.rating').replace('{rating}',d.karma.toFixed(1)).replace('{zone}',d.provider.ciudad_base||'Florianópolis')}</small>
+    <strong><span aria-hidden="true">★</span> {d.karma.toFixed(1)}</strong>
+   </div>
+  </Card>
   </div>
   {d.service?.cliente_id&&<ProviderCustomerCard clientId={d.service.cliente_id} serviceId={d.service.id} compact/>}
   {d.debtBlocked&&<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">{t('providerHome.newJobsPaused')}</StatusPill><span>{t('providerHome.debtLock',{amount:money(d.ugoDebt),count:d.pendingDebtCount})}</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>{t('providerHome.pay').toUpperCase()}</Button></Card>}
