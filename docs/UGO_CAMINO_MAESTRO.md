@@ -744,3 +744,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Evidencia: build OK; `npm test` 1663/1676; las 4 fallas también ocurren en `main` `4adc0a2` (polling de alertas Admin, capa final de estilos Proveedor, backpressure Realtime, auditoría i18n de `UgoSupportChat`). PGlite secuencial para aceptación fuera de agenda y bolsa.
 - Regresiones: ninguna nueva en la suite. Se alinearon 9 contratos existentes con cambios aprobados y se clasificó «UGO PRO» como nombre de producto en la auditoría i18n (commit separado en la PR).
 - Próximo paso: aplicar ambas migraciones en UGO TEST, probar dos proveedores simultáneos y permisos, E2E en navegador; confirmar el umbral de 5 min, la visibilidad de la bolsa fuera de agenda y los derechos de uso de las imágenes nuevas. No integrar a `main` sin esa evidencia.
+
+## 2026-11-05 · Handoff PR #614 — ronda de corrección CI
+
+- Las fallas runtime TEST cambian entre commits con el mismo código (5 workflows pasaron en `fc3c1fd` y fallaron en `e88c48c`, que solo fija el runner): inestabilidad del entorno TEST (timeouts de sentencia, HTTP 500), no del código.
+- P0: el campo `stage` del reporte es la **última etapa completada**, no la que falla. En `main` falla en el GPS del cliente («Buscando GPS…»); en la PR fallaba por el clic de GPS perdido (corregido) y por selectores del recorrido de 5 pantallas (actualizados).
+- `autonomous-worker-test.yml`: último éxito 2026-09-29 (versión `f212662`, sin DDL); la versión corrupta añadió DDL y un PENDING→TRUSTED masivo. No reactivar cron ni workflow_run sin autorización.
+- Próximo paso: CI exact-SHA verde en Core CI, P0 y Provider Active Jobs; si Provider Active Jobs falla, leer la anotación «Provider Active Jobs runtime». Migraciones `20261105120000` y `20261105130000` siguen sin aplicar.

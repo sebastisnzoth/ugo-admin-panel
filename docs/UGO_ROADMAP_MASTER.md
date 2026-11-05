@@ -1133,3 +1133,13 @@ RUNTIME VALIDATED             pendiente
 - La PR incluye además: recorrido Cliente de 3 pasos, selector de pedidos recientes, mejoras de perfil Cliente/Proveedor, idioma del Proveedor solo en Perfil y sección «Pedidos pendientes» en Oportunidades.
 - Evidencia local: build con `tsc -b` OK; `npm test` 1663/1676 con 4 fallas preexistentes también en `main` `4adc0a2`; PGlite (secuencial) para aceptación fuera de agenda y bolsa.
 - Gate: aplicar las migraciones en UGO TEST y validar con roles reales (elegibilidad, cancelación, vencidos, dos proveedores simultáneos, idempotencia, `anon` sin acceso) más E2E Cliente → Pedido → Proveedor → Aceptación antes de integrar. Sin escritura en PROD.
+
+## 2026-11-05 — PR #614 · auditoría y corrección de CI (ronda 2)
+
+- Core CI: los 4 contratos que también fallaban en `main` `4adc0a2` se alinearon con el comportamiento vigente **sin quitar cobertura**: ventana de refresco de perfil por Realtime ≥ 30 s (main usa 120 s), polling de respaldo de alertas Admin entre 10 y 60 s (main usa 60 s), capa `provider-production-shell` después de todas las capas base con solo visual-parity (#610) y reference-dashboard (#612) detrás, y los dos textos bilingües de `UgoSupportChat` traducidos a pt-BR/es/en.
+- Regresión de la PR corregida: tras escribir una dirección, «Usar mi ubicación» y los lugares guardados quedaban deshabilitados por la cotización disparada en `onBlur` y el toque se perdía (causa del fallo P0 «Ubicación pendiente»). Ahora solo se bloquean durante GPS/geocodificación, la cotización anterior se invalida por `quoteEpoch` y «Continuar» sigue esperando la cotización.
+- P0 E2E: el script recorre el flujo de 3 pantallas (ubicación + cuándo, resumen con pago) y sigue aceptando pantallas separadas; mismas aserciones de borrador, resumen y matching.
+- `autonomous-worker-test.yml`: inválido desde al menos 2026-10-30 (48 expresiones reemplazadas por `***` copiado de logs). Sintaxis restaurada; queda **solo manual** (sin cron ni workflow_run) y el paso DDL/limpieza en TEST exige `allow_test_ddl_cleanup=true`. Reactivar el horario es una decisión explícita del gate Empresa Autónoma.
+- Bolsa de pedidos: si el RPC no existe (migración sin aplicar → 404/PGRST202/42883) la sección se oculta y deja de consultar; los demás errores siguen mostrando alerta.
+- Provider Active Jobs: runner `ubuntu-24.04` (commit del usuario) y anotación con el paso exacto si el runtime falla.
+- Evidencia local: `npm test` 1676/1685 sin fallas (9 omitidos), build OK, lint de Core CI 0 errores, workflows validados con action-validator. Estado: IMPLEMENTED; CI exact-SHA pendiente. Sin migraciones aplicadas; sin cambios en PROD, Auth, pagos ni credenciales.

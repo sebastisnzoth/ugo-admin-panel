@@ -188,6 +188,29 @@ async function clientUiLogin({email,clientUserId}){
   return {page,context,pageErrors}
 }
 
+// The guided request has three screens since PR #614: location and "when" share
+// one screen (.ugo-when-screen.ugo-location-screen) and payment is chosen inside
+// the summary (#ugo-review-payment). Standalone when/payment screens from the
+// earlier five-screen journey are still walked through, so the proof keeps
+// covering every screen a build actually renders instead of assuming a layout.
+async function advanceClientJourneyToSummary(page){
+  const summary=page.locator('.ugo-summary-screen')
+  const standaloneWhen=page.locator('.ugo-when-screen:not(.ugo-location-screen)')
+  const standalonePayment=page.locator('.ugo-payment-screen')
+  const deadline=Date.now()+45_000
+  while(Date.now()<deadline){
+    if(await summary.isVisible().catch(()=>false))return
+    for(const screen of [standaloneWhen,standalonePayment]){
+      if(await screen.isVisible().catch(()=>false)){
+        await screen.locator('footer button').first().click()
+        await screen.waitFor({state:'hidden',timeout:15_000}).catch(()=>{})
+      }
+    }
+    await page.waitForTimeout(250)
+  }
+  throw new Error('P0_CLIENT_UI_SUMMARY_NOT_REACHED')
+}
+
 async function submitClientRequestUi(page,category,clientUserId){
   await page.locator('.ugo-home-hugo-cta').click()
   const description=page.locator('#ugo-need-description')
@@ -207,9 +230,7 @@ async function submitClientRequestUi(page,category,clientUserId){
   await page.locator('.ugo-location-map button').click()
   await page.waitForFunction(()=>Boolean(document.querySelector('.ugo-location-map.has-location'))&&Boolean(document.querySelector('.ugo-location-screen footer button:not(:disabled)')),null,{timeout:30000})
   await page.locator('.ugo-location-screen footer button').click()
-  await page.locator('.ugo-when-screen').waitFor({state:'visible',timeout:45000})
-  await page.locator('.ugo-when-screen footer button').click()
-  await page.locator('.ugo-payment-screen footer button').click()
+  await advanceClientJourneyToSummary(page)
   const submit=page.locator('.ugo-summary-screen footer button')
   await submit.waitFor({state:'visible',timeout:30000})
   // ClientSummaryScreen reads the stored draft after its own role session hydrates.
