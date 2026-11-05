@@ -42,10 +42,6 @@ export default defineConfig({
     host: '0.0.0.0',
     port: devPort,
     strictPort: false,
-    hmr: {
-      host: '127.0.0.1',
-      port: devPort,
-    },
     // Allow Arena preview proxy host (e.g. 4173-xxx.e2b.app)
     cors: true,
     headers: {

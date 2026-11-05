@@ -200,3 +200,7 @@
 .ugo-preorder-payment-options button{min-height:38px;padding:0 14px;border:1px solid var(--provider-border,#cfe0f6);border-radius:10px;background:var(--provider-surface,#fff);color:var(--provider-text,#17324a);font-weight:850;cursor:pointer}
 .ugo-preorder-payment-options button.selected{border-color:var(--provider-accent,#007e68);background:var(--provider-surface-muted,#e8f8f4);color:var(--provider-accent,#006b58)}
 .ugo-studio-payment>small{display:block;margin-top:6px;color:var(--provider-text-muted,#647269)}
+
+/* The sidebar uses the same profile photo as the provider profile screen. */
+.ugo-provider-root .provider-studio-avatar {overflow:hidden}
+.ugo-provider-root .provider-studio-avatar img {display:block;width:100%;height:100%;object-fit:cover}

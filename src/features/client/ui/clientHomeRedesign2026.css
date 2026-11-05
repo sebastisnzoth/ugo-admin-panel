@@ -529,3 +529,22 @@
 .ugo-client-root .ugo-home-route-view .ugo-active-map{height:100%!important;width:100%!important}
 .ugo-client-root .ugo-home-route-banner button:focus-visible{outline:3px solid #087b63;outline-offset:3px}
 @media(max-width:899px){.ugo-client-root .ugo-home-route-banner{padding:13px 16px}.ugo-client-root .ugo-home-route-view .ugo-active-map-wrap{height:320px!important;min-height:320px}}
+
+/* Categories: improve scanning and distinguish disabled services from active ones. */
+.ugo-client-root .ugo-home-services{border:1px solid #dcebe3!important;box-shadow:0 12px 34px #143b2a0b!important}
+.ugo-client-root .ugo-home-services-head{align-items:center!important;gap:14px;margin-bottom:18px!important}
+.ugo-client-root .ugo-home-services-head h2{line-height:1.15!important}
+.ugo-client-root .ugo-home-services-head>button{flex:none;min-height:44px;padding:0 13px;border:1px solid #d5e5dc!important;border-radius:11px;background:#fff!important;color:#076747!important}
+.ugo-client-root .ugo-home-services-head>button:hover{background:#f0faf4!important;border-color:#a7d2b7!important}
+.ugo-client-root .ugo-home-categories>button{min-height:96px!important;padding:15px!important;border-radius:15px!important;box-shadow:none!important;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.ugo-client-root .ugo-home-categories>button:not(:disabled):hover{transform:translateY(-2px);border-color:#78b99a!important;box-shadow:0 8px 20px #18583a12!important}
+.ugo-client-root .ugo-home-categories>button>div{gap:5px;overflow-wrap:anywhere}
+.ugo-client-root .ugo-home-categories b{line-height:1.25}
+.ugo-client-root .ugo-home-categories small{color:#506b5c!important}
+.ugo-client-root .ugo-home-categories>button:disabled{opacity:1;background:#f6f8f7!important;border-color:#e4eae6!important;cursor:not-allowed}
+.ugo-client-root .ugo-home-categories>button:disabled b,.ugo-client-root .ugo-home-categories>button:disabled small{color:#66786e!important}
+.ugo-client-root .ugo-home-categories>button:disabled .ugo-home-category-icon{filter:grayscale(1);opacity:.7}
+.ugo-client-root .ugo-home-all-results[hidden]{display:none!important}
+.ugo-client-root .ugo-home-all-results>button{min-height:48px}
+@media(max-width:390px){.ugo-client-root .ugo-home-categories{grid-template-columns:1fr!important}.ugo-client-root .ugo-home-categories>button{min-height:76px!important}.ugo-client-root .ugo-home-services-head h2{font-size:21px!important}}
+@media(prefers-reduced-motion:reduce){.ugo-client-root .ugo-home-categories>button{transition:none!important}.ugo-client-root .ugo-home-categories>button:not(:disabled):hover{transform:none}}

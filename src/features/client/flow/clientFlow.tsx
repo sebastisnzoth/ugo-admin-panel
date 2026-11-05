@@ -18,7 +18,9 @@ type ClientFlow = {
   providerId: string | null
   hugoIntent: ClientHugoIntent | null
   actions: ClientActionHandlers
-  navigate: (screen: ClientScreen, providerId?: string | null) => void
+  navigate: (screen: ClientScreen, providerId?: string | null, beforeNavigate?: () => void) => void
+  registerLeaveGuard: (guard: () => Promise<boolean>) => () => void
+  requestLeave: () => Promise<boolean>
   publishHugoIntent: (intent: Omit<ClientHugoIntent, 'id'>) => void
   registerActions: (actions: Partial<ClientActionHandlers>) => () => void
 }
@@ -31,17 +33,35 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
   const [hugoIntent, setHugoIntent] = useState<ClientHugoIntent | null>(null)
   const handlersRef = useRef<Partial<ClientActionHandlers>>({})
   const intentId = useRef(0)
+  const screenRef = useRef(screen)
+  screenRef.current = screen
+  const leaveGuard = useRef<(() => Promise<boolean>) | null>(null)
+  const pendingLeave = useRef<Promise<boolean> | null>(null)
+  const registerLeaveGuard = useCallback((guard: () => Promise<boolean>) => {
+    leaveGuard.current = guard
+    return () => { if (leaveGuard.current === guard) leaveGuard.current = null }
+  }, [])
+  const requestLeave = useCallback((): Promise<boolean> => {
+    if (!leaveGuard.current) return Promise.resolve(true)
+    if (pendingLeave.current) return pendingLeave.current
+    const guard = leaveGuard.current
+    const pending = Promise.resolve().then(guard).catch(() => false).finally(() => { if (pendingLeave.current === pending) pendingLeave.current = null })
+    pendingLeave.current = pending
+    return pending
+  }, [])
 
-  const navigate = useCallback((next: ClientScreen, nextProviderId: string | null = null) => {
+  const navigate = useCallback((next: ClientScreen, nextProviderId: string | null = null, beforeNavigate?: () => void) => {
     const resolved=LEGACY_SCREEN_REDIRECT[next]||next
-    setScreen(resolved)
-    setProviderId(resolved==='home'||resolved==='history'?null:nextProviderId)
-  }, [])
+    const apply=()=>{beforeNavigate?.();setScreen(resolved);setProviderId(resolved==='home'||resolved==='history'?null:nextProviderId)}
+    if (leaveGuard.current && screenRef.current!==resolved) { void requestLeave().then(ok=>{if(ok)apply()});return }
+    apply()
+  }, [requestLeave])
   const publishHugoIntent = useCallback((intent: Omit<ClientHugoIntent, 'id'>) => {
-    setHugoIntent({ ...intent, id: ++intentId.current })
-    setScreen('request')
-    setProviderId(null)
-  }, [])
+    const apply=()=>{setHugoIntent({ ...intent, id: ++intentId.current });setScreen('request');setProviderId(null)}
+    if (leaveGuard.current && screenRef.current!=='request') { void requestLeave().then(ok=>{if(ok)apply()});return }
+    apply()
+  }, [requestLeave])
+
   const registerActions = useCallback((next: Partial<ClientActionHandlers>) => {
     handlersRef.current = { ...handlersRef.current, ...next }
     return () => {
@@ -59,7 +79,7 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
 
   useClientCategoryShortcut(publishHugoIntent)
 
-  return <ClientFlowContext.Provider value={{ screen, providerId, hugoIntent, actions, navigate, publishHugoIntent, registerActions }}>{children}</ClientFlowContext.Provider>
+  return <ClientFlowContext.Provider value={{ screen, providerId, hugoIntent, actions, navigate, publishHugoIntent, registerActions, registerLeaveGuard, requestLeave }}>{children}</ClientFlowContext.Provider>
 }
 
 export function useClientFlow() {
