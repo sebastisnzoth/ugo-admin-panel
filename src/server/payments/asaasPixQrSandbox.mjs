@@ -4,6 +4,7 @@
  * Validating service ownership, price, charge uniqueness and wallet ownership
  * MUST happen in a separate authenticated server handler before invocation.
  */
+import { validateWalletRouting } from './asaasWalletRouting.mjs'
 const BASE = 'https://api-sandbox.asaas.com/v3'
 const ID = /^[a-zA-Z0-9_-]{1,100}$/
 function requireId(v, name) {
@@ -54,6 +55,9 @@ export class AsaasPixQrSandbox {
     return response.json()
   }
   async createChargeWithSplit(input) {
+    // Defense-in-depth: fail before any processor request if issuer or recipient
+    // was not verified from authenticated server-side account records.
+    validateWalletRouting(input)
     return this.request('/payments', 'POST', buildPixWithProviderSplit(input))
   }
   async getQr(paymentId) {
