@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { validateWalletRouting } from '../../src/server/payments/asaasWalletRouting.mjs'
-const issuer='c4125b7d-fb92-4232-923a-01ab389a84f7'
+const issuer='b7f0bd20-06ee-4ce3-857c-c7868e8d071b'
 const recipient='ab5b5a59-f2eb-40eb-8b8b-bb7314685a33'
 const valid={
   issuerWalletId:issuer,issuerWalletVerified:true,providerWalletId:recipient,
