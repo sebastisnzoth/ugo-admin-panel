@@ -1201,3 +1201,10 @@ RUNTIME VALIDATED             pendiente
 - Nuevo `asaasSandboxWebhookInbox.mjs`: valida token y método, persiste evento en `ugo_payments_v2.payment_events` antes de 200, deduplica por ID, rechaza conflictos y responde 503 ante fallo de persistencia. No acredita pagos ni modifica balances; no se publica endpoint.
 - Contratos TEST con PGlite para evento nuevo, reintentos simultáneos, token inválido, payload inválido y fallo de almacenamiento.
 - Bloqueos: clave Sandbox disponible sólo en scope Production Vercel; no usarla en ese checkout. Sin wallet de proveedor verificada ni runtime privado aislado, no se ejecutó POST Asaas real, ni QR real, ni confirmación, ni Split conciliado.
+
+
+## 2026-11-06 — PR #616: persistencia de wallet original y reconciliación transaccional TEST
+- `neonPixTestRepository.recordProcessorCharge` ahora exige y conserva `asaas_customer_id` y `asaas_provider_wallet_id` previamente verificados, bloqueando cambios del pagador o destinatario.
+- `asaasSandboxPaymentEventWorker.mjs` procesa eventos ya persistidos en TEST: consulta `GET /payments/{id}` autenticado, compara id/cuenta/cliente/referencia/importe con el intento, y dentro de transacción actualiza el estado de pago y marca evento procesado. Nunca concede saldo, autoriza retiro ni declara Split o Escrow liquidados.
+- Nuevo contrato de prueba con PostgreSQL en memoria: cobro recibido, confirmado no liquidado, identidad falsificada, evento desconocido y regresión de estado. Requiere CI mismo SHA.
+- **No hay pago Asaas real en Sandbox validado**. Sin secret Sandbox TEST separado y wallet receptora verificada, no exponer webhook ni activar cobros. No tocar Arena PROD ni fusionar PR.
