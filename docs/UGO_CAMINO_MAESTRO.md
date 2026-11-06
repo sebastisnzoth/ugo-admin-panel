@@ -752,3 +752,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - `autonomous-worker-test.yml`: último éxito 2026-09-29 (versión `f212662`, sin DDL); la versión corrupta añadió DDL y un PENDING→TRUSTED masivo. No reactivar cron ni workflow_run sin autorización.
 - En `647f25b` Core CI y P0 pasaron. Provider Active Jobs falló por un localizador ambiguo (`TRABAJO ACTIVO` vs botón de la barra lateral), corregido acotándolo a `span.ugo-ui-status` (commit del usuario). Si vuelve a fallar, leer la anotación «Provider Active Jobs runtime». Migraciones `20261105120000` y `20261105130000` siguen sin aplicar.
 - Bolsa de pedidos: apagada por defecto con `VITE_FLAG_PROVIDER_PENDING_POOL` (único punto de montaje en `ProviderOpportunities.tsx`; único llamador de los RPC en `ProviderPendingRequests.tsx`, ambos fijados por contrato). Para validarla en TEST, construir con `VITE_FLAG_PROVIDER_PENDING_POOL=true` donde las migraciones ya estén aplicadas. No activar en PROD sin la ventana autorizada del plan de despliegue.
+
+
+## 2026-11-05 · Handoff main — Meus recebimentos Asaas Pix sem transações
+- Tela informativa integrada no painel atual do Provedor, sem substituir Mercado Pago nem contas externas existentes. Campos Pix desabilitados por falta de vínculo subconta verificado, armazenamento privado, autorização de saques e backend financeiro TEST.
+- Nenhuma chave Pix é persistida, nenhuma cobrança Asaas gerada, nenhum deploy acionado neste passo. Não confundir seção visível com uma integração funcional do processador.
+- Próximo: finalizar PR #616 em ambiente TEST financeiro segregado, validar CI/E2E, só então habilitar cadastro Pix com backend seguro.
