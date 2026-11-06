@@ -17,10 +17,19 @@ export function authorizeProviderPixQr({ actorId, service, account, payment }) {
     throw new Error('Provider sandbox wallet not verified')
   if (payment && ['confirmed', 'received', 'held', 'released', 'refunded', 'processing'].includes(payment.state))
     throw new Error('Payment already processed or blocked')
-  if (payment && payment.state === 'pending' && payment.expiresAt &&
-      typeof payment.processorPaymentId === 'string' && payment.processorPaymentId &&
-      Date.parse(payment.expiresAt) > Date.now())
+  // Unknown, missing or expired pending-QR state requires reconciliation,
+  // never silently create a second live charge for the same service.
+  if (payment && payment.state === 'pending') {
+    if (typeof payment.processorPaymentId !== 'string' || !payment.processorPaymentId)
+      throw new Error('Pending Pix charge requires reconciliation')
+    if (!payment.expiresAt || !Number.isFinite(Date.parse(payment.expiresAt)))
+      throw new Error('Pending Pix expiry requires reconciliation')
+    if (Date.parse(payment.expiresAt) <= Date.now())
+      throw new Error('Expired Pix charge requires processor reconciliation')
     return Object.freeze({ mode: 'reuse_pending', paymentId: payment.processorPaymentId })
+  }
+  if (payment && !['failed', 'cancelled'].includes(payment.state))
+    throw new Error('Unknown payment state requires reconciliation')
   return Object.freeze({
     mode: 'create', serviceId: service.id, customerId: service.cliente_id,
     walletId: account.walletId, amountBRL: service.tarifa,
