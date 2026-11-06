@@ -81,7 +81,8 @@ export async function issueSandboxPixQr({
         environment:'sandbox',verified:account.verified},
     })
     if(!ID.test(charge?.id||'')) throw Error('Asaas returned no payment identifier')
-    await repo.recordProcessorCharge({reservationId:reservation.reservationId,paymentId:charge.id})
+    await repo.recordProcessorCharge({reservationId:reservation.reservationId,paymentId:charge.id,
+      customerId:ctx.customerLink.asaasCustomerId,providerWalletId:account.walletId})
     const qr=await asaas.getQr(charge.id)
     return Object.freeze({state:'awaiting_payment',paymentId:charge.id,qr,reused:false})
   } catch(e) {
