@@ -95,3 +95,10 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - En caso de timeout o error inconcluso, consultar el cadastro y reconciliar antes de reintentar; Asaas permite duplicar clientes. Se requiere índice UNIQUE y bloqueo por cliente en TEST.
 - Se añadió `src/server/payments/asaasCustomerSandbox.mjs` y pruebas offline; aún no enlazados al checkout.
 - Fuente: documento de Asaas `Cadastro de clientes` entregado por el usuario, actualizado 2026-08-04.
+
+## 2026-11-06 — Wallet principal e roteamento Pix
+- Usuário informou um walletId que se acredita ser da conta UGO. **Não foi verificado** se é Sandbox ou Production; nunca fixar este identificador no código ou em fixtures públicas.
+- Para verificar a titularidade do emissor: `GET /v3/wallets/` com a chave Sandbox autenticada, executado exclusivamente no servidor. Comparar a resposta com o ID informado, sem imprimir credenciais.
+- Na emissão de `POST /payments` com Split, `validateWalletRouting` agora exige carteira emissora verificada e carteira do prestador vinculada a subconta do mesmo ambiente e prestador designado. Não enviar walletId de UGO no array `split`.
+- O guard é defesa em profundidade **não substitui** sessão verificada, DB TEST, locks UNIQUE, verificação de conta, nem prova de split/custódia; não ativar checkout enquanto faltarem esses controles.
+- Documentação oficial: https://docs.asaas.com/reference/recuperar-walletid e https://docs.asaas.com/docs/split-de-pagamentos
