@@ -1194,3 +1194,10 @@ RUNTIME VALIDATED             pendiente
 ## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
 - Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
 - Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
+
+
+## 2026-11-06 — PR #616: referencia única Asaas y webhook inbox privado (TEST)
+- Corregido desajuste de `externalReference`: el backend usa la referencia canónica de `ugo_payments_v2.payment_intents` en creación y conciliación de Asaas; prueba SQL+mock ampliada.
+- Nuevo `asaasSandboxWebhookInbox.mjs`: valida token y método, persiste evento en `ugo_payments_v2.payment_events` antes de 200, deduplica por ID, rechaza conflictos y responde 503 ante fallo de persistencia. No acredita pagos ni modifica balances; no se publica endpoint.
+- Contratos TEST con PGlite para evento nuevo, reintentos simultáneos, token inválido, payload inválido y fallo de almacenamiento.
+- Bloqueos: clave Sandbox disponible sólo en scope Production Vercel; no usarla en ese checkout. Sin wallet de proveedor verificada ni runtime privado aislado, no se ejecutó POST Asaas real, ni QR real, ni confirmación, ni Split conciliado.
