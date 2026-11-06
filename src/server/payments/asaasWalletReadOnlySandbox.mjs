@@ -10,10 +10,15 @@ const uuid = x => typeof x === 'string' && UUID.test(x)
 export function parseAuthenticatedWallet(payload, expectedWalletId) {
   if (!uuid(expectedWalletId)) throw new Error('Invalid expected wallet identifier')
   const records = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : null
-  // Asaas wallet list: each element has a walletId. Refuse if ambiguous.
-  if (!records || records.length !== 1 || !uuid(records[0]?.walletId))
+  // Asaas GET /v3/wallets/ returns objects using 'id'; legacy mocks may
+  // contain 'walletId'. Reject conflicting fields instead of guessing.
+  if (!records || records.length !== 1)
     throw new Error('Ambiguous authenticated wallet response')
-  const actual = records[0].walletId
+  const record=records[0]
+  const actual=record?.id ?? record?.walletId
+  if(!uuid(actual) || (record?.id && record?.walletId &&
+      record.id.toLowerCase()!==record.walletId.toLowerCase()))
+    throw new Error('Ambiguous authenticated wallet response')
   if (actual.toLowerCase() !== expectedWalletId.toLowerCase())
     throw new Error('Configured UGO wallet differs from authenticated Sandbox account')
   return Object.freeze({ verified: true, environment: 'sandbox', walletId: actual })
