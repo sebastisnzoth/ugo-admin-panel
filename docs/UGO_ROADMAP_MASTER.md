@@ -1182,3 +1182,11 @@ RUNTIME VALIDATED             pendiente
 - Criada função privada `reserve_pix_test` em `docs/sql/ugo_pagamentos_v2_reserve_pix_test.sql`, aplicada apenas no novo projeto; teste manual com dados sintéticos: primeira chamada `reserved`, segunda `reconcile` para mesmo serviço. Contrato PGlite `pagamentos-v2-reserve-pix-sql.test.mjs` incluído, CI pendente.
 - Gate `asaasSubaccountEligibility.mjs`: criação de subconta só após comprovar conta raiz PJ (CNPJ), habilitação, custo avaliado, consentimento e KYC. Wallet Pix própria não substitui wallet Asaas; Split pode usar wallet de conta Asaas independente, sujeito a verificação de titularidade.
 - Próximo: conectar adapter transacional do orquestrador, sem importar dados pessoais do Arena PROD para testes; verificar Wallet UGO via GET Asaas Sandbox com chave server-only e preparar webhook/segredos.
+
+
+## 2026-11-06 — PR #616 backend TEST: Neon Pix fixture-only
+- Core CI sincronizado (SHA `391b11b`, run `42156849297`) passou build, 1.733 contratos e lint após correção de 5 JSX literals e falsos positivos de comentários.
+- Criada tabela `ugo_payments_v2.test_services` somente em Neon TEST `frosty-firefly-02365835` para serviços **sintéticos**, sem ler Arena. `provider_accounts.kyc_approved_at` adicionado exclusivamente ao banco TEST.
+- Adapter `neonPixTestRepository.mjs` implementa `loadContext`, `reservePix` (SQL atômico), `recordProcessorCharge` e `markUncertain`. Exige verificação read-only da wallet emissora via dependência injetada e contas de cliente/provedor vinculadas à fixture, sem qualquer import Supabase/PROD.
+- Suite `pagamentos-v2-neon-test-repository.test.mjs` exercita PostgreSQL em memória com cliente, provedor e serviço falsos, emissão Pix mock, antifraude de wallet e fail-closed.
+- **Bloqueado**: chave Asaas Sandbox só existe em scope Vercel `production`; nenhum runtime TEST seguro autenticado com essa chave, sem POST/QR Asaas real e webhook implantado. Não habilitar PIX público.
