@@ -108,3 +108,16 @@ test('missing original recipient wallet cannot be reconciled as received',async(
   assert.equal((await db.query('select status from ugo_payments_v2.payment_intents')).rows[0].status,'pending')
  }finally{await db.close()}
 })
+
+test('Asaas event IDs containing ampersand remain processable end to end',async()=>{
+ const {db,webhook}=await setup()
+ try{
+  const id='evt_05b708f961d739ea7eba7e4db318f621&368604920'
+  assert.equal((await webhook(id)).status,200)
+  const result=await reconcileStoredAsaasSandboxEvent({
+   db,asaas:{getCharge:async()=>processor()},eventId:id,
+  })
+  assert.equal(result.paymentState,'received')
+  assert.equal((await db.query('select status from ugo_payments_v2.payment_events where event_id=$1',[id])).rows[0].status,'processed')
+ }finally{await db.close()}
+})
