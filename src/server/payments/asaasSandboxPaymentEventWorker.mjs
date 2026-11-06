@@ -37,6 +37,8 @@ export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
  const first=preliminary.rows[0]
  if(!first) throw Error('Unknown Asaas payment event requires manual review')
  if(first.status==='processed')return {kind:'duplicate'}
+ if(first.kind.startsWith('PAYMENT_SPLIT_'))
+   throw Error('Split event requires independent settlement reconciliation')
  if(first.status!=='received')throw Error('Asaas event is not ready for reconciliation')
  if(!ID.test(first.processor_payment_id||'')||
    !ID.test(first.asaas_customer_id||'')||
