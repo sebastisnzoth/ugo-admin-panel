@@ -807,3 +807,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - En PR #616, cada cobranza TEST conserva cliente Asaas y wallet proveedor en el registro original; el trabajador de eventos valida por API autenticada el pago exacto y persiste actualización atómica en base financiera TEST.
 - El estado RECEIVED no implica que el Split esté DONE; sigue faltando consultar eventos/estado de Split por ID y reconciliar comisiones con importes netos.
 - Sin credenciales Sandbox en backend segregado ni wallet proveedor verificada, no se pudo generar QR auténtico ni completar operación simulada. Continuar con pruebas aisladas y CI antes de cualquier despliegue.
+
+
+## 2026-11-06 — Handoff PR #616 / Core CI
+- Falha da suite de contratos localizada no worker de webhook, variável `kind` não selecionada pelo SQL; commit `e1fe0ca` corrigiu. Não confundir CI anterior aprovado com CI do HEAD.
+- Implementado módulo puro de verificação de Split pago: consulta autenticada Sandbox read-only por id e valida dono/destinatário/montante para 85% do netValue. Permanece desligado de rotas e qualquer saída financeira.
+- Próximo P0: CI verde sobre HEAD, credencial Asaas Sandbox isolada de Vercel Production, wallet emissora e recebedora autenticadas, QR real de R$100, confirmação simulada, webhook e Split conciliados.
