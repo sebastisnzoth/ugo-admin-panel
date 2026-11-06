@@ -813,3 +813,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Falha da suite de contratos localizada no worker de webhook, variável `kind` não selecionada pelo SQL; commit `e1fe0ca` corrigiu. Não confundir CI anterior aprovado com CI do HEAD.
 - Implementado módulo puro de verificação de Split pago: consulta autenticada Sandbox read-only por id e valida dono/destinatário/montante para 85% do netValue. Permanece desligado de rotas e qualquer saída financeira.
 - Próximo P0: CI verde sobre HEAD, credencial Asaas Sandbox isolada de Vercel Production, wallet emissora e recebedora autenticadas, QR real de R$100, confirmação simulada, webhook e Split conciliados.
+
+
+## 2026-11-06 — Backend Sandbox separado implantado
+- Vercel TEST `ugo-pagamentos-v2-sandbox` criado e implantado em Preview `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4`, uso apenas de endpoints diagnósticos read-only. `/api/health` respondeu HTTP 200 com Neon TEST ready e financialWritesEnabled=false.
+- Projeto Neon TEST preservado, role exclusivo `ugo_asaas_wallet_audit_ro`, não-admin e sem escritas. Credencial da role e token de operador em env criptografado Preview, sem logar valores. Produção Arena e projeto principal Vercel não alterados.
+- Credenciais das contas Asaas Sandbox não foram importadas de Production. Sem elas, a verificação das wallets emisora e recebedora retorna bloqueio. Não permitir pagamento QR, simulação, webhooks públicos ou settlement até que wallets e secret TEST sejam configurados e verificados.
