@@ -9,6 +9,7 @@ import { reconcileAuthenticatedPix } from './asaasPixReconciliation.mjs'
 
 const EVENT=/^[A-Za-z0-9_-]{1,160}$/
 const ID=/^[A-Za-z0-9_-]{1,100}$/
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const lockedSql=`select e.event_id,e.kind,e.processor_payment_id,e.status as event_status,
  i.id as intent_id,i.status as payment_status,i.asaas_payment_id,
  i.asaas_customer_id,i.asaas_provider_wallet_id,i.external_reference,
@@ -27,7 +28,7 @@ export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
  // Read the already-authenticated inbox row and require a known local charge,
  // BEFORE making any request to the processor (avoids arbitrary-ID API lookups).
  const preliminary=await db.query(`select e.processor_payment_id,e.status,i.id as intent_id,
- i.asaas_customer_id,i.external_reference,i.gross_cents
+ i.asaas_customer_id,i.asaas_provider_wallet_id,i.external_reference,i.gross_cents
  from ugo_payments_v2.payment_events e
  join ugo_payments_v2.payment_intents i
  on i.asaas_payment_id=e.processor_payment_id and i.environment='sandbox'
@@ -39,6 +40,7 @@ export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
  if(!ID.test(first.processor_payment_id||'')||
    !ID.test(first.asaas_customer_id||'')||
    !ID.test(first.external_reference||'')||
+   !UUID.test(first.asaas_provider_wallet_id||'')||
    !Number.isSafeInteger(Number(first.gross_cents))||Number(first.gross_cents)<=0)
    throw Error('Incomplete persisted TEST payment metadata')
  // Never take values or payment state from the incoming webhook.
@@ -57,6 +59,7 @@ export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
    if(current.event_status!=='received'||current.intent_id!==first.intent_id||
       current.processor_payment_id!==first.processor_payment_id||
       current.asaas_customer_id!==first.asaas_customer_id||
+      current.asaas_provider_wallet_id!==first.asaas_provider_wallet_id||
       current.external_reference!==first.external_reference||
       Number(current.gross_cents)!==Number(first.gross_cents))
      throw Error('Concurrent financial metadata change requires manual review')
