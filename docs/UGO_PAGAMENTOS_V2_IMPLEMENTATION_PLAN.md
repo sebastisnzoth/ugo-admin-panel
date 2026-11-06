@@ -124,3 +124,9 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Eventos `PAYMENT_SPLIT_*` permanecem fora do reconciliador comum. Exigem método de liquidação independente que valide `additionalInfo.splitId` e o registro de Split esperado antes de atualizar `payment_splits`.
 - Novos testes PGlite cobrem estados recebidos/confirmados, dados falsificados, wallet ausente, eventos desconhecidos, replay, evento contendo `&` e impossibilidade de dar Split como concluído apenas com webhook de pagamento.
 - **Ainda não homologado com API real**: segredo Asaas Sandbox fora de Production, wallet UGO, wallet do prestador e backend TEST com credenciais isoladas. Não habilitar endpoint nem fazer merge do PR até E2E Sandbox efetivo e CI SAME-SHA.
+
+
+## 2026-11-06 — Split 85/15 sem liberação implícita
+- Fonte Asaas: https://docs.asaas.com/reference/recuperar-um-unico-split-pago e https://docs.asaas.com/docs/split-de-pagamentos
+- GET `/v3/payments/splits/paid/{id}` disponível no cliente de teste e função de validação conservadora `verifyAuthenticatedPaidSplit`. Exige identidade, wallet original e pagamento persistidos, percentual 85, estado DONE e quantia correspondente ao netValue. Valores divergentes exigem revisão manual, não lançamento em saldo.
+- Split DONE **não equivale** a dinheiro disponível quando Escrow está em uso. Não liberar garantias. Módulo de validação separado ainda não executa conciliação durável em Neon nem altera o ledger.
