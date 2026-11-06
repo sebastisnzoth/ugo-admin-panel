@@ -115,3 +115,12 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Implementado flujo fixture-only Neon TEST y corrección de `externalReference` canónica para creación/consulta/reintento. Agregada recepción webhook durable + deduplicación aislada sin acreditación.
 - Para habilitar primer Pix real aún faltan: servidor TEST separado con credencial Asaas Sandbox obtenida mediante canal seguro, wallet principal y destinataria verificadas, customer de prueba, endpoint webhook TEST autenticado y conciliación de Split (sin Escrow automático).
 - Nunca usar automáticamente la variable `ASAAS_SANDBOX_API_KEY` con target Vercel Production para crear un cobro. Cualquier acción que requiera mover/copiar secretos, habilitar subcontas cobrables o desplegar endpoint público necesita autorización y controles específicos.
+
+
+## Handoff 2026-11-06 — Persistência de dados verificados e worker transacional
+- `recordProcessorCharge` exige o pagador Asaas e o wallet recebedor originais validados por relação SQL da base TEST; grava ambos na intenção de pagamento, impedindo mudança posterior do destinatário.
+- `asaasSandboxPaymentEventWorker.mjs` recupera o evento já autenticado e persistido, busca cobrança fresca pela API Sandbox autenticada, valida id, customer, externalReference, valor bruto e líquido e atualiza em uma transação PostgreSQL (estado e marcador de processamento). Rejeita duplicações, mudanças de metadados, regressões de estado e wallet receptor ausente. **Não credita ledger nem libera fundos**.
+- Webhook IDs Asaas podem conter `&` conforme documentação oficial; worker aceita o formato igual ao parser de entrada, mantendo controle de caracteres e consultas parametrizadas.
+- Eventos `PAYMENT_SPLIT_*` permanecem fora do reconciliador comum. Exigem método de liquidação independente que valide `additionalInfo.splitId` e o registro de Split esperado antes de atualizar `payment_splits`.
+- Novos testes PGlite cobrem estados recebidos/confirmados, dados falsificados, wallet ausente, eventos desconhecidos, replay, evento contendo `&` e impossibilidade de dar Split como concluído apenas com webhook de pagamento.
+- **Ainda não homologado com API real**: segredo Asaas Sandbox fora de Production, wallet UGO, wallet do prestador e backend TEST com credenciais isoladas. Não habilitar endpoint nem fazer merge do PR até E2E Sandbox efetivo e CI SAME-SHA.
