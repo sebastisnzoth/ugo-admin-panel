@@ -1190,3 +1190,7 @@ RUNTIME VALIDATED             pendiente
 - Adapter `neonPixTestRepository.mjs` implementa `loadContext`, `reservePix` (SQL atômico), `recordProcessorCharge` e `markUncertain`. Exige verificação read-only da wallet emissora via dependência injetada e contas de cliente/provedor vinculadas à fixture, sem qualquer import Supabase/PROD.
 - Suite `pagamentos-v2-neon-test-repository.test.mjs` exercita PostgreSQL em memória com cliente, provedor e serviço falsos, emissão Pix mock, antifraude de wallet e fail-closed.
 - **Bloqueado**: chave Asaas Sandbox só existe em scope Vercel `production`; nenhum runtime TEST seguro autenticado com essa chave, sem POST/QR Asaas real e webhook implantado. Não habilitar PIX público.
+
+## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
+- Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
+- Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
