@@ -102,3 +102,9 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Na emissão de `POST /payments` com Split, `validateWalletRouting` agora exige carteira emissora verificada e carteira do prestador vinculada a subconta do mesmo ambiente e prestador designado. Não enviar walletId de UGO no array `split`.
 - O guard é defesa em profundidade **não substitui** sessão verificada, DB TEST, locks UNIQUE, verificação de conta, nem prova de split/custódia; não ativar checkout enquanto faltarem esses controles.
 - Documentação oficial: https://docs.asaas.com/reference/recuperar-walletid e https://docs.asaas.com/docs/split-de-pagamentos
+
+## 2026-11-06 · Recuperación de clientes Asaas ante timeout
+- Se añadió al adapter de Sandbox `findCustomerByReference(externalReference)`, `GET /v3/customers?externalReference=...&limit=100`, sin cuerpo y sin crear recursos.
+- Es una función de conciliación, no de alta automática: si hay duplicados, paginación `hasMore`, falta de identificador o referencia distinta, falla de forma segura.
+- Aún hay que vincular de forma transaccional `UGO client -> cus_...` mediante índice único en una base TEST aislada; el adaptador por sí solo no evita carreras simultáneas.
+- Fuente: https://docs.asaas.com/reference/listar-clientes y guía `Cadastro de clientes` entregada por usuario.
