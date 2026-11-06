@@ -1223,3 +1223,11 @@ RUNTIME VALIDATED             pendiente
 - Probe real GET `/api/health` por ferramenta Vercel retornou **HTTP 200**: `{"environment":"sandbox","testDatabase":"ready","role":"read_only","financialWritesEnabled":false}`. Testes unitários no repo verificam bloqueio em Production e ausência de escrita financeira.
 - GET `/api/wallets?account=issuer|provider` é privado, requer Bearer operator, faz apenas GET Asaas Sandbox, valida wallet exata configurada no servidor, responde 503 quando chaves estiverem ausentes.
 - **Ainda não verificado**: chave Asaas Sandbox independente `ASAAS_SANDBOX_API_KEY` e chave da conta provedor `ASAAS_PROVIDER_SANDBOX_API_KEY`, wallet do provedor, Split habilitado nas contas e QR/confirmacao/split reais. Não copiar credencial do projeto Vercel Production de UGO. Sem POST real nem migrations em Arena.
+
+
+## 2026-11-06 — Wallet emissora UGO autenticada no Asaas Sandbox
+- Projeto TEST `ugo-pagamentos-v2-sandbox`, variável `ASAAS_SANDBOX_API_KEY` configurada como Sensitive somente Preview e não exposta.
+- Verificação direta do backend Preview mediante **GET autenticado Asaas Sandbox `/v3/wallets/`** retornou HTTP 200, lista com exatamente uma carteira e `verified:true, ambiguous:false` quando comparada com a wallet esperada `c4125b7d-fb92-4232-923a-01ab389a84f7`.
+- Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
+- Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
+- Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
