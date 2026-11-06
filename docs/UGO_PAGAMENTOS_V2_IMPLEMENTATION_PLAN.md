@@ -108,3 +108,10 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Es una función de conciliación, no de alta automática: si hay duplicados, paginación `hasMore`, falta de identificador o referencia distinta, falla de forma segura.
 - Aún hay que vincular de forma transaccional `UGO client -> cus_...` mediante índice único en una base TEST aislada; el adaptador por sí solo no evita carreras simultáneas.
 - Fuente: https://docs.asaas.com/reference/listar-clientes y guía `Cadastro de clientes` entregada por usuario.
+
+
+## Handoff 2026-11-06 — P0 de integración
+- Baseline PR #616 `f34cbffd61312ade75ee1f9c188768b83273f3b4`: Core CI, seguridad, roadmap y Hugo runtime verdes.
+- Implementado flujo fixture-only Neon TEST y corrección de `externalReference` canónica para creación/consulta/reintento. Agregada recepción webhook durable + deduplicación aislada sin acreditación.
+- Para habilitar primer Pix real aún faltan: servidor TEST separado con credencial Asaas Sandbox obtenida mediante canal seguro, wallet principal y destinataria verificadas, customer de prueba, endpoint webhook TEST autenticado y conciliación de Split (sin Escrow automático).
+- Nunca usar automáticamente la variable `ASAAS_SANDBOX_API_KEY` con target Vercel Production para crear un cobro. Cualquier acción que requiera mover/copiar secretos, habilitar subcontas cobrables o desplegar endpoint público necesita autorización y controles específicos.
