@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
     private static final int MICROPHONE_REQUEST = 703;
     private static final int CAMERA_REQUEST = 704;
     private static final int FILE_CHOOSER_CAMERA_PERMISSION_REQUEST = 705;
-    private WebView webView;
+    protected WebView webView;
     private ValueCallback<Uri[]> fileCallback;
     private WebChromeClient.FileChooserParams pendingFileChooserParams;
     private Uri pendingCameraUri;
@@ -106,6 +106,7 @@ public class MainActivity extends Activity {
                     "})();",
                     null
                 );
+                onWebPageReady(view);
             }
         });
 
@@ -178,6 +179,10 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState == null) webView.loadUrl(BuildConfig.UGO_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    protected void onWebPageReady(WebView view) {
+        // TV-specific hook; unchanged for phone roles.
     }
 
     private boolean acceptsImage(WebChromeClient.FileChooserParams params) {
