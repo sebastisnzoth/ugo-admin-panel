@@ -1161,3 +1161,10 @@ RUNTIME VALIDATED             pendiente
 - Novo `asaasPixReconciliation.mjs`: valida `id/customer/externalReference/billingType/value/netValue` em resposta obtida por GET autenticado. Diferencia `CONFIRMED`, `RECEIVED`, reembolsos e pendências; não declara split liquidado nem escrow liberado com base no recebimento.
 - Novo rascunho `docs/sql/ugo_pagamentos_v2_isolated_test_schema.sql`: esquema independente com customer/provider links, intents, webhooks deduplicados, splits, garantias, release requests e ledger; **não executado**, não há migração PROD.
 - Pendências P0: ambiente de banco TEST novo com role privada, migração revisada, lock atomic/UNIQUE em tempo real, credenciais reais Sandbox verificadas por server-side, provider subconta, endpoint isolado auth+webhook, testes de transações, E2E. PR permanece draft.
+
+
+## 2026-11-05 — PR #616 checkout Pix presencial isolado
+- `src/server/payments/asaasPixCheckoutFlow.mjs`: orquestra emissão PIX para prestador autenticado, com validação de serviço/cliente/provider/issuer e contrato `reservePix` transacional ANTES de chamar Asaas; não faz import de módulos frontend nem Vercel PROD.
+- Para reserva existente, exige GET autenticado e cobrança `PENDING` que corresponda a cliente, serviço e valor; caso timeout/retorno incerto, registra `markUncertain` e não reenvia automaticamente.
+- Testes offline: emissão, QR reutilizado, conta inválida, timeout e pendência de conciliação (`tests/contracts/pagamentos-v2-pix-checkout-flow.test.mjs`).
+- P0 ainda bloqueado: implementação concreta de repo/DB test atômico, conexão API key Sandbox em execução isolada, subconta, webhook durável e E2E financeiro; não fazer merge/deploy.
