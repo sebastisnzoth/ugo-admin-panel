@@ -73,7 +73,7 @@ export class NeonPixTestRepository {
   requireUUID(serviceId,'service')
   requireUUID(providerId,'provider')
   const fixture=await this.loadFixture(serviceId)
-  if(fixture.proveedor_id!==providerId||fixture.tarifa_cents!==cents(amountBRL)||
+  if(fixture.proveedor_id!==providerId||Number(fixture.tarifa_cents)!==cents(amountBRL)||
     !['completado','esperando_aprobacion'].includes(fixture.estado))
     throw Error('Synthetic service owner or tariff mismatch')
   const reference='ugo_test_'+serviceId.replace(/-/g,'')
