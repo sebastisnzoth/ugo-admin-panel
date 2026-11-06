@@ -786,3 +786,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - `reserve_pix_test` aplicada apenas à DB nova e testada com IDs sintéticos: 1a tentativa reservada e repetição encaminhada para conciliação. Função SECURITY INVOKER, schema privado; no PUBLIC execute grants.
 - Documentação Asaas: apenas conta raiz CNPJ pode criar subcontas via API; split com carteira de conta Asaas existente é alternativa a verificar quanto a titularidade/permissões. Custos de criação de subconta e Escrow precisam ser aprovados antes de operações.
 - UI informativa de recebimentos em main continua sem coleta de Pix; backend financeiro NÃO ligado ao frontend, sem POST Asaas real nem pagamentos reais. Não fazer merge PR #616 até CI e E2E Sandbox.
+
+
+## 2026-11-06 — PR #616 backend de TEST sem acesso a Arena
+- Código de reserva transacional agora tem adapter SQL isolado em `src/server/payments/neonPixTestRepository.mjs`, apoiado por serviços sintéticos somente na nova base Neon Pagamentos TEST.
+- O adapter precisa de wallet verificada por `GET /wallets/` antes de autorizar QR. Sem a chave Asaas em um runtime TEST segregado, nenhum código de PIX real foi executado.
+- `api/pagamentos` de produção, Mercadopago, Supabase Arena e envs de produção continuam intocados. O PR #616 permanece draft.
