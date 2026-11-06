@@ -73,4 +73,16 @@ export class AsaasPixQrSandbox {
   async getCharge(paymentId) {
     return this.request('/payments/' + requireId(paymentId, 'paymentId'))
   }
+  /**
+   * Simulate processor settlement in Asaas SANDBOX ONLY.
+   * This API is never reachable from the frontend or any production handler.
+   * Do not call without explicit test-harness authorization and fixture checks.
+   */
+  async confirmSyntheticPayment(paymentId, { testOnlyConfirmationAuthorized = false } = {}) {
+    requireId(paymentId, 'paymentId')
+    if (testOnlyConfirmationAuthorized !== true)
+      throw new Error('Asaas sandbox confirmation requires explicit TEST authorization')
+    return this.request('/sandbox/payment/' + paymentId + '/confirm', 'POST')
+  }
+
 }
