@@ -28,7 +28,7 @@ export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
  if(typeof asaas?.getCharge!=='function') throw Error('Authenticated Asaas Sandbox client required')
  // Read the already-authenticated inbox row and require a known local charge,
  // BEFORE making any request to the processor (avoids arbitrary-ID API lookups).
- const preliminary=await db.query(`select e.processor_payment_id,e.status,i.id as intent_id,
+ const preliminary=await db.query(`select e.processor_payment_id,e.kind,e.status,i.id as intent_id,
  i.asaas_customer_id,i.asaas_provider_wallet_id,i.external_reference,i.gross_cents
  from ugo_payments_v2.payment_events e
  join ugo_payments_v2.payment_intents i
