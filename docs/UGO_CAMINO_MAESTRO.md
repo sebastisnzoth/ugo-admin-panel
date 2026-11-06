@@ -773,3 +773,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Orquestrador novo exige que repositório independente de pagamentos reserve a tentativa de Pix sob lock UNIQUE; falha fechada em timeout e IDs ambíguos. O código não está ligado ao checkout atual.
 - Testes de contrato puramente simulados: chamada de cobrança depois da reserva, obtenção de QR, reaproveitamento e impossibilidade de cobrança se prestador/wallet não verificados.
 - Nenhuma chamada à API autenticada nem SQL em Arena ou Neon UGOAPP foi executado. Banco isolado segue pendente. Próximo passo é provisioná-lo com validação de custos e permissões, implementar adapter e E2E Sandbox.
+
+
+## 2026-11-06 · Handoff financeiro: DB de TEST independente provisionado
+- Neon org `Sergio Sebastian` no plano Free: criado `ugo-pagamentos-v2-test` (`frosty-firefly-02365835`, sa-east-1). Oito tabelas do esquema isolado `ugo_payments_v2` verificadas. Não foi alterado Neon `UGOAPP` nem Arena Supabase PROD.
+- `reserve_pix_test` aplicada apenas à DB nova e testada com IDs sintéticos: 1a tentativa reservada e repetição encaminhada para conciliação. Função SECURITY INVOKER, schema privado; no PUBLIC execute grants.
+- Documentação Asaas: apenas conta raiz CNPJ pode criar subcontas via API; split com carteira de conta Asaas existente é alternativa a verificar quanto a titularidade/permissões. Custos de criação de subconta e Escrow precisam ser aprovados antes de operações.
+- UI informativa de recebimentos em main continua sem coleta de Pix; backend financeiro NÃO ligado ao frontend, sem POST Asaas real nem pagamentos reais. Não fazer merge PR #616 até CI e E2E Sandbox.
