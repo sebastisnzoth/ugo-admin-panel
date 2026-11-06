@@ -28,3 +28,13 @@ test('existing pending, unexpired QR should be reused', () => {
   assert.equal(r.mode, 'reuse_pending')
   assert.equal(r.paymentId, 'pay_1')
 })
+
+test('Pix pending or ambiguous attempts cannot create duplicate charges', () => {
+  for (const payment of [
+    { state: 'pending' },
+    { state: 'pending', processorPaymentId: 'pay_1' },
+    { state: 'pending', processorPaymentId: 'pay_1', expiresAt: '2026-01-01T00:00:00Z' },
+    { state: 'pending', processorPaymentId: 'pay_1', expiresAt: 'not-a-date' },
+    { state: 'unknown_processor_state' },
+  ]) assert.throws(() => authorizeProviderPixQr({ ...valid, payment }), /reconciliation/)
+})
