@@ -8,10 +8,10 @@ const BASE = 'https://api-sandbox.asaas.com/v3'
 const ID = /^[A-Za-z0-9_-]{1,100}$/
 export function buildAsaasCustomer({ name, cpfCnpj, email, mobilePhone, externalReference }) {
   if (typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 200) throw new Error('Invalid payer name')
-  if (typeof cpfCnpj !== 'string' || !/^(?:\\d{11}|\\d{14})$/.test(cpfCnpj)) throw new Error('Invalid payer document format')
+  if (typeof cpfCnpj !== 'string' || !/^(?:[0-9]{11}|[0-9]{14})$/.test(cpfCnpj)) throw new Error('Invalid payer document format')
   if (typeof externalReference !== 'string' || !ID.test(externalReference)) throw new Error('Invalid payer reference')
-  if (email !== undefined && (typeof email !== 'string' || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) throw new Error('Invalid email')
-  if (mobilePhone !== undefined && (typeof mobilePhone !== 'string' || !/^\\d{10,11}$/.test(mobilePhone))) throw new Error('Invalid mobile phone')
+  if (email !== undefined && (typeof email !== 'string' || !/^[^ @]+@[^ @]+[.][^ @]+$/.test(email))) throw new Error('Invalid email')
+  if (mobilePhone !== undefined && (typeof mobilePhone !== 'string' || !/^[0-9]{10,11}$/.test(mobilePhone))) throw new Error('Invalid mobile phone')
   return {
     name: name.trim(), cpfCnpj, externalReference,
     ...(email === undefined ? {} : { email }),
