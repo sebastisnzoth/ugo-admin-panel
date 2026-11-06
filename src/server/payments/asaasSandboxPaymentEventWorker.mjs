@@ -73,8 +73,10 @@ export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
    else if(verified.kind==='unpaid')nextStatus='expired'
    else if(verified.kind==='pending')nextStatus='pending'
    else throw Error('Unrecognized authenticated Asaas state')
-   if(['received','confirmed'].includes(current.payment_status)&&
-      ['pending','expired'].includes(nextStatus))
+   if((current.payment_status==='received' &&
+       ['confirmed','pending','expired'].includes(nextStatus)) ||
+      (current.payment_status==='confirmed' &&
+       ['pending','expired'].includes(nextStatus)))
      throw Error('Processor state regression requires manual review')
    if(current.payment_status==='manual_review'&&nextStatus!=='manual_review')
      throw Error('Manual financial review cannot be bypassed')
