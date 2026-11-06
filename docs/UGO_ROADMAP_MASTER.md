@@ -1168,3 +1168,10 @@ RUNTIME VALIDATED             pendiente
 - Para reserva existente, exige GET autenticado e cobrança `PENDING` que corresponda a cliente, serviço e valor; caso timeout/retorno incerto, registra `markUncertain` e não reenvia automaticamente.
 - Testes offline: emissão, QR reutilizado, conta inválida, timeout e pendência de conciliação (`tests/contracts/pagamentos-v2-pix-checkout-flow.test.mjs`).
 - P0 ainda bloqueado: implementação concreta de repo/DB test atômico, conexão API key Sandbox em execução isolada, subconta, webhook durável e E2E financeiro; não fazer merge/deploy.
+
+
+## 2026-11-06 · Pagamentos V2 — Base financeira TEST real e gate Asaas CNPJ
+- Criado **projeto Neon Free isolado** `ugo-pagamentos-v2-test` (ID `frosty-firefly-02365835`), separado de `UGOAPP` e Arena. Esquema `ugo_payments_v2` aplicado somente nesta base TEST; 8 tabelas verificadas via information_schema, nenhuma migração PROD.
+- Criada função privada `reserve_pix_test` em `docs/sql/ugo_pagamentos_v2_reserve_pix_test.sql`, aplicada apenas no novo projeto; teste manual com dados sintéticos: primeira chamada `reserved`, segunda `reconcile` para mesmo serviço. Contrato PGlite `pagamentos-v2-reserve-pix-sql.test.mjs` incluído, CI pendente.
+- Gate `asaasSubaccountEligibility.mjs`: criação de subconta só após comprovar conta raiz PJ (CNPJ), habilitação, custo avaliado, consentimento e KYC. Wallet Pix própria não substitui wallet Asaas; Split pode usar wallet de conta Asaas independente, sujeito a verificação de titularidade.
+- Próximo: conectar adapter transacional do orquestrador, sem importar dados pessoais do Arena PROD para testes; verificar Wallet UGO via GET Asaas Sandbox com chave server-only e preparar webhook/segredos.
