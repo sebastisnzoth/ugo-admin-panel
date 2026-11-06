@@ -801,3 +801,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 ## 2026-11-06 — Pagamentos V2: recepción durable de webhooks sin activar PROD
 - Rama PR #616: uso consistente de referencia `ugo_test_{serviceUUID sin guiones}` en el ledger y en Asaas. El webhook inbox únicamente recibe y registra eventos autenticados en TEST; el procesamiento posterior debe consultar Asaas por GET autenticado y actualizar la transacción atómicamente, sin dar por liquidado un Split.
 - Sin rutas públicas nuevas, sin variables de producción cambiadas, sin SQL en Arena. Probar y mantener PR draft hasta E2E Sandbox real.
+
+
+## 2026-11-06 — Handoff Asaas TEST: conciliación del cobro distinta de Split
+- En PR #616, cada cobranza TEST conserva cliente Asaas y wallet proveedor en el registro original; el trabajador de eventos valida por API autenticada el pago exacto y persiste actualización atómica en base financiera TEST.
+- El estado RECEIVED no implica que el Split esté DONE; sigue faltando consultar eventos/estado de Split por ID y reconciliar comisiones con importes netos.
+- Sin credenciales Sandbox en backend segregado ni wallet proveedor verificada, no se pudo generar QR auténtico ni completar operación simulada. Continuar con pruebas aisladas y CI antes de cualquier despliegue.
