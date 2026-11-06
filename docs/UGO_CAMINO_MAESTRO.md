@@ -792,3 +792,7 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Código de reserva transacional agora tem adapter SQL isolado em `src/server/payments/neonPixTestRepository.mjs`, apoiado por serviços sintéticos somente na nova base Neon Pagamentos TEST.
 - O adapter precisa de wallet verificada por `GET /wallets/` antes de autorizar QR. Sem a chave Asaas em um runtime TEST segregado, nenhum código de PIX real foi executado.
 - `api/pagamentos` de produção, Mercadopago, Supabase Arena e envs de produção continuam intocados. O PR #616 permanece draft.
+
+## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
+- Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
+- Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
