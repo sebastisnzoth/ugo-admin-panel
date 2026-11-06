@@ -26,6 +26,35 @@ export class AsaasCustomerSandbox {
     this.apiKey = apiKey
     this.fetchImpl = fetchImpl
   }
+  /**
+   * Lookup prior registration after timeout before any retry.
+   * NEVER auto-create based on an empty response without isolated DB lock.
+   */
+  async findCustomerByReference(externalReference) {
+    if (typeof externalReference !== 'string' || !ID.test(externalReference))
+      throw new Error('Invalid payer reference')
+    const url = BASE + '/customers?externalReference=' + encodeURIComponent(externalReference) + '&limit=100'
+    const response = await this.fetchImpl(url, {
+      method: 'GET',
+      headers: {
+        access_token: this.apiKey, accept: 'application/json',
+        'User-Agent': 'UGO-Pagamentos-V2-Sandbox/0.1',
+      },
+    })
+    if (!response?.ok)
+      throw new Error('Asaas sandbox customer lookup failed (' + (response?.status || 0) + ')')
+    const data = await response.json().catch(() => null)
+    if (!data || !Array.isArray(data.data) || typeof data.hasMore !== 'boolean')
+      throw new Error('Invalid Asaas customer lookup')
+    if (data.hasMore) throw new Error('Ambiguous Asaas customer lookup')
+    // Fail closed: Asaas may allow duplicates, so do not arbitrarily choose one.
+    if (data.data.length > 1) throw new Error('Duplicate Asaas customers require reconciliation')
+    if (data.data.length === 0) return Object.freeze({ found: false })
+    const record = data.data[0]
+    if (record.externalReference !== externalReference || typeof record.id !== 'string' || !ID.test(record.id))
+      throw new Error('Invalid Asaas customer mapping')
+    return Object.freeze({ found: true, customerId: record.id })
+  }
   async createCustomer(input) {
     const response = await this.fetchImpl(BASE + '/customers', {
       method: 'POST',
