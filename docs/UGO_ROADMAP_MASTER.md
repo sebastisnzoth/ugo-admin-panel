@@ -1154,3 +1154,10 @@ RUNTIME VALIDATED             pendiente
 - Faltantes P0: verificar credenciales Asaas sin exponerlas; alta de subcuenta con walletId; persistencia transaccional TEST de intents y deduplicación; backend autenticado y función idempotente; webhook con storage UNIQUE y reconciliación por API; E2E pago ficticio con Split; tolerancia a disputas y caducidad de Escrow. No hay integración activa con pantallas productivas.
 - Puertas de seguridad: no escribir ni migrar Arena PROD, no cambiar Vercel PROD, no habilitar Pix real; PR en borrador hasta CI, seguridad, concurrencia y sandbox E2E completos. El valor `retenido` en DB no constituye prueba de custodia en Asaas.
 - Referencia: `docs/UGO_PAGAMENTOS_V2_IMPLEMENTATION_PLAN.md` y PR #616.
+
+
+## 2026-11-05 — PR #616: contrato Pix seguro e esquema financeiro TEST (não aplicado)
+- Código `providerQrAuthorization.mjs`: bloqueia recriação de PIX se cobrança anterior está pendente, vencida ou estado desconhecido; exige reconciliação com Asaas antes de repetir (idempotência efetiva ainda depende de lock transacional).
+- Novo `asaasPixReconciliation.mjs`: valida `id/customer/externalReference/billingType/value/netValue` em resposta obtida por GET autenticado. Diferencia `CONFIRMED`, `RECEIVED`, reembolsos e pendências; não declara split liquidado nem escrow liberado com base no recebimento.
+- Novo rascunho `docs/sql/ugo_pagamentos_v2_isolated_test_schema.sql`: esquema independente com customer/provider links, intents, webhooks deduplicados, splits, garantias, release requests e ledger; **não executado**, não há migração PROD.
+- Pendências P0: ambiente de banco TEST novo com role privada, migração revisada, lock atomic/UNIQUE em tempo real, credenciais reais Sandbox verificadas por server-side, provider subconta, endpoint isolado auth+webhook, testes de transações, E2E. PR permanece draft.
