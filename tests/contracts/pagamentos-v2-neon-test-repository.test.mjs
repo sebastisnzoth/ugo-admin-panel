@@ -33,6 +33,7 @@ test('isolated Neon adapter loads only synthetic TEST service and verified walle
  try{
   const c=await repo.loadContext(svc)
   assert.equal(c.service.tarifa,100)
+  assert.equal(c.serviceReference,'ugo_test_'+svc.replace(/-/g,''))
   assert.equal(c.customerLink.asaasCustomerId,'cus_synthetic')
   assert.equal(c.providerAccount.verified,true)
   assert.equal(c.issuerWalletVerified,true)
@@ -72,6 +73,7 @@ test('mock Pix E2E: verified issuer and provider -> atomic reservation -> QR wit
   assert.equal(result.paymentId,'pay_synthetic')
   assert.equal(result.qr.copyPasteCode,'000201TEST')
   assert.equal(calls[0][1].providerWalletId,wallet)
+  assert.equal(calls[0][1].serviceReference,'ugo_test_'+svc.replace(/-/g,''))
   const state=await db.query('select status from ugo_payments_v2.payment_intents')
   assert.equal(state.rows[0].status,'pending')
  }finally{await db.close()}
