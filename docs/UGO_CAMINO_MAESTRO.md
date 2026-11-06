@@ -796,3 +796,8 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 ## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
 - Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
 - Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
+
+
+## 2026-11-06 — Pagamentos V2: recepción durable de webhooks sin activar PROD
+- Rama PR #616: uso consistente de referencia `ugo_test_{serviceUUID sin guiones}` en el ledger y en Asaas. El webhook inbox únicamente recibe y registra eventos autenticados en TEST; el procesamiento posterior debe consultar Asaas por GET autenticado y actualizar la transacción atómicamente, sin dar por liquidado un Split.
+- Sin rutas públicas nuevas, sin variables de producción cambiadas, sin SQL en Arena. Probar y mantener PR draft hasta E2E Sandbox real.
