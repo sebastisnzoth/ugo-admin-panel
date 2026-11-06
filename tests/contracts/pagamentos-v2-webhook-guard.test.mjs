@@ -15,6 +15,7 @@ test('webhook extracts only IDs and never treats event as payment confirmation',
 test('untrusted webhook values cannot inject malicious IDs', () => {
   for(const value of [null,{}, {id:'',event:'PAYMENT_RECEIVED',payment:{id:'pay_1'}},
     {id:'evt_1',event:'PAYMENT_RECEIVED',payment:{id:'../admin'}},
+    {id:'evt_1\nattack',event:'PAYMENT_RECEIVED',payment:{id:'pay_1'}},
     {id:'evt_1',event:'PAYMENT_RECEIVED',payment:null}])
     assert.throws(()=>parseAsaasPaymentEvent(value))
 })
