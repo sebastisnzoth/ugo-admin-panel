@@ -29,6 +29,11 @@ export async function issueSandboxPixQr({
   const ctx=await repo.loadContext(serviceId)
   const service=ctx?.service
   const account=ctx?.providerAccount
+  // Canonical externalReference must be the same value stored by Neon and sent
+  // to Asaas. Never reconstruct a different identifier during reconciliation.
+  const paymentReference=ctx?.serviceReference ?? serviceId
+  if(typeof paymentReference!=='string'||!ID.test(paymentReference))
+    throw Error('Invalid canonical Pix payment reference')
   const eligibility=authorizeProviderPixQr({
     actorId:authenticatedProviderId,service,account,payment:ctx?.payment||null,
   })
@@ -48,7 +53,7 @@ export async function issueSandboxPixQr({
     if(!ID.test(paymentId||'')) throw Error('Invalid reserved Pix payment')
     const p=await asaas.getCharge(paymentId)
     const status=reconcileAuthenticatedPix({
-      payment:p,expected:{paymentId,serviceReference:serviceId,
+      payment:p,expected:{paymentId,serviceReference:paymentReference,
         customerId:ctx.customerLink.asaasCustomerId,amountBRL:service.tarifa},
     })
     if(status.kind!=='pending') throw Error('Existing charge is not awaiting payment')
@@ -69,7 +74,7 @@ export async function issueSandboxPixQr({
     processorWasCalled=true
     const charge=await asaas.createChargeWithSplit({
       customerId:ctx.customerLink.asaasCustomerId,amountBRL:service.tarifa,dueDate,
-      serviceReference:serviceId,providerWalletId:account.walletId,providerSharePercent,
+      serviceReference:paymentReference,providerWalletId:account.walletId,providerSharePercent,
       issuerWalletId:ctx.issuerWalletId,issuerWalletVerified:ctx.issuerWalletVerified,
       assignedProviderId:authenticatedProviderId,
       providerAccount:{providerId:authenticatedProviderId,walletId:account.walletId,
