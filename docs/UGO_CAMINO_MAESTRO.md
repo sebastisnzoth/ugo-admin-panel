@@ -760,3 +760,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Despliegue prohibido por ahora: el código no llama a Asaas en el flujo UGO, no hay DB TEST aislada ni credenciales de subcuenta KYC/escrow verificadas. El token Asaas Sandbox está configurado en Vercel Production según usuario, pero no autoriza realizar transacciones ni encender APIs nuevas productivas.
 - Próximo: agregar ledger TEST aislado con UNIQUE de cobro/evento, validar API en entorno privado, abrir subcuenta sintética y verificar walletId/fees, mostrar QR en UI experimental aislada, confirmar PAYMENT_RECEIVED solo tras relectura API y conciliar split. Testear dos solicitudes simultáneas, webhook duplicado, QR expirado, disputa y rollback; mantener PR draft.
 - Roadmap Traceability exigía actualizar este documento y `UGO_ROADMAP_MASTER.md` cuando cambian código/tests; registro agregado por esa razón.
+
+
+## 2026-11-05 — PR #616: revisão de segurança e persistência de pagamentos isolada
+- Validado em documentação oficial Asaas que recibo PIX e `PAYMENT_SPLIT_DONE` não atestam disponibilidade de escrow; foi criado reconciliador puro para evitar crédito fictício.
+- Estado pendente sem vencimento comprovado ou com QR expirado deixa de permitir nova cobrança sem reconciliação; teste específico contra duplicidade.
+- Esquema SQL de TEST mantido em `docs/sql/` (não é migration), sem escrever em Arena PROD/TEST e sem alterar env Vercel nem checkout atual.
+- Próximo bloqueio: provisionar/verificar banco financeiro TEST independente e a conta/subconta Sandbox com chaves server-only para teste real. Exigir UNIQUE e lock ao criar cobrança, armazenamento durable antes de HTTP 200 do webhook, conciliar split e escrow separadamente.
