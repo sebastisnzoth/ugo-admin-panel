@@ -137,3 +137,11 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Código em `payments-sandbox/api/{health,wallets}.js`: somente probes GET; Vercel test env inclui conexão Neon PostgreSQL read-only cifrada, token operador cifrado, identificador informado da wallet UGO (não verificado). GET health real retornou HTTP 200 e role read-only.
 - **Bloqueio externo efetivo:** configurar pelo próprio Vercel TEST, somente target Preview, a chave da conta UGO Sandbox (`ASAAS_SANDBOX_API_KEY`), a chave da conta Asaas Sandbox do provedor (`ASAAS_PROVIDER_SANDBOX_API_KEY`) e o walletId do recebedor (`UGO_ASAAS_PROVIDER_WALLET_ID`). Não enviar chaves no chat, frontend ou GitHub e não copiar do Vercel de Arena PROD. Após isso, executar verificação de carteira com operador, rever condições de habilitação do Split e só depois montar backend WRITE isolado com idempotência/escrow.
 - Nenhuma conexão de produção reutilizada. Nenhum pagamento Pix real ou confirmação Sandbox executada nesta fase.
+
+
+## 2026-11-06 — Wallet emissora UGO autenticada no Asaas Sandbox
+- Projeto TEST `ugo-pagamentos-v2-sandbox`, variável `ASAAS_SANDBOX_API_KEY` configurada como Sensitive somente Preview e não exposta.
+- Verificação direta do backend Preview mediante **GET autenticado Asaas Sandbox `/v3/wallets/`** retornou HTTP 200, lista com exatamente uma carteira e `verified:true, ambiguous:false` quando comparada com a wallet esperada `c4125b7d-fb92-4232-923a-01ab389a84f7`.
+- Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
+- Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
+- Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
