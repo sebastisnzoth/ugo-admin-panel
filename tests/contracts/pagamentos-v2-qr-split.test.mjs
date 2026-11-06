@@ -54,3 +54,18 @@ test('sandbox client refuses to create Pix when issuer wallet is unverified', as
     providerAccount: { ...input.providerAccount, walletId: input.issuerWalletId } }), /issuer wallet/)
   assert.equal(called, false)
 })
+
+test('simulation of payment confirmation is opt-in, POST, sandbox-only and never callable by default',async()=>{
+ const calls=[]
+ const api=new AsaasPixQrSandbox({apiKey:'sandbox_fake',fetchImpl:async(url,init)=>{
+  calls.push({url,init});return {ok:true,json:async()=>({id:'pay_test',status:'RECEIVED'})}
+ }})
+ await assert.rejects(api.confirmSyntheticPayment('pay_test'),/explicit TEST authorization/)
+ await assert.rejects(api.confirmSyntheticPayment('../unsafe',{testOnlyConfirmationAuthorized:true}),/Invalid paymentId/)
+ assert.equal(calls.length,0)
+ const confirmed=await api.confirmSyntheticPayment('pay_test',{testOnlyConfirmationAuthorized:true})
+ assert.equal(confirmed.status,'RECEIVED')
+ assert.equal(calls.length,1)
+ assert.equal(calls[0].url,'https://api-sandbox.asaas.com/v3/sandbox/payment/pay_test/confirm')
+ assert.equal(calls[0].init.method,'POST')
+})
