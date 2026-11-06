@@ -73,6 +73,11 @@ export class AsaasPixQrSandbox {
   async getCharge(paymentId) {
     return this.request('/payments/' + requireId(paymentId, 'paymentId'))
   }
+  // Read-only verification on the source Asaas account. Caller must separately
+  // validate the exact recipient and status before updating any local Split.
+  async getPaidSplit(splitId) {
+    return this.request('/payments/splits/paid/' + requireId(splitId, 'splitId'))
+  }
   /**
    * Simulate processor settlement in Asaas SANDBOX ONLY.
    * This API is never reachable from the frontend or any production handler.
