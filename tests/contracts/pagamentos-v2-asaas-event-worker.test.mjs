@@ -136,3 +136,18 @@ test('Split DONE webhook is held for separate reconciliation, never silently pro
   assert.equal(event.status,'received')
  }finally{await db.close()}
 })
+
+test('out-of-order CONFIRMED cannot downgrade previously received Pix',async()=>{
+ const {db,webhook}=await setup()
+ try{
+  await db.query("update ugo_payments_v2.payment_intents set status='received',net_cents=9800")
+  await webhook('evt_stale_confirmed')
+  await assert.rejects(reconcileStoredAsaasSandboxEvent({
+   db,asaas:{getCharge:async()=>processor('CONFIRMED')},eventId:'evt_stale_confirmed',
+  }),/regression/)
+  const row=(await db.query('select status,net_cents from ugo_payments_v2.payment_intents')).rows[0]
+  assert.equal(row.status,'received')
+  assert.equal(Number(row.net_cents),9800)
+  assert.equal((await db.query("select status from ugo_payments_v2.payment_events where event_id='evt_stale_confirmed'")).rows[0].status,'received')
+ }finally{await db.close()}
+})
