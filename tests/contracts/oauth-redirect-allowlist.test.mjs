@@ -18,7 +18,7 @@ function simulate(destination, search = '?code=oauth-test') {
       removeItem: key => entries.delete(key),
     },
     location,
-    window: { stop() {}, addEventListener() {} },
+    window: { location, stop() {}, addEventListener() {} },
     navigator: {},
     console,
   })
