@@ -7,7 +7,8 @@
  */
 import { reconcileAuthenticatedPix } from './asaasPixReconciliation.mjs'
 
-const EVENT=/^[A-Za-z0-9_-]{1,160}$/
+const eventIdIsValid=x=>typeof x==='string'&&x.length>0&&x.length<=160&&
+  ![...x].some(char=>char.charCodeAt(0)<32||char.charCodeAt(0)===127)
 const ID=/^[A-Za-z0-9_-]{1,100}$/
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const lockedSql=`select e.event_id,e.kind,e.processor_payment_id,e.status as event_status,
@@ -21,7 +22,7 @@ const lockedSql=`select e.event_id,e.kind,e.processor_payment_id,e.status as eve
  for update of e,i`
 
 export async function reconcileStoredAsaasSandboxEvent({db,asaas,eventId}) {
- if(typeof eventId!=='string'||!EVENT.test(eventId)) throw Error('Invalid Asaas event ID')
+ if(!eventIdIsValid(eventId)) throw Error('Invalid Asaas event ID')
  if(typeof db?.transaction!=='function'||typeof db?.query!=='function')
    throw Error('Private transactional TEST database is required')
  if(typeof asaas?.getCharge!=='function') throw Error('Authenticated Asaas Sandbox client required')
