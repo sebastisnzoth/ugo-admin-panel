@@ -37,3 +37,13 @@ export function isRideshareFlagEnabled(flag: RideshareFlag, env: Record<string, 
 export function isProviderPendingPoolEnabled(env: Record<string, unknown> = import.meta.env): boolean {
   return parseFlagValue(env.VITE_FLAG_PROVIDER_PENDING_POOL)
 }
+
+/**
+ * Asaas payout preview — deliberately unavailable in production builds,
+ * including when an operator accidentally sets the VITE flag.
+ * No payment provider calls, Pix key storage or account activation.
+ */
+export function isAsaasRecebimentosPreviewEnabled(env: Record<string, unknown> = import.meta.env): boolean {
+  if (env.MODE === 'production' || env.PROD === true) return false
+  return parseFlagValue(env.VITE_FLAG_ASAAS_RECEBIMENTOS_PREVIEW)
+}
