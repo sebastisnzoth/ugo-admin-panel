@@ -87,3 +87,11 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Split habilitado por el usuario en Asaas Sandbox.
 - `ASAAS_SANDBOX_API_KEY` guardada en Vercel `ugo-admin-panel` bajo target Production; no cambiaremos su scope sin autorización.
 - No se ha realizado llamada autenticada a Asaas ni probado una garantía/subcuenta real.
+
+## 2026-11-06 · Asaas: cadastro de clientes (documentación aportada)
+- Antes de `POST /v3/payments`, el pagador debe tener un `customer` Asaas creado mediante `POST /v3/customers`; reutilizar `cus_...` en siguientes cobranzas.
+- Guardar vínculo `ugo_client_id -> asaas_customer_id` único por ambiente, con `externalReference` interno; no crear un cliente Asaas por cada QR ni aceptar un `customerId` arbitrario del proveedor.
+- Campos documentados: `name`, `cpfCnpj`, `email`, `mobilePhone`, `externalReference`, `notificationDisabled`; validar datos y políticas de privacidad. El módulo de contrato valida formato, pero la verificación real de CPF/CNPJ y documentos queda pendiente.
+- En caso de timeout o error inconcluso, consultar el cadastro y reconciliar antes de reintentar; Asaas permite duplicar clientes. Se requiere índice UNIQUE y bloqueo por cliente en TEST.
+- Se añadió `src/server/payments/asaasCustomerSandbox.mjs` y pruebas offline; aún no enlazados al checkout.
+- Fuente: documento de Asaas `Cadastro de clientes` entregado por el usuario, actualizado 2026-08-04.
