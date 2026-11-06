@@ -4,8 +4,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const OFFICIAL_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co';
-const SERVICE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
+const OFFICIAL_URL = process.env.SUPABASE_URL || 'https://trfsjuseqjxlhrxuvdsm.supabase.co';
+const SERVICE_KEY = process.env.UGO_PROD_SUPABASE_SERVICE_ROLE_KEY || '';
 
 function bearer(req) {
   const raw = String(req.headers?.authorization || '');

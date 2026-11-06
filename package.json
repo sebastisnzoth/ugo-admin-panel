@@ -15,7 +15,8 @@
     "preview": "vite preview",
     "bootstrap:test-auth": "node scripts/bootstrap-test-auth.mjs",
     "audit:i18n": "node scripts/audit-i18n.mjs --json",
-    "audit:i18n:keys": "node scripts/audit-i18n-keys.mjs"
+    "audit:i18n:keys": "node scripts/audit-i18n-keys.mjs",
+    "build:prod": "node scripts/assert-prod-environment.mjs && tsc -b && vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",

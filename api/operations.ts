@@ -6,8 +6,8 @@ import { UGO_SUPABASE_URL } from '../src/lib/supabaseProject.js'
 // UGO TEST (tmossnqfwfwjrtzwcbmm): SUPABASE_URL se lee del entorno (vercel.json fija el proyecto TEST);
 // el fallback es el single source of truth compartido con el cliente (src/lib/supabaseProject.ts).
 const SUPABASE_URL = process.env.SUPABASE_URL || UGO_SUPABASE_URL
-const SUPABASE_ANON_KEY = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
-const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY || process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
+const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_PROD_SUPABASE_SERVICE_ROLE_KEY || ''
 const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
 const USER_ROLES = new Set(['cliente', 'proveedor', 'admin', 'superadmin', 'arbitro'])
 const PRIVILEGED_USER_ROLES = new Set(['admin', 'superadmin', 'arbitro'])

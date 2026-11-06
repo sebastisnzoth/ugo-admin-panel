@@ -4,12 +4,14 @@
     "deploymentEnabled": true
   },
   "ignoreCommand": "node scripts/ugo-test-only-vercel-ignore.mjs",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:prod",
   "outputDirectory": "dist",
   "framework": "vite",
   "env": {
-    "SUPABASE_URL": "https://tmossnqfwfwjrtzwcbmm.supabase.co",
-    "SUPABASE_ANON_KEY": "sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl"
+    "SUPABASE_URL": "https://trfsjuseqjxlhrxuvdsm.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8",
+    "VITE_SUPABASE_URL": "https://trfsjuseqjxlhrxuvdsm.supabase.co",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8"
   },
   "rewrites": [
     {
