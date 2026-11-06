@@ -4,12 +4,12 @@ import { readFile } from 'node:fs/promises'
 
 const fromRoot = async path => readFile(new URL('../../'+path,import.meta.url),'utf8')
 
-test('Asaas Pix provider screen is mounted in existing payout panel behind preview flag',async()=>{
+test('Asaas Pix info is mounted in existing main payout panel without payment mutations',async()=>{
  const [panel,flags]=await Promise.all([
   fromRoot('src/mvp/ProviderPayoutPanel.tsx'),
   fromRoot('src/lib/featureFlags.ts'),
  ])
- assert.match(panel,/isAsaasRecebimentosPreviewEnabled\(\)&&<ProviderAsaasRecebimentos/)
+ assert.match(panel,/<ProviderAsaasRecebimentos locale=\{locale\}\/>/)
  assert.match(flags,/VITE_FLAG_ASAAS_RECEBIMENTOS_PREVIEW/)
  assert.match(flags,/env\.MODE === 'production' \|\| env\.PROD === true/)
  assert.match(panel,/ProviderMercadoPagoConnect/)

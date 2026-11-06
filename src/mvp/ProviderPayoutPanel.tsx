@@ -4,7 +4,6 @@ import{subscribeRealtimeChannel}from'../lib/realtimeChannel'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{ProviderMercadoPagoConnect}from'./ProviderMercadoPagoConnect'
 import{ProviderAsaasRecebimentos}from'./ProviderAsaasRecebimentos'
-import{isAsaasRecebimentosPreviewEnabled}from'../lib/featureFlags'
 import'./provider-payout.css'
 
 type Props={accessToken:string}
@@ -48,7 +47,7 @@ export function ProviderPayoutPanel({accessToken}:Props){
  return <div className="ugo-provider-payout"><strong className="ugo-payout-title">{t('providerPayout.title')}</strong>
   {balanceError?<div className="ugo-payout-load-error" role="status"><span>{t('providerPayout.balanceUnavailable')}</span><button type="button" onClick={()=>void load().catch(()=>{})}>{t('providerPayout.retry')}</button></div>:balance?<><div style={{marginTop:8,fontSize:13}}>{t('providerPayout.available')}: <b>{formatMoney(balance.saldo_disponible)}</b> · {t('providerPayout.processing')}: {formatMoney(balance.saldo_procesando)}</div>
   <div style={{marginTop:4,fontSize:11,opacity:.7}}>{t('providerPayout.released')}: {formatMoney(balance.total_liberado)} · {t('providerPayout.withdrawn')}: {formatMoney(balance.total_retirado)}</div></>:<div role="status">{t('providerPayout.loadingBalance')}</div>}
-  {isAsaasRecebimentosPreviewEnabled()&&<ProviderAsaasRecebimentos locale={locale}/>}
+  <ProviderAsaasRecebimentos locale={locale}/>
   <ProviderMercadoPagoConnect accessToken={accessToken}/>
   <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid #e5e7eb'}}><strong style={{fontSize:13}}>{t('providerPayout.manualLegacy')}</strong><p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>{t('providerPayout.manualHelp')}</p></div>
   <label style={{display:'block',marginTop:10}}>{t('providerPayout.account')}<input value={account} onChange={e=>setAccount(e.target.value)} placeholder={t('providerPayout.accountPlaceholder')}/></label>

@@ -754,6 +754,12 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Bolsa de pedidos: apagada por defecto con `VITE_FLAG_PROVIDER_PENDING_POOL` (único punto de montaje en `ProviderOpportunities.tsx`; único llamador de los RPC en `ProviderPendingRequests.tsx`, ambos fijados por contrato). Para validarla en TEST, construir con `VITE_FLAG_PROVIDER_PENDING_POOL=true` donde las migraciones ya estén aplicadas. No activar en PROD sin la ventana autorizada del plan de despliegue.
 
 
+## 2026-11-05 · Handoff main — Meus recebimentos Asaas Pix sem transações
+- Tela informativa integrada no painel atual do Provedor, sem substituir Mercado Pago nem contas externas existentes. Campos Pix desabilitados por falta de vínculo subconta verificado, armazenamento privado, autorização de saques e backend financeiro TEST.
+- Nenhuma chave Pix é persistida, nenhuma cobrança Asaas gerada, nenhum deploy acionado neste passo. Não confundir seção visível com uma integração funcional do processador.
+- Próximo: finalizar PR #616 em ambiente TEST financeiro segregado, validar CI/E2E, só então habilitar cadastro Pix com backend seguro.
+
+
 ## 2026-11-05 · Handoff PR #616 — Pix presencial Asaas Sandbox
 
 - Se preparó módulo independiente de consulta de QR y split porcentual, condicionado por servicio terminado y proveedor asignado; ruta Asaas fija en sandbox. Nuevos contratos de evento webhook autenticado sin efecto financiero; nunca confirma pagos por texto de webhook sin consultar el procesador. No modificar checkout Mercado Pago existente.
