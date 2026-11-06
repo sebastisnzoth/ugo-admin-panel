@@ -94,3 +94,17 @@ test('processor state regression does not reverse previously received value',asy
   assert.equal((await db.query('select status from ugo_payments_v2.payment_intents')).rows[0].status,'received')
  }finally{await db.close()}
 })
+
+test('missing original recipient wallet cannot be reconciled as received',async()=>{
+ const {db,webhook}=await setup()
+ try{
+  await webhook()
+  await db.query('update ugo_payments_v2.payment_intents set asaas_provider_wallet_id=null')
+  let fetched=false
+  await assert.rejects(reconcileStoredAsaasSandboxEvent({
+   db,asaas:{getCharge:async()=>{fetched=true;return processor()}},eventId:'evt_7701',
+  }),/Incomplete persisted TEST payment metadata/)
+  assert.equal(fetched,false)
+  assert.equal((await db.query('select status from ugo_payments_v2.payment_intents')).rows[0].status,'pending')
+ }finally{await db.close()}
+})
