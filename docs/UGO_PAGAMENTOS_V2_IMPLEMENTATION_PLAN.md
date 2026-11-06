@@ -130,3 +130,10 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Fonte Asaas: https://docs.asaas.com/reference/recuperar-um-unico-split-pago e https://docs.asaas.com/docs/split-de-pagamentos
 - GET `/v3/payments/splits/paid/{id}` disponível no cliente de teste e função de validação conservadora `verifyAuthenticatedPaidSplit`. Exige identidade, wallet original e pagamento persistidos, percentual 85, estado DONE e quantia correspondente ao netValue. Valores divergentes exigem revisão manual, não lançamento em saldo.
 - Split DONE **não equivale** a dinheiro disponível quando Escrow está em uso. Não liberar garantias. Módulo de validação separado ainda não executa conciliação durável em Neon nem altera o ledger.
+
+
+## 2026-11-06 — Backend de auditoria TEST Vercel efetivo
+- Projeto independente: `ugo-pagamentos-v2-sandbox` / Vercel `prj_1EzMjxgYVtk4Ro0IFil3w2cTAE7N`. Preview `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4` (São Paulo, `gru1`). Deploy inicial classificado Production está fail-closed por guard `VERCEL_ENV==='preview'`; nunca usar deploy PROD do próprio projeto.
+- Código em `payments-sandbox/api/{health,wallets}.js`: somente probes GET; Vercel test env inclui conexão Neon PostgreSQL read-only cifrada, token operador cifrado, identificador informado da wallet UGO (não verificado). GET health real retornou HTTP 200 e role read-only.
+- **Bloqueio externo efetivo:** configurar pelo próprio Vercel TEST, somente target Preview, a chave da conta UGO Sandbox (`ASAAS_SANDBOX_API_KEY`), a chave da conta Asaas Sandbox do provedor (`ASAAS_PROVIDER_SANDBOX_API_KEY`) e o walletId do recebedor (`UGO_ASAAS_PROVIDER_WALLET_ID`). Não enviar chaves no chat, frontend ou GitHub e não copiar do Vercel de Arena PROD. Após isso, executar verificação de carteira com operador, rever condições de habilitação do Split e só depois montar backend WRITE isolado com idempotência/escrow.
+- Nenhuma conexão de produção reutilizada. Nenhum pagamento Pix real ou confirmação Sandbox executada nesta fase.
