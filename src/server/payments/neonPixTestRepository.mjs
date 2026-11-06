@@ -89,13 +89,27 @@ export class NeonPixTestRepository {
     return {mode:'existing',paymentId:row.processor_payment_id}
   return {mode:'reconcile'}
  }
- async recordProcessorCharge({reservationId,paymentId}){
+ async recordProcessorCharge({reservationId,paymentId,customerId,providerWalletId}){
   requireUUID(reservationId,'reservation')
   requirePaymentId(paymentId)
+  requirePaymentId(customerId)
+  requireUUID(providerWalletId,'provider wallet')
   const result=await this.db.query(`update ugo_payments_v2.payment_intents
-   set asaas_payment_id=$2,status='pending',updated_at=now()
+   set asaas_payment_id=$2,asaas_customer_id=$3,asaas_provider_wallet_id=$4,
+       status='pending',updated_at=now()
    where id=$1 and status='creating' and asaas_payment_id is null
-   returning id`,[reservationId,paymentId])
+     and exists (
+       select 1 from ugo_payments_v2.customer_links c
+       where c.ugo_client_id=payment_intents.ugo_client_id
+         and c.asaas_customer_id=$3 and c.environment='sandbox'
+     )
+     and exists (
+       select 1 from ugo_payments_v2.provider_accounts p
+       where p.ugo_provider_id=payment_intents.ugo_provider_id
+         and p.asaas_wallet_id=$4 and p.environment='sandbox'
+         and p.verified_at is not null and p.kyc_approved_at is not null
+     )
+   returning id`,[reservationId,paymentId,customerId,providerWalletId])
   if(result.rows.length!==1)throw Error('Charge persistence conflict; reconcile')
  }
  async markUncertain({reservationId}){
