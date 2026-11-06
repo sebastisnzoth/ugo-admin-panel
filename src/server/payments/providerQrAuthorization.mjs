@@ -18,6 +18,7 @@ export function authorizeProviderPixQr({ actorId, service, account, payment }) {
   if (payment && ['confirmed', 'received', 'held', 'released', 'refunded', 'processing'].includes(payment.state))
     throw new Error('Payment already processed or blocked')
   if (payment && payment.state === 'pending' && payment.expiresAt &&
+      typeof payment.processorPaymentId === 'string' && payment.processorPaymentId &&
       Date.parse(payment.expiresAt) > Date.now())
     return Object.freeze({ mode: 'reuse_pending', paymentId: payment.processorPaymentId })
   return Object.freeze({
