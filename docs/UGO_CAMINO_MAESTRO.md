@@ -767,3 +767,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Estado pendente sem vencimento comprovado ou com QR expirado deixa de permitir nova cobrança sem reconciliação; teste específico contra duplicidade.
 - Esquema SQL de TEST mantido em `docs/sql/` (não é migration), sem escrever em Arena PROD/TEST e sem alterar env Vercel nem checkout atual.
 - Próximo bloqueio: provisionar/verificar banco financeiro TEST independente e a conta/subconta Sandbox com chaves server-only para teste real. Exigir UNIQUE e lock ao criar cobrança, armazenamento durable antes de HTTP 200 do webhook, conciliar split e escrow separadamente.
+
+
+## 2026-11-05 — PR #616 checkout Pix, sem acesso a PROD
+- Orquestrador novo exige que repositório independente de pagamentos reserve a tentativa de Pix sob lock UNIQUE; falha fechada em timeout e IDs ambíguos. O código não está ligado ao checkout atual.
+- Testes de contrato puramente simulados: chamada de cobrança depois da reserva, obtenção de QR, reaproveitamento e impossibilidade de cobrança se prestador/wallet não verificados.
+- Nenhuma chamada à API autenticada nem SQL em Arena ou Neon UGOAPP foi executado. Banco isolado segue pendente. Próximo passo é provisioná-lo com validação de custos e permissões, implementar adapter e E2E Sandbox.
