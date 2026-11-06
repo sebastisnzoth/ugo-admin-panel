@@ -1208,3 +1208,10 @@ RUNTIME VALIDATED             pendiente
 - `asaasSandboxPaymentEventWorker.mjs` procesa eventos ya persistidos en TEST: consulta `GET /payments/{id}` autenticado, compara id/cuenta/cliente/referencia/importe con el intento, y dentro de transacción actualiza el estado de pago y marca evento procesado. Nunca concede saldo, autoriza retiro ni declara Split o Escrow liquidados.
 - Nuevo contrato de prueba con PostgreSQL en memoria: cobro recibido, confirmado no liquidado, identidad falsificada, evento desconocido y regresión de estado. Requiere CI mismo SHA.
 - **No hay pago Asaas real en Sandbox validado**. Sin secret Sandbox TEST separado y wallet receptora verificada, no exponer webhook ni activar cobros. No tocar Arena PROD ni fusionar PR.
+
+
+## 2026-11-06 — PR #616: corrigido contrato Core CI e verificação independente do Split
+- Core CI do SHA `da51b51` detectou 7 falhas novas no worker por `first.kind` ausente no SELECT SQL inicial. Corrigido no commit `e1fe0ca`, sem afrouxar testes; testes SAME-SHA após novos commits aguardam confirmação.
+- Corrigida regressão de pagamento: estado `received` nunca regride para `confirmed` via webhook atrasado; teste adicionado.
+- `AsaasPixQrSandbox.getPaidSplit` agora consulta GET read-only `/payments/splits/paid/{id}` exclusivamente Sandbox, conforme referência Asaas. `asaasPaidSplitVerification.mjs` valida splitId, wallet recebedor, paymentId, percentual 85%, valor de Split sobre netValue e estado `DONE` antes de sequer considerar Split liquidado. Escrow continua indisponível por padrão. Testes de contrato offline adicionados.
+- O verificador ainda **não está conectado** a um webhook de Split nem a POST de pagamentos reais. Sem chave segregada para runtime TEST e wallets verificadas, E2E autenticado bloqueado. Manter PR draft sem merge.
