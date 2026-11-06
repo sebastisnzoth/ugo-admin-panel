@@ -40,5 +40,7 @@ test('Hugo voice address cannot advance without resolved pickup coordinates', ()
   assert.match(locationScreen, /savePickup\(pickupLat,pickupLng,pickupSource\)/)
   const voiceBlock=locationScreen.match(/const onVoiceDraft=[\s\S]*?window\.addEventListener\(UGO_UI_EVENTS\.clientHugoDraft/)?.[0]||''
   assert.match(voiceBlock, /if\(pickupLat==null\|\|pickupLng==null\)[\s\S]*geocodeClientAddress/)
-  assert.match(voiceBlock, /savePickup\(pickupLat,pickupLng,pickupSource\)[\s\S]*setStage\('when'\)/)
+  assert.match(voiceBlock, /savePickup\(pickupLat,pickupLng,pickupSource\)/)
+  assert.match(locationScreen,/beforeContinue=\{next\}/)
+  assert.match(locationScreen,/if\(!hasPickup\)[\s\S]*geocodeClientAddress\(clean,zone\)/)
 })

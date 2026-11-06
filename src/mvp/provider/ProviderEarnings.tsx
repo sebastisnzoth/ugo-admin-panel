@@ -38,11 +38,11 @@ const{prompt,node:dialog}=useDialog()
   try{await navigator.clipboard.writeText(pix.pixCopiaCola);setMessage(t('providerEarnings.copied'))}
   catch{void prompt({title:t('providerEarnings.pixTitle'),message:t('providerEarnings.pixCopyHelp'),label:t('providerEarnings.pixCopyLabel'),defaultValue:pix.pixCopiaCola})}
  }
- return <section className="provider-screen provider-earnings-complete" aria-labelledby="provider-earnings-title">
+ return <section className="provider-screen provider-earnings-complete" aria-label={t('providerEarnings.title')}>
   <Button variant="ghost" className="provider-back" onClick={flow.actions.openProfile}>{t('screen.earnings.1')}</Button>
-  <SectionHeader eyebrow={t('providerEarnings.eyebrow')} title={t('providerEarnings.title')} description={t('providerEarnings.description')} actions={<Button variant="ghost" onClick={flow.actions.openHistory}>{t('screen.earnings.2')}</Button>}/>
+  <SectionHeader screenHeading eyebrow={t('providerEarnings.eyebrow')} title={t('providerEarnings.title')} description={t('providerEarnings.description')} actions={<Button variant="ghost" onClick={flow.actions.openHistory}>{t('screen.earnings.2')}</Button>}/>
   <div className="provider-balance-grid">
-   <article><small>{t('screen.earnings.3')}</small><strong>{formatMoney(d.released)}</strong><span>{t('screen.earnings.4')}</span></article>
+   <article><small>{t('providerEarnings.releasedTotal')}</small><strong>{formatMoney(d.released)}</strong><span>{t('providerEarnings.releasedExplanation')}</span></article>
    <article><small>{t('screen.earnings.5')}</small><strong>{formatMoney(d.retained)}</strong><span>{t('screen.earnings.6')}</span></article>
    <article><small>{t('screen.earnings.7')}</small><strong>{formatMoney(d.cashReceived)}</strong><span>{t('screen.earnings.8')}</span></article>
    <article className={d.ugoDebt>0?'provider-debt-card':''}><small>{t('screen.earnings.9')}</small><strong>{formatMoney(d.ugoDebt)}</strong><span>{d.debtBlocked?t('providerEarnings.debtLimit',{count:d.pendingDebtCount}):t('providerEarnings.cashCommission')}</span>{d.ugoDebt>0&&<Button variant="primary" className="provider-primary provider-wide" disabled={!actionableDebt||busy.startsWith('pix:')} onClick={()=>actionableDebt&&void startPix(actionableDebt)}>{actionableDebt?t('providerEarnings.payUgo'):t('providerEarnings.paymentReview')}</Button>}</article>
@@ -50,6 +50,7 @@ const{prompt,node:dialog}=useDialog()
 
   {d.debtBlocked&&<Card className="provider-debt-lock" role="alert"><StatusPill tone="danger">{t('screen.earnings.10')}</StatusPill><strong>{t('screen.earnings.11')}</strong><span>{t('providerEarnings.debtMessage',{count:d.pendingDebtCount})}</span></Card>}
 
+  {message&&<div className="provider-simple-status" role="status"><span>{message}</span></div>}
   {pix&&<Card className="provider-card provider-debt-payment" aria-label={t('providerEarnings.pixAria')}><div><span className="provider-kicker">{t('screen.earnings.12')}</span><h2>{t('providerEarnings.serviceNumber',{number:pix.servicio})} · {formatMoney(pix.monto,pix.moneda)}</h2><p>{t('screen.earnings.13')}</p></div><Textarea readOnly value={pix.pixCopiaCola} aria-label={t('providerEarnings.pixCodeAria')}/><div className="provider-debt-payment-actions"><Button variant="primary" className="provider-primary" onClick={()=>void copyPix()}>{t('screen.earnings.14')}</Button><Button variant="secondary" className="provider-secondary" onClick={()=>setPix(null)}>{t('screen.earnings.15')}</Button></div><small>{t('providerEarnings.ugoKey')}: {pix.pixChave} <LocalizedText id="pix.txid"/> {pix.txid}</small></Card>}
 
   {pendingDebts.length>0&&<Card className="provider-card" aria-label={t('providerEarnings.pendingCommissionsAria')}>
@@ -62,7 +63,6 @@ const{prompt,node:dialog}=useDialog()
    </article>)}</div>
   </Card>}
 
-  {message&&<div className="provider-simple-status" role="status"><span>{message}</span></div>}
   <article className="provider-withdraw-guide"><span>1</span><div><strong>{t('screen.earnings.19')}</strong><p>{t('screen.earnings.20')}</p></div><span>2</span><div><strong>{t('screen.earnings.21')}</strong><p>{t('screen.earnings.22')}</p></div><span>3</span><div><strong>{t('screen.earnings.23')}</strong><p>{t('screen.earnings.24')}</p></div></article>
   <ProviderPayoutPanel accessToken={d.accessToken}/>
   <Button variant="secondary" className="provider-secondary provider-wide" onClick={flow.actions.openHistory}>{t('screen.earnings.25')}</Button>

@@ -31,7 +31,7 @@ test('canonical client request covers need, optional evidence, location, when, p
  assert.match(when,/new Date\(scheduleAt\)\.getTime\(\)<=nowMs\(\)\)/)
  assert.match(payment,/¿Cómo vas a pagar\?/)
  assert.match(payment,/useState<Method>\('cash'\)/)
- assert.match(payment,/No se cobra nada en este paso/)
+ assert.match(payment,/clientJourney\.paymentPreferenceHelp/)
  assert.match(summary,/Confirmar y buscar profesional/)
  assert.match(summary,/disabled=\{!ready\}/)
  assert.match(summary,/Fotos/)

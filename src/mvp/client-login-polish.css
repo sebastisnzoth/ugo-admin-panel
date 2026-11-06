@@ -1,0 +1,40 @@
+/* Client login only: presentation changes, authentication stays in AuthScreen. */
+.ugo-client-stitch-scope .mvp-auth-page.role-client{
+  background:radial-gradient(circle at 12% 8%,#dceee5,transparent 38%),#f3f7f4!important;
+}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-shell{
+  width:min(1120px,100%);grid-template-columns:minmax(0,1fr) minmax(400px,1fr);
+  border-radius:26px;overflow:hidden;box-shadow:0 24px 70px #15382a1b;
+}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-intro{
+  background-image:linear-gradient(180deg,rgba(9,31,20,.72),rgba(9,31,20,.49) 42%,rgba(9,31,20,.94)),url('./assets/landing-home-care.jpg')!important;
+  background-position:center,center!important;
+}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-intro-copy h2{line-height:1.06;letter-spacing:-.045em;text-wrap:balance}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-intro-copy>p{max-width:390px;color:#f1f8f3;line-height:1.65}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-benefits span{font-weight:700;line-height:1.4}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-benefits i{background:#b7edc929;color:#aaf0c2}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card{justify-content:center;padding:clamp(28px,4vw,54px)!important}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card:before{content:none}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card-head{display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:0;text-align:left}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-mini-orb{width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#0b5137,#159366);box-shadow:0 8px 20px #0c76512b}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card h1{text-align:left;font-size:clamp(29px,3vw,39px)!important;line-height:1.1;letter-spacing:-.04em!important}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card-head p{color:#5a7063;font-size:13px;line-height:1.5}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-kicker{color:#087452!important}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-tabs{background:#f1f6f2;border:1px solid #e1ebe4;border-radius:13px;padding:4px;margin-top:25px}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-tabs button{min-height:44px;border-radius:9px;color:#586f61;font-weight:750}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-tabs button.active{background:#fff;color:#145e40;box-shadow:0 2px 9px #143b2614}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-google-button{min-height:50px;border-color:#d9e5dc;border-radius:12px;color:#20372a;background:#fff}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card form>label{gap:7px;color:#304f3d;font-weight:750}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card input,.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card select{border:1px solid #cfddd3;border-radius:11px;background:#fbfdfb;color:#1b3023;min-height:50px}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card input:focus,.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card select:focus{border-color:#168a5a;box-shadow:0 0 0 3px #15936620}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-primary{min-height:52px;border-radius:12px;background:#087b55!important;box-shadow:0 8px 22px #087b5524!important}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-text-action{color:#096b48}
+.ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-footnote{color:#687c70;line-height:1.5}
+@media(max-width:820px){
+ .ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-shell{display:flex!important;border-radius:0;box-shadow:none}
+ .ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card{padding:25px max(18px,env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))!important}
+ .ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card-head{grid-template-columns:minmax(0,1fr);gap:0}
+ .ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-mini-orb{width:42px;height:42px;border-radius:14px}
+ .ugo-client-stitch-scope .mvp-auth-page.role-client .mvp-auth-card h1{font-size:28px!important}
+}

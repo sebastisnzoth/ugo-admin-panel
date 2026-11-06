@@ -39,7 +39,9 @@ test('profile timeout keeps compatibility with non-abortable promise test double
 
 test('Realtime reconnect failures never trigger immediate profile reads and resubscribe is rate limited',()=>{
   assert.match(source,/const realtimeProfileRefreshAt=useRef\(0\)/)
-  assert.match(source,/if\(now-realtimeProfileRefreshAt\.current<30_000\)return/)
+  const refreshWindow=source.match(/if\(now-realtimeProfileRefreshAt\.current<([\d_]+)\)return/)
+  assert.ok(refreshWindow,'Realtime-driven profile refresh must stay rate limited')
+  assert.ok(Number(refreshWindow[1].replaceAll('_',''))>=30_000,'Realtime-driven profile refresh window must be at least 30 s')
   // A successful subscription cancels a pending retry, resets backoff, then reconciles.
   assert.match(source,/if\(status==='SUBSCRIBED'\)\{if\(reconnectTimer!==undefined\)\{window\.clearTimeout\(reconnectTimer\);reconnectTimer=undefined\}profileReconnectState\.current\.failures=0;refreshRealtime\(\)\}/)
   assert.match(source,/if\(reconnectTimer!==undefined\)return/)

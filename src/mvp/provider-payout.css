@@ -1,1 +1,21 @@
 .ugo-provider-payout{margin-top:14px;color:#172421;font-family:"Inter Tight",Inter,ui-sans-serif,system-ui,sans-serif}.ugo-payout-title{display:block;font-size:17px;letter-spacing:-.02em}.ugo-provider-payout>div:nth-of-type(1){margin-top:10px!important;padding:12px 14px;background:#e3f3e9;border-radius:14px;color:#172421;font-size:14px!important}.ugo-provider-payout>div:nth-of-type(1) b{color:#087f5b;font-size:16px}.ugo-provider-payout>div:nth-of-type(2){margin-top:7px!important;color:#64706b!important;font-size:11px!important}.ugo-provider-payout label{display:block;margin-top:12px!important;color:#52665c;font-size:11px;font-weight:700}.ugo-provider-payout input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:11px 12px;border:1px solid #d9e2dc;border-radius:12px;background:#fff;color:#172421;font:14px inherit}.ugo-provider-payout .mvp-voice-btn{width:100%;min-height:48px;margin-top:8px;border:0;border-radius:13px;background:#087f5b;color:#fff;font-family:inherit;font-weight:700;cursor:pointer}.ugo-provider-payout .mvp-voice-btn:disabled{cursor:wait;opacity:.58}.ugo-provider-payout>div:nth-of-type(3){margin-top:18px!important;padding-top:15px!important;border-top:1px solid #d9e2dc!important}.ugo-provider-payout>div:nth-of-type(3) strong{font-size:14px}.ugo-provider-payout>div:nth-of-type(3) p,.ugo-provider-payout>p{color:#64706b!important;font-size:11px!important;line-height:1.45!important}.ugo-provider-payout>p{margin-top:10px!important}.ugo-provider-payout details{margin-top:12px!important;padding:12px 0;border-top:1px solid #e5ebe7;color:#172421;font-size:12px}.ugo-provider-payout details summary{cursor:pointer;font-weight:700}.ugo-provider-payout details>div{padding:8px 0!important;border-bottom:1px solid #edf1ee;color:#52665c;font-size:12px!important}.ugo-provider-payout details>div b{color:#172421}.ugo-provider-payout details small{display:block;color:#64706b!important}@media(max-width:359px){.ugo-provider-payout input{font-size:16px}.ugo-provider-payout .mvp-voice-btn{min-height:50px}}
+
+.ugo-payout-load-error{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:10px;padding:12px;border-radius:10px;background:#fff8e8;color:#62480c;font-size:13px}
+.ugo-payout-load-error button{min-height:40px;padding:6px 12px;border:1px solid #a47d27;border-radius:8px;background:#fff;color:#493806;font-weight:700;cursor:pointer}
+
+/* UGO Pagamentos V2 — preview only, cannot save Pix data */
+.ugo-asaas-recebimentos{margin-top:16px;padding:16px;border:1px solid #d8e6eb;border-radius:18px;background:linear-gradient(135deg,#f6fbff 0%,#eef9f4 100%);color:#17302c}
+.ugo-asaas-recebimentos-head{display:flex;gap:12px;align-items:center}
+.ugo-asaas-recebimentos-head strong{font-size:15px}
+.ugo-asaas-recebimentos-head p,.ugo-asaas-note{margin:4px 0;color:#5c746d;font-size:12px;line-height:1.5}
+.ugo-asaas-recebimentos-icon{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:12px;background:#d7ebef;color:#087f5b;font-size:25px}
+.ugo-asaas-split{display:flex;justify-content:space-between;gap:8px;margin:14px 0 7px;padding:10px 12px;border-radius:10px;background:#dff2eb;color:#075f45;font-size:12px;font-weight:750}
+.ugo-asaas-account{display:flex;flex-direction:column;gap:5px;margin-top:14px;padding:12px;border:1px solid #d8e5e3;border-radius:12px;background:#fff;font-size:12px}
+.ugo-asaas-pending{color:#8a5c18;font-size:12px}
+.ugo-asaas-pix-fields{margin:14px 0 0;padding:12px;border:1px solid #e1e8e4;border-radius:12px;background:#fff}
+.ugo-asaas-pix-fields legend{padding:0 5px;font-size:12px;font-weight:750}
+.ugo-asaas-pix-fields label{margin-top:10px!important}
+.ugo-asaas-pix-fields select,.ugo-asaas-pix-fields input{display:block;box-sizing:border-box;width:100%;margin-top:5px;padding:11px;border:1px solid #d9e2dc;border-radius:10px;background:#fff;color:#17302c;font-size:14px}
+.ugo-asaas-pix-fields button{width:100%;min-height:44px;margin-top:12px;border:0;border-radius:10px;background:#087f5b;color:#fff;font-weight:750}
+.ugo-asaas-pix-fields:disabled,.ugo-asaas-pix-fields[disabled]{opacity:.72}
+.ugo-asaas-locked{margin:10px 0;padding:10px 12px;border-radius:10px;background:#fff4df;color:#704914;font-size:12px;line-height:1.5}

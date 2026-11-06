@@ -17,11 +17,17 @@ on:
         required: false
         default: 'Command Center direct GitHub action'
         type: string
-  workflow_run:
-    workflows: ["UGO Isolated RPC RLS"]
-    types: [completed]
-  schedule:
-    - cron: '17 * * * *'
+      allow_test_ddl_cleanup:
+        description: 'Ejecutar el paso DDL/limpieza en UGO TEST (GRANT, políticas RLS, backfill y PENDING→TRUSTED). Requiere autorización explícita.'
+        required: false
+        default: false
+        type: boolean
+  # Automatic triggers stay OFF on purpose. This file was unparseable from at least
+  # 2026-10-30 (secret expressions replaced by masked log text), so the hourly worker
+  # has not run since its last success on 2026-09-29. Re-enabling it is an explicit
+  # Empresa Autónoma gate decision, not a CI repair. To restore, add back:
+  #   workflow_run: { workflows: ["UGO Isolated RPC RLS"], types: [completed] }
+  #   schedule: [ { cron: '17 * * * *' } ]
 concurrency:
   group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
@@ -74,9 +80,11 @@ jobs:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
         run: node scripts/assert-test-environment.mjs
       - name: Grant service_role UPDATE privileges and cleanup
+        # DDL + bulk data rewrites in UGO TEST: never part of an implicit run.
+        if: ${{ inputs.allow_test_ddl_cleanup == true }}
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           node <<'NODE'
           // Use pg client directly to execute DDL
@@ -213,55 +221,55 @@ jobs:
       - name: Validate Gemini-first model route with OpenRouter fallback
         continue-on-error: true
         env:
-          GEMINI_API_KEY: *** secrets.GEMINI_API_KEY }}
-          OPENROUTER_API_KEY: *** secrets.OPENROUTER_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/openrouter-autonomy-probe.mjs
       - name: Reconcile zero-cost model routes
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-model-route-runtime.mjs
       - name: Exercise controlled model fallback
         continue-on-error: true
         env:
-          GEMINI_API_KEY: *** secrets.GEMINI_API_KEY }}
-          OPENROUTER_API_KEY: *** secrets.OPENROUTER_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-model-fallback-runtime.mjs
       - name: Exercise Consultar Agente HTTP handler in UGO TEST
         env:
-          GEMINI_API_KEY: *** secrets.GEMINI_API_KEY }}
-          OPENROUTER_API_KEY: *** secrets.OPENROUTER_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_ANON_KEY: ***
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
           UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
           UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-agent-consultation-http-runtime.mjs
       - name: Connect canonical agents to OpenRouter in UGO TEST
         env:
-          OPENROUTER_API_KEY: *** secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/connect-autonomous-agents-openrouter.mjs
       - name: Execute isolated P0 TEST service
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-p0-runtime.mjs
       - name: Execute authenticated QA probes
         env:
-          GEMINI_API_KEY: *** secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_ANON_KEY: ***
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
           UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
-          UGO_TEST_CLIENT_PASSWORD: *** secrets.UGO_TEST_CLIENT_PASSWORD }}
+          UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
           UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
-          UGO_TEST_PROVIDER_PASSWORD: *** secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
           UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
           UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-qa-auth-runtime.mjs
@@ -269,117 +277,117 @@ jobs:
         env:
           UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_ANON_KEY: ***
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
           UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
-          UGO_TEST_PROVIDER_PASSWORD: *** secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
         run: node scripts/autonomous-qa-gps-runtime.mjs
       - name: Execute real Realtime QA probe
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_ANON_KEY: ***
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
           UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
-          UGO_TEST_CLIENT_PASSWORD: *** secrets.UGO_TEST_CLIENT_PASSWORD }}
+          UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
           UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
-          UGO_TEST_PROVIDER_PASSWORD: *** secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
         run: node scripts/chat-realtime-probe.mjs
       - name: Execute deterministic QA runtime coverage
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_ANON_KEY: ***
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
           UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
-          UGO_TEST_CLIENT_PASSWORD: *** secrets.UGO_TEST_CLIENT_PASSWORD }}
+          UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
           UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
-          UGO_TEST_PROVIDER_PASSWORD: *** secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
           UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
           UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-qa-runtime.mjs
       - name: Verify persisted-state QA judge agent jobs and ledgers
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-qa-judge-runtime.mjs
       - name: Verify protected uploaded media bytes
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-uploaded-media-runtime.mjs
       - name: Reconcile independent Quality Coverage Agent
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-quality-coverage-runtime.mjs
       - name: D14 audit Quality Coverage Agent
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-d14-quality-coverage-runtime.mjs
       - name: Verify autonomous integrity controls
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-control-integrity-runtime.mjs
       - name: Execute corporate challenges
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-corporate-challenges-runtime.mjs
       - name: Verify final D14 corporate audit
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-final-corporate-audit-runtime.mjs
       - name: Reconcile permanent regressions
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-regression-agent-runtime.mjs
       - name: Verify authoritative Customer 1 Release Gate
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-release-gate-agent-runtime.mjs
       - name: Verify QA Director governance boundary
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-qa-director-reconciler-runtime.mjs
       - name: Execute Meta-QA seeded defect calibration
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-meta-qa-runtime.mjs
       - name: Evaluate Customer #1 gate with real TEST Super Admin
         if: always()
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_ANON_KEY: ***
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
           UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
           UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-launch-gate-runtime.mjs
       - name: Prove scheduled worker autonomy ON
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-scheduled-worker-on-proof.mjs
       - name: Execute Sentinel Gate
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-sentinel-gate.mjs
       - name: Run governed worker cycle
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
-          OPENROUTER_API_KEY: *** secrets.OPENROUTER_API_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node scripts/autonomous-worker-cycle.mjs
       - name: Persist exact runtime revision
         if: always()
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: *** secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-runtime-revision.mjs
       - name: Finalize direct-action audit
         if: always()

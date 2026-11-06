@@ -220,7 +220,10 @@ async function testProvider(viewport,name){
      page.getByRole('alert').filter({hasText:/error|inválid|incorrect|falló|falhou|failed/i}).waitFor({state:'visible',timeout:30000}).then(async()=>{throw new Error('PROVIDER_LOGIN_ERROR '+(await page.locator('body').innerText()).slice(0,1200))})
    ])
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
-   await page.getByTestId('language-selector').selectOption('es')
+   // Provider language is intentionally available only inside Profile.
+   await (viewport.width>=1000?page.locator('.provider-studio-nav button').last():page.getByTestId('provider-mobile-profile')).click()
+   await page.locator('#ugo-provider-profile-language').selectOption('es')
+   await (viewport.width>=1000?page.locator('.provider-studio-nav button').first():page.getByTestId('provider-mobile-home')).click()
    await assertResponsive(page,'provider '+name+' home')
    let checkedItems=0
    if(viewport.width>=1000){
@@ -282,7 +285,10 @@ async function testAdminAuthBoundary(viewport,name){
      await page.addInitScript(()=>localStorage.setItem('ugo.locale.guest.admin','es'))
      if(item.session)await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),item.session)
      await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
-     await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
+     // Assert a real authorization boundary, independently of guest language controls.
+     const denied=page.getByRole('alert').filter({hasText:/Acceso denegado|Access denied|Acesso negado/i})
+     const login=page.locator('form input[type="password"]')
+     await (item.expectsError?denied:login).waitFor({state:'visible',timeout:20000})
      assert.equal(await page.getByRole('navigation',{name:'Navegación Admin'}).count(),0,item.actor+' must not receive Admin navigation')
      if(item.expectsError)await page.getByRole('alert').filter({hasText:/Acceso denegado|Access denied|Acesso negado/i}).waitFor({state:'visible',timeout:10000})
      await assertResponsive(page,'admin auth denied '+item.actor+' '+name)
@@ -412,7 +418,8 @@ async function testTranslations(role,viewport,name){
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
    if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
-   const selector=page.getByTestId('language-selector').first()
+   if(role==='provider')await (viewport.width>=1000?page.locator('.provider-studio-nav button').last():page.getByTestId('provider-mobile-profile')).click()
+   const selector=role==='provider'?page.locator('#ugo-provider-profile-language'):page.getByTestId('language-selector').first()
    await selector.selectOption(locale)
    await page.waitForFunction(value=>document.documentElement.lang===value,locale)
    await assertResponsive(page,role+' '+locale+' '+name)
