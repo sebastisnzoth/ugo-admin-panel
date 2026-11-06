@@ -1145,3 +1145,10 @@ RUNTIME VALIDATED             pendiente
 - Cross-role UI: el runtime elige el idioma del Proveedor en Perfil (commit del usuario `0c4876a`).
 - Evidencia local: `npm test` 1676/1685 sin fallas (9 omitidos), build OK, lint de Core CI 0 errores, workflows validados con action-validator. Estado: IMPLEMENTED; CI exact-SHA pendiente. Sin migraciones aplicadas; sin cambios en PROD, Auth, pagos ni credenciales.
 - Bolsa de pedidos detrás de `VITE_FLAG_PROVIDER_PENDING_POOL` (apagado por defecto; `isProviderPendingPoolEnabled` en `src/lib/featureFlags.ts`), como pide `docs/UGO_PR614_SAFE_RELEASE_PLAN.md` («no desplegar frontend que invoque RPC inexistentes»). Sin el flag no se monta la sección ni se invocan `obtener_pedidos_pendientes_proveedor`/`tomar_pedido_pendiente` (verificado en el bundle de producción). A diferencia de los flags rideshare, puede activarse en producción, solo después de aplicar y validar las migraciones en ese ambiente. Apagado: quitar la variable y redeployar; el guard de RPC ausente sigue como segunda capa. Contrato `provider-pending-pool-exposure-flag.test.mjs` (4 pruebas; mutaciones detectadas). Contratos 1663/1665 sin fallas (2 omitidos), build OK.
+
+
+## 2026-11-05 · App Proveedor — Asaas Pix recebimentos (UI informativa no main)
+- Integração visual em `ProviderPayoutPanel`: nova seção `ProviderAsaasRecebimentos` em português, espanhol e inglês para mostrar divisão Asaas 85% fornecedor / 15% UGO sobre líquido, vínculo pendente de subconta e formulário Pix de cinco tipos.
+- Segurança: campos de chave Pix e botão **desabilitados**. Não salva dados, não faz chamadas Asaas, não chama API de saque e não altera `cuenta_pago_externa`. Mercado Pago e fluxo legado de retiradas permanecem montados.
+- Teste adicionado em `tests/contracts/provider-asaas-recebimentos-readonly-main.test.mjs`. E2E visual e build CI exato do main ainda requerem confirmação.
+- PR #616 permanece isolado e em draft, sem mudança financeira ou SQL PROD.
