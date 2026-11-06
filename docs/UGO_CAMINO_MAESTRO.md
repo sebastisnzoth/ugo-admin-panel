@@ -752,3 +752,8 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - `autonomous-worker-test.yml`: último éxito 2026-09-29 (versión `f212662`, sin DDL); la versión corrupta añadió DDL y un PENDING→TRUSTED masivo. No reactivar cron ni workflow_run sin autorización.
 - En `647f25b` Core CI y P0 pasaron. Provider Active Jobs falló por un localizador ambiguo (`TRABAJO ACTIVO` vs botón de la barra lateral), corregido acotándolo a `span.ugo-ui-status` (commit del usuario). Si vuelve a fallar, leer la anotación «Provider Active Jobs runtime». Migraciones `20261105120000` y `20261105130000` siguen sin aplicar.
 - Bolsa de pedidos: apagada por defecto con `VITE_FLAG_PROVIDER_PENDING_POOL` (único punto de montaje en `ProviderOpportunities.tsx`; único llamador de los RPC en `ProviderPendingRequests.tsx`, ambos fijados por contrato). Para validarla en TEST, construir con `VITE_FLAG_PROVIDER_PENDING_POOL=true` donde las migraciones ya estén aplicadas. No activar en PROD sin la ventana autorizada del plan de despliegue.
+
+## Continuidad de seguridad — PR #615 (2026-11-05)
+
+- Endurecimiento OAuth acotado al interceptor temprano en `index.html`: solo `/client.html` y `/provider.html` se aceptan como destino desde `ugo_oauth_dest`; query/hash del callback legítimo se conservan. Test de contrato añadido para los casos válidos y destinos no confiables.
+- **Release gate:** revisión de seguridad independiente, CI, prueba manual de Google OAuth en entornos aislados y verificación de GitHub Pages/Vercel antes de pensar en merge. PR DRAFT; sin cambios a Supabase PROD, TEST, Vercel env, pagos, GPS, matching o RLS.

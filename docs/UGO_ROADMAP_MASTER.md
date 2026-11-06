@@ -1145,3 +1145,9 @@ RUNTIME VALIDATED             pendiente
 - Cross-role UI: el runtime elige el idioma del Proveedor en Perfil (commit del usuario `0c4876a`).
 - Evidencia local: `npm test` 1676/1685 sin fallas (9 omitidos), build OK, lint de Core CI 0 errores, workflows validados con action-validator. Estado: IMPLEMENTED; CI exact-SHA pendiente. Sin migraciones aplicadas; sin cambios en PROD, Auth, pagos ni credenciales.
 - Bolsa de pedidos detrás de `VITE_FLAG_PROVIDER_PENDING_POOL` (apagado por defecto; `isProviderPendingPoolEnabled` en `src/lib/featureFlags.ts`), como pide `docs/UGO_PR614_SAFE_RELEASE_PLAN.md` («no desplegar frontend que invoque RPC inexistentes»). Sin el flag no se monta la sección ni se invocan `obtener_pedidos_pendientes_proveedor`/`tomar_pedido_pendiente` (verificado en el bundle de producción). A diferencia de los flags rideshare, puede activarse en producción, solo después de aplicar y validar las migraciones en ese ambiente. Apagado: quitar la variable y redeployar; el guard de RPC ausente sigue como segunda capa. Contrato `provider-pending-pool-exposure-flag.test.mjs` (4 pruebas; mutaciones detectadas). Contratos 1663/1665 sin fallas (2 omitidos), build OK.
+
+## Seguridad — PR #615 OAuth callback allowlist (2026-11-05)
+
+- **IMPLEMENTED, NOT PUBLISHED:** `index.html` valida `ugo_oauth_dest` con allowlist exacta (`/client.html`, `/provider.html`) antes de concatenar parámetros del callback OAuth; las rutas son las que ya escriben `public/client.html` y `public/provider.html`. No se cambian URLs ni credenciales Supabase.
+- **CONTRACT ADDED:** `tests/contracts/oauth-redirect-allowlist.test.mjs` cubre ambos destinos, rechaza URLs externas/protocol-relative y evita redirecciones fuera del callback.
+- **GATES:** CI exact-SHA, pruebas OAuth reales y code-review pendientes. PR #615 permanece DRAFT y sin merge; no se ejecutaron pruebas contra PROD ni se cambió ningún entorno.

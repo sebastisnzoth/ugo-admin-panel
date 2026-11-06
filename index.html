@@ -49,6 +49,13 @@
           );
 
           if (!isOAuthCallback) return;
+          // OAuth redirects may only target the app's known same-origin entry points.
+          // localStorage is user-controlled and must never supply an arbitrary URL.
+          var allowedDestinations = ['/client.html', '/provider.html'];
+          if (!allowedDestinations.includes(dest)) {
+            localStorage.removeItem('ugo_oauth_dest');
+            return;
+          }
           localStorage.removeItem('ugo_oauth_dest');
           try { window.stop(); } catch(e) {}
           window.location.replace(dest + qs + hash);
