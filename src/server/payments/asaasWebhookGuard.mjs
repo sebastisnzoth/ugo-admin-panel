@@ -16,7 +16,7 @@ const SAFE_ID = /^[A-Za-z0-9_\-]+$/
 export function parseAsaasPaymentEvent(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Invalid webhook')
   const { id, event, payment } = payload
-  if (typeof id !== 'string' || id.length === 0 || id.length > 160 || /[\\u0000-\\u001f]/.test(id)) throw new Error('Invalid event ID')
+  if (typeof id !== 'string' || id.length === 0 || id.length > 160 || [...id].some(char => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) throw new Error('Invalid event ID')
   if (typeof event !== 'string' || event.length > 100 || !SAFE_ID.test(event)) throw new Error('Invalid event name')
   if (typeof payment?.id !== 'string' || payment.id.length > 160 || !SAFE_ID.test(payment.id))
     throw new Error('Invalid payment ID')
