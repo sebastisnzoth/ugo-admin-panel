@@ -9,8 +9,8 @@ test('sandbox webhook token uses constant-time comparison of digests', () => {
   assert.equal(verifyAsaasWebhookToken(undefined,token),false)
 })
 test('webhook extracts only IDs and never treats event as payment confirmation', () => {
-  assert.deepEqual(parseAsaasPaymentEvent({id:'evt_123',event:'PAYMENT_RECEIVED',payment:{id:'pay_123',value:200}}),
-    {eventId:'evt_123',kind:'PAYMENT_RECEIVED',externalPaymentId:'pay_123'})
+  assert.deepEqual(parseAsaasPaymentEvent({id:'evt_123&special',event:'PAYMENT_RECEIVED',payment:{id:'pay_123',value:200}}),
+    {eventId:'evt_123&special',kind:'PAYMENT_RECEIVED',externalPaymentId:'pay_123'})
 })
 test('untrusted webhook values cannot inject malicious IDs', () => {
   for(const value of [null,{}, {id:'',event:'PAYMENT_RECEIVED',payment:{id:'pay_1'}},
