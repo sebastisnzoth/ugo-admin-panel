@@ -62,6 +62,8 @@ export class NeonPixTestRepository {
       environment:service.provider_environment||'sandbox',
     },
     issuerWalletId:verified.walletId,issuerWalletVerified:true,
+    // Must match payment_intents.external_reference and Asaas payment.externalReference.
+    serviceReference:'ugo_test_'+serviceId.replace(/-/g,''),
     customerLink:{ugoClientId:service.cliente_id,
       asaasCustomerId:service.asaas_customer_id,
       environment:service.customer_environment||'sandbox'},
