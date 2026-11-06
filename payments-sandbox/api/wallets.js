@@ -32,9 +32,13 @@ export default async function handler(req,res){
   if(!response.ok)return json(res,502,{account,verified:false,error:'asaas_wallet_request_failed'})
   const data=await response.json()
   const wallets=Array.isArray(data?.data)?data.data:Array.isArray(data)?data:null
-  if(!wallets||wallets.length!==1||!UUID.test(wallets[0]?.walletId)||
-     wallets[0].walletId.toLowerCase()!==expected.toLowerCase())
+  if(!wallets||wallets.length!==1)return json(res,409,{account,verified:false,error:'asaas_wallet_ownership_mismatch'})
+  const record=wallets[0]
+  const actual=record?.id??record?.walletId
+  if(!UUID.test(actual||'')||
+     (record?.id&&record?.walletId&&record.id.toLowerCase()!==record.walletId.toLowerCase())||
+     actual.toLowerCase()!==expected.toLowerCase())
    return json(res,409,{account,verified:false,error:'asaas_wallet_ownership_mismatch'})
-  return json(res,200,{account,verified:true,environment:'sandbox',walletId:wallets[0].walletId})
+  return json(res,200,{account,verified:true,environment:'sandbox',walletId:actual})
  }catch{return json(res,502,{account,verified:false,error:'asaas_wallet_connection_failed'})}
 }
