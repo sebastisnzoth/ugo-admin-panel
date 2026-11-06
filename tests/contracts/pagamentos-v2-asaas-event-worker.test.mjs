@@ -121,3 +121,18 @@ test('Asaas event IDs containing ampersand remain processable end to end',async(
   assert.equal((await db.query('select status from ugo_payments_v2.payment_events where event_id=$1',[id])).rows[0].status,'processed')
  }finally{await db.close()}
 })
+
+test('Split DONE webhook is held for separate reconciliation, never silently processed as payment',async()=>{
+ const {db,webhook}=await setup()
+ try{
+  await webhook('evt_split_1')
+  await db.query("update ugo_payments_v2.payment_events set kind='PAYMENT_SPLIT_DONE' where event_id='evt_split_1'")
+  let consulted=false
+  await assert.rejects(reconcileStoredAsaasSandboxEvent({
+   db,asaas:{getCharge:async()=>{consulted=true;return processor()}},eventId:'evt_split_1',
+  }),/Split event requires independent settlement/)
+  assert.equal(consulted,false)
+  const event=(await db.query("select status from ugo_payments_v2.payment_events where event_id='evt_split_1'")).rows[0]
+  assert.equal(event.status,'received')
+ }finally{await db.close()}
+})
