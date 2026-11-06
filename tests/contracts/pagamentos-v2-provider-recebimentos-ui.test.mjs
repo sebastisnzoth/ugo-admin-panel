@@ -35,3 +35,10 @@ test('Pix key selection covers all Asaas bank-transfer types without collecting 
   assert.match(screen,new RegExp('value="'+type+'"'))
  assert.doesNotMatch(screen,/ASAAS_SANDBOX_API_KEY|service_role/)
 })
+
+test('Asaas receiving preview warns about parent CNPJ and still blocks Pix key registration',async()=>{
+ const screen=await fromRoot('src/mvp/ProviderAsaasRecebimentos.tsx')
+ assert.match(screen,/conta principal da plataforma precisa ter CNPJ/)
+ assert.match(screen,/subcontas/)
+ assert.match(screen,/<fieldset disabled/)
+})
