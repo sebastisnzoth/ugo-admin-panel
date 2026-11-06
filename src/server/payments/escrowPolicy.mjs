@@ -38,7 +38,7 @@ export function assertEarlyReleaseAllowed(input) {
 }
 /** Only a verified processor response can advance to released. */
 export function reconcileRelease({ state, processorReleased, guaranteeId, reportedGuaranteeId }) {
-  if (state === ESCROW_STATES.released && processorReleased === true && guaranteeId === reportedGuaranteeId) return ESCROW_STATES.released
+  if (state === ESCROW_STATES.released && processorReleased === true && typeof guaranteeId === 'string' && guaranteeId.length > 0 && guaranteeId === reportedGuaranteeId) return ESCROW_STATES.released
   if (state !== ESCROW_STATES.releaseRequested) throw new Error('Invalid release state')
   if (processorReleased !== true || !guaranteeId || guaranteeId !== reportedGuaranteeId) throw new Error('Release not verified by processor')
   return ESCROW_STATES.released
