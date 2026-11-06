@@ -33,3 +33,36 @@ test('processor errors never echo personal data', async () => {
   const api = new AsaasCustomerSandbox({ apiKey: 'private', fetchImpl: async () => ({ ok: false, status: 409, json: async () => ({ cpfCnpj: payer.cpfCnpj }) }) })
   await assert.rejects(api.createCustomer(payer), e => e.message === 'Asaas sandbox customer request failed (409)' && !e.message.includes(payer.cpfCnpj))
 })
+
+test('customer lookup is GET-only and links by UGO externalReference',async()=>{
+  const reference='ugo_test_client_1'
+  const calls=[]
+  const api=new AsaasCustomerSandbox({apiKey:'fake',fetchImpl:async(url,opts)=>{
+    calls.push([url,opts])
+    return {ok:true,json:async()=>({data:[{id:'cus_123',externalReference:reference}],hasMore:false})}
+  }})
+  assert.deepEqual(await api.findCustomerByReference(reference),{found:true,customerId:'cus_123'})
+  assert.equal(calls[0][0],'https://api-sandbox.asaas.com/v3/customers?externalReference=ugo_test_client_1&limit=100')
+  assert.equal(calls[0][1].method,'GET')
+  assert.equal(calls[0][1].body,undefined)
+})
+test('fail closed for duplicates, pagination and mismatched payer',async()=>{
+  for(const response of [
+    {data:[{id:'cus_1',externalReference:'ugo_1'},{id:'cus_2',externalReference:'ugo_1'}],hasMore:false},
+    {data:[],hasMore:true},
+    {data:[{id:'cus_1',externalReference:'someone_else'}],hasMore:false},
+    {data:[{id:'cus_1'}],hasMore:false},
+    {},
+  ]) {
+    const api=new AsaasCustomerSandbox({apiKey:'fake',fetchImpl:async()=>({ok:true,json:async()=>response})})
+    await assert.rejects(api.findCustomerByReference('ugo_1'))
+  }
+})
+test('empty lookup yields not-found; invalid IDs never reach the network',async()=>{
+  const api=new AsaasCustomerSandbox({apiKey:'fake',fetchImpl:async()=>({ok:true,json:async()=>({data:[],hasMore:false})})})
+  assert.deepEqual(await api.findCustomerByReference('ugo_test_1'),{found:false})
+  let called=false
+  const blocked=new AsaasCustomerSandbox({apiKey:'fake',fetchImpl:async()=>{called=true;throw Error('unexpected')}})
+  await assert.rejects(blocked.findCustomerByReference('../customer'))
+  assert.equal(called,false)
+})
