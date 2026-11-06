@@ -3,13 +3,16 @@ import assert from 'node:assert/strict'
 import { AsaasPixQrSandbox, buildPixWithProviderSplit } from '../../src/server/payments/asaasPixQrSandbox.mjs'
 const input = {
   customerId: 'cus_test', amountBRL: 200, dueDate: '2026-11-10',
-  serviceReference: 'ugo_service_test', providerWalletId: 'wal_test', providerSharePercent: 85,
+  serviceReference: 'ugo_service_test', providerWalletId: 'ab5b5a59-f2eb-40eb-8b8b-bb7314685a33', providerSharePercent: 85,
+  issuerWalletId: 'b7f0bd20-06ee-4ce3-857c-c7868e8d071b', issuerWalletVerified: true,
+  assignedProviderId: 'provider_test',
+  providerAccount: { providerId: 'provider_test', walletId: 'ab5b5a59-f2eb-40eb-8b8b-bb7314685a33', environment: 'sandbox', verified: true },
 }
 test('Asaas Pix split routes only provider wallet; account owner retains remainder', () => {
   const p = buildPixWithProviderSplit(input)
   assert.equal(p.billingType, 'PIX')
   assert.equal(p.value, 200)
-  assert.deepEqual(p.split, [{ walletId: 'wal_test', percentualValue: 85 }])
+  assert.deepEqual(p.split, [{ walletId: 'ab5b5a59-f2eb-40eb-8b8b-bb7314685a33', percentualValue: 85 }])
   assert.equal(p.externalReference, 'ugo_service_test')
 })
 test('sandbox-only charge and QR retrieval obey supported endpoints', async () => {
@@ -41,4 +44,13 @@ test('fails closed when Asaas returns no payable QR', async () => {
     ok: true, json: async () => ({ payload: '' }),
   }) })
   await assert.rejects(api.getQr('pay_test'), /Missing Pix QR/)
+})
+
+test('sandbox client refuses to create Pix when issuer wallet is unverified', async () => {
+  let called = false
+  const api = new AsaasPixQrSandbox({ apiKey: 'fake', fetchImpl: async () => { called = true; throw Error('unexpected network') } })
+  await assert.rejects(api.createChargeWithSplit({ ...input, issuerWalletVerified: false }), /UGO wallet not verified/)
+  await assert.rejects(api.createChargeWithSplit({ ...input, providerWalletId: input.issuerWalletId,
+    providerAccount: { ...input.providerAccount, walletId: input.issuerWalletId } }), /issuer wallet/)
+  assert.equal(called, false)
 })
