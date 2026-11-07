@@ -55,6 +55,33 @@ export class AsaasCustomerSandbox {
       throw new Error('Invalid Asaas customer mapping')
     return Object.freeze({ found: true, customerId: record.id })
   }
+  /**
+   * Read-only recovery for a customer manually created in the Sandbox dashboard.
+   * Only returns a customer ID if the entire issuer account has exactly ONE
+   * customer; otherwise the operator must reconcile identities explicitly.
+   * Never creates a record or guesses among multiple customers.
+   */
+  async findSoleExistingCustomer() {
+    const response = await this.fetchImpl(BASE + '/customers?limit=2&offset=0', {
+      method: 'GET',
+      headers: {
+        access_token: this.apiKey, accept: 'application/json',
+        'User-Agent': 'UGO-Pagamentos-V2-Sandbox/0.1',
+      },
+    })
+    if (!response?.ok)
+      throw new Error('Asaas sandbox customer audit failed (' + (response?.status || 0) + ')')
+    const data = await response.json().catch(() => null)
+    if (!data || !Array.isArray(data.data) || typeof data.hasMore !== 'boolean')
+      throw new Error('Invalid Asaas sandbox customer list')
+    if (data.hasMore || data.data.length > 1)
+      throw new Error('Multiple Sandbox customers require explicit reconciliation')
+    if (data.data.length === 0) return Object.freeze({ found: false })
+    const customerId = data.data[0]?.id
+    if (typeof customerId !== 'string' || !/^cus_[A-Za-z0-9_-]{1,96}$/.test(customerId))
+      throw new Error('Invalid Asaas Sandbox customer ID')
+    return Object.freeze({ found: true, customerId })
+  }
   async createCustomer(input) {
     const response = await this.fetchImpl(BASE + '/customers', {
       method: 'POST',
