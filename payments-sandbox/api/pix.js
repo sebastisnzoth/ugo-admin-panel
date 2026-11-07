@@ -289,7 +289,7 @@ async function diagnose(db){
  return Object.freeze({
   action:'diagnostic',environment:'sandbox',
   walletVerified,uniqueCustomer,
-  payerDocumentPresent:typeof customer?.cpfCnpj==='string'&&/^\\d{11}(?:\\d{3})?$/.test(customer.cpfCnpj),
+  payerDocumentPresent:typeof customer?.cpfCnpj==='string'&&/^\d{11}(?:\d{3})?$/.test(customer.cpfCnpj),
   notificationsDisabled:customer?.notificationDisabled===true,
   accountApproved:account?.general==='APPROVED',
   pixKeyCount:Array.isArray(keys.data)&&keys.hasMore===false?keys.data.length:null,
