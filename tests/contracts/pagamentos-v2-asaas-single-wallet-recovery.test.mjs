@@ -27,3 +27,11 @@ test('only one operator may claim recovery and processor errors stay fail-closed
  assert.match(source,/UGO_TEST_OPERATOR_TOKEN/)
  assert.match(source,/VERCEL_ENV!=='preview'/)
 })
+
+test('Asaas validation details are whitelisted instead of leaking processor messages',()=>{
+ assert.match(source,/detail\.errors\.map\(x=>x\?\.code\)/)
+ assert.match(source,/\^\[A-Za-z0-9_-\]\{1,64\}\$/)
+ assert.match(source,/processorValidationCodes/)
+ assert.match(source,/rejected\?'manual_review':'unknown_processor_result'/)
+ assert.doesNotMatch(source,/JSON\.stringify\(detail\)/)
+})
