@@ -57,7 +57,6 @@ export function buildPixWithoutSplit({
     value: amountBRL,
     dueDate,
     externalReference: serviceReference,
-    notificationDisabled: true,
   })
 }
 export class AsaasPixQrSandbox {
