@@ -101,6 +101,15 @@ function settlement(p){
 async function sync(db,row,p){
  const map={PENDING:'pending',CONFIRMED:'confirmed',RECEIVED:'received'}
  const state=map[p.status]||'manual_review'
+ if(row.status==='received'&&state!=='received')
+  throw Error('processor_state_regression')
+ if(row.status==='confirmed'&&state==='pending')
+  throw Error('processor_state_regression')
+ if(row.status==='manual_review')
+  throw Error('manual_review_requires_operator')
+ if(row.net_cents!==null&&state==='received'&&
+   Number(row.net_cents)!==Math.round(Number(p.netValue)*100))
+  throw Error('processor_net_amount_changed')
  const net=p.status==='RECEIVED'?Math.round(Number(p.netValue)*100):null
  if(net!==null&&(!Number.isSafeInteger(net)||net<=0||net>10000))throw Error('net_value_invalid')
  const result=await db.query(`update ugo_payments_v2.payment_intents
@@ -169,6 +178,8 @@ async function confirm(db){
  try{await processor('/sandbox/payment/'+encodeURIComponent(p.id)+'/confirm','POST')}
  catch{throw Error('confirmation_uncertain_reconcile_without_retry')}
  const verified=await getVerifiedPayment(row)
+ if(!['CONFIRMED','RECEIVED'].includes(verified.status))
+  throw Error('confirmation_not_yet_verified_reconcile_later')
  return {action:'confirmed',paymentId:verified.id,...await sync(db,row,verified)}
 }
 async function reconcile(db){
