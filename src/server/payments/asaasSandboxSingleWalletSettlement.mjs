@@ -11,7 +11,8 @@ const positiveCents=n=>Number.isSafeInteger(n)&&n>0
 export function projectLocalSandboxSplit({
   netCents, providerShareBps=8500, issuerWalletVerified=false,
 }={}) {
- if(!positiveCents(netCents)||providerShareBps!==8500||issuerWalletVerified!==true)
+ if(!positiveCents(netCents)||netCents>Math.floor((Number.MAX_SAFE_INTEGER-50)/85)||
+    providerShareBps!==8500||issuerWalletVerified!==true)
    throw Error('Sandbox allocation requires verified issuer and integer net cents')
  // Half-up rounding in integer arithmetic; remainder always stays with UGO.
  const providerCents=Math.floor((netCents*85+50)/100)
