@@ -263,6 +263,43 @@ async function recoverCreate(db){
   splitSettled:false,providerPaid:false}
 }
 
+/**
+ * Diagnostic is strictly read-only. Do not expose identifiers, PII or full
+ * Asaas response data. It is safe even while the intent is manual_review.
+ */
+async function diagnose(db){
+ const row=await existing(db)
+ const ref='ugo_pix_test_'+process.env.UGO_PIX_TEST_SERVICE_ID.replace(/-/g,'')
+ if(row && (row.external_reference!==ref || Number(row.gross_cents)!==10000))
+  throw Error('diagnostic_fixture_identity_mismatch')
+ const [wallets,customers,account,keys,remote]=await Promise.all([
+  processor('/wallets/'),
+  processor('/customers?limit=2&offset=0'),
+  processor('/myAccount/status/'),
+  processor('/pix/addressKeys?limit=2&offset=0'),
+  processor('/payments?limit=2&offset=0&externalReference='+encodeURIComponent(ref)),
+ ])
+ const issuer=process.env.UGO_ASAAS_ISSUER_WALLET_ID
+ const walletVerified=UUID.test(issuer||'')&&Array.isArray(wallets.data)&&
+  wallets.data.length===1&&String(wallets.data[0]?.id||'').toLowerCase()===issuer.toLowerCase()
+ const uniqueCustomer=Array.isArray(customers.data)&&customers.data.length===1&&
+  customers.hasMore===false&&/^cus_[a-zA-Z0-9_-]{1,96}$/.test(customers.data[0]?.id||'')
+ const customer=uniqueCustomer?customers.data[0]:null
+ const remoteValid=Array.isArray(remote.data)&&remote.hasMore===false
+ return Object.freeze({
+  action:'diagnostic',environment:'sandbox',
+  walletVerified,uniqueCustomer,
+  payerDocumentPresent:typeof customer?.cpfCnpj==='string'&&/^\\d{11}(?:\\d{3})?$/.test(customer.cpfCnpj),
+  notificationsDisabled:customer?.notificationDisabled===true,
+  accountApproved:account?.general==='APPROVED',
+  pixKeyCount:Array.isArray(keys.data)&&keys.hasMore===false?keys.data.length:null,
+  localIntentStatus:row?.status||'absent',
+  localPaymentLinked:!!row?.asaas_payment_id,
+  remoteLookupConclusive:remoteValid,
+  remoteChargeCount:remoteValid?remote.data.filter(p=>p?.externalReference===ref).length:null,
+  financialWritesPerformed:false,
+ })
+}
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,405,{error:'post_only'})
  if(process.env.VERCEL_ENV!=='preview'||process.env.UGO_PAYMENTS_TEST_ONLY!=='1')
@@ -273,12 +310,13 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await dbConnect()
-  const result=action==='create'?await create(db):
+  const result=action==='diagnose'?await diagnose(db):
+    action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
     action==='confirm'?await confirm(db):await reconcile(db)
   return json(res,200,{environment:'sandbox',...result})
@@ -287,6 +325,7 @@ export default async function handler(req,res){
   const raw=String(e?.message||'')
   const allowed=new Set([
    'wallet_not_configured','issuer_wallet_not_verified',
+   'diagnostic_fixture_identity_mismatch',
    'single_sandbox_customer_not_verified','not_isolated_test_role',
    'invalid_synthetic_service','existing_reservation_requires_reconciliation',
    'existing_charge_state_requires_reconciliation','existing_qr_unavailable',
