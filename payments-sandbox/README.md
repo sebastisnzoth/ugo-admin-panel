@@ -1,29 +1,57 @@
-# UGO Pagamentos V2 — isolated Sandbox API
+# UGO Pagamentos V2 — isolated Asaas Sandbox (Preview only)
 
-Independent **Vercel Preview** backend. No frontend, no shared Production
-environment. The project is manually deployed and deliberately disconnected
-from UGO Arena; there is no charge creation, confirmation or payout route.
+This deployment is **not** Arena production. It uses its own Vercel project,
+a dedicated Neon TEST database and the Asaas **Sandbox** base URL.
 
-## Files
-- `api/health.js`: read-only Neon TEST connectivity check (returns only booleans).
-- `api/wallets.js`: authenticated server-side Asaas Sandbox GET /v3/wallets/
-  for issuer or provider. No POST and no user-supplied wallet IDs.
-- `package.json`: locked direct Postgres client dependency.
+## HTTP endpoints
 
-## Required Preview-only variables
+- `GET /api/health`: no secrets; confirms isolated read-only DB health and
+  whether the authenticated TEST write capability is configured.
+- `GET /api/wallets?account=issuer`: operator bearer token required;
+  authenticated Asaas issuer-wallet verification.
+- `GET /api/customers`: operator bearer token required; returns the unique
+  existing Asaas Sandbox customer ID only if unambiguous.
+- `POST /api/pix`: operator bearer token required. JSON `action` is one of:
+  - `create`: fetches the sole existing Sandbox customer and verifies the issuer
+    wallet, transactionally reserves the one synthetic R$100 service in Neon TEST,
+    makes **at most one** Asaas POST charge and persists its ID before returning
+    the official QR. Repeated requests reuse an existing PENDING charge or fail
+    closed if a previous result was uncertain.
+  - `confirm`: independently reads the registered Asaas charge, locks the
+    confirmation locally, sends Sandbox-only payment confirmation and then
+    rereads Asaas.
+  - `reconcile`: authenticated remote readback and isolated Neon status update,
+    without creating a charge or pretending a payout occurred.
+
+All financial routes are **POST**, denied outside `VERCEL_ENV=preview`,
+and require `Authorization: Bearer <UGO_TEST_OPERATOR_TOKEN>`.
+Never paste a token into a browser URL, GitHub issue or build log.
+The operator token is an independent TEST secret; it is not the Asaas key.
+
+## Isolated Preview-only environment
+
 - `UGO_PAYMENTS_TEST_ONLY=1`
-- `UGO_NEON_TEST_READONLY_URL`: dedicated read-only schema role.
-- `UGO_TEST_OPERATOR_TOKEN`: strong independent bearer secret.
-- `UGO_ASAAS_ISSUER_WALLET_ID`: verified against authenticated Asaas response.
-- `ASAAS_SANDBOX_API_KEY`: new or securely provided Sandbox key (NOT inherited
-  from the legacy Vercel Production project).
-- `ASAAS_PROVIDER_SANDBOX_API_KEY`: provider's distinct Sandbox account API key.
-- `UGO_ASAAS_PROVIDER_WALLET_ID`: provider's independently verified wallet.
+- `UGO_TEST_OPERATOR_TOKEN` (secret)
+- `UGO_NEON_TEST_READONLY_URL` (restricted role, health)
+- `UGO_NEON_TEST_WRITE_URL` (restricted TEST-only role; never PROD)
+- `UGO_PIX_TEST_SERVICE_ID` (synthetic Faxina fixture, exactly R$100)
+- `ASAAS_SANDBOX_API_KEY` (secret)
+- `UGO_ASAAS_ISSUER_WALLET_ID` (validated with authenticated Asaas API)
 
-GET /api/health returns service readiness. GET /api/wallets?account=issuer
-or ?account=provider requires Authorization: Bearer <operator secret> and
-will return 503 while account secrets are absent.
+There is **no** provider wallet, no external Asaas Split, no provider payout,
+no escrow release and no production payment flow. The local 85/15 allocation
+is only a projection based on Asaas's proven net value once `RECEIVED`.
 
-Both endpoints fail closed outside Vercel Preview. Never expose tokens in
-frontend or logs. No payment creation is deployed. Do not promote this project
-to Production. Do not use account secrets from Arena PROD.
+## Fail-closed financial behavior
+
+The Neon `payment_intents` table has unique constraints by TEST service and
+external reference. Creation locks `test_services` before inserting the
+reservation. On a timeout, unexpected response, failed save or ambiguous POST,
+the intent is `unknown_processor_result`; **do not blindly retry**. Inspect
+the Asaas Sandbox account for that external reference and reconcile under
+operator control. A confirmed payment is not proof of external Split settlement.
+
+The production main branch, Arena PROD and all real balances remain untouched.
+Run the full test suite and complete authenticated Asaas/Neon E2E before claiming
+`UGO PIX SANDBOX E2E — PASS`. Reconciliation markers written here are local
+verification events, not evidence that an Asaas webhook was received.
