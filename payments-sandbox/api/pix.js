@@ -21,7 +21,14 @@ async function processor(path,method='GET',body){
   accept:'application/json','Content-Type':'application/json',
   'User-Agent':'UGO-Pix-Sandbox-E2E/0.1',
  },...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(12000)})
- if(!r.ok)throw Error('asaas_http_'+r.status)
+ if(!r.ok){
+  const detail=await r.json().catch(()=>null)
+  const safeCodes=Array.isArray(detail?.errors)?
+   detail.errors.map(x=>x?.code).filter(x=>typeof x==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(x)).slice(0,3):[]
+  const error=new Error('asaas_http_'+r.status)
+  error.safeCodes=safeCodes
+  throw error
+ }
  const data=await r.json()
  if(!data||typeof data!=='object')throw Error('invalid_asaas_response')
  return data
@@ -152,9 +159,13 @@ async function create(db){
    [reservation.id,charge.id])
   if(saved.rows.length!==1)throw Error('processor_charge_not_persisted')
  }catch(e){
+  const raw=String(e?.message||'')
+  const rejected=/^asaas_http_4[0-9]{2}$/.test(raw)
   await db.query(`update ugo_payments_v2.payment_intents set
-   status='unknown_processor_result',updated_at=now()
-   where id=$1 and status='creating'`,[reservation.id]).catch(()=>{})
+   status=$2,updated_at=now()
+   where id=$1 and status='creating'`,
+   [reservation.id,rejected?'manual_review':'unknown_processor_result']).catch(()=>{})
+  if(rejected){const error=new Error(raw);error.safeCodes=e.safeCodes||[];throw error}
   throw Error('create_uncertain_stop_and_reconcile')
  }
  const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
@@ -239,7 +250,7 @@ async function recoverCreate(db){
   await db.query(`update ugo_payments_v2.payment_intents
    set status=$2,updated_at=now() where id=$1 and status='creating'`,
    [row.id,known4xx?'manual_review':'unknown_processor_result']).catch(()=>{})
-  if(known4xx)throw Error(raw)
+  if(known4xx){const error=new Error(raw);error.safeCodes=e.safeCodes||[];throw error}
   throw Error('recovery_processor_result_uncertain')
  }
  const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
@@ -294,6 +305,9 @@ export default async function handler(req,res){
    'asaas_http_403','asaas_http_404','asaas_http_422',
   ])
   const code=allowed.has(raw)?raw:'sandbox_operation_failed'
-  return json(res,409,{environment:'sandbox',error:code})
+  const safeCodes=Array.isArray(e?.safeCodes)?
+   e.safeCodes.filter(x=>typeof x==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(x)).slice(0,3):[]
+  return json(res,409,{environment:'sandbox',error:code,
+   ...(safeCodes.length?{processorValidationCodes:safeCodes}:{})})
  }finally{if(db)await db.end().catch(()=>{})}
 }
