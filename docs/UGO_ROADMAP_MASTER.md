@@ -1152,3 +1152,82 @@ RUNTIME VALIDATED             pendiente
 - Segurança: campos de chave Pix e botão **desabilitados**. Não salva dados, não faz chamadas Asaas, não chama API de saque e não altera `cuenta_pago_externa`. Mercado Pago e fluxo legado de retiradas permanecem montados.
 - Teste adicionado em `tests/contracts/provider-asaas-recebimentos-readonly-main.test.mjs`. E2E visual e build CI exato do main ainda requerem confirmação.
 - PR #616 permanece isolado e em draft, sem mudança financeira ou SQL PROD.
+
+
+## 2026-11-05 · PR #616 — Pagamentos V2 Pix presencial (solo Sandbox)
+
+- Objetivo: que un proveedor asignado a un servicio terminado pueda mostrar QR Pix dinámico, cobrar mediante Asaas y registrar comisión UGO con Split. Diseño bifásico: primero cobro presencial; después pago anticipado bajo Escrow verificado.
+- Evidencia ya incorporada en rama aislada: `asaasPixQrSandbox.mjs` (creación de cobro y consulta QR solo en Sandbox), `providerQrAuthorization.mjs` (control puro de asignación/estado/tarifa/cuenta verificada), `asaasWebhookGuard.mjs` (validación token y envelope), pruebas de contrato específicas, política de liberación `escrowPolicy.mjs` y documentación de seguridad.
+- Faltantes P0: verificar credenciales Asaas sin exponerlas; alta de subcuenta con walletId; persistencia transaccional TEST de intents y deduplicación; backend autenticado y función idempotente; webhook con storage UNIQUE y reconciliación por API; E2E pago ficticio con Split; tolerancia a disputas y caducidad de Escrow. No hay integración activa con pantallas productivas.
+- Puertas de seguridad: no escribir ni migrar Arena PROD, no cambiar Vercel PROD, no habilitar Pix real; PR en borrador hasta CI, seguridad, concurrencia y sandbox E2E completos. El valor `retenido` en DB no constituye prueba de custodia en Asaas.
+- Referencia: `docs/UGO_PAGAMENTOS_V2_IMPLEMENTATION_PLAN.md` y PR #616.
+
+
+## 2026-11-05 — PR #616: contrato Pix seguro e esquema financeiro TEST (não aplicado)
+- Código `providerQrAuthorization.mjs`: bloqueia recriação de PIX se cobrança anterior está pendente, vencida ou estado desconhecido; exige reconciliação com Asaas antes de repetir (idempotência efetiva ainda depende de lock transacional).
+- Novo `asaasPixReconciliation.mjs`: valida `id/customer/externalReference/billingType/value/netValue` em resposta obtida por GET autenticado. Diferencia `CONFIRMED`, `RECEIVED`, reembolsos e pendências; não declara split liquidado nem escrow liberado com base no recebimento.
+- Novo rascunho `docs/sql/ugo_pagamentos_v2_isolated_test_schema.sql`: esquema independente com customer/provider links, intents, webhooks deduplicados, splits, garantias, release requests e ledger; **não executado**, não há migração PROD.
+- Pendências P0: ambiente de banco TEST novo com role privada, migração revisada, lock atomic/UNIQUE em tempo real, credenciais reais Sandbox verificadas por server-side, provider subconta, endpoint isolado auth+webhook, testes de transações, E2E. PR permanece draft.
+
+
+## 2026-11-05 — PR #616 checkout Pix presencial isolado
+- `src/server/payments/asaasPixCheckoutFlow.mjs`: orquestra emissão PIX para prestador autenticado, com validação de serviço/cliente/provider/issuer e contrato `reservePix` transacional ANTES de chamar Asaas; não faz import de módulos frontend nem Vercel PROD.
+- Para reserva existente, exige GET autenticado e cobrança `PENDING` que corresponda a cliente, serviço e valor; caso timeout/retorno incerto, registra `markUncertain` e não reenvia automaticamente.
+- Testes offline: emissão, QR reutilizado, conta inválida, timeout e pendência de conciliação (`tests/contracts/pagamentos-v2-pix-checkout-flow.test.mjs`).
+- P0 ainda bloqueado: implementação concreta de repo/DB test atômico, conexão API key Sandbox em execução isolada, subconta, webhook durável e E2E financeiro; não fazer merge/deploy.
+
+
+## 2026-11-06 · Pagamentos V2 — Base financeira TEST real e gate Asaas CNPJ
+- Criado **projeto Neon Free isolado** `ugo-pagamentos-v2-test` (ID `frosty-firefly-02365835`), separado de `UGOAPP` e Arena. Esquema `ugo_payments_v2` aplicado somente nesta base TEST; 8 tabelas verificadas via information_schema, nenhuma migração PROD.
+- Criada função privada `reserve_pix_test` em `docs/sql/ugo_pagamentos_v2_reserve_pix_test.sql`, aplicada apenas no novo projeto; teste manual com dados sintéticos: primeira chamada `reserved`, segunda `reconcile` para mesmo serviço. Contrato PGlite `pagamentos-v2-reserve-pix-sql.test.mjs` incluído, CI pendente.
+- Gate `asaasSubaccountEligibility.mjs`: criação de subconta só após comprovar conta raiz PJ (CNPJ), habilitação, custo avaliado, consentimento e KYC. Wallet Pix própria não substitui wallet Asaas; Split pode usar wallet de conta Asaas independente, sujeito a verificação de titularidade.
+- Próximo: conectar adapter transacional do orquestrador, sem importar dados pessoais do Arena PROD para testes; verificar Wallet UGO via GET Asaas Sandbox com chave server-only e preparar webhook/segredos.
+
+
+## 2026-11-06 — PR #616 backend TEST: Neon Pix fixture-only
+- Core CI sincronizado (SHA `391b11b`, run `42156849297`) passou build, 1.733 contratos e lint após correção de 5 JSX literals e falsos positivos de comentários.
+- Criada tabela `ugo_payments_v2.test_services` somente em Neon TEST `frosty-firefly-02365835` para serviços **sintéticos**, sem ler Arena. `provider_accounts.kyc_approved_at` adicionado exclusivamente ao banco TEST.
+- Adapter `neonPixTestRepository.mjs` implementa `loadContext`, `reservePix` (SQL atômico), `recordProcessorCharge` e `markUncertain`. Exige verificação read-only da wallet emissora via dependência injetada e contas de cliente/provedor vinculadas à fixture, sem qualquer import Supabase/PROD.
+- Suite `pagamentos-v2-neon-test-repository.test.mjs` exercita PostgreSQL em memória com cliente, provedor e serviço falsos, emissão Pix mock, antifraude de wallet e fail-closed.
+- **Bloqueado**: chave Asaas Sandbox só existe em scope Vercel `production`; nenhum runtime TEST seguro autenticado com essa chave, sem POST/QR Asaas real e webhook implantado. Não habilitar PIX público.
+
+## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
+- Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
+- Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
+
+
+## 2026-11-06 — PR #616: referencia única Asaas y webhook inbox privado (TEST)
+- Corregido desajuste de `externalReference`: el backend usa la referencia canónica de `ugo_payments_v2.payment_intents` en creación y conciliación de Asaas; prueba SQL+mock ampliada.
+- Nuevo `asaasSandboxWebhookInbox.mjs`: valida token y método, persiste evento en `ugo_payments_v2.payment_events` antes de 200, deduplica por ID, rechaza conflictos y responde 503 ante fallo de persistencia. No acredita pagos ni modifica balances; no se publica endpoint.
+- Contratos TEST con PGlite para evento nuevo, reintentos simultáneos, token inválido, payload inválido y fallo de almacenamiento.
+- Bloqueos: clave Sandbox disponible sólo en scope Production Vercel; no usarla en ese checkout. Sin wallet de proveedor verificada ni runtime privado aislado, no se ejecutó POST Asaas real, ni QR real, ni confirmación, ni Split conciliado.
+
+
+## 2026-11-06 — PR #616: persistencia de wallet original y reconciliación transaccional TEST
+- `neonPixTestRepository.recordProcessorCharge` ahora exige y conserva `asaas_customer_id` y `asaas_provider_wallet_id` previamente verificados, bloqueando cambios del pagador o destinatario.
+- `asaasSandboxPaymentEventWorker.mjs` procesa eventos ya persistidos en TEST: consulta `GET /payments/{id}` autenticado, compara id/cuenta/cliente/referencia/importe con el intento, y dentro de transacción actualiza el estado de pago y marca evento procesado. Nunca concede saldo, autoriza retiro ni declara Split o Escrow liquidados.
+- Nuevo contrato de prueba con PostgreSQL en memoria: cobro recibido, confirmado no liquidado, identidad falsificada, evento desconocido y regresión de estado. Requiere CI mismo SHA.
+- **No hay pago Asaas real en Sandbox validado**. Sin secret Sandbox TEST separado y wallet receptora verificada, no exponer webhook ni activar cobros. No tocar Arena PROD ni fusionar PR.
+
+
+## 2026-11-06 — PR #616: corrigido contrato Core CI e verificação independente do Split
+- Core CI do SHA `da51b51` detectou 7 falhas novas no worker por `first.kind` ausente no SELECT SQL inicial. Corrigido no commit `e1fe0ca`, sem afrouxar testes; testes SAME-SHA após novos commits aguardam confirmação.
+- Corrigida regressão de pagamento: estado `received` nunca regride para `confirmed` via webhook atrasado; teste adicionado.
+- `AsaasPixQrSandbox.getPaidSplit` agora consulta GET read-only `/payments/splits/paid/{id}` exclusivamente Sandbox, conforme referência Asaas. `asaasPaidSplitVerification.mjs` valida splitId, wallet recebedor, paymentId, percentual 85%, valor de Split sobre netValue e estado `DONE` antes de sequer considerar Split liquidado. Escrow continua indisponível por padrão. Testes de contrato offline adicionados.
+- O verificador ainda **não está conectado** a um webhook de Split nem a POST de pagamentos reais. Sem chave segregada para runtime TEST e wallets verificadas, E2E autenticado bloqueado. Manter PR draft sem merge.
+
+
+## 2026-11-06 — P0 Asaas: backend TEST Vercel segregado e Neon READ ONLY
+- Projeto Vercel **separado** criado: `ugo-pagamentos-v2-sandbox` (`prj_1EzMjxgYVtk4Ro0IFil3w2cTAE7N`), região `gru1`. Não está conectado a GitHub PROD nem herda envs do `ugo-admin-panel`. Primeiro deploy inicial de projeto foi classificado como Production pela plataforma; guards de código o desabilitam. Segunda implantação explicitamente Preview: `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4` em `https://ugo-pagamentos-v2-sandbox-jmobmtmov-sebastisnzoths-projects.vercel.app`.
+- Base exclusiva `frosty-firefly-02365835` acessível pelo rol PostgreSQL `ugo_asaas_wallet_audit_ro` limitado a leitura do esquema `ugo_payments_v2`; URL criptografada e variáveis somente Preview. `UGO_TEST_OPERATOR_TOKEN` independente gerado aleatoriamente e salvo criptografado; nenhum segredo impresso.
+- Probe real GET `/api/health` por ferramenta Vercel retornou **HTTP 200**: `{"environment":"sandbox","testDatabase":"ready","role":"read_only","financialWritesEnabled":false}`. Testes unitários no repo verificam bloqueio em Production e ausência de escrita financeira.
+- GET `/api/wallets?account=issuer|provider` é privado, requer Bearer operator, faz apenas GET Asaas Sandbox, valida wallet exata configurada no servidor, responde 503 quando chaves estiverem ausentes.
+- **Ainda não verificado**: chave Asaas Sandbox independente `ASAAS_SANDBOX_API_KEY` e chave da conta provedor `ASAAS_PROVIDER_SANDBOX_API_KEY`, wallet do provedor, Split habilitado nas contas e QR/confirmacao/split reais. Não copiar credencial do projeto Vercel Production de UGO. Sem POST real nem migrations em Arena.
+
+
+## 2026-11-06 — Wallet emissora UGO autenticada no Asaas Sandbox
+- Projeto TEST `ugo-pagamentos-v2-sandbox`, variável `ASAAS_SANDBOX_API_KEY` configurada como Sensitive somente Preview e não exposta.
+- Verificação direta do backend Preview mediante **GET autenticado Asaas Sandbox `/v3/wallets/`** retornou HTTP 200, lista com exatamente uma carteira e `verified:true, ambiguous:false` quando comparada com a wallet esperada `c4125b7d-fb92-4232-923a-01ab389a84f7`.
+- Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
+- Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
+- Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
