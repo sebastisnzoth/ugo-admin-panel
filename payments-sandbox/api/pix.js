@@ -208,7 +208,21 @@ export default async function handler(req,res){
   return json(res,200,{environment:'sandbox',...result})
  }catch(e){
   // No secret, customer data, QR, or raw processor body is ever logged.
-  const code=String(e?.message||'sandbox_failed')
+  const raw=String(e?.message||'')
+  const allowed=new Set([
+   'wallet_not_configured','issuer_wallet_not_verified',
+   'single_sandbox_customer_not_verified','not_isolated_test_role',
+   'invalid_synthetic_service','existing_reservation_requires_reconciliation',
+   'existing_charge_state_requires_reconciliation','existing_qr_unavailable',
+   'create_uncertain_stop_and_reconcile','qr_not_ready_payment_persisted',
+   'no_reserved_payment','processor_id_missing','processor_identity_mismatch',
+   'not_confirmable_reconcile_required','another_confirmation_in_progress',
+   'confirmation_uncertain_reconcile_without_retry',
+   'confirmation_not_yet_verified_reconcile_later','processor_state_regression',
+   'manual_review_requires_operator','processor_net_amount_changed',
+   'net_value_invalid','invalid_reconciliation_transition',
+  ])
+  const code=allowed.has(raw)?raw:'sandbox_operation_failed'
   return json(res,409,{environment:'sandbox',error:code})
  }finally{if(db)await db.end().catch(()=>{})}
 }
