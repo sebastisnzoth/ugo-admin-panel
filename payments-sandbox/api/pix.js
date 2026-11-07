@@ -66,7 +66,7 @@ async function reserve(db,customerId){
   if(!svc||svc.estado!=='completado'||svc.moneda!=='BRL'||
      Number(svc.tarifa_cents)!==10000)throw Error('invalid_synthetic_service')
   const old=await existing(db)
-  if(old)throw Error('existing_reservation_no_duplicate_post')
+  if(old){await db.query('COMMIT');return {existing:old}}
   const ref='ugo_pix_test_'+svc.id.replace(/-/g,'')
   const inserted=await db.query(`insert into ugo_payments_v2.payment_intents
     (id,ugo_service_id,ugo_client_id,ugo_provider_id,gross_cents,status,
@@ -118,6 +118,19 @@ async function sync(db,row,p){
 async function create(db){
  const customerId=await preflight()
  const reservation=await reserve(db,customerId)
+ if(reservation.existing){
+  const prior=reservation.existing
+  if(prior.status!=='pending'||!prior.asaas_payment_id)
+   throw Error('existing_reservation_requires_reconciliation')
+  const payment=await getVerifiedPayment(prior)
+  if(payment.status!=='PENDING')throw Error('existing_charge_state_requires_reconciliation')
+  const savedQr=await processor('/payments/'+encodeURIComponent(payment.id)+'/pixQrCode')
+  if(typeof savedQr.payload!=='string'||typeof savedQr.encodedImage!=='string')
+   throw Error('existing_qr_unavailable')
+  return {action:'reused',paymentId:payment.id,processorStatus:'PENDING',
+   qrCopyPaste:savedQr.payload,qrImageBase64:savedQr.encodedImage,
+   splitSettled:false,providerPaid:false}
+ }
  let charge
  try {
   const due=new Date(Date.now()+86400000*7).toISOString().slice(0,10)
