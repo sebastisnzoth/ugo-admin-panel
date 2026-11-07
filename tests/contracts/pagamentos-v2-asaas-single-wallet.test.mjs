@@ -13,10 +13,10 @@ const processor={id:'pay_test_1',externalReference:input.serviceReference,
 const expected={paymentId:processor.id,serviceReference:input.serviceReference,
  customerId:input.customerId,amountBRL:100}
 
-test('standalone Pix charge contains no split and disables notifications',()=>{
+test('standalone Pix charge contains no split or unsupported notification fields',()=>{
  const body=buildPixWithoutSplit(input)
  assert.deepEqual(body,{customer:'cus_12345',billingType:'PIX',value:100,
-  dueDate:'2026-11-17',externalReference:'ugo_test_pix_1',notificationDisabled:true})
+  dueDate:'2026-11-17',externalReference:'ugo_test_pix_1'})
  assert.equal('split' in body,false)
  assert.throws(()=>buildPixWithoutSplit({...input,amountBRL:0}),/Invalid amount/)
  assert.throws(()=>buildPixWithoutSplit({...input,dueDate:'2026-02-30'}),/Invalid dueDate/)
