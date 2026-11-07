@@ -47,7 +47,7 @@ export function buildPixWithoutSplit({
   requireId(customerId, 'customerId')
   requireId(serviceReference, 'serviceReference')
   requireAmount(amountBRL)
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dueDate || '') ||
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate || '') ||
       !Number.isFinite(Date.parse(dueDate + 'T00:00:00Z')) ||
       new Date(dueDate + 'T00:00:00Z').toISOString().slice(0,10)!==dueDate)
     throw new Error('Invalid dueDate')
