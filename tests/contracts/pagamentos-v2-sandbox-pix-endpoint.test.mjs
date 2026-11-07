@@ -31,7 +31,7 @@ test('single-charge reservation uses transaction and unique service locking',()=
 })
 
 test('confirmation is explicit, processor-readback based and fails closed',()=>{
- assert.match(source,/\['create','confirm','reconcile','recover_create'\]/)
+ assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose'\]/)
  assert.match(source,/getVerifiedPayment/)
  assert.match(source,/another_confirmation_in_progress/)
  assert.match(source,/confirmation_uncertain_reconcile_without_retry/)
@@ -39,4 +39,16 @@ test('confirmation is explicit, processor-readback based and fails closed',()=>{
  assert.match(source,/LOCAL_SIMULATION_ONLY/)
  assert.match(source,/splitSettled:false/)
  assert.match(source,/providerPaid:false/)
+})
+
+test('read-only diagnostics returns only safe flags and does not create charges',()=>{
+ assert.match(source,/async function diagnose\(db\)/)
+ assert.match(source,/payerDocumentPresent/)
+ assert.match(source,/accountApproved/)
+ assert.match(source,/remoteLookupConclusive/)
+ assert.match(source,/financialWritesPerformed:false/)
+ assert.match(source,/action==='diagnose'\?await diagnose\(db\)/)
+ const section=source.split('async function diagnose(db){')[1]?.split('export default async function handler')[0]||''
+ assert.doesNotMatch(section,/processor\([^,\n]+,'POST'/)
+ assert.doesNotMatch(section,/db\.query\([\s\S]*?\b(?:update|insert|delete)\b/i)
 })
