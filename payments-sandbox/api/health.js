@@ -17,7 +17,7 @@ export default async function handler(req,res){
   const ok=r.rows.length===1&&r.rows[0].expected_database===true&&
     r.rows[0].payments_schema_exists===true&&r.rows[0].privileged===false
   return json(res,ok?200:503,{environment:'sandbox',testDatabase:ok?'ready':'not_ready',
-    role:'read_only',financialWritesEnabled:false})
+    role:'read_only',financialWritesEnabled:!!process.env.UGO_NEON_TEST_WRITE_URL,writeApiRequiresOperatorAuth:true})
  }catch{
   return json(res,503,{environment:'sandbox',testDatabase:'unavailable',
     financialWritesEnabled:false})
