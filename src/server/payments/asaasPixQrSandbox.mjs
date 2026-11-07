@@ -36,6 +36,30 @@ export function buildPixWithProviderSplit({
     split: [{ walletId: providerWalletId, percentualValue: providerSharePercent }],
   })
 }
+/**
+ * Independent, no-Split PIX fixture. This is NOT a marketplace payout and
+ * intentionally omits the split field. Server-owned customer ID and reference
+ * must be verified before calling the processor.
+ */
+export function buildPixWithoutSplit({
+  customerId, amountBRL, dueDate, serviceReference,
+}) {
+  requireId(customerId, 'customerId')
+  requireId(serviceReference, 'serviceReference')
+  requireAmount(amountBRL)
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dueDate || '') ||
+      !Number.isFinite(Date.parse(dueDate + 'T00:00:00Z')) ||
+      new Date(dueDate + 'T00:00:00Z').toISOString().slice(0,10)!==dueDate)
+    throw new Error('Invalid dueDate')
+  return Object.freeze({
+    customer: customerId,
+    billingType: 'PIX',
+    value: amountBRL,
+    dueDate,
+    externalReference: serviceReference,
+    notificationDisabled: true,
+  })
+}
 export class AsaasPixQrSandbox {
   constructor({ apiKey, fetchImpl = fetch }) {
     if (typeof apiKey !== 'string' || !apiKey.trim()) throw new Error('Missing Asaas Sandbox key')
@@ -53,6 +77,14 @@ export class AsaasPixQrSandbox {
     })
     if (!response.ok) throw new Error('Asaas sandbox request failed (' + response.status + ')')
     return response.json()
+  }
+  async createChargeWithoutSplit(input, { testOnlyChargeAuthorized = false } = {}) {
+    if (testOnlyChargeAuthorized !== true)
+      throw new Error('Standalone Sandbox Pix creation requires explicit TEST authorization')
+    if (input?.providerWalletId || input?.split || input?.providerSharePercent !== undefined)
+      throw new Error('Standalone Sandbox Pix must not contain a provider split')
+    const payload = buildPixWithoutSplit(input)
+    return this.request('/payments', 'POST', payload)
   }
   async createChargeWithSplit(input) {
     // Defense-in-depth: fail before any processor request if issuer or recipient
