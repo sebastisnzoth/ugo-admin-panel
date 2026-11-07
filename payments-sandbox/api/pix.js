@@ -188,6 +188,70 @@ async function reconcile(db){
  const p=await getVerifiedPayment(row)
  return {action:'reconciled',paymentId:p.id,...await sync(db,row,p)}
 }
+
+/**
+ * One-time operator recovery after a genuinely ambiguous creation attempt.
+ * Requires a fresh authenticated Asaas query by the exact persisted reference;
+ * zero matches is mandatory, never infer this from Neon alone.
+ * Existing or ambiguous remote payments NEVER cause a second POST.
+ */
+async function recoverCreate(db){
+ const row=await existing(db)
+ if(!row || row.status!=='unknown_processor_result' || row.asaas_payment_id)
+  throw Error('recovery_requires_uncertain_unlinked_intent')
+ const expected='ugo_pix_test_'+process.env.UGO_PIX_TEST_SERVICE_ID.replace(/-/g,'')
+ if(row.external_reference!==expected||Number(row.gross_cents)!==10000)
+  throw Error('recovery_identity_mismatch')
+ const customerId=await preflight()
+ if(row.asaas_customer_id!==customerId)
+  throw Error('recovery_customer_mismatch')
+ const path='/payments?limit=2&offset=0&externalReference='+encodeURIComponent(expected)
+ const list=await processor(path)
+ if(!Array.isArray(list.data)||typeof list.hasMore!=='boolean')
+  throw Error('invalid_remote_reconciliation')
+ if(list.hasMore||list.data.length!==0)
+  throw Error('remote_payment_requires_manual_reconciliation')
+ const claim=await db.query(`update ugo_payments_v2.payment_intents
+  set status='creating',updated_at=now()
+  where id=$1 and status='unknown_processor_result' and asaas_payment_id is null
+   and updated_at < now()-interval '2 minutes'
+  returning id`,[row.id])
+ if(claim.rows.length!==1)throw Error('recovery_claim_or_cooldown_failed')
+ let charge
+ try {
+  const due=new Date(Date.now()+7*86400000).toISOString().slice(0,10)
+  charge=await processor('/payments','POST',{
+   customer:customerId,billingType:'PIX',value:100,dueDate:due,
+   externalReference:expected
+  })
+  if(!ID.test(charge?.id||'')||charge.externalReference!==expected||
+     charge.customer!==customerId||charge.billingType!=='PIX'||
+     Math.round(Number(charge.value)*100)!==10000)
+   throw Error('remote_charge_identity_uncertain')
+  const updated=await db.query(`update ugo_payments_v2.payment_intents
+   set status='pending',asaas_payment_id=$2,updated_at=now()
+   where id=$1 and status='creating' and asaas_payment_id is null returning id`,
+   [row.id,charge.id])
+  if(updated.rows.length!==1)throw Error('remote_charge_persistence_uncertain')
+ }catch(e){
+  const raw=String(e?.message||'')
+  const known4xx=/^asaas_http_4[0-9]{2}$/.test(raw)
+  await db.query(`update ugo_payments_v2.payment_intents
+   set status=$2,updated_at=now() where id=$1 and status='creating'`,
+   [row.id,known4xx?'manual_review':'unknown_processor_result']).catch(()=>{})
+  if(known4xx)throw Error(raw)
+  throw Error('recovery_processor_result_uncertain')
+ }
+ const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
+ if(typeof qr.payload!=='string'||!qr.payload||
+    typeof qr.encodedImage!=='string'||!qr.encodedImage)
+  throw Error('recovered_payment_qr_unavailable')
+ return {action:'recovered_created',paymentId:charge.id,
+  processorStatus:charge.status||'PENDING',
+  qrCopyPaste:qr.payload,qrImageBase64:qr.encodedImage,
+  splitSettled:false,providerPaid:false}
+}
+
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,405,{error:'post_only'})
  if(process.env.VERCEL_ENV!=='preview'||process.env.UGO_PAYMENTS_TEST_ONLY!=='1')
@@ -198,12 +262,13 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile'].includes(action))
+ if(!['create','confirm','reconcile','recover_create'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await dbConnect()
   const result=action==='create'?await create(db):
+    action==='recover_create'?await recoverCreate(db):
     action==='confirm'?await confirm(db):await reconcile(db)
   return json(res,200,{environment:'sandbox',...result})
  }catch(e){
@@ -221,6 +286,12 @@ export default async function handler(req,res){
    'confirmation_not_yet_verified_reconcile_later','processor_state_regression',
    'manual_review_requires_operator','processor_net_amount_changed',
    'net_value_invalid','invalid_reconciliation_transition',
+   'recovery_requires_uncertain_unlinked_intent','recovery_identity_mismatch',
+   'recovery_customer_mismatch','invalid_remote_reconciliation',
+   'remote_payment_requires_manual_reconciliation',
+   'recovery_claim_or_cooldown_failed','recovery_processor_result_uncertain',
+   'recovered_payment_qr_unavailable','asaas_http_400','asaas_http_401',
+   'asaas_http_403','asaas_http_404','asaas_http_422',
   ])
   const code=allowed.has(raw)?raw:'sandbox_operation_failed'
   return json(res,409,{environment:'sandbox',error:code})
