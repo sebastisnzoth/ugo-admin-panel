@@ -145,3 +145,26 @@ Restricciones: **no escribir en Arena PROD**, no aplicar migraciones PROD, no ca
 - Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
 - Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
 - Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
+
+
+## 2026-11-07 — Pix Sandbox sem segunda conta: implementação segura
+
+**Decisão confirmada:** a conta emissora Asaas Sandbox (CPF) está autenticada e sua wallet foi verificada. Não existe conta de prestador elegível nem CNPJ; não criar subconta, não usar CPF de terceiros, não simular um Split do Asaas como se tivesse liquidado.
+
+**Revisão oficial (Asaas):**
+- `POST /v3/payments`: cobrança Pix exige `customer` existente; o payload de teste sem Split **não** envia `split`.
+- `GET /v3/payments/{id}/pixQrCode`: QR Pix da cobrança.
+- `POST /v3/sandbox/payment/{id}/confirm`: confirmação simulada exclusiva de Sandbox, sem dinheiro real.
+- `GET /v3/payments/{id}`: read-back autenticado de status `CONFIRMED` / `RECEIVED`. `CONFIRMED` pode ser temporário para CPF; só `RECEIVED` com `netValue` permite projeção financeira local.
+- `GET /v3/customers?limit=1&offset=0` lido **realmente** do Sandbox principal em 2026-11-07: HTTP 200, `existingSandboxCustomers:false`. **Bloqueio externo para emitir QR verdadeiro:** criar um **cliente pagador fictício no Sandbox**, distinto de criar outra conta Asaas, com CPF fictício de teste aceito pela plataforma e notificações desativadas no cadastro do cliente. Não usar CPF real de terceiro.
+- Asaas `notificationDisabled` pertence a `POST /v3/customers`, não a `POST /v3/payments`: o payload da cobrança foi corrigido para excluir esse atributo não documentado.
+- Sem cliente pagador existente, ainda não se criou QR nem se executou confirmação com Asaas; não afirmar E2E real.
+
+**Código criado sem conexão a qualquer rota financeira ativa:**
+- `buildPixWithoutSplit` e `AsaasPixQrSandbox.createChargeWithoutSplit(input,{testOnlyChargeAuthorized:true})`: método POST somente Sandbox, bloqueado por padrão, rejeita parâmetros de destino/Split.
+- `reconcileStandaloneSandboxPix` valida pagamento consultado no processador. `projectLocalSandboxSplit` projeta **85% prestador / 15% UGO em centavos de netValue**, rotulado `LOCAL_SIMULATION_ONLY`.
+- Resultados locais fixam `splitSettled:false`, `providerPaid:false`, `ledgerPosted:false`, `escrowAvailable:false`. Nunca atribuir liquidação a eventos de pagamento ou a cálculos locais.
+- Contratos em `tests/contracts/pagamentos-v2-asaas-single-wallet.test.mjs` verificam payload sem Split, autorização obrigatória, QR/POST simulados, rejeição de identidade divergente, estados não recebidos e ausência de payout.
+- Base Vercel TEST segue com Neon role **somente leitura**; não se criou rota POST operacional nem permissão de escrita. A cobrança real precisa de pré-reserva atômica TEST, cliente fixo/reutilizável e confirmação explícita por operador. Não usar GET mutante nem disparar operações de criação durante build/deploy.
+
+**Próximo P0:** cadastrar pagador de teste via UI da conta Asaas Sandbox (com `notificationDisabled:true`), salvar seu `cus_...` somente em variável Sensitive/Encrypted do projeto isolado e habilitar backend POST com autenticação forte, verificação de QR e idempotência no banco TEST isolado. Ao confirmar `RECEIVED`, calcular projeção local, sem creditar ledger de prestador.
