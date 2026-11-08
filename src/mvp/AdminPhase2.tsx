@@ -1,5 +1,5 @@
 import{LanguageSelector}from'../i18n/LanguageSelector'
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{useLocale,LocalizedText}from'../i18n/locale'
 import{AdminHomeStitch}from'./AdminHomeStitch'
@@ -59,6 +59,16 @@ export function AdminPhase2(){
  const isSuperAdmin=adminRole==='superadmin'
  const goToSuperAdmin=useCallback(()=>{if(isSuperAdmin){setSection('superadmin');const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section','superadmin');url.searchParams.set('tab','autonomy');window.history.replaceState({},'',url.toString());return}const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section','superadmin');url.searchParams.set('tab','autonomy');window.location.assign(url.toString())},[isSuperAdmin])
  useEffect(()=>{let active=true;(async()=>{try{const{data:{session},error:sessionError}=await supabase.auth.getSession();const user=session?.user;if(sessionError||!user)throw sessionError||new Error('Sesión Admin requerida.');const adminDb=supabase as any;const{data,error}=await adminDb.from('usuarios').select('tipo,activo').eq('id',user.id).maybeSingle();if(error)throw error;const role=String(data?.tipo||'');if(!data?.activo||!['admin','superadmin'].includes(role))throw new Error('Acceso administrativo no autorizado.');if(active)setAdminRole(role as AdminRole)}catch(error){if(active){setAdminRole(null);setRoleError(error instanceof Error?error.message:'No pudimos validar el rol administrativo.')}}})();return()=>{active=false}},[])
+ // A Super Admin landing without an explicit section goes straight to the
+ // Command Center: it is their entry screen. Explicit URL sections (home,
+ // hive, operations…) and any navigation after login stay untouched.
+ const autoLandedRef=useRef(false)
+ useEffect(()=>{
+  if(!adminRole||adminRole!=='superadmin'||autoLandedRef.current)return
+  if(initialParams.get('section')||section!=='home')return
+  autoLandedRef.current=true
+  setSection('superadmin')
+ },[adminRole,initialParams,section])
  useEffect(()=>{if((section==='superadmin'||section==='hive')&&adminRole&&!isSuperAdmin)setSection('home')},[section,adminRole,isSuperAdmin])
  const load=useCallback(async(options?:{silent?:boolean})=>{
   if(!options?.silent)setLoading(true);setMetricsError('')

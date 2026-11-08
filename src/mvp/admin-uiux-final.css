@@ -75,6 +75,13 @@
 .ugo-superadmin-integration-head span.ok{background:color-mix(in srgb,var(--ugo-color-success) 15%,var(--ugo-color-surface-lowest));color:var(--ugo-color-success)!important}
 .ugo-superadmin-integration-head span.configured{background:color-mix(in srgb,var(--ugo-color-warning) 15%,var(--ugo-color-surface-lowest));color:var(--ugo-color-warning)!important}
 .ugo-superadmin-integration-head span.off{background:var(--ugo-color-surface-high);color:var(--ugo-color-on-surface-variant)!important}
+.ugo-superadmin-quickaccess{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.ugo-superadmin-quickaccess button{display:flex;align-items:center;gap:11px;width:100%;padding:13px 14px;border:1px solid var(--ugo-color-outline-variant);border-radius:12px;background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
+.ugo-superadmin-quickaccess button:hover{border-color:var(--ugo-color-primary);box-shadow:var(--ugo-shadow-card)}
+.ugo-superadmin-quickaccess button:focus-visible{outline:3px solid var(--ugo-color-primary);outline-offset:2px}
+.ugo-superadmin-quickaccess b{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 auto;border-radius:10px;background:color-mix(in srgb,var(--ugo-color-primary) 14%,var(--ugo-color-surface-lowest));color:var(--ugo-color-primary);font-size:17px}
+.ugo-superadmin-quickaccess span{flex:1;font-size:12.5px;font-weight:800;line-height:1.25}
+.ugo-superadmin-quickaccess i{color:var(--ugo-color-on-surface-variant);font-style:normal;font-size:14px}
 .ugo-superadmin .ugo-admin2-submenu{margin-top:2px}
 .ugo-superadmin .ugo-admin2-submenu button{color:var(--ugo-color-on-surface-variant)!important}
 .ugo-superadmin .ugo-admin2-submenu button:hover{background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface)!important}

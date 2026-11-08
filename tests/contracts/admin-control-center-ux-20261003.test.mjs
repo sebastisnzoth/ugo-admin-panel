@@ -47,6 +47,19 @@ test('superadmin surfaces autonomy mode and gates before deep navigation',()=>{
   assert.match(finalCss,/Super Admin control hierarchy 2026-10-03/)
 })
 
+test('superadmin landing goes straight to the Command Center',()=>{
+  assert.match(phase,/autoLandedRef/)
+  assert.match(phase,/adminRole!=='superadmin'\|\|autoLandedRef\.current\)return/)
+  assert.match(phase,/if\(initialParams\.get\('section'\)\|\|section!=='home'\)return/)
+  assert.match(phase,/setSection\('superadmin'\)/)
+})
+
+test('superadmin command landing offers governance quick access',()=>{
+  assert.match(superadmin,/ugo-superadmin-quickaccess/)
+  assert.match(superadmin,/setTab\(id as Tab\)/)
+  assert.match(finalCss,/\.ugo-superadmin-quickaccess button/)
+})
+
 test('autonomous corporation navigation and dense tables remain responsive',()=>{
   assert.match(autonomyCss,/Autonomous corporation usability pass 2026-10-03/)
   assert.match(autonomyCss,/\.ugo-autonomous-nav button\.active/)
