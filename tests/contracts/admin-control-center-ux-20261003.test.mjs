@@ -69,6 +69,12 @@ test('command landing reviews governance signals and pending approvals',()=>{
   assert.match(finalCss,/\.ugo-superadmin-approval-row button/)
 })
 
+test('command center reflects realtime sync status',()=>{
+  assert.match(superadmin,/onStatus:\(status:string\)=>\{if\(status==='SUBSCRIBED'\)setLiveStatus\('live'\)/)
+  assert.match(superadmin,/ugo-superadmin-live/)
+  assert.match(finalCss,/\.ugo-superadmin-header \.ugo-superadmin-live/)
+})
+
 test('autonomous corporation navigation and dense tables remain responsive',()=>{
   assert.match(autonomyCss,/Autonomous corporation usability pass 2026-10-03/)
   assert.match(autonomyCss,/\.ugo-autonomous-nav button\.active/)
