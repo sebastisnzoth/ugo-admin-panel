@@ -60,6 +60,15 @@ test('superadmin command landing offers governance quick access',()=>{
   assert.match(finalCss,/\.ugo-superadmin-quickaccess button/)
 })
 
+test('command landing reviews governance signals and pending approvals',()=>{
+  assert.match(superadmin,/ugo-superadmin-governance/)
+  assert.match(superadmin,/WAITING_APPROVAL/)
+  assert.match(superadmin,/requestAutonomousJobDecision\(j\.id,true\)/)
+  assert.match(superadmin,/requestAutonomousJobDecision\(j\.id,false\)/)
+  assert.match(superadmin,/ugo-superadmin-approval-row/)
+  assert.match(finalCss,/\.ugo-superadmin-approval-row button/)
+})
+
 test('autonomous corporation navigation and dense tables remain responsive',()=>{
   assert.match(autonomyCss,/Autonomous corporation usability pass 2026-10-03/)
   assert.match(autonomyCss,/\.ugo-autonomous-nav button\.active/)
