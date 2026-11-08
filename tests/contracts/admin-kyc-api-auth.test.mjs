@@ -37,6 +37,11 @@ test('provider verification uses the authenticated Admin API instead of a missin
  assert.match(providerPanel,/Authorization:`Bearer \$\{token\}`/)
 })
 
+test('provider verification requires the canonical comprobante_domicilio document type',()=>{
+ assert.match(source,/const requiredDocs = \['identidad_frente', 'identidad_dorso', 'selfie', 'comprobante_domicilio'\]/)
+ assert.doesNotMatch(source,/const requiredDocs = \['identidad_frente', 'identidad_dorso', 'selfie', 'domicilio'\]/)
+})
+
 test('provider rejection requires a reason and persists only verification state fields',()=>{
  assert.match(source,/state === 'rechazado' && !reason/)
  assert.match(source,/estado_verificacion: state/)

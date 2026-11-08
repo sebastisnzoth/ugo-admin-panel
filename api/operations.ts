@@ -257,9 +257,17 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
         .select('tipo,estado')
         .eq('usuario_id', providerId)
       if (docsError) throw docsError
-      const requiredDocs = ['identidad_frente', 'identidad_dorso', 'selfie', 'domicilio']
+      // The canonical address document type in UGO is 'comprobante_domicilio'
+      // (uploaded by ProviderOnboardingGate and expected by
+      // AdminProviderVerificationPanel). 'domicilio' is accepted as a legacy
+      // alias for rows imported before the type was renamed.
+      const requiredDocs = ['identidad_frente', 'identidad_dorso', 'selfie', 'comprobante_domicilio']
       const approvedTypes = new Set((docs || []).filter((d: any) => d.estado === 'aprobado').map((d: any) => d.tipo))
-      const missing = requiredDocs.filter((type) => !approvedTypes.has(type))
+      const missing = requiredDocs.filter((type) => {
+        if (approvedTypes.has(type)) return false
+        if (type === 'comprobante_domicilio') return !approvedTypes.has('domicilio')
+        return true
+      })
       if (missing.length) {
         return res.status(409).json({
           error: 'No se puede verificar el proveedor: faltan documentos KYC aprobados.',
