@@ -75,6 +75,16 @@ test('command center reflects realtime sync status',()=>{
   assert.match(finalCss,/\.ugo-superadmin-header \.ugo-superadmin-live/)
 })
 
+test('audit and flags tabs are searchable, metrics tab shows live signals',()=>{
+  assert.match(superadmin,/auditSearch/)
+  assert.match(superadmin,/t\('admin\.searchAudit'\)/)
+  assert.match(superadmin,/flagSearch/)
+  assert.match(superadmin,/t\('admin\.searchFlags'\)/)
+  assert.match(superadmin,/t\('admin\.activeJobs'\)/)
+  assert.match(superadmin,/t\('admin\.recentDecisions'\)/)
+  assert.match(finalCss,/\.ugo-superadmin-search input/)
+})
+
 test('autonomous corporation navigation and dense tables remain responsive',()=>{
   assert.match(autonomyCss,/Autonomous corporation usability pass 2026-10-03/)
   assert.match(autonomyCss,/\.ugo-autonomous-nav button\.active/)
