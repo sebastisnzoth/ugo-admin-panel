@@ -1252,3 +1252,6 @@ RUNTIME VALIDATED             pendiente
 
 ## 2026-11-09 — Gates operacionais no PR de Pagamentos
 - Workflows RPC/RLS, Admin Realtime e GPS agora podem produzir evidência same-SHA no PR da gate de Pagamentos, sempre em UGO TEST. Resultados anteriores em outros SHAs não serão tratados como validação atual.
+
+## 2026-11-09 — Gates same-SHA e diagnóstico Super Admin
+- Admin Realtime, GPS/Judge/Sentinel e Auth Isolation PASS no SHA `95fad6c5`; RPC/RLS continua bloqueado somente no passo Super Admin UI. Anotação sanitizada adicionada para identificar a asserção sem expor dados.

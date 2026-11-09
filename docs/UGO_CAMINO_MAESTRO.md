@@ -844,3 +844,7 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 ## 2026-11-09 — Activación same-SHA de gates operativos
 - RPC/RLS, Admin Realtime y Provider GPS quedan activados en PR para cambios de la gate/evidencia de Pagos V2, exclusivamente contra UGO TEST. Antes RPC/RLS se saltaba en `workflow_run` de PR, Admin no coincidía con paths y GPS sólo aceptaba dispatch manual.
 - La gate acepta rollback Preview por redeploy como control de código, pero mantiene backup/restore como bloqueo independiente. Ningún secreto se añadió ni se amplió acceso a PROD.
+
+## 2026-11-09 — Resultado de gates operativos y observabilidad Super Admin
+- Admin Realtime, Provider GPS con Judge/Sentinel y Auth Isolation: PASS same-SHA `95fad6c5`. RPC/RLS superó el harness Cliente↔Proveedor↔Admin, chat Realtime y demás pasos hasta Super Admin UI; ese último paso falló, por lo que la gate agregada sigue FAIL/BLOCKED.
+- Los artifacts detallados no fueron descargables por la red del sandbox. Se añadió anotación Checks únicamente con el código sanitizado de aserción de Super Admin, sin body, credenciales ni queries, para diagnosticar la repetición sin cambiar la UI a ciegas.

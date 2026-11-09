@@ -258,6 +258,10 @@ try{
 }catch(error){
   await page.screenshot({path:'artifacts/super-admin-ui-failure.png',fullPage:true}).catch(()=>{});
   await fs.writeFile('artifacts/super-admin-ui-failure.txt',await page.locator('body').innerText().catch(()=>String(error))).catch(()=>{});
+  // Expose only the fixed assertion/error code in Checks. Never annotate page
+  // text, URLs with queries, backend payloads or credentials.
+  const code=String(error?.message||'UNKNOWN').replace(/[^A-Za-z0-9_.:-]/g,'_').slice(0,180);
+  console.error(`::error::SUPER_ADMIN_UI_FAILURE ${code}`);
   throw error;
 }finally{
   await browser.close();
