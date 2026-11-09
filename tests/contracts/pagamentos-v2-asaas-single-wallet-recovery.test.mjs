@@ -10,7 +10,7 @@ test('recovery endpoint passes syntax check',()=>{
  assert.equal(result.status,0,result.stderr)
 })
 test('uncertain intent cannot be blindly repeated without Asaas reference check',()=>{
- assert.match(source,/async function recoverCreate\(db\)/)
+ assert.match(source,/async function recoverCreate\(db,rejected=false\)/)
  assert.match(source,/row\.status!=='unknown_processor_result'/)
  assert.match(source,/row\.asaas_payment_id/)
  assert.match(source,/\/payments\?limit=2&offset=0&externalReference=/)
@@ -19,7 +19,7 @@ test('uncertain intent cannot be blindly repeated without Asaas reference check'
  assert.match(source,/updated_at < now\(\)-interval '2 minutes'/)
 })
 test('only one operator may claim recovery and processor errors stay fail-closed',()=>{
- assert.match(source,/status='unknown_processor_result' and asaas_payment_id is null/)
+ assert.match(source,/status=\$2 and asaas_payment_id is null/)
  assert.match(source,/if\(claim\.rows\.length!==1\)/)
  assert.match(source,/known4xx\?'manual_review':'unknown_processor_result'/)
  assert.match(source,/recovery_processor_result_uncertain/)
@@ -44,6 +44,17 @@ test('Asaas validation descriptions never escape the API as unfiltered text',()=
  assert.ok(source.includes("typeof x?.description==='string'"))
  assert.doesNotMatch(source,/processorValidationDescription[s]?:/)
  assert.ok(!source.includes('JSON.stringify(detail)'))
+})
+
+test('rejected recovery is explicit, remotely checked and persisted as one attempt only',()=>{
+ assert.match(source,/action==='recover_rejected'&&req\.body\?\.confirmation!=='RETRY_REJECTED_R100'/)
+ assert.match(source,/action==='recover_rejected'\?await recoverCreate\(db,true\)/)
+ assert.match(source,/rejected&&row\.status==='manual_review'/)
+ assert.match(source,/await db\.query\('BEGIN'\)/)
+ assert.match(source,/UGO_REJECTED_RECOVERY_ATTEMPT/)
+ assert.match(source,/on conflict \(event_id\) do nothing returning event_id/)
+ assert.match(source,/rejected_recovery_already_attempted/)
+ assert.match(source,/await db\.query\('ROLLBACK'\)/)
 })
 
 test('both create and recovery preserve sanitized field labels for operator diagnostics',()=>{

@@ -260,9 +260,9 @@ async function reconcile(db){
  * zero matches is mandatory, never infer this from Neon alone.
  * Existing or ambiguous remote payments NEVER cause a second POST.
  */
-async function recoverCreate(db){
+async function recoverCreate(db,rejected=false){
  const row=await existing(db)
- if(!row || row.status!=='unknown_processor_result' || row.asaas_payment_id)
+ if(!row || (row.status!=='unknown_processor_result'&&!(rejected&&row.status==='manual_review')) || row.asaas_payment_id)
   throw Error('recovery_requires_uncertain_unlinked_intent')
  const expected='ugo_pix_test_'+process.env.UGO_PIX_TEST_SERVICE_ID.replace(/-/g,'')
  if(row.external_reference!==expected||Number(row.gross_cents)!==10000)
@@ -276,12 +276,26 @@ async function recoverCreate(db){
   throw Error('invalid_remote_reconciliation')
  if(list.hasMore||list.data.length!==0)
   throw Error('remote_payment_requires_manual_reconciliation')
- const claim=await db.query(`update ugo_payments_v2.payment_intents
-  set status='creating',updated_at=now()
-  where id=$1 and status='unknown_processor_result' and asaas_payment_id is null
-   and updated_at < now()-interval '2 minutes'
-  returning id`,[row.id])
- if(claim.rows.length!==1)throw Error('recovery_claim_or_cooldown_failed')
+ await db.query('BEGIN')
+ let claim
+ try{
+  claim=await db.query(`update ugo_payments_v2.payment_intents
+   set status='creating',updated_at=now()
+   where id=$1 and status=$2 and asaas_payment_id is null
+    and updated_at < now()-interval '2 minutes'
+   returning id`,[row.id,row.status])
+  if(claim.rows.length!==1)throw Error('recovery_claim_or_cooldown_failed')
+  if(rejected){
+   const marker=await db.query(`insert into ugo_payments_v2.payment_events
+    (event_id,processor_payment_id,kind,status,processed_at)
+    values($1,$2,'UGO_REJECTED_RECOVERY_ATTEMPT','processed',now())
+    on conflict (event_id) do nothing returning event_id`,
+    ['rejected_recovery_'+process.env.UGO_PIX_TEST_SERVICE_ID,
+     'no_remote_charge_'+process.env.UGO_PIX_TEST_SERVICE_ID])
+   if(marker.rows.length!==1)throw Error('rejected_recovery_already_attempted')
+  }
+  await db.query('COMMIT')
+ }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
  let charge
  try {
   const due=new Date(Date.now()+7*86400000).toISOString().slice(0,10)
@@ -398,8 +412,10 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','recover_rejected','diagnose','audit_intents','prepare_customer'].includes(action))
   return json(res,400,{error:'invalid_action'})
+ if(action==='recover_rejected'&&req.body?.confirmation!=='RETRY_REJECTED_R100')
+  return json(res,400,{error:'explicit_rejected_retry_confirmation_required'})
  let db
  try{
   db=await dbConnect()
@@ -408,6 +424,7 @@ export default async function handler(req,res){
     action==='prepare_customer'?await prepareCustomer():
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
+    action==='recover_rejected'?await recoverCreate(db,true):
     action==='confirm'?await confirm(db):await reconcile(db)
   return json(res,200,{environment:'sandbox',...result})
  }catch(e){
@@ -432,6 +449,7 @@ export default async function handler(req,res){
    'recovery_customer_mismatch','invalid_remote_reconciliation',
    'remote_payment_requires_manual_reconciliation',
    'recovery_claim_or_cooldown_failed','recovery_processor_result_uncertain',
+   'rejected_recovery_already_attempted',
    'recovered_payment_qr_unavailable','asaas_http_400','asaas_http_401',
    'asaas_http_403','asaas_http_404','asaas_http_422',
   ])
