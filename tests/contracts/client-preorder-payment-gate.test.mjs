@@ -57,7 +57,7 @@ test('assigned client sees payment choice before secondary operational surfaces'
  assert.ok(trackingIndex<0||paymentIndex<trackingIndex,'payment choice must appear before tracking')
  assert.ok(chatIndex<0||paymentIndex<chatIndex,'payment choice must appear before chat')
  assert.match(provider,/pixSelectedAwaitingPayment\?'providerJob\.pixSelectedAwaitingPayment':'screen\.active\.13'/)
- assert.match(provider,/No tenés que elegirlo vos/)
+ assert.match(provider,/t\(pixSelectedAwaitingPayment\?'providerJob\.pixSelectedAwaitingPaymentHelp':'providerJob\.paymentChoiceHelp'\)/)
 })
 
 
