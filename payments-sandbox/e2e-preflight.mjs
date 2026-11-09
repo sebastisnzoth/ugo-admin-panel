@@ -26,3 +26,8 @@ async function run(action) {
 for (const action of ['prepare_customer', 'diagnose', 'audit_intents']) {
   if (!await run(action)) break
 }
+if (!process.exitCode) {
+  const { mkdir, writeFile } = await import('node:fs/promises')
+  await mkdir('dist', { recursive: true })
+  await writeFile('dist/index.html', '<!doctype html><title>UGO TEST preflight</title>')
+}
