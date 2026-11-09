@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto'
+import { timingSafeEqual, randomInt } from 'node:crypto'
 import pg from 'pg'
 const { Client } = pg
 const BASE = 'https://api-sandbox.asaas.com/v3'
@@ -47,7 +47,7 @@ async function processor(path,method='GET',body){
  if(!data||typeof data!=='object')throw Error('invalid_asaas_response')
  return data
 }
-async function preflight(){
+async function verifiedCustomer(){
  const expected=process.env.UGO_ASAAS_ISSUER_WALLET_ID
  if(!UUID.test(expected||''))throw Error('wallet_not_configured')
  const wallets=await processor('/wallets/')
@@ -58,11 +58,47 @@ async function preflight(){
  if(!Array.isArray(customers.data)||typeof customers.hasMore!=='boolean'||
     customers.hasMore||customers.data.length!==1||!/^cus_[a-zA-Z0-9_-]{1,96}$/.test(customers.data[0]?.id||''))
   throw Error('single_sandbox_customer_not_verified')
- // Do not issue a new charge for a payer whose required document is absent.
- // The owner must update the existing Sandbox customer with authorized data.
- if(typeof customers.data[0].cpfCnpj!=='string'||!/^(?:\d{11}|\d{14})$/.test(customers.data[0].cpfCnpj))
+ return customers.data[0]
+}
+async function preflight(){
+ const customer=await verifiedCustomer()
+ // Never send a Pix charge for an incomplete payer.
+ if(typeof customer.cpfCnpj!=='string'||!/^(?:\d{11}|\d{14})$/.test(customer.cpfCnpj))
   throw Error('payer_document_missing')
- return customers.data[0].id
+ return customer.id
+}
+/**
+ * Asaas permits fictitious test data in Sandbox; a generated CPF is NOT
+ * an identity document and MUST NEVER be used outside the TEST account.
+ * Operator-controlled action, not part of automated charge creation.
+ */
+function syntheticSandboxCpf(){
+ const digits=Array.from(String(randomInt(100000000,1000000000)),Number)
+ const digit=(values,weight)=>{
+  const remainder=values.reduce((sum,value,index)=>sum+value*(weight-index),0)%11
+  return remainder<2?0:11-remainder
+ }
+ digits.push(digit(digits,10))
+ digits.push(digit(digits,11))
+ return digits.join('')
+}
+async function prepareCustomer(){
+ const customer=await verifiedCustomer()
+ if(typeof customer.cpfCnpj==='string'&&/^(?:\d{11}|\d{14})$/.test(customer.cpfCnpj))
+  return {action:'prepare_customer',alreadyPrepared:true,
+   payerDocumentPresent:true,financialWritesPerformed:false}
+ // The sole known Sandbox payer is updated, never duplicated. Never send
+ // invented identity data to a production API or real-world KYC.
+ const cpf=syntheticSandboxCpf()
+ const updated=await processor('/customers/'+encodeURIComponent(customer.id),'PUT',{
+  cpfCnpj:cpf,notificationDisabled:true
+ })
+ if(updated?.id!==customer.id||updated?.cpfCnpj!==cpf)
+  throw Error('sandbox_customer_update_requires_review')
+ // Discard the synthetic CPF from the outward response and all logs.
+ return {action:'prepare_customer',alreadyPrepared:false,
+  payerDocumentPresent:true,notificationsDisabled:updated.notificationDisabled===true,
+  financialWritesPerformed:false,sandboxCustomerUpdated:true}
 }
 async function dbConnect(){
  const db=new Client({connectionString:process.env.UGO_NEON_TEST_WRITE_URL,
@@ -362,13 +398,14 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await dbConnect()
   const result=action==='diagnose'?await diagnose(db):
     action==='audit_intents'?await auditIntents(db):
+    action==='prepare_customer'?await prepareCustomer():
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
     action==='confirm'?await confirm(db):await reconcile(db)
@@ -377,6 +414,7 @@ export default async function handler(req,res){
   // No secret, customer data, QR, or raw processor body is ever logged.
   const raw=String(e?.message||'')
   const allowed=new Set([
+   'sandbox_customer_update_requires_review',
    'too_many_test_intents_for_audit','payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
    'diagnostic_fixture_identity_mismatch',
