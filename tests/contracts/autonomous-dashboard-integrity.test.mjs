@@ -57,4 +57,6 @@ test('super admin runtime validates persisted UGO Empresas proof coherently with
  assert.match(dashboard,/data-testid="autonomy-current-mode"/)
  assert.match(runtime,/autonomy-current-mode.*autonomy-launch-gate-status/s)
  assert.doesNotMatch(runtime,/autonomyText\.includes\(before\.mode\).*autonomyText\.includes\(before\.launch\)/)
+ assert.match(runtime,/waitUntil:'domcontentloaded'/)
+ assert.doesNotMatch(runtime,/waitUntil:'networkidle'/)
 })

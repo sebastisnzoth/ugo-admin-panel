@@ -91,7 +91,9 @@ try{
     key:'ugo-test-admin-auth',
     value:JSON.stringify(login.session)
   });
-  await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
+  // Realtime keeps network activity alive; DOM readiness plus explicit state
+  // assertions below is deterministic, unlike a global network-idle signal.
+  await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded',timeout:60000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
   await page.locator('.ugo-superadmin-header h2').waitFor({state:'visible',timeout:20000});
