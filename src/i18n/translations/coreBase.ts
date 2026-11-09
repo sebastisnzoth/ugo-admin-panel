@@ -131,7 +131,7 @@ export const coreMessages: Record<'pt-BR'|'es'|'en',Record<string,string>>={
   "providerJob.control":"CONTROLES DO PEDIDO",
   "providerJob.paymentChoiceHelp":"O cliente escolhe Pix ou dinheiro no aplicativo. Você não precisa escolher. Quando ele confirmar, a UGO libera “ESTOU A CAMINHO” automaticamente.",
   "providerJob.pixSelectedAwaitingPayment":"Pix escolhido · pagamento pendente",
-  "providerJob.pixSelectedAwaitingPaymentHelp":"O cliente já escolheu Pix, mas o pagamento ainda não foi confirmado. A UGO libera ESTOU A CAMINHO somente após a confirmação do pagamento para este serviço com valor definido."
+  "providerJob.pixSelectedAwaitingPaymentHelp":"O cliente já escolheu Pix, mas o pagamento ainda não foi confirmado. A UGO libera ESTOU A CAMINHO somente após a confirmação do pagamento para este serviço com valor definido.",
   "providerJob.processing":"Processando…",
   "providerJob.confirming":"Confirmando…",
   "providerJob.going":"ESTOU A CAMINHO",
@@ -330,7 +330,7 @@ export const coreMessages: Record<'pt-BR'|'es'|'en',Record<string,string>>={
   "providerJob.control":"CONTROL DEL PEDIDO",
   "providerJob.paymentChoiceHelp":"PIX o efectivo se elige desde la app Cliente. No tenés que elegirlo vos. Cuando el cliente confirme, UGO habilita “ESTOY YENDO” automáticamente.",
   "providerJob.pixSelectedAwaitingPayment":"Pix elegido · pago pendiente",
-  "providerJob.pixSelectedAwaitingPaymentHelp":"El cliente ya eligió Pix, pero el pago todavía no fue confirmado. UGO habilita ESTOY YENDO solo después de confirmar el pago para este trabajo con precio definido."
+  "providerJob.pixSelectedAwaitingPaymentHelp":"El cliente ya eligió Pix, pero el pago todavía no fue confirmado. UGO habilita ESTOY YENDO solo después de confirmar el pago para este trabajo con precio definido.",
   "providerJob.processing":"Procesando…",
   "providerJob.confirming":"Confirmando…",
   "providerJob.going":"ESTOY YENDO",
@@ -529,7 +529,7 @@ export const coreMessages: Record<'pt-BR'|'es'|'en',Record<string,string>>={
   "providerJob.control":"REQUEST CONTROLS",
   "providerJob.paymentChoiceHelp":"The customer chooses Pix or cash in the Customer app. You don’t need to choose. Once confirmed, UGO automatically enables “I’M ON MY WAY”.",
   "providerJob.pixSelectedAwaitingPayment":"Pix selected · payment pending",
-  "providerJob.pixSelectedAwaitingPaymentHelp":"The customer selected Pix, but payment has not been confirmed. UGO enables I'M ON MY WAY only after payment is confirmed for this fixed-price job."
+  "providerJob.pixSelectedAwaitingPaymentHelp":"The customer selected Pix, but payment has not been confirmed. UGO enables I'M ON MY WAY only after payment is confirmed for this fixed-price job.",
   "providerJob.processing":"Processing…",
   "providerJob.confirming":"Confirming…",
   "providerJob.going":"I’M ON MY WAY",
