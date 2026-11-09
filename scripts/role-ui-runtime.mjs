@@ -138,7 +138,10 @@ const safeClick=async(page,locator,label)=>{
   console.error(`::error::SAFE_CLICK_FAILURE step=${label} state=${JSON.stringify(state)}`)
   throw error
  })
- await locator.click()
+ // Realtime can replace the navigation button between actionability checks.
+ // Visibility is required above; invoke the current DOM button and still verify
+ // the destination below instead of racing a continuously re-rendered node.
+ await locator.evaluate(button=>button.click())
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
 }
