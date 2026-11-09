@@ -45,3 +45,10 @@ test('Asaas validation descriptions never escape the API as unfiltered text',()=
  assert.doesNotMatch(source,/processorValidationDescription[s]?:/)
  assert.ok(!source.includes('JSON.stringify(detail)'))
 })
+
+test('both create and recovery preserve sanitized field labels for operator diagnostics',()=>{
+ const matches=source.match(/error\.safeFields=e\.safeFields\|\|\[\]/g)||[]
+ assert.equal(matches.length,2)
+ assert.match(source,/processorValidationFields:safeFields/)
+ assert.doesNotMatch(source,/JSON\.stringify\(detail\)/)
+})
