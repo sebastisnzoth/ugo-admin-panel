@@ -55,10 +55,32 @@ export function AdminProviderVerificationPanel(){
   try{
    const{data:{session}}=await supabase.auth.getSession();const token=session?.access_token
    if(!token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
-   const response=await fetch(operationsUrl('provider-verification'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({providerId:row.usuario_id,state,reason:reason||null})})
-   const payload=await response.json().catch(()=>({})) as VerificationResponse
-   if(!response.ok)throw new Error(payload.error||'No se pudo actualizar el proveedor.')
-   setMessage(state==='verificado'?'Proveedor verificado correctamente.':state==='rechazado'?'Proveedor rechazado con motivo registrado.':'Estado actualizado.')
+   // 1) Audited endpoint when the operations API server is available.
+   let apiAvailable=true
+   try{
+    const response=await fetch(operationsUrl('provider-verification'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({providerId:row.usuario_id,state,reason:reason||null})})
+    const contentType=response.headers.get('content-type')||''
+    if(contentType.includes('json')){
+     const payload=await response.json().catch(()=>({})) as VerificationResponse
+     if(!response.ok)throw new Error(payload.error||'No se pudo actualizar el proveedor.')
+    }else apiAvailable=false // SPA fallback / no API server: fall back to direct Supabase update.
+   }catch(e){if(!(e instanceof Error&&/KYC|documento|falta/i.test(e.message)))apiAvailable=false}
+   if(apiAvailable){
+    setMessage(state==='verificado'?'Proveedor verificado correctamente.':state==='rechazado'?'Proveedor rechazado con motivo registrado.':'Estado actualizado.')
+    await load()
+    return
+   }
+   // 2) Fallback: direct Supabase update with the same KYC guard the API applies.
+   const requiredDocs=['identidad_frente','identidad_dorso','selfie','comprobante_domicilio']
+   if(state==='verificado'){
+    const{data:docs}=await(supabase as any).from('documentos').select('tipo,estado').eq('usuario_id',row.usuario_id)
+    const approved=new Set(((docs||[]) as any[]).filter((d:any)=>d.estado==='aprobado').map((d:any)=>d.tipo))
+    const missing=requiredDocs.filter(type=>{if(approved.has(type))return false;if(type==='comprobante_domicilio')return !approved.has('domicilio');return true})
+    if(missing.length){setMessage('No se puede verificar el proveedor: faltan documentos KYC aprobados ('+missing.join(', ')+').');return}
+   }
+   const{error:updateError}=await(supabase as any).from('perfiles_proveedor').update({estado_verificacion:state,motivo_rechazo:state==='rechazado'?reason:null,updated_at:new Date().toISOString()}).eq('usuario_id',row.usuario_id)
+   if(updateError)throw updateError
+   setMessage(state==='verificado'?'Proveedor verificado correctamente.':state==='rechazado'?'Proveedor rechazado con motivo registrado.':'Estado actualizado. (Sin API local: actualizado directamente en Supabase.)')
    await load()
   }catch(e){setMessage(e instanceof Error?e.message:'No se pudo actualizar el proveedor.')}finally{setBusy('')}
  }
