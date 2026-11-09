@@ -133,6 +133,10 @@ const safeClick=async(page,locator,label)=>{
   const state=await page.evaluate(()=>({
    lang:document.documentElement.lang,width:window.innerWidth,
    section:new URLSearchParams(location.search).get('section'),
+   auth:new URLSearchParams(location.search).get('auth')==='1',
+   login:Boolean(document.querySelector('form input[type="password"]')),
+   session:Boolean(localStorage.getItem('ugo-test-admin-auth')),
+   bodyClass:document.body.className,
    adminRoot:Boolean(document.querySelector('.ugo-admin2')),
    navs:Array.from(document.querySelectorAll('nav[aria-label="Navegación Admin"]')).map(nav=>({
     visible:Boolean(nav.getBoundingClientRect().width&&nav.getBoundingClientRect().height),
