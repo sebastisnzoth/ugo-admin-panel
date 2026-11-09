@@ -125,7 +125,19 @@ async function openRole(role,viewport){
 const safeClick=async(page,locator,label)=>{
  const trace=pageContext.get(page)
  if(trace)trace.step=label
- await locator.waitFor({state:'visible',timeout:60000})
+ await locator.waitFor({state:'visible',timeout:60000}).catch(async error=>{
+  const state=await page.evaluate(()=>({
+   lang:document.documentElement.lang,width:window.innerWidth,
+   section:new URLSearchParams(location.search).get('section'),
+   adminRoot:Boolean(document.querySelector('.ugo-admin2')),
+   navs:Array.from(document.querySelectorAll('nav[aria-label="Navegación Admin"]')).map(nav=>({
+    visible:Boolean(nav.getBoundingClientRect().width&&nav.getBoundingClientRect().height),
+    buttons:Array.from(nav.querySelectorAll('button')).map(button=>button.textContent?.trim())
+   }))
+  })).catch(()=>null)
+  console.error(`::error::SAFE_CLICK_FAILURE step=${label} state=${JSON.stringify(state)}`)
+  throw error
+ })
  await locator.click()
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
