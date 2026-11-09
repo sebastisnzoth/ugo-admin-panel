@@ -758,3 +758,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Tela informativa integrada no painel atual do Provedor, sem substituir Mercado Pago nem contas externas existentes. Campos Pix desabilitados por falta de vínculo subconta verificado, armazenamento privado, autorização de saques e backend financeiro TEST.
 - Nenhuma chave Pix é persistida, nenhuma cobrança Asaas gerada, nenhum deploy acionado neste passo. Não confundir seção visível com uma integração funcional do processador.
 - Próximo: finalizar PR #616 em ambiente TEST financeiro segregado, validar CI/E2E, só então habilitar cadastro Pix com backend seguro.
+
+
+### 2026-11-09 — Safe Asaas UI continuity (PR #617)
+- This release merges **only** the tested non-transactional copy and a production-disabled Asaas preview guard from draft PR #616.
+- Existing ProviderPayoutPanel and Mercado Pago are unchanged. No database migrations, backend financial endpoint, env key, wallet, payout or charging route is included.
+- Do not claim automatic 85/15; the provider-facing text explicitly discloses that Split is pending verification. The Pix form remains disabled.
+- Keep remaining PR #616 financial work on TEST Preview only. Require Asaas authenticated Pix QR + confirmation, second verified recipient wallet, audit, rollback plan, and explicit production approval before future financial activation.
