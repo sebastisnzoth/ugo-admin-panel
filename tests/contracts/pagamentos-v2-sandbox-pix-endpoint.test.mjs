@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
 import {spawnSync} from 'node:child_process'
+import {runInNewContext} from 'node:vm'
 const route=new URL('../../payments-sandbox/api/pix.js',import.meta.url)
 const source=readFileSync(route,'utf8')
 
@@ -31,7 +32,7 @@ test('single-charge reservation uses transaction and unique service locking',()=
 })
 
 test('confirmation is explicit, processor-readback based and fails closed',()=>{
- assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents'\]/)
+ assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer'\]/)
  assert.match(source,/getVerifiedPayment/)
  assert.match(source,/another_confirmation_in_progress/)
  assert.match(source,/confirmation_uncertain_reconcile_without_retry/)
@@ -55,7 +56,7 @@ test('read-only diagnostics returns only safe flags and does not create charges'
 
 test('Sandbox Pix rejects missing payer document before any charge reservation',()=>{
  assert.match(source,/payer_document_missing/)
- assert.match(source,/customers\.data\[0\]\.cpfCnpj/)
+ assert.match(source,/customer\.cpfCnpj/)
  const preflight=source.split('async function preflight(){')[1]?.split('async function dbConnect()')[0]||''
  assert.match(preflight,/throw Error\('payer_document_missing'\)/)
  assert.doesNotMatch(preflight,/processor\('\/payments','POST'/)
@@ -73,4 +74,28 @@ test('read-only audit checks canonical Sandbox payment references without exposi
  assert.doesNotMatch(section,/processor\([^,\n]+,'POST'/)
  assert.doesNotMatch(section,/db\.query\([\s\S]*?\b(?:update|insert|delete)\b/i)
  assert.doesNotMatch(section,/return Object\.freeze\(\{[^}]*external_reference/s)
+})
+
+test('operator may prepare sole existing fictitious Sandbox payer without another real CPF',()=>{
+ assert.match(source,/async function prepareCustomer\(\)/)
+ assert.match(source,/const customer=await verifiedCustomer\(\)/)
+ assert.match(source,/processor\('\/customers\/'\+encodeURIComponent\(customer\.id\),'PUT'/)
+ assert.match(source,/notificationDisabled:true/)
+ assert.match(source,/sandboxCustomerUpdated:true/)
+ assert.match(source,/action==='prepare_customer'\?await prepareCustomer\(\)/)
+ const section=source.split('async function prepareCustomer(){')[1]?.split('async function dbConnect()')[0]||''
+ assert.doesNotMatch(section,/processor\('\/payments','POST'/)
+ assert.doesNotMatch(section,/processor\('\/customers','POST'/)
+ assert.doesNotMatch(section,/cpfCnpj:cpf.*return/s)
+})
+
+test('generated CPF has valid check digits and only runs in isolated Sandbox operator action',()=>{
+ const chunk=source.split('function syntheticSandboxCpf(){')[1]?.split('async function prepareCustomer(){')[0]
+ assert.ok(chunk)
+ const sample=runInNewContext('function syntheticSandboxCpf(){'+chunk+
+  '\nsyntheticSandboxCpf()', {randomInt:()=>123456789})
+ assert.equal(sample,'12345678909')
+ assert.match(source,/process\.env\.VERCEL_ENV!=='preview'/)
+ assert.match(source,/process\.env\.UGO_PAYMENTS_TEST_ONLY!=='1'/)
+ assert.match(source,/UGO_TEST_OPERATOR_TOKEN/)
 })
