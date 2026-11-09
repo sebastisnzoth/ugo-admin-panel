@@ -11,9 +11,9 @@ type AdminProfile={tipo:string;activo:boolean}
 type AdminGateProps={children?:React.ReactNode}
 
 const ADMIN_PROFILE_RETRY_DELAYS=[0,250,600,1200] as const
-function transientAdminProfileError(value:unknown){const text=value instanceof Error?value.message:String((value as any)?.message||value||'');return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst/i.test(text)}
+function transientAdminProfileError(value:unknown){const text=value instanceof Error?value.message:String((value as any)?.message||value||'');return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst|unexpected eof|context canceled|failed to connect|(?:http\s*)?5(?:00|02|03|04)/i.test(text)}
 async function adminWait(ms:number){if(ms>0)await new Promise(resolve=>window.setTimeout(resolve,ms))}
-async function withAdminProfileTimeout<T>(operation:PromiseLike<T>,ms=2500){return await Promise.race([Promise.resolve(operation),new Promise<T>((_,reject)=>window.setTimeout(()=>reject(new Error('ADMIN_PROFILE_QUERY_TIMEOUT')),ms))])}
+async function withAdminProfileTimeout<T>(operation:PromiseLike<T>&{abortSignal?:(signal:AbortSignal)=>PromiseLike<T>},ms=2500){const controller=new AbortController();const request=typeof operation.abortSignal==='function'?operation.abortSignal(controller.signal):operation;let timer:number|undefined;try{return await Promise.race([Promise.resolve(request),new Promise<T>((_,reject)=>{timer=window.setTimeout(()=>{controller.abort();reject(new Error('ADMIN_PROFILE_QUERY_TIMEOUT'))},ms)})])}finally{if(timer!==undefined)window.clearTimeout(timer)}}
 
 function resolveAdminLogin(value:string){
   const clean=value.trim()
@@ -48,7 +48,7 @@ function SecureAdminGate({children,gateParams}:AdminGateProps&{gateParams:URLSea
    const{data:{session},error:sessionError}=await supabase.auth.getSession();if(sessionError)throw sessionError;if(!session){setAllowed(false);setChecking(false);return}
    try{if(await authorizeSession(session)){setAllowed(true);setError('')}else{setSessionActive(false);await supabase.auth.signOut();setAllowed(false);setError(requiresSuperAdmin?t('adminAuth.noSuperAdmin'):t('adminAuth.noAdmin'))}}catch(profileError){setAllowed(false);setSessionActive(transientAdminProfileError(profileError));setError(transientAdminProfileError(profileError)?t('adminAuth.sessionAdmin'):profileError instanceof Error?profileError.message:t('adminAuth.profileAdmin'))}setChecking(false)
   }
-  useEffect(()=>{verify().catch(()=>{setChecking(false);setAllowed(false);setError(t('adminAuth.sessionInvalid'))})},[])
+  useEffect(()=>{verify().catch(error=>{setChecking(false);setAllowed(false);setSessionActive(transientAdminProfileError(error));setError(transientAdminProfileError(error)?t('adminAuth.sessionAdmin'):t('adminAuth.sessionInvalid'))})},[])
   // A valid Admin session must never be presented as a login screen because a profile query
   // timed out. Retry automatically while the session stays valid; the retry card is the fallback.
   useEffect(()=>{if(!sessionActive||allowed||checking||profileRetry>=12)return;const wait=profileRetry<4?600:1500;const timer=window.setTimeout(()=>{setProfileRetry(value=>value+1);setChecking(true);verify().catch(()=>{setChecking(false)})},wait);return()=>window.clearTimeout(timer)},[allowed,checking,profileRetry,sessionActive])
