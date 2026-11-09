@@ -101,6 +101,8 @@ try{
 
   await page.locator('.ugo-superadmin-statebar button').first().click();
   await page.locator('.ugo-autonomous-content').waitFor({state:'visible',timeout:20000});
+  // The exact Launch Gate node is mounted only in its own view, not Overview.
+  await page.getByTestId('autonomy-view-launch').click();
   // Compare the exact persisted fields, never a substring in unrelated cards.
   await page.waitForFunction(({mode,launch})=>
     document.querySelector('[data-testid="autonomy-current-mode"]')?.textContent?.trim()===mode &&
