@@ -318,6 +318,40 @@ async function diagnose(db){
   financialWritesPerformed:false,
  })
 }
+/**
+ * Authenticated, read-only reconciliation inventory for previously created TEST
+ * intents. Only canonical charge references are queried remotely. Legacy
+ * synthetic fixtures are reported as skipped, not as unpaid charges.
+ * Never returns reference IDs, payer data or processor response bodies.
+ */
+async function auditIntents(db){
+ const result=await db.query(`select status,external_reference,asaas_payment_id
+  from ugo_payments_v2.payment_intents
+  where environment='sandbox' order by created_at asc limit 21`)
+ if(result.rows.length>20)throw Error('too_many_test_intents_for_audit')
+ const summary={checked:0,remoteAbsent:0,remotePresent:0,
+  remoteAmbiguous:0,legacySyntheticSkipped:0,linkedLocally:0}
+ for(const row of result.rows){
+  if(row.asaas_payment_id)summary.linkedLocally++
+  if(!/^ugo_pix_test_[a-f0-9]{32}$/.test(row.external_reference||'')){
+   summary.legacySyntheticSkipped++
+   continue
+  }
+  const remote=await processor('/payments?limit=2&offset=0&externalReference='+
+   encodeURIComponent(row.external_reference))
+  if(!Array.isArray(remote.data)||typeof remote.hasMore!=='boolean')
+   throw Error('invalid_remote_reconciliation')
+  summary.checked++
+  const matched=remote.data.filter(p=>p?.externalReference===row.external_reference)
+  if(remote.hasMore||matched.length!==remote.data.length||matched.length>1)
+   summary.remoteAmbiguous++
+  else if(matched.length===1)summary.remotePresent++
+  else summary.remoteAbsent++
+ }
+ return Object.freeze({action:'audit_intents',environment:'sandbox',
+  localIntentCount:result.rows.length,...summary,
+  readyForAutomaticRetry:false,financialWritesPerformed:false})
+}
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,405,{error:'post_only'})
  if(process.env.VERCEL_ENV!=='preview'||process.env.UGO_PAYMENTS_TEST_ONLY!=='1')
@@ -328,12 +362,13 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await dbConnect()
   const result=action==='diagnose'?await diagnose(db):
+    action==='audit_intents'?await auditIntents(db):
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
     action==='confirm'?await confirm(db):await reconcile(db)
@@ -342,7 +377,7 @@ export default async function handler(req,res){
   // No secret, customer data, QR, or raw processor body is ever logged.
   const raw=String(e?.message||'')
   const allowed=new Set([
-   'payer_document_missing',
+   'too_many_test_intents_for_audit','payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
    'diagnostic_fixture_identity_mismatch',
    'single_sandbox_customer_not_verified','not_isolated_test_role',
