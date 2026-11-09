@@ -58,6 +58,10 @@ async function preflight(){
  if(!Array.isArray(customers.data)||typeof customers.hasMore!=='boolean'||
     customers.hasMore||customers.data.length!==1||!/^cus_[a-zA-Z0-9_-]{1,96}$/.test(customers.data[0]?.id||''))
   throw Error('single_sandbox_customer_not_verified')
+ // Do not issue a new charge for a payer whose required document is absent.
+ // The owner must update the existing Sandbox customer with authorized data.
+ if(typeof customers.data[0].cpfCnpj!=='string'||!/^(?:\d{11}|\d{14})$/.test(customers.data[0].cpfCnpj))
+  throw Error('payer_document_missing')
  return customers.data[0].id
 }
 async function dbConnect(){
@@ -338,6 +342,7 @@ export default async function handler(req,res){
   // No secret, customer data, QR, or raw processor body is ever logged.
   const raw=String(e?.message||'')
   const allowed=new Set([
+   'payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
    'diagnostic_fixture_identity_mismatch',
    'single_sandbox_customer_not_verified','not_isolated_test_role',
