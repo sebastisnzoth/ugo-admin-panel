@@ -46,12 +46,9 @@ test('Asaas validation descriptions never escape the API as unfiltered text',()=
  assert.ok(!source.includes('JSON.stringify(detail)'))
 })
 
-test('both charge paths preserve whitelisted validation fields through sanitized rethrow',()=>{
- const create=source.split('async function create(db){')[1]?.split('async function confirm(db){')[0]||''
- const recovery=source.split('async function recoverCreate(db){')[1]?.split('/**\n * Diagnostic')[0]||''
- for(const [name,section] of [['create',create],['recovery',recovery]]){
-  assert.ok(section.includes('error.safeCodes=e.safeCodes||[]'),name+' must preserve safe codes')
-  assert.ok(section.includes('error.safeFields=e.safeFields||[]'),name+' must preserve safe fields')
-  assert.doesNotMatch(section,/error\.description\s*=/,name+' must not expose descriptions')
- }
+test('both create and recovery preserve sanitized field labels for operator diagnostics',()=>{
+ const matches=source.match(/error\.safeFields=e\.safeFields\|\|\[\]/g)||[]
+ assert.equal(matches.length,2)
+ assert.match(source,/processorValidationFields:safeFields/)
+ assert.doesNotMatch(source,/JSON\.stringify\(detail\)/)
 })

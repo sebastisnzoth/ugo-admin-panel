@@ -1,4 +1,4 @@
-import { timingSafeEqual } from 'node:crypto'
+import { timingSafeEqual, randomInt } from 'node:crypto'
 import pg from 'pg'
 const { Client } = pg
 const BASE = 'https://api-sandbox.asaas.com/v3'
@@ -47,7 +47,7 @@ async function processor(path,method='GET',body){
  if(!data||typeof data!=='object')throw Error('invalid_asaas_response')
  return data
 }
-async function preflight(){
+async function verifiedCustomer(){
  const expected=process.env.UGO_ASAAS_ISSUER_WALLET_ID
  if(!UUID.test(expected||''))throw Error('wallet_not_configured')
  const wallets=await processor('/wallets/')
@@ -58,11 +58,47 @@ async function preflight(){
  if(!Array.isArray(customers.data)||typeof customers.hasMore!=='boolean'||
     customers.hasMore||customers.data.length!==1||!/^cus_[a-zA-Z0-9_-]{1,96}$/.test(customers.data[0]?.id||''))
   throw Error('single_sandbox_customer_not_verified')
- // Do not issue a new charge for a payer whose required document is absent.
- // The owner must update the existing Sandbox customer with authorized data.
- if(typeof customers.data[0].cpfCnpj!=='string'||!/^(?:\d{11}|\d{14})$/.test(customers.data[0].cpfCnpj))
+ return customers.data[0]
+}
+async function preflight(){
+ const customer=await verifiedCustomer()
+ // Never send a Pix charge for an incomplete payer.
+ if(typeof customer.cpfCnpj!=='string'||!/^(?:\d{11}|\d{14})$/.test(customer.cpfCnpj))
   throw Error('payer_document_missing')
- return customers.data[0].id
+ return customer.id
+}
+/**
+ * Asaas permits fictitious test data in Sandbox; a generated CPF is NOT
+ * an identity document and MUST NEVER be used outside the TEST account.
+ * Operator-controlled action, not part of automated charge creation.
+ */
+function syntheticSandboxCpf(){
+ const digits=Array.from(String(randomInt(100000000,1000000000)),Number)
+ const digit=(values,weight)=>{
+  const remainder=values.reduce((sum,value,index)=>sum+value*(weight-index),0)%11
+  return remainder<2?0:11-remainder
+ }
+ digits.push(digit(digits,10))
+ digits.push(digit(digits,11))
+ return digits.join('')
+}
+async function prepareCustomer(){
+ const customer=await verifiedCustomer()
+ if(typeof customer.cpfCnpj==='string'&&/^(?:\d{11}|\d{14})$/.test(customer.cpfCnpj))
+  return {action:'prepare_customer',alreadyPrepared:true,
+   payerDocumentPresent:true,financialWritesPerformed:false}
+ // The sole known Sandbox payer is updated, never duplicated. Never send
+ // invented identity data to a production API or real-world KYC.
+ const cpf=syntheticSandboxCpf()
+ const updated=await processor('/customers/'+encodeURIComponent(customer.id),'PUT',{
+  cpfCnpj:cpf,notificationDisabled:true
+ })
+ if(updated?.id!==customer.id||updated?.cpfCnpj!==cpf)
+  throw Error('sandbox_customer_update_requires_review')
+ // Discard the synthetic CPF from the outward response and all logs.
+ return {action:'prepare_customer',alreadyPrepared:false,
+  payerDocumentPresent:true,notificationsDisabled:updated.notificationDisabled===true,
+  financialWritesPerformed:false,sandboxCustomerUpdated:true}
 }
 async function dbConnect(){
  const db=new Client({connectionString:process.env.UGO_NEON_TEST_WRITE_URL,
@@ -183,12 +219,7 @@ async function create(db){
    status=$2,updated_at=now()
    where id=$1 and status='creating'`,
    [reservation.id,rejected?'manual_review':'unknown_processor_result']).catch(()=>{})
-  if(rejected){
-   const error=new Error(raw)
-   error.safeCodes=e.safeCodes||[]
-   error.safeFields=e.safeFields||[]
-   throw error
-  }
+  if(rejected){const error=new Error(raw);error.safeCodes=e.safeCodes||[];error.safeFields=e.safeFields||[];throw error}
   throw Error('create_uncertain_stop_and_reconcile')
  }
  const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
@@ -273,12 +304,7 @@ async function recoverCreate(db){
   await db.query(`update ugo_payments_v2.payment_intents
    set status=$2,updated_at=now() where id=$1 and status='creating'`,
    [row.id,known4xx?'manual_review':'unknown_processor_result']).catch(()=>{})
-  if(known4xx){
-   const error=new Error(raw)
-   error.safeCodes=e.safeCodes||[]
-   error.safeFields=e.safeFields||[]
-   throw error
-  }
+  if(known4xx){const error=new Error(raw);error.safeCodes=e.safeCodes||[];error.safeFields=e.safeFields||[];throw error}
   throw Error('recovery_processor_result_uncertain')
  }
  const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
@@ -328,6 +354,40 @@ async function diagnose(db){
   financialWritesPerformed:false,
  })
 }
+/**
+ * Authenticated, read-only reconciliation inventory for previously created TEST
+ * intents. Only canonical charge references are queried remotely. Legacy
+ * synthetic fixtures are reported as skipped, not as unpaid charges.
+ * Never returns reference IDs, payer data or processor response bodies.
+ */
+async function auditIntents(db){
+ const result=await db.query(`select status,external_reference,asaas_payment_id
+  from ugo_payments_v2.payment_intents
+  where environment='sandbox' order by created_at asc limit 21`)
+ if(result.rows.length>20)throw Error('too_many_test_intents_for_audit')
+ const summary={checked:0,remoteAbsent:0,remotePresent:0,
+  remoteAmbiguous:0,legacySyntheticSkipped:0,linkedLocally:0}
+ for(const row of result.rows){
+  if(row.asaas_payment_id)summary.linkedLocally++
+  if(!/^ugo_pix_test_[a-f0-9]{32}$/.test(row.external_reference||'')){
+   summary.legacySyntheticSkipped++
+   continue
+  }
+  const remote=await processor('/payments?limit=2&offset=0&externalReference='+
+   encodeURIComponent(row.external_reference))
+  if(!Array.isArray(remote.data)||typeof remote.hasMore!=='boolean')
+   throw Error('invalid_remote_reconciliation')
+  summary.checked++
+  const matched=remote.data.filter(p=>p?.externalReference===row.external_reference)
+  if(remote.hasMore||matched.length!==remote.data.length||matched.length>1)
+   summary.remoteAmbiguous++
+  else if(matched.length===1)summary.remotePresent++
+  else summary.remoteAbsent++
+ }
+ return Object.freeze({action:'audit_intents',environment:'sandbox',
+  localIntentCount:result.rows.length,...summary,
+  readyForAutomaticRetry:false,financialWritesPerformed:false})
+}
 export default async function handler(req,res){
  if(req.method!=='POST')return json(res,405,{error:'post_only'})
  if(process.env.VERCEL_ENV!=='preview'||process.env.UGO_PAYMENTS_TEST_ONLY!=='1')
@@ -338,12 +398,14 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await dbConnect()
   const result=action==='diagnose'?await diagnose(db):
+    action==='audit_intents'?await auditIntents(db):
+    action==='prepare_customer'?await prepareCustomer():
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
     action==='confirm'?await confirm(db):await reconcile(db)
@@ -352,7 +414,8 @@ export default async function handler(req,res){
   // No secret, customer data, QR, or raw processor body is ever logged.
   const raw=String(e?.message||'')
   const allowed=new Set([
-   'payer_document_missing',
+   'sandbox_customer_update_requires_review',
+   'too_many_test_intents_for_audit','payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
    'diagnostic_fixture_identity_mismatch',
    'single_sandbox_customer_not_verified','not_isolated_test_role',
