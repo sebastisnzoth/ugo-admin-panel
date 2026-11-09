@@ -1,7 +1,16 @@
 {
   "date": "2026-11-09",
   "scope": "PR 616 isolated TEST code on Arena working branch; no production or financial writes",
-  "financialHeadVerified": "575e7de24d944031a19cf9e215fd2bc5f78f9d1c",
+  "financialHeadVerifiedAtStart": "575e7de24d944031a19cf9e215fd2bc5f78f9d1c",
+  "concurrentFinancialHeadObservedAtClose": {
+    "sha": "92d4d0d6746708dc9d8b8e6508d89f5a868a50b5",
+    "coreCiRun": 42667261074,
+    "coreCiResult": "SUCCESS",
+    "crossRoleUiRun": 42667261374,
+    "crossRoleUiResultAtClose": "IN_PROGRESS",
+    "integratedIntoArenaBranch": false,
+    "note": "Another actor added read-only intent audit and fictitious Sandbox CPF preparation. Those actions were not executed or accepted by this Arena turn; synthetic identity preparation conflicts with the current legitimate-authorized-data requirement and needs explicit review."
+  },
   "executed": {
     "localContractSuite": {
       "tests": 1810,
