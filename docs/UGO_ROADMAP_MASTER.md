@@ -1152,3 +1152,11 @@ RUNTIME VALIDATED             pendiente
 - Segurança: campos de chave Pix e botão **desabilitados**. Não salva dados, não faz chamadas Asaas, não chama API de saque e não altera `cuenta_pago_externa`. Mercado Pago e fluxo legado de retiradas permanecem montados.
 - Teste adicionado em `tests/contracts/provider-asaas-recebimentos-readonly-main.test.mjs`. E2E visual e build CI exato do main ainda requerem confirmação.
 - PR #616 permanece isolado e em draft, sem mudança financeira ou SQL PROD.
+
+
+### 2026-11-09 — Safe Asaas 85/15 disclosure backport (PR #617)
+- Verified UI safety patch from PR #616 only: provider receiving screen states in pt-BR/es/en that Asaas Split 85/15 is **planned and not activated**.
+- Registration inputs remain disabled; no Pix key persistence, checkout, transfer, API or payment processor integration added to main.
+- Asaas preview flag is false by default and forced false in production builds.
+- Tests in `tests/contracts/pagamentos-v2-provider-recebimentos-ui.test.mjs` verify disabled fields, Mercado Pago retained and truthfulness of all languages.
+- Sandbox payment creation, split settlement, payout and escrow remain blocked until genuine E2E verification and separate release authorization. PR #616 stays isolated.
