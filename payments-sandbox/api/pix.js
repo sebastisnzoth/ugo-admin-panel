@@ -36,6 +36,10 @@ async function processor(path,method='GET',body){
    if(/\bvalor\b|\bamount\b/.test(description))found.push('value')
    if(/\bforma de pagamento\b|\bbillingtype\b/.test(description))found.push('billingType')
    if(/\breferência externa\b|\bexternalreference\b/.test(description))found.push('externalReference')
+   if(/\bpix\b|\bchave\b|\bkey\b/.test(description))found.push('pixCapability')
+   if(/\bprova de vida\b|\bliveness\b/.test(description))found.push('liveness')
+   if(/\bconta\b|\baccount\b/.test(description))found.push('account')
+   if(/\bautorização crítica\b|\bcritical authorization\b/.test(description))found.push('criticalAuthorization')
    return found
   }))].slice(0,6):[]
   const error=new Error('asaas_http_'+r.status)
@@ -99,6 +103,36 @@ async function prepareCustomer(){
  return {action:'prepare_customer',alreadyPrepared:false,
   payerDocumentPresent:true,notificationsDisabled:updated.notificationDisabled===true,
   financialWritesPerformed:false,sandboxCustomerUpdated:true}
+}
+async function activePixKeyCount(){
+ const keys=await processor('/pix/addressKeys?status=ACTIVE&limit=2&offset=0')
+ if(!Array.isArray(keys.data)||typeof keys.hasMore!=='boolean')
+  throw Error('invalid_pix_key_response')
+ if(keys.hasMore||keys.data.length>1)throw Error('unexpected_pix_key_count')
+ return keys.data.length
+}
+async function preparePixKey(db){
+ await preflight()
+ const count=await activePixKeyCount()
+ if(count===1)return {action:'prepare_pix_key',alreadyPrepared:true,pixKeyActive:true,
+  financialWritesPerformed:false}
+ await dbConnectGuard(db)
+ await db.query('BEGIN')
+ try{
+  const lock=await db.query('select pg_advisory_xact_lock(hashtext($1))',['ugo_sandbox_pix_key'])
+  if(lock.rows.length!==1)throw Error('pix_key_lock_failed')
+  const recheck=await activePixKeyCount()
+  if(recheck!==0)throw Error('pix_key_changed_during_preparation')
+  await processor('/pix/addressKeys','POST',{type:'EVP'})
+  // Creation is not proof of ACTIVE status; verify by authenticated readback.
+  if(await activePixKeyCount()!==1)throw Error('pix_key_not_active_after_creation')
+  await db.query('COMMIT')
+ }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
+ return {action:'prepare_pix_key',alreadyPrepared:false,pixKeyActive:true,
+  sandboxPixKeyCreated:true,financialWritesPerformed:false}
+}
+async function dbConnectGuard(db){
+ if(!db)throw Error('database_required_for_lock')
 }
 async function dbConnect(){
  const db=new Client({connectionString:process.env.UGO_NEON_TEST_WRITE_URL,
@@ -260,7 +294,7 @@ async function reconcile(db){
  * zero matches is mandatory, never infer this from Neon alone.
  * Existing or ambiguous remote payments NEVER cause a second POST.
  */
-async function recoverCreate(db,rejected=false){
+async function recoverCreate(db,rejected=false,resume=false){
  const row=await existing(db)
  if(!row || (row.status!=='unknown_processor_result'&&!(rejected&&row.status==='manual_review')) || row.asaas_payment_id)
   throw Error('recovery_requires_uncertain_unlinked_intent')
@@ -270,6 +304,7 @@ async function recoverCreate(db,rejected=false){
  const customerId=await preflight()
  if(row.asaas_customer_id!==customerId)
   throw Error('recovery_customer_mismatch')
+ if(resume&&await activePixKeyCount()!==1)throw Error('active_pix_key_required_for_resume')
  const path='/payments?limit=2&offset=0&externalReference='+encodeURIComponent(expected)
  const list=await processor(path)
  if(!Array.isArray(list.data)||typeof list.hasMore!=='boolean')
@@ -288,11 +323,12 @@ async function recoverCreate(db,rejected=false){
   if(rejected){
    const marker=await db.query(`insert into ugo_payments_v2.payment_events
     (event_id,processor_payment_id,kind,status,processed_at)
-    values($1,$2,'UGO_REJECTED_RECOVERY_ATTEMPT','processed',now())
+    values($1,$2,$3,'processed',now())
     on conflict (event_id) do nothing returning event_id`,
-    ['rejected_recovery_'+process.env.UGO_PIX_TEST_SERVICE_ID,
-     'no_remote_charge_'+process.env.UGO_PIX_TEST_SERVICE_ID])
-   if(marker.rows.length!==1)throw Error('rejected_recovery_already_attempted')
+    [(resume?'pix_key_resume_':'rejected_recovery_')+process.env.UGO_PIX_TEST_SERVICE_ID,
+     'no_remote_charge_'+process.env.UGO_PIX_TEST_SERVICE_ID,
+     resume?'UGO_PIX_KEY_RESUME_ATTEMPT':'UGO_REJECTED_RECOVERY_ATTEMPT'])
+   if(marker.rows.length!==1)throw Error(resume?'pix_key_resume_already_attempted':'rejected_recovery_already_attempted')
   }
   await db.query('COMMIT')
  }catch(e){await db.query('ROLLBACK').catch(()=>{});throw e}
@@ -340,11 +376,15 @@ async function diagnose(db){
  const ref='ugo_pix_test_'+process.env.UGO_PIX_TEST_SERVICE_ID.replace(/-/g,'')
  if(row && (row.external_reference!==ref || Number(row.gross_cents)!==10000))
   throw Error('diagnostic_fixture_identity_mismatch')
+ const attempts=await db.query(`select kind from ugo_payments_v2.payment_events
+  where event_id in ($1,$2)`,
+  ['rejected_recovery_'+process.env.UGO_PIX_TEST_SERVICE_ID,
+   'pix_key_resume_'+process.env.UGO_PIX_TEST_SERVICE_ID])
  const [wallets,customers,account,keys,remote]=await Promise.all([
   processor('/wallets/'),
   processor('/customers?limit=2&offset=0'),
   processor('/myAccount/status/'),
-  processor('/pix/addressKeys?limit=2&offset=0'),
+  processor('/pix/addressKeys?status=ACTIVE&limit=2&offset=0'),
   processor('/payments?limit=2&offset=0&externalReference='+encodeURIComponent(ref)),
  ])
  const issuer=process.env.UGO_ASAAS_ISSUER_WALLET_ID
@@ -365,6 +405,8 @@ async function diagnose(db){
   localPaymentLinked:!!row?.asaas_payment_id,
   remoteLookupConclusive:remoteValid,
   remoteChargeCount:remoteValid?remote.data.filter(p=>p?.externalReference===ref).length:null,
+  rejectedRecoveryAttempted:attempts.rows.some(x=>x.kind==='UGO_REJECTED_RECOVERY_ATTEMPT'),
+  postKeyRecoveryAttempted:attempts.rows.some(x=>x.kind==='UGO_PIX_KEY_RESUME_ATTEMPT'),
   financialWritesPerformed:false,
  })
 }
@@ -412,19 +454,25 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','recover_rejected','diagnose','audit_intents','prepare_customer'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','recover_rejected','resume_rejected_after_pix_key','diagnose','audit_intents','prepare_customer','prepare_pix_key'].includes(action))
   return json(res,400,{error:'invalid_action'})
  if(action==='recover_rejected'&&req.body?.confirmation!=='RETRY_REJECTED_R100')
   return json(res,400,{error:'explicit_rejected_retry_confirmation_required'})
+ if(action==='prepare_pix_key'&&req.body?.confirmation!=='CREATE_EVP_SANDBOX_PIX_KEY')
+  return json(res,400,{error:'explicit_pix_key_confirmation_required'})
+ if(action==='resume_rejected_after_pix_key'&&req.body?.confirmation!=='RETRY_AFTER_ACTIVE_PIX_KEY')
+  return json(res,400,{error:'explicit_post_key_retry_confirmation_required'})
  let db
  try{
   db=await dbConnect()
   const result=action==='diagnose'?await diagnose(db):
     action==='audit_intents'?await auditIntents(db):
     action==='prepare_customer'?await prepareCustomer():
+    action==='prepare_pix_key'?await preparePixKey(db):
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
     action==='recover_rejected'?await recoverCreate(db,true):
+    action==='resume_rejected_after_pix_key'?await recoverCreate(db,true,true):
     action==='confirm'?await confirm(db):await reconcile(db)
   return json(res,200,{environment:'sandbox',...result})
  }catch(e){
@@ -449,14 +497,17 @@ export default async function handler(req,res){
    'recovery_customer_mismatch','invalid_remote_reconciliation',
    'remote_payment_requires_manual_reconciliation',
    'recovery_claim_or_cooldown_failed','recovery_processor_result_uncertain',
-   'rejected_recovery_already_attempted',
+   'rejected_recovery_already_attempted','active_pix_key_required_for_resume',
+   'pix_key_resume_already_attempted','invalid_pix_key_response','unexpected_pix_key_count',
+   'database_required_for_lock','pix_key_lock_failed','pix_key_changed_during_preparation',
+   'pix_key_not_active_after_creation',
    'recovered_payment_qr_unavailable','asaas_http_400','asaas_http_401',
    'asaas_http_403','asaas_http_404','asaas_http_422',
   ])
   const code=allowed.has(raw)?raw:'sandbox_operation_failed'
   const safeCodes=Array.isArray(e?.safeCodes)?
    e.safeCodes.filter(x=>typeof x==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(x)).slice(0,3):[]
-  const allowedFields=new Set(['cpfCnpj','customer','dueDate','value','billingType','externalReference'])
+  const allowedFields=new Set(['cpfCnpj','customer','dueDate','value','billingType','externalReference','pixCapability','liveness','account','criticalAuthorization'])
   const safeFields=Array.isArray(e?.safeFields)?
    e.safeFields.filter(x=>allowedFields.has(x)).slice(0,6):[]
   return json(res,409,{environment:'sandbox',error:code,

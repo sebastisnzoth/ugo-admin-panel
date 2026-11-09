@@ -10,7 +10,7 @@ test('recovery endpoint passes syntax check',()=>{
  assert.equal(result.status,0,result.stderr)
 })
 test('uncertain intent cannot be blindly repeated without Asaas reference check',()=>{
- assert.match(source,/async function recoverCreate\(db,rejected=false\)/)
+ assert.match(source,/async function recoverCreate\(db,rejected=false,resume=false\)/)
  assert.match(source,/row\.status!=='unknown_processor_result'/)
  assert.match(source,/row\.asaas_payment_id/)
  assert.match(source,/\/payments\?limit=2&offset=0&externalReference=/)
@@ -55,6 +55,17 @@ test('rejected recovery is explicit, remotely checked and persisted as one attem
  assert.match(source,/on conflict \(event_id\) do nothing returning event_id/)
  assert.match(source,/rejected_recovery_already_attempted/)
  assert.match(source,/await db\.query\('ROLLBACK'\)/)
+})
+
+test('Pix key preparation and post-key charge retry are explicit and independently once-only',()=>{
+ assert.match(source,/CREATE_EVP_SANDBOX_PIX_KEY/)
+ assert.match(source,/RETRY_AFTER_ACTIVE_PIX_KEY/)
+ assert.match(source,/\/pix\/addressKeys\?status=ACTIVE&limit=2&offset=0/)
+ assert.match(source,/pg_advisory_xact_lock/)
+ assert.match(source,/activePixKeyCount\(\)!==1/)
+ assert.match(source,/UGO_PIX_KEY_RESUME_ATTEMPT/)
+ assert.match(source,/pix_key_resume_already_attempted/)
+ assert.match(source,/await recoverCreate\(db,true,true\)/)
 })
 
 test('both create and recovery preserve sanitized field labels for operator diagnostics',()=>{
