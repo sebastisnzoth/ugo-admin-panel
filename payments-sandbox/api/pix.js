@@ -30,12 +30,12 @@ async function processor(path,method='GET',body){
   const safeFields=Array.isArray(detail?.errors)?[...new Set(detail.errors.flatMap(x=>{
    const description=typeof x?.description==='string'?x.description.toLowerCase():''
    const found=[]
-   if(/cpf\\s*\\/?\\s*cnpj|cpfcnpj/.test(description))found.push('cpfCnpj')
-   if(/\\bcliente\\b|\\bcustomer\\b/.test(description))found.push('customer')
-   if(/\\bvencimento\\b|\\bdue\\s*date\\b|\\bduedate\\b/.test(description))found.push('dueDate')
-   if(/\\bvalor\\b|\\bamount\\b/.test(description))found.push('value')
-   if(/\\bforma de pagamento\\b|\\bbillingtype\\b/.test(description))found.push('billingType')
-   if(/\\breferência externa\\b|\\bexternalreference\\b/.test(description))found.push('externalReference')
+   if(/cpf\s*\/?\s*cnpj|cpfcnpj/.test(description))found.push('cpfCnpj')
+   if(/\bcliente\b|\bcustomer\b/.test(description))found.push('customer')
+   if(/\bvencimento\b|\bdue\s*date\b|\bduedate\b/.test(description))found.push('dueDate')
+   if(/\bvalor\b|\bamount\b/.test(description))found.push('value')
+   if(/\bforma de pagamento\b|\bbillingtype\b/.test(description))found.push('billingType')
+   if(/\breferência externa\b|\bexternalreference\b/.test(description))found.push('externalReference')
    return found
   }))].slice(0,6):[]
   const error=new Error('asaas_http_'+r.status)
