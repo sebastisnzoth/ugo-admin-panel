@@ -83,18 +83,22 @@
   },
   "pullRequest": { "number": 618, "state": "OPEN_DRAFT", "url": "https://github.com/sebastisnzoth/ugo-admin-panel/pull/618" },
   "sameShaCi": {
-    "commit": "43eed12c41643458195eef556906701801bb4f86",
-    "core": { "run": 42675161285, "result": "SUCCESS" },
-    "crossRoleUi": { "run": 42675161161, "result": "SUCCESS" },
-    "crossSecurity": { "run": 42675161287, "result": "SUCCESS" },
-    "hugoTimeout": { "run": 42675160891, "result": "SUCCESS" },
-    "roadmap": { "run": 42675161222, "result": "SUCCESS" }
+    "commit": "66f1ee7b58f4d917f28035d95995f4877ad24752",
+    "core": { "run": 42684564205, "result": "SUCCESS" },
+    "crossRoleUi": { "run": 42684563772, "result": "SUCCESS" },
+    "crossSecurity": { "run": 42684564323, "result": "SUCCESS" },
+    "hugoTimeout": { "run": 42684563915, "result": "SUCCESS" },
+    "roadmap": { "run": 42684564019, "result": "SUCCESS" },
+    "isolatedRpcRlsIncludingSuperAdmin": { "run": 42684563943, "result": "SUCCESS" },
+    "adminRealtime": { "run": 42684564449, "result": "SUCCESS" },
+    "providerGpsJudgeSentinel": { "run": 42684563891, "result": "SUCCESS" },
+    "authIsolation": { "run": 42684564229, "result": "SUCCESS" }
   },
   "releaseGates": {
     "sameShaCi": "PASS",
     "previewCodeRollback": "PASS_REDEPLOY_ONLY",
     "splitReal8515": "BLOCKED",
-    "operationalAuthRealtimeRls": "BLOCKED",
+    "operationalAuthRealtimeRls": "PASS",
     "backupRestore": "BLOCKED",
     "productionAuthorization": "PENDING",
     "realServiceAndCommission": "PENDING"
@@ -110,7 +114,7 @@
   "realCustomersProvidersRevenueOrCommission": false,
   "remainingBlocked": {
     "split8515": "Independent provider wallet and enabled Split are required.",
-    "operationalRls": "Supabase connector returned no accessible projects; skipped local tests do not prove runtime RLS.",
+    "operationalRls": "PASS in GitHub UGO TEST run 42684563943 at commit 66f1ee7b, including authenticated RPC/RLS, Realtime chat and Super Admin UI. Local skips remain local only.",
     "commercial": "No real customer, provider, service, revenue or commission is claimed.",
     "production": "Requires separate explicit authorization and release gates."
   }

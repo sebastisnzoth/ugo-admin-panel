@@ -848,3 +848,7 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 ## 2026-11-09 — Resultado de gates operativos y observabilidad Super Admin
 - Admin Realtime, Provider GPS con Judge/Sentinel y Auth Isolation: PASS same-SHA `95fad6c5`. RPC/RLS superó el harness Cliente↔Proveedor↔Admin, chat Realtime y demás pasos hasta Super Admin UI; ese último paso falló, por lo que la gate agregada sigue FAIL/BLOCKED.
 - Los artifacts detallados no fueron descargables por la red del sandbox. Se añadió anotación Checks únicamente con el código sanitizado de aserción de Super Admin, sin body, credenciales ni queries, para diagnosticar la repetición sin cambiar la UI a ciegas.
+
+## 2026-11-09 — Auth/Realtime/RLS operacional desbloqueado en TEST
+- SHA `66f1ee7b58f4d917f28035d95995f4877ad24752`: RPC/RLS run 42684563943 PASS completo incluido Super Admin UI; Admin Realtime 42684564449 PASS; Provider GPS/Judge/Sentinel 42684563891 PASS; Auth Isolation 42684564229 PASS. Core/UI/Security/Hugo/Roadmap también SUCCESS.
+- La gate de release cambia `operationalAuthRealtimeRls` a PASS con evidencia same-SHA. No se reutilizaron los SKIP locales ni runs antiguos. Split real, backup/restore, autorización de producción y servicio/comisión real siguen bloqueando.

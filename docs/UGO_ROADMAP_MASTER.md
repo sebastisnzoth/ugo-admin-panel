@@ -1255,3 +1255,6 @@ RUNTIME VALIDATED             pendiente
 
 ## 2026-11-09 — Gates same-SHA e diagnóstico Super Admin
 - Admin Realtime, GPS/Judge/Sentinel e Auth Isolation PASS no SHA `95fad6c5`; RPC/RLS continua bloqueado somente no passo Super Admin UI. Anotação sanitizada adicionada para identificar a asserção sem expor dados.
+
+## 2026-11-09 — RLS/Realtime/Auth TEST PASS
+- Evidência same-SHA `66f1ee7b`: RPC/RLS/Super Admin, Admin Realtime, GPS/Judge/Sentinel e Auth Isolation PASS. Gate comercial continua bloqueada por Split, restore, autorização e operação real.
