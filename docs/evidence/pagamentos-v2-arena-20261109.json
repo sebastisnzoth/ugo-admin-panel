@@ -3,7 +3,7 @@
   "scope": "PR 616 isolated Asaas Sandbox and Neon TEST on the Arena working branch; no UGO Arena production changes",
   "sourceOfTruth": "Vercel Preview build events for the deployments below; local contract tests; no secrets, payer document, payment ID or QR payload persisted",
   "localVerification": {
-    "fullSuiteBeforeLatestChanges": { "tests": 1810, "pass": 1801, "fail": 0, "skipped": 9 },
+    "fullSuiteAtCleanupHead": { "commit": "765255238899ece28fa8d4904dca19cde1545d7c", "tests": 1815, "pass": 1806, "fail": 0, "skipped": 9 },
     "typescriptBuild": "PASS",
     "lint": "PASS_WITH_1009_PREEXISTING_WARNINGS",
     "npmAuditVulnerabilities": 0,
@@ -73,6 +73,15 @@
     "historicalRootCause": "BLOCKED",
     "reason": "The original request-log detail was not retained. A later invalid_action rejection and zero initial active Pix keys are observed evidence, not proof of the original historical cause."
   },
+  "cleanPreview": {
+    "deployment": "dpl_4obep2CzzAYr3NhKSzwPS7VY6sus",
+    "commit": "765255238899ece28fa8d4904dca19cde1545d7c",
+    "state": "READY",
+    "buildCommand": "npm run build",
+    "financialProbeRemoved": true,
+    "financialActionsInBuildEvents": false
+  },
+  "pullRequest": { "number": 618, "state": "OPEN_DRAFT", "url": "https://github.com/sebastisnzoth/ugo-admin-panel/pull/618" },
   "productionWritesPerformed": false,
   "realOperationsPerformed": false,
   "realCustomersProvidersRevenueOrCommission": false,
