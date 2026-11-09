@@ -31,7 +31,7 @@ test('single-charge reservation uses transaction and unique service locking',()=
 })
 
 test('confirmation is explicit, processor-readback based and fails closed',()=>{
- assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose'\]/)
+ assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents'\]/)
  assert.match(source,/getVerifiedPayment/)
  assert.match(source,/another_confirmation_in_progress/)
  assert.match(source,/confirmation_uncertain_reconcile_without_retry/)
@@ -59,4 +59,18 @@ test('Sandbox Pix rejects missing payer document before any charge reservation',
  const preflight=source.split('async function preflight(){')[1]?.split('async function dbConnect()')[0]||''
  assert.match(preflight,/throw Error\('payer_document_missing'\)/)
  assert.doesNotMatch(preflight,/processor\('\/payments','POST'/)
+})
+
+test('read-only audit checks canonical Sandbox payment references without exposing identifiers',()=>{
+ assert.match(source,/async function auditIntents\\(db\\)/)
+ assert.match(source,/where environment='sandbox' order by created_at asc limit 21/)
+ assert.match(source,/legacySyntheticSkipped/)
+ assert.match(source,/remoteAmbiguous/)
+ assert.match(source,/readyForAutomaticRetry:false,financialWritesPerformed:false/)
+ assert.match(source,/action==='audit_intents'\\?await auditIntents\\(db\\)/)
+ const section=source.split('async function auditIntents(db){')[1]?.split('export default async function handler')[0]||''
+ assert.ok(section.includes("await processor('/payments?limit=2&offset=0&externalReference='"))
+ assert.doesNotMatch(section,/processor\\([^,\\n]+,'POST'/)
+ assert.doesNotMatch(section,/db\\.query\\([\\s\\S]*?\\b(?:update|insert|delete)\\b/i)
+ assert.doesNotMatch(section,/return Object\\.freeze\\(\\{[^}]*external_reference/s)
 })
