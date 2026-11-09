@@ -1231,3 +1231,11 @@ RUNTIME VALIDATED             pendiente
 - Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
 - Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
 - Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
+
+## 2026-11-09 — Arena: continuidad P0 y seguridad verificable
+- **P0.1/P0.2/P0.4/P0.5/P0.6 — BLOCKED:** falta el detalle histórico del HTTP 400 en el log de Asaas, CPF/CNPJ legítimo autorizado para el cliente Sandbox existente, wallet receptora y Split habilitado. No repetir cargos ni declarar Pix E2E o comisiones aprobados.
+- Corrección reversible del diagnóstico 4xx: las rutas `create` y `recover_create` ya propagan `safeFields` y `safeCodes`, manteniendo descripciones crudas fuera de la respuesta. Test contractual específico agregado.
+- Seguridad de dependencias: override `minimatch@11.0.1`, `npm audit` con **0 vulnerabilidades**; sin cambios de runtime financiero ni Mercado Pago.
+- Validación local: **1.810 tests / 1.801 PASS / 0 FAIL / 9 SKIP**, build PASS y lint sin errores. Los SKIP por ausencia de credenciales RLS no son aceptación comercial.
+- CI del HEAD financiero `575e7de` verde, incluido Cross-role UI run `42662965729`; el nuevo SHA Arena requiere CI propio. Registro: `docs/evidence/pagamentos-v2-arena-20261109.json`.
+- **Release Candidate BLOCKED / Producción PENDIENTE:** no hay E2E Pix auténtico, Split conciliado, evidencia RLS local, clientes/servicios reales ni autorización de publicación.

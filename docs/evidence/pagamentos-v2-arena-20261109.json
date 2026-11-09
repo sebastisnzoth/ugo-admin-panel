@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-09",
+  "scope": "PR 616 isolated TEST code on Arena working branch; no production or financial writes",
+  "financialHeadVerified": "575e7de24d944031a19cf9e215fd2bc5f78f9d1c",
+  "executed": {
+    "localContractSuite": {
+      "tests": 1810,
+      "pass": 1801,
+      "fail": 0,
+      "skipped": 9,
+      "skipReason": "isolated Supabase credentials unavailable locally; skipped tests are not PASS evidence"
+    },
+    "typescriptBuild": "PASS",
+    "lint": "PASS_WITH_1009_PREEXISTING_WARNINGS",
+    "npmAudit": {
+      "vulnerabilities": 0,
+      "change": "minimatch pinned to 11.0.1 through npm overrides"
+    },
+    "financialHeadCi": {
+      "coreRun": 42662965697,
+      "crossSecurityRun": 42662965629,
+      "hugoTimeoutRun": 42662965657,
+      "crossRoleUiRun": 42662965729,
+      "roadmapRun": 42662965731,
+      "result": "SUCCESS"
+    },
+    "codeFix": "Both create and recover_create preserve only whitelisted Asaas validation codes and fields through sanitized rethrow; raw descriptions remain excluded."
+  },
+  "readOnlyHistoricalEvidence": {
+    "neonTestProject": "frosty-firefly-02365835",
+    "intents": {
+      "creating": 2,
+      "manualReview": 1,
+      "linkedProcessorPayments": 0
+    },
+    "knownReferenceRemoteChargeCount": 0,
+    "issuerWalletVerified": true,
+    "payerDocumentPresent": false,
+    "source": "Fresh read-only audit recorded in PR 616 on 2026-11-09; not re-executed in this Arena turn"
+  },
+  "blocked": {
+    "asaasHttp400": "Original processor validation detail is only available in Asaas request logs; CPF/CNPJ absence is a proven registration incompatibility, not a proven historical root cause.",
+    "payer": "Existing Sandbox customer requires legitimate owner-authorized CPF/CNPJ; no identity may be invented.",
+    "pixE2E": "No charge POST repeated, no official QR, no simulated confirmation, no authenticated reconciliation, no idempotency E2E and no PASS claim.",
+    "split8515": "Independent provider Asaas wallet and Split enablement are not verified; local 85/15 projection is not settlement.",
+    "operationalRls": "Supabase connector returned no accessible projects and local isolated credentials are absent; runtime RLS remains unverified in this turn.",
+    "commercial": "No real customer, service, revenue, commission or production activation evidence exists."
+  },
+  "productionWritesPerformed": false,
+  "financialWritesPerformed": false,
+  "realOperationsPerformed": false
+}

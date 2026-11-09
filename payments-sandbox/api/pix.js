@@ -183,7 +183,12 @@ async function create(db){
    status=$2,updated_at=now()
    where id=$1 and status='creating'`,
    [reservation.id,rejected?'manual_review':'unknown_processor_result']).catch(()=>{})
-  if(rejected){const error=new Error(raw);error.safeCodes=e.safeCodes||[];throw error}
+  if(rejected){
+   const error=new Error(raw)
+   error.safeCodes=e.safeCodes||[]
+   error.safeFields=e.safeFields||[]
+   throw error
+  }
   throw Error('create_uncertain_stop_and_reconcile')
  }
  const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
@@ -268,7 +273,12 @@ async function recoverCreate(db){
   await db.query(`update ugo_payments_v2.payment_intents
    set status=$2,updated_at=now() where id=$1 and status='creating'`,
    [row.id,known4xx?'manual_review':'unknown_processor_result']).catch(()=>{})
-  if(known4xx){const error=new Error(raw);error.safeCodes=e.safeCodes||[];throw error}
+  if(known4xx){
+   const error=new Error(raw)
+   error.safeCodes=e.safeCodes||[]
+   error.safeFields=e.safeFields||[]
+   throw error
+  }
   throw Error('recovery_processor_result_uncertain')
  }
  const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
