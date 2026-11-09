@@ -35,3 +35,13 @@ test('Asaas validation details are whitelisted instead of leaking processor mess
  assert.match(source,/rejected\?'manual_review':'unknown_processor_result'/)
  assert.doesNotMatch(source,/JSON\.stringify\(detail\)/)
 })
+
+test('Asaas validation descriptions never escape the API as unfiltered text',()=>{
+ assert.match(source,/processorValidationFields/)
+ assert.match(source,/allowedFields=new Set/)
+ assert.match(source,/cpfCnpj/)
+ assert.match(source,/externalReference/)
+ assert.match(source,/typeof x\\?\\.description==='string'/)
+ assert.doesNotMatch(source,/processorValidationDescription[s]?:/)
+ assert.doesNotMatch(source,/JSON\\.stringify\\(detail\\)/)
+})
