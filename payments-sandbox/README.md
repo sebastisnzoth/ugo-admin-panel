@@ -116,3 +116,20 @@ This does not make the outstanding rejected Pix charge safe to retry.
 Run `audit_intents` in TEST and obtain the historical Asaas HTTP 400 request
 details before operator reconciliation. The Sandbox-only generated CPF is
 not a real person's identity and must never be migrated to production.
+
+## Independent received Pix evidence (read-only)
+
+For a TEST payment intent already marked `received` and linked to an Asaas
+Sandbox payment ID, the authenticated operator can issue
+`POST /api/pix` with `{"action":"verify_received"}` **only in Preview**.
+This performs a single Asaas `GET /v3/payments/{id}` and requires the
+canonical test service, external reference, customer, billing type, R$ 100
+gross amount and processor's `RECEIVED` status with exactly the locally
+recorded net amount. It does not call `POST /payments`, confirm a payment,
+update Neon, issue a Pix code, or transfer funds.
+
+Sanitized response fields distinguish `paymentVerified` from
+`pixQrProofPresent:false`, `e2ePass:false`,
+`splitSettled:false`, and `providerPaid:false`; they do **not** assert
+Pix E2E completion. Handle mismatches without retries. Keep the API bearer
+token private; never paste it into tickets, messages or version control.
