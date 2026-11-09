@@ -52,3 +52,11 @@ test('read-only diagnostics returns only safe flags and does not create charges'
  assert.doesNotMatch(section,/processor\([^,\n]+,'POST'/)
  assert.doesNotMatch(section,/db\.query\([\s\S]*?\b(?:update|insert|delete)\b/i)
 })
+
+test('Sandbox Pix rejects missing payer document before any charge reservation',()=>{
+ assert.match(source,/payer_document_missing/)
+ assert.match(source,/customers\.data\[0\]\.cpfCnpj/)
+ const preflight=source.split('async function preflight(){')[1]?.split('async function dbConnect()')[0]||''
+ assert.match(preflight,/throw Error\('payer_document_missing'\)/)
+ assert.doesNotMatch(preflight,/processor\('\/payments','POST'/)
+})
