@@ -114,7 +114,12 @@ try{
     const actualMode=await page.getByTestId('autonomy-current-mode').textContent().catch(()=>null);
     const actualLaunch=await page.getByTestId('autonomy-launch-gate-status').textContent().catch(()=>null);
     const cleanEnum=(value,fallback)=>String(value||fallback).replace(/[^A-Za-z0-9_.:-]/g,'_').slice(0,60);
+    const diagnostics=await page.locator('.ugo-superadmin').evaluate(node=>({
+      loading:node.getAttribute('data-loading'),error:node.getAttribute('data-load-error'),
+      company:node.getAttribute('data-company-readable'),gates:node.getAttribute('data-gates-readable')
+    })).catch(()=>({loading:'MISSING',error:'MISSING',company:'MISSING',gates:'MISSING'}));
     console.error(`::error::AUTONOMY_STATE_DIFF mode_expected=${cleanEnum(before.mode,'MISSING')} mode_actual=${cleanEnum(actualMode,'MISSING')} launch_expected=${cleanEnum(before.launch,'MISSING')} launch_actual=${cleanEnum(actualLaunch,'MISSING')}`);
+    console.error(`::error::AUTONOMY_LOAD_STATE loading=${diagnostics.loading} error=${diagnostics.error} company_readable=${diagnostics.company} gates_readable=${diagnostics.gates}`);
     throw new Error('AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
   });
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
