@@ -42,3 +42,11 @@ test('Asaas receiving preview warns about parent CNPJ and still blocks Pix key r
  assert.match(screen,/subcontas/)
  assert.match(screen,/<fieldset disabled/)
 })
+
+test('all locales disclose that 85/15 Asaas distribution is not yet active',async()=>{
+ const screen=await fromRoot('src/mvp/ProviderAsaasRecebimentos.tsx')
+ assert.match(screen,/Ainda não está ativa/)
+ assert.match(screen,/Todavía no está habilitada/)
+ assert.match(screen,/Automatic split is not yet enabled/)
+ assert.doesNotMatch(screen,/divisão é automática/)
+})
