@@ -355,6 +355,33 @@ async function diagnose(db){
  })
 }
 /**
+ * Independent no-write processor attestation for the one canonical Sandbox Pix.
+ * Identity checks bind Asaas GET to the existing service, payer, reference and
+ * amount. This never uses the Asaas confirmation endpoint and never claims
+ * provider payout, native Split, escrow, QR proof or full E2E PASS.
+ */
+async function verifyReceived(db){
+ const row=await existing(db)
+ if(!row||row.status!=='received'||!row.asaas_payment_id||
+    !row.asaas_customer_id||row.net_cents===null)
+  throw Error('received_intent_not_ready_for_verification')
+ const expected='ugo_pix_test_'+process.env.UGO_PIX_TEST_SERVICE_ID.replace(/-/g,'')
+ if(row.external_reference!==expected||Number(row.gross_cents)!==10000)
+  throw Error('received_intent_identity_mismatch')
+ const payment=await getVerifiedPayment(row)
+ const processorReceived=payment.status==='RECEIVED'
+ const net=Number(payment.netValue)
+ const netCents=Number.isFinite(net)?Math.round(net*100):null
+ const netMatches=processorReceived&&Number.isSafeInteger(netCents)&&
+  netCents>0&&netCents<=10000&&netCents===Number(row.net_cents)
+ return Object.freeze({action:'verify_received',environment:'sandbox',
+  localStatus:'received',processorReceived,identityVerified:true,
+  grossAmountVerified:true,netAmountVerified:netMatches,
+  paymentVerified:processorReceived&&netMatches,
+  splitSettled:false,providerPaid:false,escrowAvailable:false,
+  pixQrProofPresent:false,e2ePass:false,financialWritesPerformed:false})
+}
+/**
  * Authenticated, read-only reconciliation inventory for previously created TEST
  * intents. Only canonical charge references are queried remotely. Legacy
  * synthetic fixtures are reported as skipped, not as unpaid charges.
@@ -398,13 +425,14 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await dbConnect()
   const result=action==='diagnose'?await diagnose(db):
     action==='audit_intents'?await auditIntents(db):
+    action==='verify_received'?await verifyReceived(db):
     action==='prepare_customer'?await prepareCustomer():
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
@@ -414,6 +442,7 @@ export default async function handler(req,res){
   // No secret, customer data, QR, or raw processor body is ever logged.
   const raw=String(e?.message||'')
   const allowed=new Set([
+   'received_intent_not_ready_for_verification','received_intent_identity_mismatch',
    'sandbox_customer_update_requires_review',
    'too_many_test_intents_for_audit','payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
