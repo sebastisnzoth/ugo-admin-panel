@@ -129,3 +129,36 @@
  .ugo-autonomy-quick-on{grid-template-columns:1fr}
  .ugo-autonomy-quick-on button{width:100%}
 }
+
+/* Autonomous corporation responsive + modern pass */
+/* Mobile nav: momentum scroll, snap, better hit targets */
+@media(max-width:900px){
+ .ugo-autonomous-nav{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+ .ugo-autonomous-nav button{scroll-snap-align:start;padding:0 13px;font-size:12px;border-radius:9px}
+ .ugo-autonomous-nav button.active{box-shadow:0 0 0 2px color-mix(in srgb,var(--ugo-color-primary) 12%,transparent)}
+}
+/* Hero status strip pills */
+.ugo-autonomy-status-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.ugo-autonomy-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:99px;border:1px solid var(--ugo-color-outline-variant);background:var(--ugo-color-surface-high);font-size:12px;font-weight:800;color:var(--ugo-color-on-surface);white-space:nowrap;max-width:100%}
+.ugo-autonomy-pill strong{font-weight:850;color:var(--ugo-color-on-surface-variant)}
+.ugo-autonomy-pill.ok{background:color-mix(in srgb,var(--ugo-color-success) 12%,var(--ugo-color-surface-lowest));border-color:color-mix(in srgb,var(--ugo-color-success) 40%,var(--ugo-color-outline-variant));color:var(--ugo-color-success)}
+.ugo-autonomy-pill.ok strong{color:var(--ugo-color-success)}
+.ugo-autonomy-pill.attention{background:color-mix(in srgb,var(--ugo-color-warning) 12%,var(--ugo-color-surface-lowest));border-color:color-mix(in srgb,var(--ugo-color-warning) 40%,var(--ugo-color-outline-variant));color:var(--ugo-color-warning)}
+.ugo-autonomy-pill.attention strong{color:var(--ugo-color-warning)}
+.ugo-autonomy-pill.off{background:color-mix(in srgb,var(--ugo-color-error) 8%,var(--ugo-color-surface-lowest));border-color:color-mix(in srgb,var(--ugo-color-error) 30%,var(--ugo-color-outline-variant));color:var(--ugo-color-error)}
+.ugo-autonomy-pill.off strong{color:var(--ugo-color-error)}
+@media(max-width:640px){.ugo-autonomy-pill{font-size:11px;padding:4px 9px}.ugo-autonomy-hero h3{font-size:18px}.ugo-autonomy-hero p{font-size:12px}}
+/* Departments table: hide low-priority columns on small screens, sticky first column */
+.ugo-autonomous-content table{border-collapse:separate;border-spacing:0}
+.ugo-autonomous-col-correlation,.ugo-autonomous-col-last-action{white-space:nowrap}
+@media(max-width:640px){
+ .ugo-autonomous-col-correlation,.ugo-autonomous-col-last-action{display:none}
+ .ugo-autonomous-content table{min-width:560px}
+ .ugo-autonomous-content th:first-child,.ugo-autonomous-content td:first-child{position:sticky;left:0;z-index:1;background:var(--ugo-color-surface-lowest);box-shadow:1px 0 0 var(--ugo-color-outline-variant)}
+ .ugo-autonomous-content th:first-child{box-shadow:1px 0 0 var(--ugo-color-outline-variant)}
+}
+@media(max-width:420px){.ugo-autonomous-content table{min-width:520px}}
+/* Live grid safety on narrow screens */
+.ugo-live-grid{min-width:0}
+.ugo-live-grid>section{min-width:0}
+.ugo-autonomy-mode-options>button{min-width:0}
