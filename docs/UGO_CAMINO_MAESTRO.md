@@ -765,3 +765,5 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Existing ProviderPayoutPanel and Mercado Pago are unchanged. No database migrations, backend financial endpoint, env key, wallet, payout or charging route is included.
 - Do not claim automatic 85/15; the provider-facing text explicitly discloses that Split is pending verification. The Pix form remains disabled.
 - Keep remaining PR #616 financial work on TEST Preview only. Require Asaas authenticated Pix QR + confirmation, second verified recipient wallet, audit, rollback plan, and explicit production approval before future financial activation.
+
+- CI rerun note (2026-11-09): this selective backport remains blocked until fresh Actions jobs complete successfully; previous runs on this PR returned failures without jobs during a GitHub Actions/Webhooks incident. This documentation-only commit requests fresh required checks; no financial behavior is changed.
