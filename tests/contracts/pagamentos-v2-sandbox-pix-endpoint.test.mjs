@@ -62,15 +62,15 @@ test('Sandbox Pix rejects missing payer document before any charge reservation',
 })
 
 test('read-only audit checks canonical Sandbox payment references without exposing identifiers',()=>{
- assert.match(source,/async function auditIntents\\(db\\)/)
+ assert.match(source,/async function auditIntents\(db\)/)
  assert.match(source,/where environment='sandbox' order by created_at asc limit 21/)
  assert.match(source,/legacySyntheticSkipped/)
  assert.match(source,/remoteAmbiguous/)
  assert.match(source,/readyForAutomaticRetry:false,financialWritesPerformed:false/)
- assert.match(source,/action==='audit_intents'\\?await auditIntents\\(db\\)/)
+ assert.match(source,/action==='audit_intents'\?await auditIntents\(db\)/)
  const section=source.split('async function auditIntents(db){')[1]?.split('export default async function handler')[0]||''
  assert.ok(section.includes("await processor('/payments?limit=2&offset=0&externalReference='"))
- assert.doesNotMatch(section,/processor\\([^,\\n]+,'POST'/)
- assert.doesNotMatch(section,/db\\.query\\([\\s\\S]*?\\b(?:update|insert|delete)\\b/i)
- assert.doesNotMatch(section,/return Object\\.freeze\\(\\{[^}]*external_reference/s)
+ assert.doesNotMatch(section,/processor\([^,\n]+,'POST'/)
+ assert.doesNotMatch(section,/db\.query\([\s\S]*?\b(?:update|insert|delete)\b/i)
+ assert.doesNotMatch(section,/return Object\.freeze\(\{[^}]*external_reference/s)
 })
