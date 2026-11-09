@@ -333,7 +333,9 @@ async function testAdministrativeSession(viewport,name,key){
   await page.reload({waitUntil:'domcontentloaded'})
   await navigation.waitFor({state:'visible',timeout:20000})
   await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click()
-  await page.waitForURL(url=>url.searchParams.get('auth')==='1',{timeout:10000})
+  // Auth is proved by the auth URL, removed session and protected UI absence;
+  // do not wait for global load while Realtime connections remain active.
+  await page.waitForURL(url=>url.searchParams.get('auth')==='1',{timeout:30000,waitUntil:'domcontentloaded'})
   await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
   assert.equal(await page.evaluate(()=>localStorage.getItem('ugo-test-admin-auth')),null,'LOGOUT_LEFT_ADMIN_SESSION')
   await page.reload({waitUntil:'domcontentloaded'})
