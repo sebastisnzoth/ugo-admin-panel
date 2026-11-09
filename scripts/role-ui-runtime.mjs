@@ -112,7 +112,11 @@ async function openRole(role,viewport){
  const errors=[]
  const trace={step:role+' load'}
  pageContext.set(page,trace)
- page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
+ page.on('pageerror',error=>{
+  const message=String(error?.message||error)
+  trace.lastError=message.replace(/[^A-Za-z0-9_.:() -]/g,'_').slice(0,240)
+  errors.push(trace.step+': '+message)
+ })
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
@@ -136,6 +140,7 @@ const safeClick=async(page,locator,label)=>{
    }))
   })).catch(()=>null)
   console.error(`::error::SAFE_CLICK_FAILURE step=${label} state=${JSON.stringify(state)}`)
+  if(trace?.lastError)console.error(`::error::ADMIN_PAGE_ERROR ${trace.lastError}`)
   throw error
  })
  // Realtime can replace the navigation button between actionability checks.
