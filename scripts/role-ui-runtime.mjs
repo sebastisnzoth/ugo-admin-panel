@@ -125,7 +125,18 @@ async function openRole(role,viewport){
 const safeClick=async(page,locator,label)=>{
  const trace=pageContext.get(page)
  if(trace)trace.step=label
- await locator.waitFor({state:'visible',timeout:20000})
+ try{await locator.waitFor({state:'visible',timeout:20000})}catch(error){
+  if(label.startsWith('admin ')){
+   const diagnostic=await page.evaluate(()=>{
+    const params=new URLSearchParams(location.search)
+    const nav=document.querySelector('nav[aria-label="Navegación Admin"]')
+    const names=Array.from(nav?.querySelectorAll('button')||[]).map(button=>(button.textContent||'').trim().slice(0,50))
+    return {path:location.pathname,app:params.get('app'),section:params.get('section'),navExists:Boolean(nav),navButtons:names,loadingVisible:Boolean(document.querySelector('.mvp-loading')),retryVisible:Boolean(document.querySelector('.mvp-auth-card[role="status"]')),loginVisible:Boolean(document.querySelector('.ugo-admin-auth-shell'))}
+   }).catch(()=>({diagnostic:'navigation-state-unavailable'}))
+   console.error('ADMIN_NAVIGATION_FAILURE',label,JSON.stringify(diagnostic))
+  }
+  throw error
+ }
  await locator.click()
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')

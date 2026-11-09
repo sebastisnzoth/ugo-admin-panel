@@ -86,27 +86,33 @@ export function AdminPhase2(){
  },[])
  useEffect(()=>{
   let alive=true
-  const reconcileTimers=new Set<number>()
-  const scheduleReconcile=(delay:number)=>{
-   const timer=window.setTimeout(()=>{
-    reconcileTimers.delete(timer)
-    if(alive)void load({silent:true})
-   },delay)
-   reconcileTimers.add(timer)
+  let refreshTimer:number|undefined
+  let reconnectTimer:number|undefined
+  let refreshing=false
+  let queued=false
+  let lastRefreshAt=0
+  const scheduleRefresh=()=>{
+   if(!alive||document.visibilityState!=='visible'||refreshTimer!==undefined)return
+   const wait=Math.max(350,3000-(Date.now()-lastRefreshAt))
+   refreshTimer=window.setTimeout(async()=>{
+    refreshTimer=undefined
+    if(!alive)return
+    if(refreshing){queued=true;return}
+    refreshing=true
+    lastRefreshAt=Date.now()
+    try{await load({silent:true})}finally{
+     refreshing=false
+     if(queued){queued=false;scheduleRefresh()}
+    }
+   },wait)
   }
-  const sync=()=>{
-   if(!alive)return
-   void load({silent:true})
-   scheduleReconcile(250)
-   scheduleReconcile(1000)
-   scheduleReconcile(2500)
-   scheduleReconcile(5000)
-  }
+  const sync=()=>{if(!alive)return;if(refreshing){queued=true;return}scheduleRefresh()}
   const onOnline=()=>{setLiveStatus('connecting');sync()}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
   window.addEventListener('online',onOnline)
   document.addEventListener('visibilitychange',onVisibility)
-  void load()
+  refreshing=true
+  void load().finally(()=>{refreshing=false;if(queued){queued=false;scheduleRefresh()}})
   const ch=supabase.channel(`ugo-admin-phase2-${channelEpoch}`)
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios'},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'servicio_estado_eventos'},sync)
@@ -117,10 +123,24 @@ export function AdminPhase2(){
    .subscribe(status=>{
     if(!alive)return
     if(status==='SUBSCRIBED'){setLiveStatus('live');sync();return}
-    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){setLiveStatus('degraded');window.setTimeout(()=>{if(alive)setChannelEpoch(v=>v+1)},1500)}
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+     setLiveStatus('degraded')
+     if(reconnectTimer===undefined)reconnectTimer=window.setTimeout(()=>{
+      reconnectTimer=undefined
+      if(alive)setChannelEpoch(v=>v+1)
+     },3000)
+    }
    })
-  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
-  return()=>{alive=false;window.clearInterval(fallback);reconcileTimers.forEach(timer=>window.clearTimeout(timer));reconcileTimers.clear();window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},30000)
+  return()=>{
+   alive=false
+   if(refreshTimer!==undefined)window.clearTimeout(refreshTimer)
+   if(reconnectTimer!==undefined)window.clearTimeout(reconnectTimer)
+   window.clearInterval(fallback)
+   window.removeEventListener('online',onOnline)
+   document.removeEventListener('visibilitychange',onVisibility)
+   void supabase.removeChannel(ch)
+  }
  },[channelEpoch,load])
  const adminToken=useCallback(async(force=false)=>{const result=force?await supabase.auth.refreshSession():await supabase.auth.getSession(),token=result.data.session?.access_token;if(result.error||!token)throw new Error('Sesión Admin vencida.');return token},[])
  const loadGmail=useCallback(async()=>{try{const request=(token:string)=>fetch('/api/scout/gmail',{headers:{Authorization:`Bearer ${token}`}});let r=await request(await adminToken());if(r.status===401)r=await request(await adminToken(true));const p=await r.json().catch(()=>({}));if(!r.ok)throw new Error(r.status===401?'No se pudo validar la sesión de Gmail. Volvé a iniciar sesión para reconectar.':p.error||'No se pudo consultar Gmail.');setGmail({configured:Boolean(p.configured),connected:Boolean(p.connected),email:p.email||null,updatedAt:p.updatedAt||null});setGmailMessage(current=>current==='Gmail conectado correctamente.'?current:'')}catch(error){setGmailMessage(error instanceof Error?error.message:'No se pudo consultar Gmail.')}},[adminToken])

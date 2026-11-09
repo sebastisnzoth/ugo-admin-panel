@@ -29,11 +29,12 @@ test('admin dashboard metrics stay live and truthfully show degraded realtime',a
  assert.match(src,/t\('adminPhase2\.live'\)/)
  assert.match(src,/t\('adminPhase2\.degraded'\)/)
  assert.match(src,/setInterval/)
- assert.match(src,/scheduleReconcile\(250\)/)
- assert.match(src,/scheduleReconcile\(1000\)/)
- assert.match(src,/scheduleReconcile\(2500\)/)
- assert.match(src,/scheduleReconcile\(5000\)/)
- assert.match(src,/reconcileTimers\.forEach\(timer=>window\.clearTimeout\(timer\)\)/)
+ assert.match(src,/const scheduleRefresh=\(\)=>/)
+ assert.match(src,/if\(refreshing\)\{queued=true;return\}/)
+ assert.match(src,/Math\.max\(350,3000-/)
+ assert.match(src,/if\(refreshTimer!==undefined\)window\.clearTimeout\(refreshTimer\)/)
+ assert.match(src,/if\(reconnectTimer!==undefined\)window\.clearTimeout\(reconnectTimer\)/)
+ assert.doesNotMatch(src,/scheduleReconcile\(250\)/)
 })
 
 test('service 360 sheet refreshes trace chat payments disputes and evidence live',async()=>{
