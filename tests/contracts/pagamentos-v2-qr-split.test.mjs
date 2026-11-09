@@ -69,3 +69,13 @@ test('simulation of payment confirmation is opt-in, POST, sandbox-only and never
  assert.equal(calls[0].url,'https://api-sandbox.asaas.com/v3/sandbox/payment/pay_test/confirm')
  assert.equal(calls[0].init.method,'POST')
 })
+
+test('UGO pilot disallows all non-85 recipient split rates before network issuance',async()=>{
+ for(const rate of [0,15,80,84.99,85.01,90,100]){
+  assert.throws(()=>buildPixWithProviderSplit({...input,providerSharePercent:rate}),/exactly 85/)
+ }
+ let calls=0
+ const api=new AsaasPixQrSandbox({apiKey:'sandbox_fake',fetchImpl:async()=>{calls++;throw Error('unexpected network')}})
+ await assert.rejects(api.createChargeWithSplit({...input,providerSharePercent:100}),/exactly 85/)
+ assert.equal(calls,0)
+})
