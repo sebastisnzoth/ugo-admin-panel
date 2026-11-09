@@ -4,7 +4,7 @@
     "deploymentEnabled": true
   },
   "ignoreCommand": "node scripts/ugo-test-only-vercel-ignore.mjs",
-  "buildCommand": "npm run vercel-build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
   "env": {

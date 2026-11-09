@@ -13,7 +13,6 @@
     "test:p0": "npm run verify:test-env && node --test tests/contracts/first-client-readiness.test.mjs tests/contracts/client-cancel-actions.test.mjs tests/contracts/client-provider-lifecycle.test.mjs tests/contracts/client-live-assignment-notification.test.mjs tests/contracts/client-evidence-realtime-stability.test.mjs",
     "test:integration": "npm run verify:test-env && node --test --test-concurrency=1 tests/integration/**/*.test.mjs",
     "preview": "vite preview",
-    "vercel-build": "npm --prefix payments-sandbox install --no-audit --no-fund && node payments-sandbox/e2e-preflight.mjs",
     "bootstrap:test-auth": "node scripts/bootstrap-test-auth.mjs",
     "audit:i18n": "node scripts/audit-i18n.mjs --json",
     "audit:i18n:keys": "node scripts/audit-i18n-keys.mjs"

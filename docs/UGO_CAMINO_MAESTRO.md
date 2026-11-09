@@ -827,3 +827,11 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - CI del HEAD financiero `575e7de`: Core `42662965697`, Cross Security `42662965629`, Hugo Timeout `42662965657`, Cross-role UI `42662965729` y Roadmap `42662965731` SUCCESS. El CI del nuevo commit Arena debe verificarse por separado.
 - **P0 sigue BLOCKED:** el detalle original del HTTP 400 del 07/11 requiere Asaas Sandbox → Integrações → Logs de requisições (~15:01 BRT). El cliente existente necesita CPF/CNPJ legítimo autorizado. No se repitió POST, no se alteraron intents, no se generó QR ni se ejecutó confirmación, Split, comisión o escritura financiera. Evidencia estructurada: `docs/evidence/pagamentos-v2-arena-20261109.json`.
 - Próxima acción humana única: recuperar el campo/código original del log Asaas y completar el mismo cliente Sandbox con documentación legítima; después reanudar la recuperación controlada, sin crear otro cliente ni otro cargo.
+
+## 2026-11-09 — PR #616 Pix Sandbox E2E observado
+- Preparación del único cliente ficticio Sandbox: PASS; CPF sintético autorizado sólo en TEST, notificaciones desactivadas, sin segundo cliente.
+- Reintento controlado posterior: Asaas HTTP 400 `invalid_action`, sin cargo remoto; intento único persistido. El detalle histórico original sigue BLOCKED.
+- Se observó después un cambio no atribuido en el Sandbox: una clave Pix activa y un único cargo `pending` vinculado. El deployment que lo observó no ejecutó preparación de clave ni POST de creación.
+- Deployment `dpl_HV2A7mqm8SJD3tqzYBHHJZdqSN45`, commit `c962020038dccb13d89b2125398692f69b9c916f`: **UGO PIX SANDBOX E2E — PASS**. Reutilizó el único cargo, verificó QR/copia-pega y misma huella/payload, confirmó simuladamente a `RECEIVED` y concilió Neon a `received`; `remoteChargeCount=1`, neto 9901 centavos.
+- Split sigue **BLOCKED**: proyección local 8416/1485 centavos, `splitSettled=false`, `providerPaid=false`. Evidencia sanitizada en `docs/evidence/pagamentos-v2-arena-20261109.json`.
+- El runner transitorio fue retirado del build. Producción y operación comercial siguen PENDIENTES y requieren autorización.

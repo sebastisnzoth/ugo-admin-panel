@@ -1239,3 +1239,9 @@ RUNTIME VALIDATED             pendiente
 - Validación local: **1.810 tests / 1.801 PASS / 0 FAIL / 9 SKIP**, build PASS y lint sin errores. Los SKIP por ausencia de credenciales RLS no son aceptación comercial.
 - CI del HEAD financiero `575e7de` verde, incluido Cross-role UI run `42662965729`; el nuevo SHA Arena requiere CI propio. Registro: `docs/evidence/pagamentos-v2-arena-20261109.json`.
 - **Release Candidate BLOCKED / Producción PENDIENTE:** no hay E2E Pix auténtico, Split conciliado, evidencia RLS local, clientes/servicios reales ni autorización de publicación.
+
+## 2026-11-09 — Atualização executada PR #616
+- **P0.2/P0.4/P0.6 Sandbox: PASS.** Cliente fictício existente preparado somente em TEST; E2E no deployment `dpl_HV2A7mqm8SJD3tqzYBHHJZdqSN45` reutilizou um único Pix, validou QR/copia-e-cola idempotentes, confirmou simulação `RECEIVED` e conciliou Neon `received`. Evidência: `docs/evidence/pagamentos-v2-arena-20261109.json`.
+- **P0.1 operacional: PASS após chave Pix ativa; causa histórica do 400: BLOCKED.** Houve rejeição posterior `invalid_action`, sem payload histórico suficiente para atribuir a causa original. A origem da chave/cargo observados posteriormente não foi identificada nos eventos disponíveis e não é atribuída ao runner.
+- **P0.5 Split 85/15: BLOCKED.** Projeção sobre neto 9901: 8416 prestador / 1485 UGO; nenhuma liquidação ou wallet receptora comprovada.
+- Runner financeiro temporário removido; build normal restaurado. Produção, Split real, RLS operacional, clientes e comissões reais continuam bloqueados/pendentes.
