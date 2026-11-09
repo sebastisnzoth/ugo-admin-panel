@@ -2,6 +2,12 @@
 name: UGO Provider GPS Runtime TEST
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/ugo-payment-release-gate.mjs'
+      - 'docs/evidence/pagamentos-v2-arena-20261109.json'
+      - '.github/workflows/provider-gps-runtime.yml'
   workflow_dispatch:
 
 permissions:

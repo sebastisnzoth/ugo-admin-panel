@@ -1249,3 +1249,6 @@ RUNTIME VALIDATED             pendiente
 ## 2026-11-09 — Release gate Pagamentos V2
 - Guarda adicional: nenhum caminho de cobrança pode prosseguir sem chave Pix ativa antes da reserva/POST.
 - Gate executável de release e runbook adicionados. Rollback Preview por redeploy: PASS limitado; restore Neon financeiro, Split real, RLS operacional e autorização comercial continuam BLOCKED/PENDING.
+
+## 2026-11-09 — Gates operacionais no PR de Pagamentos
+- Workflows RPC/RLS, Admin Realtime e GPS agora podem produzir evidência same-SHA no PR da gate de Pagamentos, sempre em UGO TEST. Resultados anteriores em outros SHAs não serão tratados como validação atual.

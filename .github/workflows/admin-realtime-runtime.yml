@@ -23,6 +23,8 @@ on:
       - "src/hooks/useAdminData.ts"
       - "tests/contracts/admin-realtime-control-center.test.mjs"
       - ".github/workflows/admin-realtime-runtime.yml"
+      - "scripts/ugo-payment-release-gate.mjs"
+      - "docs/evidence/pagamentos-v2-arena-20261109.json"
   workflow_dispatch:
 
 permissions:

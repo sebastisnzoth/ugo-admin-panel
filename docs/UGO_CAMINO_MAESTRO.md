@@ -840,3 +840,7 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Toda creación/recuperación Pix exige ahora una única clave Pix activa antes de reservar o llamar al POST; contrato añadido para impedir repetir `invalid_action` en una cuenta nueva.
 - `scripts/ugo-payment-release-gate.mjs` falla cerrado mientras Split real, Auth/Realtime/RLS, backup/restore, autorización de producción o servicio/comisión real no sean PASS. El PASS Sandbox no habilita producción.
 - Runbook `docs/UGO_PAYMENTS_RELEASE_ROLLBACK.md`: rollback de código Preview por redeploy queda documentado y acotado; backup/restore Neon financiero sigue NO EJECUTADO. No se ejecutó ningún reembolso, restore ni cambio PROD.
+
+## 2026-11-09 — Activación same-SHA de gates operativos
+- RPC/RLS, Admin Realtime y Provider GPS quedan activados en PR para cambios de la gate/evidencia de Pagos V2, exclusivamente contra UGO TEST. Antes RPC/RLS se saltaba en `workflow_run` de PR, Admin no coincidía con paths y GPS sólo aceptaba dispatch manual.
+- La gate acepta rollback Preview por redeploy como control de código, pero mantiene backup/restore como bloqueo independiente. Ningún secreto se añadió ni se amplió acceso a PROD.
