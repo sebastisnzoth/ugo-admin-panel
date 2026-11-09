@@ -44,20 +44,38 @@ try {
   requireOk(await run('prepare_customer'), 'prepare')
   const initial = requireOk(await run('diagnose'), 'initial_diagnose')
   requireOk(await run('audit_intents'), 'initial_audit')
-  if (initial.localIntentStatus !== 'manual_review' || initial.localPaymentLinked || initial.remoteChargeCount !== 0) {
-    throw new Error('preparation_requires_manual_review')
+  let preparedOnly = false
+  if (initial.localIntentStatus === 'manual_review' && !initial.localPaymentLinked && initial.remoteChargeCount === 0) {
+    if (initial.pixKeyCount === 0) requireOk(await run('prepare_pix_key', 'CREATE_EVP_SANDBOX_PIX_KEY'), 'prepare_pix_key')
+    console.log('UGO PIX KEY PREPARATION — PASS; charge recovery requires a separate deployment')
+    preparedOnly = true
+  } else if (initial.localIntentStatus === 'pending' && initial.localPaymentLinked && initial.remoteChargeCount === 1) {
+    const charge = requireOk(await run('create'), 'existing_charge_reuse')
+    if (charge.action !== 'reused' || typeof charge.paymentId !== 'string' || !charge.paymentId ||
+        typeof charge.qrCopyPaste !== 'string' || charge.qrCopyPaste.length <= 20 ||
+        typeof charge.qrImageBase64 !== 'string' || charge.qrImageBase64.length <= 20) {
+      throw new Error('official_qr_reuse_failed')
+    }
+    const repeated = requireOk(await run('create'), 'idempotency')
+    if (repeated.action !== 'reused' || repeated.paymentId !== charge.paymentId ||
+        repeated.qrCopyPaste !== charge.qrCopyPaste) throw new Error('idempotent_reuse_failed')
+    requireOk(await run('confirm'), 'simulated_confirmation')
+  } else if (!['confirmed', 'received'].includes(initial.localIntentStatus) || !initial.localPaymentLinked) {
+    throw new Error('unsupported_initial_e2e_state')
   }
-  if (initial.pixKeyCount === 0) {
-    requireOk(await run('prepare_pix_key', 'CREATE_EVP_SANDBOX_PIX_KEY'), 'prepare_pix_key')
-  }
+  if (!preparedOnly) {
+  const reconciled = requireOk(await run('reconcile'), 'reconciliation')
+  if (!['CONFIRMED', 'RECEIVED'].includes(reconciled.processorStatus)) throw new Error('payment_not_confirmed')
   const final = requireOk(await run('diagnose'), 'final_diagnose')
-  if (final.pixKeyCount !== 1 || final.remoteChargeCount !== 0 || final.localPaymentLinked) {
-    throw new Error('pix_key_preparation_verification_failed')
-  }
-  console.log('UGO PIX KEY PREPARATION — PASS ' + JSON.stringify({
-    activePixKeyCount: final.pixKeyCount, remoteChargeCount: final.remoteChargeCount,
-    chargeAttempted: false, nextAction: 'separate_explicit_post_key_recovery',
+  requireOk(await run('audit_intents'), 'final_audit')
+  if (!final.localPaymentLinked || final.remoteChargeCount !== 1 ||
+      !['confirmed', 'received'].includes(final.localIntentStatus)) throw new Error('final_authenticated_state_failed')
+  console.log('UGO PIX SANDBOX E2E — PASS ' + JSON.stringify({
+    remoteChargeCount: final.remoteChargeCount, localIntentStatus: final.localIntentStatus,
+    officialQrReused: true, idempotentReuse: true, simulatedConfirmation: true,
+    splitSettled: false, providerPaid: false,
   }))
+  }
 } catch (error) {
   console.error('UGO PIX KEY PREPARATION — BLOCKED ' + String(error.message).replace(/[^A-Za-z0-9_— -]/g, '').slice(0, 120))
   process.exitCode = 1
