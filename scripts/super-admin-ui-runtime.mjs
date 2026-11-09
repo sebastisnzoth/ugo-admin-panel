@@ -106,7 +106,13 @@ try{
     document.querySelector('[data-testid="autonomy-current-mode"]')?.textContent?.trim()===mode &&
     document.querySelector('[data-testid="autonomy-launch-gate-status"]')?.textContent?.trim()===launch,
     {mode:before.mode,launch:before.launch},{timeout:20000}
-  ).catch(()=>{throw new Error('AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY')});
+  ).catch(async()=>{
+    const actualMode=await page.getByTestId('autonomy-current-mode').textContent().catch(()=>null);
+    const actualLaunch=await page.getByTestId('autonomy-launch-gate-status').textContent().catch(()=>null);
+    const cleanEnum=(value,fallback)=>String(value||fallback).replace(/[^A-Za-z0-9_.:-]/g,'_').slice(0,60);
+    console.error(`::error::AUTONOMY_STATE_DIFF mode_expected=${cleanEnum(before.mode,'MISSING')} mode_actual=${cleanEnum(actualMode,'MISSING')} launch_expected=${cleanEnum(before.launch,'MISSING')} launch_actual=${cleanEnum(actualLaunch,'MISSING')}`);
+    throw new Error('AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
+  });
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
   await page.getByTestId('autonomy-view-departments').click();
