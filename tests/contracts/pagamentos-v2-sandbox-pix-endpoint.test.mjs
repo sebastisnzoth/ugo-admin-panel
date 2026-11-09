@@ -86,7 +86,9 @@ test('operator may prepare sole existing fictitious Sandbox payer without anothe
  const section=source.split('async function prepareCustomer(){')[1]?.split('async function dbConnect()')[0]||''
  assert.doesNotMatch(section,/processor\('\/payments','POST'/)
  assert.doesNotMatch(section,/processor\('\/customers','POST'/)
- assert.doesNotMatch(section,/cpfCnpj:cpf.*return/s)
+ const response=section.split("return {action:'prepare_customer',alreadyPrepared:false")[1]||''
+ assert.ok(response)
+ assert.doesNotMatch(response,/cpfCnpj|cpf:/)
 })
 
 test('generated CPF has valid check digits and only runs in isolated Sandbox operator action',()=>{
