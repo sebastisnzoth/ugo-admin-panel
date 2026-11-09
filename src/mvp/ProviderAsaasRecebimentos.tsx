@@ -5,7 +5,7 @@ type Locale='pt-BR'|'es'|'en'
 const COPY={
  'pt-BR':{
   title:'Meus recebimentos · Asaas Pix',subtitle:'Configure onde deseja receber transferências depois que seu saldo estiver disponível.',
-  split:'Nos serviços pagos com Asaas, a divisão é automática: 85% para o profissional e 15% para a UGO sobre o valor líquido.',
+  split:'Divisão planejada para pagamentos Asaas após homologação: 85% para o profissional e 15% para a UGO sobre o valor líquido. Ainda não está ativa.',
   account:'Conta Asaas do profissional',accountPending:'Subconta ainda não vinculada ou verificada',
   eligibility:'Para criar subcontas pelo Asaas, a conta principal da plataforma precisa ter CNPJ. A ativação do prestador depende de verificação, consentimento e aprovação da conta.',
   key:'Chave Pix para saques externos',type:'Tipo de chave',placeholder:'Digite sua chave Pix',save:'Salvar chave Pix',
@@ -16,7 +16,7 @@ const COPY={
  },
  es:{
   title:'Mis cobros · Asaas Pix',subtitle:'Configurá dónde recibir transferencias cuando tengas saldo disponible.',
-  split:'En servicios pagados por Asaas, el reparto es automático: 85% para el profesional y 15% para UGO sobre el valor neto.',
+  split:'Distribución prevista tras la homologación Asaas: 85% para el profesional y 15% para UGO sobre el neto. Todavía no está habilitada.',
   account:'Cuenta Asaas del proveedor',accountPending:'Subcuenta sin vincular ni verificar',
   eligibility:'Para crear subcuentas en Asaas, la cuenta principal de la plataforma debe tener CNPJ. El proveedor necesita verificación, consentimiento y aprobación.',
   key:'Clave Pix para retiros externos',type:'Tipo de clave',placeholder:'Ingresá tu clave Pix',save:'Guardar clave Pix',
@@ -27,7 +27,7 @@ const COPY={
  },
  en:{
   title:'My payouts · Asaas Pix',subtitle:'Set where to receive transfers once your balance is available.',
-  split:'For Asaas payments, the automatic net split is 85% to the professional and 15% to UGO.',
+  split:'Planned Asaas allocation after certification: 85% of net to the professional and 15% to UGO. Automatic split is not yet enabled.',
   account:'Professional Asaas account',accountPending:'Subaccount not yet linked or verified',
   eligibility:'Asaas requires a legal-entity (CNPJ) parent account to create subaccounts. Provider consent, identity verification and approval are also required.',
   key:'Pix key for external withdrawals',type:'Key type',placeholder:'Enter Pix key',save:'Save Pix key',
