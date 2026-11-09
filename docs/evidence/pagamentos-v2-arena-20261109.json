@@ -83,22 +83,22 @@
   },
   "pullRequest": { "number": 618, "state": "OPEN_DRAFT", "url": "https://github.com/sebastisnzoth/ugo-admin-panel/pull/618" },
   "sameShaCi": {
-    "commit": "66f1ee7b58f4d917f28035d95995f4877ad24752",
-    "core": { "run": 42684564205, "result": "SUCCESS" },
-    "crossRoleUi": { "run": 42684563772, "result": "SUCCESS" },
-    "crossSecurity": { "run": 42684564323, "result": "SUCCESS" },
-    "hugoTimeout": { "run": 42684563915, "result": "SUCCESS" },
-    "roadmap": { "run": 42684564019, "result": "SUCCESS" },
-    "isolatedRpcRlsIncludingSuperAdmin": { "runs": [42684563943, 42685677720], "result": "FLAKY_BLOCKED", "failure": "AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY" },
-    "adminRealtime": { "run": 42684564449, "result": "SUCCESS" },
-    "providerGpsJudgeSentinel": { "run": 42684563891, "result": "SUCCESS" },
-    "authIsolation": { "run": 42684564229, "result": "SUCCESS" }
+    "commit": "084417230a4f247a3a863359c68f82204c4056d8",
+    "core": { "run": 42697602248, "result": "SUCCESS" },
+    "crossRoleUi": { "run": 42697602186, "result": "SUCCESS" },
+    "crossSecurity": { "run": 42697601879, "result": "SUCCESS" },
+    "hugoTimeout": { "run": 42697602332, "result": "SUCCESS" },
+    "roadmap": { "run": 42697601903, "result": "SUCCESS" },
+    "isolatedRpcRlsIncludingSuperAdmin": { "run": 42697602262, "result": "SUCCESS" },
+    "adminRealtime": { "run": 42697602215, "result": "SUCCESS" },
+    "providerGpsJudgeSentinel": { "run": 42697601912, "result": "SUCCESS" },
+    "authIsolation": { "run": 42697602153, "result": "SUCCESS" }
   },
   "releaseGates": {
     "sameShaCi": "PASS",
     "previewCodeRollback": "PASS_REDEPLOY_ONLY",
     "splitReal8515": "BLOCKED",
-    "operationalAuthRealtimeRls": "BLOCKED",
+    "operationalAuthRealtimeRls": "PASS",
     "backupRestore": "BLOCKED",
     "productionAuthorization": "PENDING",
     "realServiceAndCommission": "PENDING"
@@ -114,7 +114,7 @@
   "realCustomersProvidersRevenueOrCommission": false,
   "remainingBlocked": {
     "split8515": "Independent provider wallet and enabled Split are required.",
-    "operationalRls": "BLOCKED pending stable Super Admin UI proof: run 42684563943 passed but same evidence on run 42685677720 exposed a substring comparison race. The exact-field correction is under validation.",
+    "operationalRls": "PASS in GitHub UGO TEST run 42697602262 at commit 08441723, including authenticated RPC/RLS, GPS, Realtime chat and exact Super Admin UI state. All nine relevant workflows succeeded on that SHA.",
     "commercial": "No real customer, provider, service, revenue or commission is claimed.",
     "production": "Requires separate explicit authorization and release gates."
   }

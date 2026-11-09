@@ -856,3 +856,7 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 ## 2026-11-09 — Corrección del falso match de gate en Super Admin
 - El run 42685677720 volvió a fallar y reveló `AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY`; por ello se revierte el PASS provisional de la gate agregada a BLOCKED. Los demás gates same-SHA continuaron SUCCESS.
 - La prueba buscaba el estado Launch como subcadena en todo el contenido de autonomía. Ahora compara exactamente `autonomy-current-mode` y `autonomy-launch-gate-status`, sin relajar los valores backend. Se requiere repetición estable antes de aceptar la gate.
+
+## 2026-11-09 — Gate operacional TEST aceptada con nueve checks same-SHA
+- SHA `084417230a4f247a3a863359c68f82204c4056d8`: RPC/RLS 42697602262, Admin Realtime 42697602215, GPS/Judge/Sentinel 42697601912, Auth Isolation 42697602153, Core 42697602248, UI 42697602186, Security 42697601879, Hugo 42697602332 y Roadmap 42697601903 SUCCESS.
+- Super Admin ya no depende de `networkidle` ni de substrings: abre Launch Gate, espera hidratación acotada y compara modo/gate exactos con backend. `operationalAuthRealtimeRls=PASS`; Split real, backup/restore, autorización de producción y servicio/comisión real siguen BLOCKED.

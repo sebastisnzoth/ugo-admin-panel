@@ -1261,3 +1261,6 @@ RUNTIME VALIDATED             pendiente
 
 ## 2026-11-09 — Correção de comparação Super Admin
 - Gate agregada retorna BLOCKED após repetição falha; comparação agora usa modo e Launch Gate exatos, evitando substring em cards não relacionados. Não houve relaxamento dos estados esperados.
+
+## 2026-11-09 — Nove gates operacionais same-SHA PASS
+- SHA `08441723`: RPC/RLS/Super Admin, Realtime, GPS/Judge/Sentinel, Auth, Core, UI, Security, Hugo e Roadmap SUCCESS. Gate comercial permanece bloqueada pelos quatro requisitos reais pendentes.
