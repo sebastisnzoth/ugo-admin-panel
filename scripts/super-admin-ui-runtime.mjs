@@ -101,13 +101,12 @@ try{
 
   await page.locator('.ugo-superadmin-statebar button').first().click();
   await page.locator('.ugo-autonomous-content').waitFor({state:'visible',timeout:20000});
-  let headerMatched=false;
-  for(let attempt=0;attempt<30;attempt++){
-    const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
-    if(autonomyText.includes(before.mode)&&autonomyText.includes(before.launch)){headerMatched=true;break}
-    await page.waitForTimeout(250);
-  }
-  assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
+  // Compare the exact persisted fields, never a substring in unrelated cards.
+  await page.waitForFunction(({mode,launch})=>
+    document.querySelector('[data-testid="autonomy-current-mode"]')?.textContent?.trim()===mode &&
+    document.querySelector('[data-testid="autonomy-launch-gate-status"]')?.textContent?.trim()===launch,
+    {mode:before.mode,launch:before.launch},{timeout:20000}
+  ).catch(()=>{throw new Error('AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY')});
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
   await page.getByTestId('autonomy-view-departments').click();

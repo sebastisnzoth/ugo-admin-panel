@@ -1258,3 +1258,6 @@ RUNTIME VALIDATED             pendiente
 
 ## 2026-11-09 — RLS/Realtime/Auth TEST PASS
 - Evidência same-SHA `66f1ee7b`: RPC/RLS/Super Admin, Admin Realtime, GPS/Judge/Sentinel e Auth Isolation PASS. Gate comercial continua bloqueada por Split, restore, autorização e operação real.
+
+## 2026-11-09 — Correção de comparação Super Admin
+- Gate agregada retorna BLOCKED após repetição falha; comparação agora usa modo e Launch Gate exatos, evitando substring em cards não relacionados. Não houve relaxamento dos estados esperados.

@@ -852,3 +852,7 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 ## 2026-11-09 — Auth/Realtime/RLS operacional desbloqueado en TEST
 - SHA `66f1ee7b58f4d917f28035d95995f4877ad24752`: RPC/RLS run 42684563943 PASS completo incluido Super Admin UI; Admin Realtime 42684564449 PASS; Provider GPS/Judge/Sentinel 42684563891 PASS; Auth Isolation 42684564229 PASS. Core/UI/Security/Hugo/Roadmap también SUCCESS.
 - La gate de release cambia `operationalAuthRealtimeRls` a PASS con evidencia same-SHA. No se reutilizaron los SKIP locales ni runs antiguos. Split real, backup/restore, autorización de producción y servicio/comisión real siguen bloqueando.
+
+## 2026-11-09 — Corrección del falso match de gate en Super Admin
+- El run 42685677720 volvió a fallar y reveló `AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY`; por ello se revierte el PASS provisional de la gate agregada a BLOCKED. Los demás gates same-SHA continuaron SUCCESS.
+- La prueba buscaba el estado Launch como subcadena en todo el contenido de autonomía. Ahora compara exactamente `autonomy-current-mode` y `autonomy-launch-gate-status`, sin relajar los valores backend. Se requiere repetición estable antes de aceptar la gate.

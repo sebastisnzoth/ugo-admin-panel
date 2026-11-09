@@ -89,7 +89,7 @@
     "crossSecurity": { "run": 42684564323, "result": "SUCCESS" },
     "hugoTimeout": { "run": 42684563915, "result": "SUCCESS" },
     "roadmap": { "run": 42684564019, "result": "SUCCESS" },
-    "isolatedRpcRlsIncludingSuperAdmin": { "run": 42684563943, "result": "SUCCESS" },
+    "isolatedRpcRlsIncludingSuperAdmin": { "runs": [42684563943, 42685677720], "result": "FLAKY_BLOCKED", "failure": "AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY" },
     "adminRealtime": { "run": 42684564449, "result": "SUCCESS" },
     "providerGpsJudgeSentinel": { "run": 42684563891, "result": "SUCCESS" },
     "authIsolation": { "run": 42684564229, "result": "SUCCESS" }
@@ -98,7 +98,7 @@
     "sameShaCi": "PASS",
     "previewCodeRollback": "PASS_REDEPLOY_ONLY",
     "splitReal8515": "BLOCKED",
-    "operationalAuthRealtimeRls": "PASS",
+    "operationalAuthRealtimeRls": "BLOCKED",
     "backupRestore": "BLOCKED",
     "productionAuthorization": "PENDING",
     "realServiceAndCommission": "PENDING"
@@ -114,7 +114,7 @@
   "realCustomersProvidersRevenueOrCommission": false,
   "remainingBlocked": {
     "split8515": "Independent provider wallet and enabled Split are required.",
-    "operationalRls": "PASS in GitHub UGO TEST run 42684563943 at commit 66f1ee7b, including authenticated RPC/RLS, Realtime chat and Super Admin UI. Local skips remain local only.",
+    "operationalRls": "BLOCKED pending stable Super Admin UI proof: run 42684563943 passed but same evidence on run 42685677720 exposed a substring comparison race. The exact-field correction is under validation.",
     "commercial": "No real customer, provider, service, revenue or commission is claimed.",
     "production": "Requires separate explicit authorization and release gates."
   }
