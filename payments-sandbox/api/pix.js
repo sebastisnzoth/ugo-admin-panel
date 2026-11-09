@@ -25,8 +25,22 @@ async function processor(path,method='GET',body){
   const detail=await r.json().catch(()=>null)
   const safeCodes=Array.isArray(detail?.errors)?
    detail.errors.map(x=>x?.code).filter(x=>typeof x==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(x)).slice(0,3):[]
+  // Classify only predefined field names. Never return free-form processor descriptions,
+  // which can contain payer data, account identifiers or other sensitive values.
+  const safeFields=Array.isArray(detail?.errors)?[...new Set(detail.errors.flatMap(x=>{
+   const description=typeof x?.description==='string'?x.description.toLowerCase():''
+   const found=[]
+   if(/cpf\\s*\\/?\\s*cnpj|cpfcnpj/.test(description))found.push('cpfCnpj')
+   if(/\\bcliente\\b|\\bcustomer\\b/.test(description))found.push('customer')
+   if(/\\bvencimento\\b|\\bdue\\s*date\\b|\\bduedate\\b/.test(description))found.push('dueDate')
+   if(/\\bvalor\\b|\\bamount\\b/.test(description))found.push('value')
+   if(/\\bforma de pagamento\\b|\\bbillingtype\\b/.test(description))found.push('billingType')
+   if(/\\breferência externa\\b|\\bexternalreference\\b/.test(description))found.push('externalReference')
+   return found
+  }))].slice(0,6):[]
   const error=new Error('asaas_http_'+r.status)
   error.safeCodes=safeCodes
+  error.safeFields=safeFields
   throw error
  }
  const data=await r.json()
@@ -346,7 +360,11 @@ export default async function handler(req,res){
   const code=allowed.has(raw)?raw:'sandbox_operation_failed'
   const safeCodes=Array.isArray(e?.safeCodes)?
    e.safeCodes.filter(x=>typeof x==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(x)).slice(0,3):[]
+  const allowedFields=new Set(['cpfCnpj','customer','dueDate','value','billingType','externalReference'])
+  const safeFields=Array.isArray(e?.safeFields)?
+   e.safeFields.filter(x=>allowedFields.has(x)).slice(0,6):[]
   return json(res,409,{environment:'sandbox',error:code,
-   ...(safeCodes.length?{processorValidationCodes:safeCodes}:{})})
+   ...(safeCodes.length?{processorValidationCodes:safeCodes}:{}),
+   ...(safeFields.length?{processorValidationFields:safeFields}:{})})
  }finally{if(db)await db.end().catch(()=>{})}
 }
