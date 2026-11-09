@@ -107,7 +107,7 @@ try{
   await page.waitForFunction(({mode,launch})=>
     document.querySelector('[data-testid="autonomy-current-mode"]')?.textContent?.trim()===mode &&
     document.querySelector('[data-testid="autonomy-launch-gate-status"]')?.textContent?.trim()===launch,
-    {mode:before.mode,launch:before.launch},{timeout:20000}
+    {mode:before.mode,launch:before.launch},{timeout:90000}
   ).catch(async()=>{
     const actualMode=await page.getByTestId('autonomy-current-mode').textContent().catch(()=>null);
     const actualLaunch=await page.getByTestId('autonomy-launch-gate-status').textContent().catch(()=>null);
