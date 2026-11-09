@@ -24,9 +24,10 @@ export function buildPixWithProviderSplit({
   requireId(providerWalletId, 'providerWalletId')
   requireAmount(amountBRL)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate || '')) throw new Error('Invalid dueDate')
-  if (!Number.isFinite(providerSharePercent) || providerSharePercent <= 0 ||
-      providerSharePercent > 100 || Math.round(providerSharePercent * 10000) !== providerSharePercent * 10000)
-    throw new Error('Invalid providerSharePercent')
+  // UGO pilot commercial policy is fixed at 85/15 of net processor value.
+  // Never silently issue a charge that sends 100% (or another rate) to a recipient.
+  if (providerSharePercent !== 85)
+    throw new Error('Invalid providerSharePercent: pilot requires exactly 85')
   return Object.freeze({
     customer: customerId,
     billingType: 'PIX',
