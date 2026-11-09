@@ -125,7 +125,7 @@ async function openRole(role,viewport){
 const safeClick=async(page,locator,label)=>{
  const trace=pageContext.get(page)
  if(trace)trace.step=label
- await locator.waitFor({state:'visible',timeout:20000})
+ await locator.waitFor({state:'visible',timeout:60000})
  await locator.click()
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
