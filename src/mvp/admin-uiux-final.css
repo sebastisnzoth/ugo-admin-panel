@@ -75,6 +75,10 @@
 .ugo-superadmin-search{margin-bottom:10px}
 .ugo-superadmin-search input{width:100%;min-height:42px;padding:0 13px;border:1px solid var(--ugo-color-outline-variant);border-radius:10px;background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);font-size:13px}
 .ugo-superadmin-search input:focus-visible{outline:3px solid var(--ugo-color-primary);outline-offset:1px;border-color:var(--ugo-color-primary)}
+.ugo-superadmin-ip-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.ugo-superadmin-ip-filters input[type="search"]{flex:1;min-width:220px;min-height:42px;padding:0 13px;border:1px solid var(--ugo-color-outline-variant);border-radius:10px;background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);font-size:13px}
+.ugo-superadmin-ip-filters select{min-width:170px;min-height:42px;padding:0 13px;border:1px solid var(--ugo-color-outline-variant);border-radius:10px;background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);font-size:12px;font-weight:700;cursor:pointer}
+.ugo-superadmin-ip-filters input:focus-visible,.ugo-superadmin-ip-filters select:focus-visible{outline:3px solid var(--ugo-color-primary);outline-offset:1px;border-color:var(--ugo-color-primary)}
 .ugo-superadmin-error{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:13px 14px;border:1px solid color-mix(in srgb,var(--ugo-color-error) 55%,var(--ugo-color-outline-variant));border-radius:12px;background:color-mix(in srgb,var(--ugo-color-error) 10%,var(--ugo-color-surface-lowest));color:var(--ugo-color-on-surface)}
 .ugo-superadmin-error strong{font-size:12px;color:var(--ugo-color-error)}
 .ugo-superadmin-error span{grid-column:1/2;color:var(--ugo-color-on-surface-variant);font-size:11px}

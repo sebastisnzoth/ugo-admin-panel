@@ -85,6 +85,17 @@ test('audit and flags tabs are searchable, metrics tab shows live signals',()=>{
   assert.match(finalCss,/\.ugo-superadmin-search input/)
 })
 
+test('ip tab filters innovations by status, confidentiality and title',()=>{
+  assert.match(superadmin,/ipStatusFilter/)
+  assert.match(superadmin,/ipConfidentialityFilter/)
+  assert.match(superadmin,/ipSearch/)
+  assert.match(superadmin,/filteredInnovations/)
+  assert.match(superadmin,/t\('admin\.statusFilter'\)/)
+  assert.match(superadmin,/t\('admin\.confidentialityFilter'\)/)
+  assert.match(superadmin,/t\('admin\.noInnovationMatches'\)/)
+  assert.match(finalCss,/\.ugo-superadmin-ip-filters/)
+})
+
 test('autonomous corporation navigation and dense tables remain responsive',()=>{
   assert.match(autonomyCss,/Autonomous corporation usability pass 2026-10-03/)
   assert.match(autonomyCss,/\.ugo-autonomous-nav button\.active/)
