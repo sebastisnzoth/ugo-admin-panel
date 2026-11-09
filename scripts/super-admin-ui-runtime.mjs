@@ -140,7 +140,9 @@ try{
     await row.waitFor({state:'visible'});
     const cells=row.locator('td');
     let activeText='',totalText='',activeCount=NaN,totalCount=NaN;
-    for(let attempt=0;attempt<40;attempt++){
+    // Department summaries load after company/gates; keep numeric validation
+    // strict while allowing the same bounded 90 s hydration window.
+    for(let attempt=0;attempt<360;attempt++){
       activeText=((await cells.nth(5).textContent())||'').trim();
       totalText=((await cells.nth(6).textContent())||'').trim();
       activeCount=activeText==='—'?NaN:Number(activeText);

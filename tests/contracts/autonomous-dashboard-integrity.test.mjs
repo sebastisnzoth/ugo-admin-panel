@@ -59,4 +59,6 @@ test('super admin runtime validates persisted UGO Empresas proof coherently with
  assert.doesNotMatch(runtime,/autonomyText\.includes\(before\.mode\).*autonomyText\.includes\(before\.launch\)/)
  assert.match(runtime,/waitUntil:'domcontentloaded'/)
  assert.doesNotMatch(runtime,/waitUntil:'networkidle'/)
+ assert.match(runtime,/attempt<360/)
+ assert.match(runtime,/DEPARTMENT_ACTIVE_JOBS_NUMERIC_REQUIRED/)
 })

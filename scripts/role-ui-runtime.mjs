@@ -416,7 +416,16 @@ async function testTranslations(role,viewport,name){
  try{
   // Preserve authenticated Profile overlay after prior client flow; never accept login as a translation check.
   const root=role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
-  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  await page.locator(root).waitFor({state:'visible',timeout:30000}).catch(async error=>{
+   const state=await page.evaluate(role=>({
+    auth: new URLSearchParams(location.search).get('auth')==='1',
+    login: Boolean(document.querySelector('form input[type="password"]')),
+    root: Boolean(document.querySelector(role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2')),
+    session: Boolean(localStorage.getItem(role==='admin'||role==='superadmin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'))
+   }),role).catch(()=>({auth:null,login:null,root:null,session:null}))
+   console.error(`::error::ROLE_ROOT_FAILURE role=${role} viewport=${name} auth=${state.auth} login=${state.login} root=${state.root} session_present=${state.session}`)
+   throw error
+  })
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
    if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
