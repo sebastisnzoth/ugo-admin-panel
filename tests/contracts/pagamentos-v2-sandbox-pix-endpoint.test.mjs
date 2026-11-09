@@ -101,3 +101,23 @@ test('generated CPF has valid check digits and only runs in isolated Sandbox ope
  assert.match(source,/process\.env\.UGO_PAYMENTS_TEST_ONLY!=='1'/)
  assert.match(source,/UGO_TEST_OPERATOR_TOKEN/)
 })
+
+test('received Pix attestation is processor-authenticated and never performs financial writes',()=>{
+ const section=source.split('async function verifyReceived(db){')[1]?.split('/**\n * Authenticated, read-only reconciliation inventory')[0]||''
+ assert.ok(section.length>150)
+ assert.match(section,/await existing\(db\)/)
+ assert.match(section,/row\.status!=='received'/)
+ assert.match(section,/await getVerifiedPayment\(row\)/)
+ assert.match(section,/payment\.status==='RECEIVED'/)
+ assert.match(section,/netCents===Number\(row\.net_cents\)/)
+ assert.match(section,/external_reference!==expected/)
+ assert.match(section,/financialWritesPerformed:false/)
+ assert.match(section,/e2ePass:false/)
+ assert.match(section,/splitSettled:false,providerPaid:false/)
+ assert.doesNotMatch(section,/processor\([^)]*,'POST'/)
+ assert.doesNotMatch(section,/db\.query\(/)
+ assert.doesNotMatch(section,/qrCopyPaste|qrImageBase64|asaas_payment_id:\s*row/)
+ assert.match(source,/action==='verify_received'\?await verifyReceived\(db\)/)
+ assert.match(source,/'received_intent_not_ready_for_verification'/)
+ assert.match(source,/'received_intent_identity_mismatch'/)
+})
