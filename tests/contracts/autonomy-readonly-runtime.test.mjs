@@ -29,4 +29,5 @@ test('administrative logout waits semantic auth state instead of Realtime networ
  assert.match(source,/waitForURL\(url=>url\.searchParams\.get\('auth'\)==='1',\{timeout:30000,waitUntil:'domcontentloaded'\}\)/)
  assert.ok(source.includes("localStorage.getItem('ugo-test-admin-auth')"))
  assert.ok(source.includes('LOGOUT_RESTORED_PROTECTED_UI'))
+ assert.match(source,/async function testAdmin[\s\S]*selectOption\('es'\)[\s\S]*document\.documentElement\.lang==='es'/)
 })

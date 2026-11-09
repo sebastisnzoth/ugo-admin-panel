@@ -366,6 +366,10 @@ async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
    await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:20000})
+   // A previous translation case may persist English remotely and apply it
+   // asynchronously midway through this Spanish-name navigation flow.
+   await page.getByTestId('language-selector').first().selectOption('es')
+   await page.waitForFunction(()=>document.documentElement.lang==='es')
    await assertResponsive(page,'admin '+name+' home')
    const mainNav=page.getByRole('navigation',{name:'Navegación Admin'})
    const superAdminButton=mainNav.getByRole('button',{name:/Super Admin/i})
