@@ -26,6 +26,9 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
  const paymentReady=d.funded||d.cashSelected||d.paymentPreferenceSelected
  const amountReady=Number(s.tarifa||0)>0
+ const paymentMetadata=(s as typeof s & {metadata?:Record<string,unknown>|null}).metadata
+ const requestedPaymentMethod=String(paymentMetadata?.requested_payment_method||paymentMetadata?.payment_method||'').toLowerCase()
+ const pixSelectedAwaitingPayment=amountReady&&requestedPaymentMethod==='pix'&&!d.funded
  const address=s.direccion_cliente||t('providerAgenda.addressPending')
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
  const stateLabel=stateLabels[s.estado]||s.estado.replaceAll('_',' ')
@@ -41,7 +44,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
      :s.estado==='esperando_aprobacion'
       ?t('providerJob.nextApproval')
       :s.estado==='disputado'?t('providerJob.nextDispute'):t('providerJob.nextReview')
- const paymentLabel=d.funded?t('providerJob.paymentProtected'):d.cashSelected?t('providerJob.paymentCash'):d.paymentPreferenceSelected?t('providerJob.paymentChosen'):t('providerJob.paymentPending')
+ const paymentLabel=d.funded?t('providerJob.paymentProtected'):d.cashSelected?t('providerJob.paymentCash'):d.paymentPreferenceSelected?t('providerJob.paymentChosen'):pixSelectedAwaitingPayment?t('providerJob.pixSelectedAwaitingPayment'):t('providerJob.paymentPending')
  const locationLabel=s.estado==='en_camino'?t('providerJob.locationActive'):s.estado==='llegado'||s.estado==='en_progreso'?t('providerJob.locationConfirmed'):t('providerJob.locationReady')
  const confirmArrival=async()=>{await d.advance('llegado')}
  const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!await confirm({title:t('providerAgenda.confirmCancel'),message:t('providerJob.cancelQuestion'),danger:true}))return;const reason=await prompt({title:t('providerAgenda.confirmCancel'),message:t('providerJob.cancelReasonPrompt'),label:t('providerJob.cancelReasonLabel'),required:true});if(reason===null)return;if(reason.trim().length<5){await alert({title:t('providerAgenda.confirmCancel'),message:t('providerJob.cancelReasonInvalid')});return}await d.cancelService(reason)}
@@ -55,7 +58,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
   </Card>
   <Card id="provider-primary-control" tabIndex={-1} className="provider-card provider-job-control-card provider-active-control" aria-label={t('providerJob.control')}>
    <small>{t('providerJob.control')} · #{s.numero??String(s.id).slice(0,8)}</small>
-   {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>{t('screen.active.12')}</Button><div className="provider-simple-status" role="status"><strong>{t('screen.active.13')}</strong><span>{t('providerJob.paymentChoiceHelp')}</span></div></>}
+   {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>{t('screen.active.12')}</Button><div className="provider-simple-status" role="status"><strong>{t(pixSelectedAwaitingPayment?'providerJob.pixSelectedAwaitingPayment':'screen.active.13')}</strong><span>{t(pixSelectedAwaitingPayment?'providerJob.pixSelectedAwaitingPaymentHelp':'providerJob.paymentChoiceHelp')}</span></div></>}
    {s.estado==='asignado'&&paymentReady&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?t('providerJob.processing'):t('providerJob.going')}</Button>}
    {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>{t('screen.active.14')}</strong><span>{t('screen.active.15')}</span><Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void confirmArrival()}>{d.busy?t('providerJob.confirming'):t('providerJob.arrived')}</Button></div>}
    {s.estado==='llegado'&&!amountReady&&<div className="provider-simple-status" role="status"><strong>{t('screen.active.16')}</strong><span>{t('screen.active.17')}</span><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></div>}
