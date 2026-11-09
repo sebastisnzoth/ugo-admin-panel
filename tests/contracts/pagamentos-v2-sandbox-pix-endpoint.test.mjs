@@ -42,6 +42,15 @@ test('confirmation is explicit, processor-readback based and fails closed',()=>{
  assert.match(source,/providerPaid:false/)
 })
 
+test('every charge path requires an active Pix key before reservation or processor POST',()=>{
+ const createBody=source.slice(source.indexOf('async function create(db)'),source.indexOf('async function confirm(db)'))
+ const recoveryBody=source.slice(source.indexOf('async function recoverCreate('),source.indexOf('async function diagnose('))
+ assert.ok(createBody.indexOf("activePixKeyCount()!==1")<createBody.indexOf('reserve(db,customerId)'))
+ assert.ok(createBody.indexOf("activePixKeyCount()!==1")<createBody.indexOf("processor('/payments','POST'"))
+ assert.ok(recoveryBody.indexOf("activePixKeyCount()!==1")<recoveryBody.indexOf("processor('/payments','POST'"))
+ assert.match(source,/'active_pix_key_required'/)
+})
+
 test('read-only diagnostics returns only safe flags and does not create charges',()=>{
  assert.match(source,/async function diagnose\(db\)/)
  assert.match(source,/payerDocumentPresent/)

@@ -835,3 +835,8 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Deployment `dpl_HV2A7mqm8SJD3tqzYBHHJZdqSN45`, commit `c962020038dccb13d89b2125398692f69b9c916f`: **UGO PIX SANDBOX E2E — PASS**. Reutilizó el único cargo, verificó QR/copia-pega y misma huella/payload, confirmó simuladamente a `RECEIVED` y concilió Neon a `received`; `remoteChargeCount=1`, neto 9901 centavos.
 - Split sigue **BLOCKED**: proyección local 8416/1485 centavos, `splitSettled=false`, `providerPaid=false`. Evidencia sanitizada en `docs/evidence/pagamentos-v2-arena-20261109.json`.
 - El runner transitorio fue retirado del build. Producción y operación comercial siguen PENDIENTES y requieren autorización.
+
+## 2026-11-09 — Gate de Release y rollback Pagos V2
+- Toda creación/recuperación Pix exige ahora una única clave Pix activa antes de reservar o llamar al POST; contrato añadido para impedir repetir `invalid_action` en una cuenta nueva.
+- `scripts/ugo-payment-release-gate.mjs` falla cerrado mientras Split real, Auth/Realtime/RLS, backup/restore, autorización de producción o servicio/comisión real no sean PASS. El PASS Sandbox no habilita producción.
+- Runbook `docs/UGO_PAYMENTS_RELEASE_ROLLBACK.md`: rollback de código Preview por redeploy queda documentado y acotado; backup/restore Neon financiero sigue NO EJECUTADO. No se ejecutó ningún reembolso, restore ni cambio PROD.

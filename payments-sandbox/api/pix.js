@@ -221,6 +221,9 @@ async function sync(db,row,p){
 }
 async function create(db){
  const customerId=await preflight()
+ // Asaas requires an active Pix key before receiving charges. Fail closed
+ // before reserving or POSTing so a new account never repeats invalid_action.
+ if(await activePixKeyCount()!==1)throw Error('active_pix_key_required')
  const reservation=await reserve(db,customerId)
  if(reservation.existing){
   const prior=reservation.existing
@@ -304,7 +307,7 @@ async function recoverCreate(db,rejected=false,resume=false){
  const customerId=await preflight()
  if(row.asaas_customer_id!==customerId)
   throw Error('recovery_customer_mismatch')
- if(resume&&await activePixKeyCount()!==1)throw Error('active_pix_key_required_for_resume')
+ if(await activePixKeyCount()!==1)throw Error(resume?'active_pix_key_required_for_resume':'active_pix_key_required')
  const path='/payments?limit=2&offset=0&externalReference='+encodeURIComponent(expected)
  const list=await processor(path)
  if(!Array.isArray(list.data)||typeof list.hasMore!=='boolean')
@@ -497,7 +500,7 @@ export default async function handler(req,res){
    'recovery_customer_mismatch','invalid_remote_reconciliation',
    'remote_payment_requires_manual_reconciliation',
    'recovery_claim_or_cooldown_failed','recovery_processor_result_uncertain',
-   'rejected_recovery_already_attempted','active_pix_key_required_for_resume',
+   'rejected_recovery_already_attempted','active_pix_key_required','active_pix_key_required_for_resume',
    'pix_key_resume_already_attempted','invalid_pix_key_response','unexpected_pix_key_count',
    'database_required_for_lock','pix_key_lock_failed','pix_key_changed_during_preparation',
    'pix_key_not_active_after_creation',

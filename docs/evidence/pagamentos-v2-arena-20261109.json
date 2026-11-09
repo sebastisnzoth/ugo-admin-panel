@@ -82,6 +82,29 @@
     "financialActionsInBuildEvents": false
   },
   "pullRequest": { "number": 618, "state": "OPEN_DRAFT", "url": "https://github.com/sebastisnzoth/ugo-admin-panel/pull/618" },
+  "sameShaCi": {
+    "commit": "43eed12c41643458195eef556906701801bb4f86",
+    "core": { "run": 42675161285, "result": "SUCCESS" },
+    "crossRoleUi": { "run": 42675161161, "result": "SUCCESS" },
+    "crossSecurity": { "run": 42675161287, "result": "SUCCESS" },
+    "hugoTimeout": { "run": 42675160891, "result": "SUCCESS" },
+    "roadmap": { "run": 42675161222, "result": "SUCCESS" }
+  },
+  "releaseGates": {
+    "sameShaCi": "PASS",
+    "previewCodeRollback": "PASS_REDEPLOY_ONLY",
+    "splitReal8515": "BLOCKED",
+    "operationalAuthRealtimeRls": "BLOCKED",
+    "backupRestore": "BLOCKED",
+    "productionAuthorization": "PENDING",
+    "realServiceAndCommission": "PENDING"
+  },
+  "backupRollback": {
+    "previewRedeployPath": "PASS",
+    "neonFinancialTestDumpRestore": "NOT_EXECUTED",
+    "financialRefundRollback": "NOT_EXECUTED_NOT_AUTHORIZED",
+    "runbook": "docs/UGO_PAYMENTS_RELEASE_ROLLBACK.md"
+  },
   "productionWritesPerformed": false,
   "realOperationsPerformed": false,
   "realCustomersProvidersRevenueOrCommission": false,

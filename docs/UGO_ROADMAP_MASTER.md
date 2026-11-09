@@ -1245,3 +1245,7 @@ RUNTIME VALIDATED             pendiente
 - **P0.1 operacional: PASS após chave Pix ativa; causa histórica do 400: BLOCKED.** Houve rejeição posterior `invalid_action`, sem payload histórico suficiente para atribuir a causa original. A origem da chave/cargo observados posteriormente não foi identificada nos eventos disponíveis e não é atribuída ao runner.
 - **P0.5 Split 85/15: BLOCKED.** Projeção sobre neto 9901: 8416 prestador / 1485 UGO; nenhuma liquidação ou wallet receptora comprovada.
 - Runner financeiro temporário removido; build normal restaurado. Produção, Split real, RLS operacional, clientes e comissões reais continuam bloqueados/pendentes.
+
+## 2026-11-09 — Release gate Pagamentos V2
+- Guarda adicional: nenhum caminho de cobrança pode prosseguir sem chave Pix ativa antes da reserva/POST.
+- Gate executável de release e runbook adicionados. Rollback Preview por redeploy: PASS limitado; restore Neon financeiro, Split real, RLS operacional e autorização comercial continuam BLOCKED/PENDING.
