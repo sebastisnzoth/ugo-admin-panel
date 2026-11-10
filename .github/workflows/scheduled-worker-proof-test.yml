@@ -1,13 +1,10 @@
 name: UGO Scheduled Worker Proof TEST
 
+# INCIDENT 2026-11-10: TEST Data API 100% 5xx, 100k+ HeadlessChrome requests/day.
+# Suspend automatic triggering while TEST quota/DB timeouts are investigated.
+# Manual verification remains available; restore automatic triggers only after recovery.
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["UGO Core CI"]
-    types: [completed]
-  schedule:
-    # Readiness expires after 45 minutes; refresh every 15 with scheduling margin.
-    - cron: '7,22,37,52 * * * *'
 
 permissions:
   contents: read
