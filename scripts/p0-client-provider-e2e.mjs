@@ -94,6 +94,25 @@ async function cleanup(){
   return failures
 }
 
+// A valid provider session can outlive a transient Supabase profile timeout.
+// Exercise the application's real retry control; never inject a profile or
+// shortcut authorization. Fail closed if the profile cannot recover.
+async function waitForProviderUiRecovery(page){
+  const root=page.locator('.ugo-provider-root')
+  const retry=page.getByRole('button',{name:/Reintentar (?:la )?carga del perfil|Tentar novamente|Retry (?:loading )?profile/i})
+  for(let attempt=0;attempt<4;attempt++){
+    if(await root.isVisible().catch(()=>false))return
+    await root.waitFor({state:'visible',timeout:12000}).catch(()=>{})
+    if(await root.isVisible().catch(()=>false))return
+    if(!(await retry.isVisible().catch(()=>false)))continue
+    assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,
+      'P0_PROVIDER_RETRY_REQUIRES_VALID_SESSION')
+    stage('ui_provider_profile_retry',{attempt:attempt+1})
+    await retry.click()
+  }
+  await root.waitFor({state:'visible',timeout:12000})
+}
+
 async function providerUiLogin({email,providerUserId}){
   const {chromium}=await import('playwright')
   await fs.mkdir('artifacts',{recursive:true})
@@ -135,14 +154,14 @@ async function providerUiLogin({email,providerUserId}){
   await page.locator('[data-testid="auth-password"]').fill(password)
   await screenshot('01-login')
   await page.locator('[data-testid="auth-form"] button.mvp-primary').click()
-  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+  await waitForProviderUiRecovery(page)
   const stored=await page.evaluate(()=>{
     try{const raw=localStorage.getItem('ugo-test-provider-auth');if(!raw)return false;const parsed=JSON.parse(raw);return Boolean(parsed?.access_token||parsed?.currentSession?.access_token)}catch{return false}
   })
   assert.ok(stored,'P0_PROVIDER_SESSION_NOT_PERSISTED')
   // Reload: a valid session must survive a page reload without returning to auth.
   await page.reload({waitUntil:'domcontentloaded'})
-  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+  await waitForProviderUiRecovery(page)
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RELOAD')
   stage('ui_login_reload',{authenticated:true,sessionPersisted:true,pageErrors})
   return {page,context,screenshot,pageErrors,failedRequests}
@@ -334,7 +353,7 @@ async function proveProviderRealtimeRecovery(ui){
  },before,{timeout:30000})
  const after=await latestReady()
  assert.ok(after>before,'P0_PROVIDER_REALTIME_NOT_RECOVERED')
- await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
+ await waitForProviderUiRecovery(page)
  assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RECONNECT')
  stage('ui_realtime_offline_online',{reconnected:true,readyBefore:before,readyAfter:after,sessionPreserved:true})
  return {reconnected:true,readyBefore:before,readyAfter:after}
@@ -376,7 +395,7 @@ async function assertProviderLiveOffer(ui,offerId,serviceId){
 async function acceptOfferInUi(ui){
   const {page,screenshot,pageErrors}=ui
   // No reload here: the provider must see the offer on the same live page.
-  await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+  await waitForProviderUiRecovery(page)
   assert.equal(await page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_BEFORE_OFFER')
   await page.locator('[data-testid="provider-mobile-orders"]').click()
   await page.getByText(SERVICE_DESCRIPTION).first().waitFor({state:'visible',timeout:45000})
@@ -459,7 +478,7 @@ try{
   }
   if(ui){
     await ui.page.reload({waitUntil:'domcontentloaded'})
-    await ui.page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:60000})
+    await waitForProviderUiRecovery(ui.page)
     assert.equal(await ui.page.locator('[data-testid="auth-form"]').count(),0,'P0_PROVIDER_SENT_BACK_TO_AUTH_AFTER_RELOAD_ONLINE')
     const onlineReflected=await ui.page.locator('.provider-client-online').getAttribute('aria-pressed')
     stage('ui_online_persisted',{onlineReflected})
