@@ -47,3 +47,14 @@ export function isAsaasRecebimentosPreviewEnabled(env: Record<string, unknown> =
   if (env.MODE === 'production' || env.PROD === true) return false
   return parseFlagValue(env.VITE_FLAG_ASAAS_RECEBIMENTOS_PREVIEW)
 }
+
+/**
+ * PIX after-service pilot, for isolated Preview development ONLY.
+ * Must remain disabled until the backend service-transition and webhook
+ * reconciliation contracts are deployed together in the same TEST environment.
+ * A client-side flag does not grant server-side authorization.
+ */
+export function isPixPayAfterServicePreviewEnabled(env: Record<string, unknown> = import.meta.env): boolean {
+  if (env.MODE === 'production' || env.PROD === true) return false
+  return parseFlagValue(env.VITE_FLAG_PIX_PAY_AFTER_SERVICE_PREVIEW)
+}
