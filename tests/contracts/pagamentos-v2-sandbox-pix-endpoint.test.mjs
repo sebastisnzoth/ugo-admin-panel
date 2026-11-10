@@ -32,7 +32,7 @@ test('single-charge reservation uses transaction and unique service locking',()=
 })
 
 test('confirmation is explicit, processor-readback based and fails closed',()=>{
- assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received','get_qr'\]/)
+ assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received','get_qr','process_webhook'\]/)
  assert.match(source,/getVerifiedPayment/)
  assert.match(source,/another_confirmation_in_progress/)
  assert.match(source,/confirmation_uncertain_reconcile_without_retry/)
