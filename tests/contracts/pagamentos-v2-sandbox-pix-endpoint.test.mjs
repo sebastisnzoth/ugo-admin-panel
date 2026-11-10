@@ -32,7 +32,7 @@ test('single-charge reservation uses transaction and unique service locking',()=
 })
 
 test('confirmation is explicit, processor-readback based and fails closed',()=>{
- assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received'\]/)
+ assert.match(source,/\['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received','get_qr'\]/)
  assert.match(source,/getVerifiedPayment/)
  assert.match(source,/another_confirmation_in_progress/)
  assert.match(source,/confirmation_uncertain_reconcile_without_retry/)
@@ -120,4 +120,17 @@ test('received Pix attestation is processor-authenticated and never performs fin
  assert.match(source,/action==='verify_received'\?await verifyReceived\(db\)/)
  assert.match(source,/'received_intent_not_ready_for_verification'/)
  assert.match(source,/'received_intent_identity_mismatch'/)
+})
+
+test('operator can retrieve only an already-linked pending QR without new charges',()=>{
+ const section=source.split('async function getPendingQr(db){')[1]?.split('async function confirm(db){')[0]||''
+ assert.ok(section.length>200)
+ assert.match(section,/row\.status!=='pending'/)
+ assert.match(section,/await getVerifiedPayment\(row\)/)
+ assert.match(section,/payment\.status!=='PENDING'/)
+ assert.match(section,/\/pixQrCode/)
+ assert.match(section,/financialWritesPerformed:false/)
+ assert.doesNotMatch(section,/processor\([^\n]*,'POST'/)
+ assert.doesNotMatch(section,/db\.query\(/)
+ assert.match(source,/action==='get_qr'\?await getPendingQr\(db\)/)
 })
