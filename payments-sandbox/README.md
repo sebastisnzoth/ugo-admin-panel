@@ -7,7 +7,7 @@ a dedicated Neon TEST database and the Asaas **Sandbox** base URL.
 
 - `GET /api/health`: no secrets; confirms isolated read-only DB health and
   whether the authenticated TEST write capability is configured.
-- `GET /api/wallets?account=issuer`: operator bearer token required;
+- `POST /api/webhook`: Asaas Sandbox authenticated event inbox (Preview only). Requires the `asaas-access-token` header to match `ASAAS_SANDBOX_WEBHOOK_TOKEN` (minimum 32 characters), and durably stores event IDs with idempotency. A `200` confirms receipt/storage **only**, not settlement or a completed checkout. Configure the HTTPS Preview URL and identical token in Asaas Sandbox → Webhooks after deploying and confirming TEST isolation. Never configure UGO Arena PROD here.\n- `GET /api/wallets?account=issuer`: operator bearer token required;
   authenticated Asaas issuer-wallet verification.
 - `GET /api/customers`: operator bearer token required; returns the unique
   existing Asaas Sandbox customer ID only if unambiguous.
@@ -55,7 +55,7 @@ The operator token is an independent TEST secret; it is not the Asaas key.
 - `UGO_NEON_TEST_READONLY_URL` (restricted role, health)
 - `UGO_NEON_TEST_WRITE_URL` (restricted TEST-only role; never PROD)
 - `UGO_PIX_TEST_SERVICE_ID` (synthetic Faxina fixture, exactly R$100)
-- `ASAAS_SANDBOX_API_KEY` (secret)
+- `ASAAS_SANDBOX_API_KEY` (secret)\n- `ASAAS_SANDBOX_WEBHOOK_TOKEN` (separate secret, identical to the Sandbox webhook authentication token; Preview only)
 - `UGO_ASAAS_ISSUER_WALLET_ID` (validated with authenticated Asaas API)
 
 There is **no** provider wallet, no external Asaas Split, no provider payout,
