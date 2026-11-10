@@ -38,3 +38,15 @@ test('reject unknown webhook charges without pretending receipt or filling the i
  assert.match(source,/payment_not_yet_linked/)
  assert.match(source,/return send\(res,503,\{error:'payment_not_yet_linked'\}\)/)
 })
+
+test('Asaas ack follows durable inbox insert and defers verified reconciliation with no settlement claim',()=>{
+ const insert=source.indexOf('insert into ugo_payments_v2.payment_events')
+ const ack=source.indexOf('return send(res,200,{accepted:true,processed:false,queued:true})')
+ const queued=source.indexOf('waitUntil(processPersistedEvent(event.id))')
+ assert.ok(insert>0&&queued>insert&&ack>queued,'ACK must follow durable insert and deferred reconciliation scheduling')
+ assert.match(source,/import \{waitUntil\} from '@vercel\/functions'/)
+ assert.match(source,/async function processPersistedEvent\(eventId\)/)
+ assert.match(source,/await reconcileInboxEvent\(\{db,eventId,asaasGet\}\)/)
+ assert.match(source,/UGO_PIX_WEBHOOK_RECONCILIATION_REQUIRES_REPLAY/)
+ assert.doesNotMatch(source,/processed:true,receivedVerified:/)
+})
