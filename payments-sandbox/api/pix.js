@@ -194,12 +194,8 @@ async function create(db){
    throw Error('existing_reservation_requires_reconciliation')
   const payment=await getVerifiedPayment(prior)
   if(payment.status!=='PENDING')throw Error('existing_charge_state_requires_reconciliation')
-  const savedQr=await processor('/payments/'+encodeURIComponent(payment.id)+'/pixQrCode')
-  if(typeof savedQr.payload!=='string'||typeof savedQr.encodedImage!=='string')
-   throw Error('existing_qr_unavailable')
-  return {action:'reused',paymentId:payment.id,processorStatus:'PENDING',
-   qrCopyPaste:savedQr.payload,qrImageBase64:savedQr.encodedImage,
-   splitSettled:false,providerPaid:false}
+  const savedQr=await getPendingQr(db)
+  return {...savedQr,action:'reused'}
  }
  let charge
  try {
@@ -222,11 +218,14 @@ async function create(db){
   if(rejected){const error=new Error(raw);error.safeCodes=e.safeCodes||[];error.safeFields=e.safeFields||[];throw error}
   throw Error('create_uncertain_stop_and_reconcile')
  }
- const qr=await processor('/payments/'+encodeURIComponent(charge.id)+'/pixQrCode')
- if(typeof qr.payload!=='string'||typeof qr.encodedImage!=='string')throw Error('qr_not_ready_payment_persisted')
- return {action:'created',paymentId:charge.id,processorStatus:charge.status||'PENDING',
-  qrCopyPaste:qr.payload,qrImageBase64:qr.encodedImage,
-  splitSettled:false,providerPaid:false}
+ // Re-read the newly stored charge to validate identity, remote status,
+ // QR encoding and expiry before presenting it as payable to a user.
+ try {
+  const readyQr=await getPendingQr(db)
+  return {...readyQr,action:'created'}
+ }catch{
+  throw Error('qr_not_ready_payment_persisted')
+ }
 }
 /**
  * Return the QR of an already linked, still-pending TEST charge.
