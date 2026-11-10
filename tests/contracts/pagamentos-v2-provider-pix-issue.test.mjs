@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import{readFileSync}from'node:fs'
 import{sandboxChargeSpec,remoteReferenceAbsent,issuedChargeIdentityValid,finalEvidenceValid}from'../../payments-sandbox/lib/providerPixIssue.js'
 import{issueProviderPix}from'../../payments-sandbox/lib/issueProviderPix.js'
 const service={id:'11111111-1111-4111-8111-111111111111',
@@ -124,4 +125,25 @@ test('fresh Asaas response identities must match the reserved exact charge',()=>
  assert.equal(issuedChargeIdentityValid({...charge,value:99},spec),false)
  assert.equal(issuedChargeIdentityValid({...charge,status:'RECEIVED'},spec),false)
  assert.equal(issuedChargeIdentityValid({...charge,externalReference:'other'},spec),false)
+})
+
+test('provider charge creation requires independent Preview-only flags, JWT and final photo',()=>{
+ const file=path=>readFileSync(new URL('../../'+path,import.meta.url),'utf8')
+ const endpoint=file('payments-sandbox/api/provider-checkout.js')
+ const flags=file('src/lib/featureFlags.ts')
+ const ui=file('src/mvp/ProviderDeferredPixStatus.tsx')
+ assert.ok(endpoint.includes("process.env.VERCEL_ENV!=='preview'"))
+ assert.ok(endpoint.includes("process.env.UGO_PROVIDER_PIX_CREATE_ENABLED!=='1'"))
+ assert.ok(endpoint.includes("!process.env.UGO_NEON_TEST_WRITE_URL"))
+ assert.ok(endpoint.includes('issueProviderPix({db,service,providerId:user.id'))
+ assert.ok(endpoint.includes('finalEvidenceValid(evidence)'))
+ assert.ok(endpoint.includes("const user=await supabaseGet('/auth/v1/user',token,key)"))
+ assert.ok(endpoint.includes('authorizedProviderService(service,user.id,serviceId'))
+ assert.ok(endpoint.includes("Access-Control-Allow-Methods','GET, POST, OPTIONS"))
+ assert.ok(flags.includes("env.VITE_VERCEL_ENV==='preview'"))
+ assert.ok(flags.includes('VITE_FLAG_PIX_PROVIDER_ISSUE_PREVIEW'))
+ assert.ok(ui.includes("method:'POST'"))
+ assert.ok(ui.includes("body:JSON.stringify({action:'create',serviceId})"))
+ assert.ok(ui.includes("Authorization:'Bearer '+accessToken"))
+ assert.doesNotMatch(ui,/UGO_TEST_OPERATOR_TOKEN|ASAAS_SANDBOX_API_KEY/)
 })
