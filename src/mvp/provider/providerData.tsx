@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- co-locación intencional de Provider + hook + re-exports usados por los paneles */
-import React,{createContext,useCallback,useContext,useEffect,useState}from'react'
+import React,{createContext,useCallback,useContext,useEffect,useRef,useState}from'react'
 import{AuthScreen,ErrorState,LoadingScreen,timeAgo,money,useRoleSession,type Notice,type Offer,type Service}from'../shared'
 import{ProviderOnboardingGate}from'../ProviderOnboardingGate'
 import{acceptProviderOpportunity,advanceProviderService,cancelProviderService,loadProviderSnapshot,providerGeoErrorCode,publishProviderAvailabilityLocation,refreshProviderAvailabilityLocation,rejectProviderOpportunity,saveProviderBaseLocation,setProviderAvailability,type ProviderAdvanceOptions,type ProviderDebt,type ProviderPayment,type ProviderProfileFull}from'./providerService'
@@ -30,7 +30,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const{t}=useLocale(),auth=useRoleSession('provider'),{supabase,session,profile}=auth
  const[snapshotLoaded,setSnapshotLoaded]=useState(false),[snapshotError,setSnapshotError]=useState(false)
  const[provider,setProvider]=useState<ProviderProfileFull|null>(null),[profileError,setProfileError]=useState<string|null>(null),[profileLoaded,setProfileLoaded]=useState(false),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<ProviderPayment[]>([]),[debts,setDebts]=useState<ProviderDebt[]>([]),[demand,setDemand]=useState<DemandSignal[]>([]),[demandError,setDemandError]=useState<string|null>(null),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState<Notice>(null)
- const reload=useCallback(async()=>{
+ const reloadOriginal=useCallback(async()=>{
  if(!session){setSnapshotLoaded(false);setSnapshotError(false);setDemand([]);setDemandError(null);setProfileError(null);setProfileLoaded(false);setLoading(false);return}
  let gateProfile:unknown=null,gateError:Error|null=null
  for(let attempt=0;attempt<3;attempt++){
@@ -43,6 +43,25 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  if(gateError){setSnapshotError(true);setProfileError(gateError.message||'No pudimos leer tu perfil profesional. Tu sesión sigue activa.');setProfileLoaded(true);setLoading(false);throw gateError}
  setProfileError(null);setProfileLoaded(true)
  const verifiedProfile=(gateProfile as ProviderProfileFull|null)||null;setProvider(verifiedProfile);setLoading(false);const snap=await loadProviderSnapshot(supabase,session.user.id).catch(error=>{setSnapshotError(true);throw error});setSnapshotLoaded(true);setSnapshotError(false);const effectiveProvider=snap.provider||verifiedProfile;setProvider(effectiveProvider);setOffers(snap.offers);setService(snap.service);setPayments(snap.payments);setDebts(snap.debts);let nextDemand:DemandSignal[]=[];setDemandError(null);if(effectiveProvider?.estado_verificacion==='verificado'){const categoryId=effectiveProvider.categoria_principal_id||null;const[{data:market,error:marketError},{data:category}]=await Promise.all([supabase.rpc('obtener_demanda_proveedor',{p_categoria_id:categoryId,p_horas:24}),categoryId?supabase.from('categorias').select('nombre').eq('id',categoryId).maybeSingle():Promise.resolve({data:null,error:null})]);if(marketError){setDemandError('No pudimos actualizar el radar de demanda. Podés reintentar sin perder tus oportunidades.')}else{const categoryName=String(category?.nombre||'Tu categoría');nextDemand=((market||[])as DemandRow[]).map((row,index)=>{const requests=Math.max(0,Number(row.pedidos||0)),urgent=Math.max(0,Number(row.urgentes||0)),ratio=requests?urgent/requests:0,latitude=coordinate(row.zona_lat),longitude=coordinate(row.zona_lng);return{id:`demand-${latitude??'x'}-${longitude??'x'}-${index}`,category:categoryName,zone:`Zona activa ${index+1} · ${requests} pedido${requests===1?'':'s'} reciente${requests===1?'':'s'}`,latitude,longitude,distanceKm:0,estimatedValue:Number(row.tarifa_promedio||0),requestedAt:row.ultimo_pedido||new Date().toISOString(),urgency:ratio>=.5?'high':urgent>0?'medium':'low',demandLevel:requests>=6||ratio>=.5?'high':requests>=3?'medium':'low'}})}}setDemand(nextDemand);setLoading(false)},[session,supabase])
+ // All Realtime, focus and polling refreshes share ONE in-flight read.
+ // After a Supabase failure, back off for 90s instead of multiplying 504s.
+ const reloadInFlight=useRef<Promise<void>|null>(null)
+ const reloadBackoffUntil=useRef(0)
+ const reload=useCallback(()=>{
+  if(reloadInFlight.current)return reloadInFlight.current
+  if(Date.now()<reloadBackoffUntil.current)
+   return Promise.reject(new Error('Servidor temporalmente ocupado. Aguarda antes de atualizar.'))
+  const task=reloadOriginal().then(()=>{
+   reloadBackoffUntil.current=0
+  },error=>{
+   reloadBackoffUntil.current=Date.now()+90_000
+   throw error
+  }).finally(()=>{
+   if(reloadInFlight.current===task)reloadInFlight.current=null
+  })
+  reloadInFlight.current=task
+  return task
+ },[reloadOriginal])
  const handleRealtime=useCallback(()=>{reload().catch(()=>{})},[reload])
  useEffect(()=>{if(session)reload().catch((e:Error)=>{setNotice({type:'error',text:e.message});setLoading(false)});else setLoading(false)},[reload,session])
  const marketAutoRefresh=Boolean(session&&provider?.estado_verificacion==='verificado'&&provider.disponible)
