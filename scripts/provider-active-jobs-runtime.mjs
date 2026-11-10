@@ -13,7 +13,18 @@ async function cleanup(){if(serviceId){await admin.from('pagos').delete().eq('se
 try{
  const p=await admin.auth.admin.createUser({email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Active Provider',tipo:'proveedor'}});if(p.error)throw p.error;providerId=p.data.user.id
  const c=await admin.auth.admin.createUser({email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Active Client',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
- const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId});assert.ifError(prep.error);assert.equal(prep.data.invalid_assignment_blocked,true);assert.equal(prep.data.state,'asignado');assert.equal(prep.data.payment_method,'efectivo');serviceId=prep.data.service_id
+ // 57014 means PostgreSQL cancelled the entire QA preparation transaction.
+ // Retry only that proven rollback, never an ambiguous request timeout.
+ let prep
+ for(let attempt=1;attempt<=4;attempt++){
+  prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId})
+  if(!prep.error)break
+  const rolledBack=String(prep.error.code||'')==='57014'&&/canceling statement due to statement timeout/i.test(String(prep.error.message||''))
+  if(!rolledBack||attempt===4)break
+  console.warn('UGO_ACTIVE_JOB_QA_TRANSACTION_ROLLED_BACK',JSON.stringify({attempt}))
+  await new Promise(resolve=>setTimeout(resolve,attempt*4000))
+ }
+ assert.ifError(prep.error);assert.equal(prep.data.invalid_assignment_blocked,true);assert.equal(prep.data.state,'asignado');assert.equal(prep.data.payment_method,'efectivo');serviceId=prep.data.service_id
  browser=await chromium.launch({headless:true});page=await browser.newPage({viewport:{width:390,height:844}})
  await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(pe);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click()
