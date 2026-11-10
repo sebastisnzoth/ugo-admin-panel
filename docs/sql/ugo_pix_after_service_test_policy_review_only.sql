@@ -1,6 +1,6 @@
 -- REVIEW-ONLY SQL PROPOSAL. DO NOT APPLY TO UGO ARENA PROD.
 -- Isolated Supabase TEST exclusively, after schema/role checks and explicit test operator approval.
--- Requires config_sistema key ugo_pix_after_service_test_enabled set to 'true' in TEST.
+-- Requires config_sistema key ugo_pix_after_service_test_enabled set to 'true' in TEST.\n-- Requires private.ugo_pix_after_service_allowed_services (separate TEST migration).
 -- The authorized marker must only be set by an administrative, audited TEST process.
 -- Does not authorize Asaas charges, payouts or escrow.
 
@@ -65,6 +65,10 @@ begin
     and coalesce(v_servicio.moneda,'BRL')='BRL'
     and v_servicio.metadata->>'payment_timing'='after_service'
     and v_servicio.metadata->>'pix_after_service_authorized'='true'
+    and exists (
+      select 1 from private.ugo_pix_after_service_allowed_services a
+      where a.service_id=v_servicio.id and a.expires_at>now()
+    )
     and coalesce(
       (select lower(trim(both '"' from valor::text))
        from public.config_sistema
