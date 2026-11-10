@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Hugo Voice Gate
 
 on:
@@ -35,7 +36,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-hugo-voice-${{ github.event.pull_request.number || github.ref }}
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: true
 
 env:
@@ -44,6 +45,7 @@ env:
 
 jobs:
   hugo-voice:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Build + Hugo voice contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 15

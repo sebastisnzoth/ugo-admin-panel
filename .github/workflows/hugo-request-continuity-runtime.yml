@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Hugo Request Continuity Runtime TEST
 
 on:
@@ -20,8 +21,13 @@ env:
   UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
 
+concurrency:
+  group: ugo-supabase-test-remote-e2e-budget
+  cancel-in-progress: false
+
 jobs:
   runtime:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
