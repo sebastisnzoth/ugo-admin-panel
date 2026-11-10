@@ -172,3 +172,29 @@ Preview deploy, and test coverage of concurrency, expired QR, delayed
 webhooks and idempotency. No external provider Split or automatic payout
 has been demonstrated. Do not merge into Arena PROD merely because the
 Sandbox confirmation of the 9 November payment succeeded.
+
+## Authenticated webhook reconciliation (isolated TEST operator)
+
+After configuring `ASAAS_SANDBOX_WEBHOOK_TOKEN` in Preview (the token must match
+the one configured in Asaas Sandbox), the `POST /api/webhook` route stores
+events durably. A stored event **is not evidence of a settled payment**.
+
+To process a known stored receipt, call `POST /api/pix` server-to-server with
+the independent operator bearer credential and JSON
+`{"action":"process_webhook","eventId":"<exact Asaas event ID>"}`.
+This action:
+
+- Locks the durable inbox event and limits supported kinds to
+  `PAYMENT_RECEIVED` and `PAYMENT_CONFIRMED`;
+- Requires the event payment ID to match the one linked canonical R$100 fixture;
+- Independently GETs Asaas Sandbox, verifying customer, reference, amount and
+  status before updating Neon TEST within a transaction;
+- Deduplicates events and rolls back if Asaas has not confirmed the status;
+- Never creates a charge, confirms a synthetic payment, performs an Asaas Split,
+  or disburses money.
+
+This is still an **operator-only** single-fixture TEST step. It is NOT yet an
+automatic queued webhook worker, a client/provider-authenticated endpoint, or
+a completed production flow. Do not expose operator credentials to browsers.
+The next integration must provide a secure background processor with bounded
+retries, monitoring and independent user-facing paid-status synchronization.
