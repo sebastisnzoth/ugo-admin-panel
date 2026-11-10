@@ -1,5 +1,5 @@
 import{LanguageSelector}from'../i18n/LanguageSelector'
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{useLocale,LocalizedText}from'../i18n/locale'
 import{AdminHomeStitch}from'./AdminHomeStitch'
@@ -55,13 +55,16 @@ export function AdminPhase2(){
  const[hugoVoiceActive]=useState(false)
  const[adminRole,setAdminRole]=useState<AdminRole|null>(null),[roleError,setRoleError]=useState('')
  const[metrics,setMetrics]=useState<Metrics>(empty),[loading,setLoading]=useState(true),[updated,setUpdated]=useState<Date|null>(null),[metricsError,setMetricsError]=useState(''),[liveStatus,setLiveStatus]=useState<'connecting'|'live'|'degraded'>('connecting'),[channelEpoch,setChannelEpoch]=useState(0)
+ const metricsRequestGeneration=useRef(0)
  const[gmail,setGmail]=useState<GmailStatus>({configured:false,connected:false,email:null,updatedAt:null}),[gmailBusy,setGmailBusy]=useState(false),[gmailMessage,setGmailMessage]=useState('')
  const isSuperAdmin=adminRole==='superadmin'
  const goToSuperAdmin=useCallback(()=>{if(isSuperAdmin){setSection('superadmin');const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section','superadmin');url.searchParams.set('tab','autonomy');window.history.replaceState({},'',url.toString());return}const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section','superadmin');url.searchParams.set('tab','autonomy');window.location.assign(url.toString())},[isSuperAdmin])
  useEffect(()=>{let active=true;(async()=>{try{const{data:{session},error:sessionError}=await supabase.auth.getSession();const user=session?.user;if(sessionError||!user)throw sessionError||new Error('Sesión Admin requerida.');const adminDb=supabase as any;const{data,error}=await adminDb.from('usuarios').select('tipo,activo').eq('id',user.id).maybeSingle();if(error)throw error;const role=String(data?.tipo||'');if(!data?.activo||!['admin','superadmin'].includes(role))throw new Error('Acceso administrativo no autorizado.');if(active)setAdminRole(role as AdminRole)}catch(error){if(active){setAdminRole(null);setRoleError(error instanceof Error?error.message:'No pudimos validar el rol administrativo.')}}})();return()=>{active=false}},[])
  useEffect(()=>{if((section==='superadmin'||section==='hive')&&adminRole&&!isSuperAdmin)setSection('home')},[section,adminRole,isSuperAdmin])
  const load=useCallback(async(options?:{silent?:boolean})=>{
-  if(!options?.silent)setLoading(true);setMetricsError('')
+  const generation=++metricsRequestGeneration.current
+  if(!options?.silent)setLoading(true)
+  setMetricsError('')
   const db=supabase as any,today=new Date();today.setHours(0,0,0,0)
   const activeStates=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion']
   try{
@@ -77,30 +80,32 @@ export function AdminPhase2(){
    const failed=results.find(result=>result?.error)
    if(failed?.error)throw failed.error
    const[{count:active},{count:online},{count:users},{count:pendingProviders},{count:pendingPix},{count:pendingDebtReconciliations},{count:completedToday}]=results
+   if(generation!==metricsRequestGeneration.current)return
    setMetrics({active:active??0,online:online??0,users:users??0,pendingProviders:pendingProviders??0,pendingPix:pendingPix??0,pendingDebtReconciliations:pendingDebtReconciliations??0,completedToday:completedToday??0})
    setUpdated(new Date())
   }catch(error){
    console.warn('UGO Admin metrics unavailable',error)
-   setMetricsError('No pudimos actualizar los indicadores. Conservamos los últimos datos válidos para no mostrar ceros falsos.')
-  }finally{if(!options?.silent)setLoading(false)}
+   if(generation===metricsRequestGeneration.current)
+    setMetricsError('No pudimos actualizar los indicadores. Conservamos los últimos datos válidos para no mostrar ceros falsos.')
+  }finally{if(generation===metricsRequestGeneration.current&&!options?.silent)setLoading(false)}
  },[])
  useEffect(()=>{
   let alive=true
-  const reconcileTimers=new Set<number>()
-  const scheduleReconcile=(delay:number)=>{
-   const timer=window.setTimeout(()=>{
-    reconcileTimers.delete(timer)
-    if(alive)void load({silent:true})
-   },delay)
-   reconcileTimers.add(timer)
-  }
+  // Collapse bursts of change events: avoid five overlapping seven-query
+  // requests per event, which caused stale KPI writes and excess TEST load.
+  let initialSyncTimer:number|undefined,trailingSyncTimer:number|undefined
   const sync=()=>{
    if(!alive)return
-   void load({silent:true})
-   scheduleReconcile(250)
-   scheduleReconcile(1000)
-   scheduleReconcile(2500)
-   scheduleReconcile(5000)
+   if(initialSyncTimer!==undefined)window.clearTimeout(initialSyncTimer)
+   if(trailingSyncTimer!==undefined)window.clearTimeout(trailingSyncTimer)
+   initialSyncTimer=window.setTimeout(()=>{
+    initialSyncTimer=undefined
+    if(alive)void load({silent:true})
+   },150)
+   trailingSyncTimer=window.setTimeout(()=>{
+    trailingSyncTimer=undefined
+    if(alive)void load({silent:true})
+   },2000)
   }
   const onOnline=()=>{setLiveStatus('connecting');sync()}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
@@ -119,8 +124,8 @@ export function AdminPhase2(){
     if(status==='SUBSCRIBED'){setLiveStatus('live');sync();return}
     if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){setLiveStatus('degraded');window.setTimeout(()=>{if(alive)setChannelEpoch(v=>v+1)},1500)}
    })
-  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
-  return()=>{alive=false;window.clearInterval(fallback);reconcileTimers.forEach(timer=>window.clearTimeout(timer));reconcileTimers.clear();window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible'&&alive)void load({silent:true})},10000)
+  return()=>{alive=false;window.clearInterval(fallback);if(initialSyncTimer!==undefined)window.clearTimeout(initialSyncTimer);if(trailingSyncTimer!==undefined)window.clearTimeout(trailingSyncTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
  },[channelEpoch,load])
  const adminToken=useCallback(async(force=false)=>{const result=force?await supabase.auth.refreshSession():await supabase.auth.getSession(),token=result.data.session?.access_token;if(result.error||!token)throw new Error('Sesión Admin vencida.');return token},[])
  const loadGmail=useCallback(async()=>{try{const request=(token:string)=>fetch('/api/scout/gmail',{headers:{Authorization:`Bearer ${token}`}});let r=await request(await adminToken());if(r.status===401)r=await request(await adminToken(true));const p=await r.json().catch(()=>({}));if(!r.ok)throw new Error(r.status===401?'No se pudo validar la sesión de Gmail. Volvé a iniciar sesión para reconectar.':p.error||'No se pudo consultar Gmail.');setGmail({configured:Boolean(p.configured),connected:Boolean(p.connected),email:p.email||null,updatedAt:p.updatedAt||null});setGmailMessage(current=>current==='Gmail conectado correctamente.'?current:'')}catch(error){setGmailMessage(error instanceof Error?error.message:'No se pudo consultar Gmail.')}},[adminToken])
