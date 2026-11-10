@@ -144,3 +144,22 @@ test('pending QR refuses expired and oversized/invalid payment materials',()=>{
  assert.match(section,/existing_qr_expired_requires_reconciliation/)
  assert.doesNotMatch(section,/processor\([^\n]*,'POST'/)
 })
+
+test('durable authenticated webhook is reconciled with Asaas inside TEST transaction',()=>{
+ const section=source.split('async function processWebhookEvent(db,eventId){')[1]?.split('async function getPendingQr(db){')[0]||''
+ assert.ok(section.length>500)
+ assert.match(section,/await db\.query\('BEGIN'\)/)
+ assert.match(section,/for update/)
+ assert.match(section,/event\.status==='processed'/)
+ assert.match(section,/row\.asaas_payment_id!==event\.processor_payment_id/)
+ assert.match(section,/await getVerifiedPayment\(row\)/)
+ assert.match(section,/PAYMENT_RECEIVED/)
+ assert.match(section,/payment\.status!=='RECEIVED'/)
+ assert.match(section,/await sync\(db,row,payment\)/)
+ assert.match(section,/set status='processed',processed_at=now\(\)/)
+ assert.match(section,/await db\.query\('COMMIT'\)/)
+ assert.match(section,/await db\.query\('ROLLBACK'\)/)
+ assert.match(section,/splitSettled:false,providerPaid:false/)
+ assert.doesNotMatch(section,/processor\([^\n]*,'POST'/)
+ assert.match(source,/action==='process_webhook'\?await processWebhookEvent\(db,req\.body\?\.eventId\)/)
+})
