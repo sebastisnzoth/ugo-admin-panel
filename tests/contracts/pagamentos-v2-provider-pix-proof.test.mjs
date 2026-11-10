@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import{readFileSync}from'node:fs'
 import {
  isApprovedOrigin,authorizedProviderService,verifiedIntentForService,
  verifiedProcessorPayment,pendingQrValid
@@ -81,4 +82,22 @@ test('browser origin requires an exact allowlisted HTTPS Preview host',()=>{
  assert.equal(isApprovedOrigin(preview,'*'),false)
  assert.equal(isApprovedOrigin('http://localhost:4173','http://localhost:4173'),false)
  assert.equal(isApprovedOrigin(null,''),true) // Server-side still must authenticate JWT
+})
+
+test('Client receipt proves ownership and Asaas RECEIVED without exposing Pix QR or payout',()=>{
+ const api=readFileSync(new URL('../../payments-sandbox/api/client-checkout.js',import.meta.url),'utf8')
+ const ui=readFileSync(new URL('../../src/features/client/payments/ClientDeferredPixReceipt.tsx',import.meta.url),'utf8')
+ const review=readFileSync(new URL('../../src/features/client/order/ClientCompletionReview.tsx',import.meta.url),'utf8')
+ assert.ok(api.includes("process.env.VERCEL_ENV!=='preview'"))
+ assert.ok(api.includes("if(req.method!=='GET'&&req.method!=='OPTIONS')"))
+ assert.ok(api.includes("service.cliente_id!==user.id"))
+ assert.ok(api.includes("!authorizedProviderService(service,service.proveedor_id"))
+ assert.ok(api.includes("!verifiedIntentForService(intent,service,service.proveedor_id)"))
+ assert.ok(api.includes("processor.status==='RECEIVED'"))
+ assert.ok(api.includes("stage:received?'received'"))
+ assert.doesNotMatch(api,/qrImageBase64|qrCopyPaste|pixQrCode|POST \/payments|splitSettled:true|providerPaid:true/)
+ assert.ok(ui.includes("row.paymentVerified===true"))
+ assert.ok(ui.includes("Authorization:'Bearer '+session.access_token"))
+ assert.ok(review.includes('<ClientDeferredPixReceipt serviceId={service.id}/>'))
+ assert.doesNotMatch(ui,/ASAAS_SANDBOX_API_KEY|UGO_TEST_OPERATOR_TOKEN/)
 })
