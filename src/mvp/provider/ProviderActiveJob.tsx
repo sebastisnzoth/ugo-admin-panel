@@ -9,6 +9,9 @@ import{ProviderEvidencePanel}from'./ProviderEvidencePanel'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import{Button,Card,EmptyState,SectionHeader}from'../../shared/ui'
 import{useDialog}from'../dialogs'
+import{ProviderPixAfterService}from'../ProviderPixAfterService'
+import{isPixPayAfterServicePreviewEnabled}from'../../lib/featureFlags'
+import{deferredPixPilotEligible}from'../../lib/payments/deferredPixPilot'
 
 const FLOW_ORDER:Record<string,number>={asignado:0,en_camino:0,llegado:1,en_progreso:2,esperando_aprobacion:3,disputado:3,completado:3}
 const CANCELLABLE=new Set(['asignado','en_camino','llegado'])
@@ -25,6 +28,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
  if(!s)return <section className="provider-screen provider-empty-screen"><EmptyState title={t('providerJob.emptyTitle')} description={t('providerJob.emptyDescription')} action={<Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>{t('screen.active.1')}</Button>}/></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
  const paymentReady=d.funded||d.cashSelected||d.paymentPreferenceSelected
+ const deferredPixPreview=isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(s)
  const amountReady=Number(s.tarifa||0)>0
  const address=s.direccion_cliente||t('providerAgenda.addressPending')
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
@@ -69,6 +73,13 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    {!['esperando_aprobacion','disputado','completado'].includes(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide provider-dispute-entry" onClick={()=>flow.actions.openDispute(s.id)}>{t('screen.active.26')}</Button>}
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>{t('screen.active.27')}</Button>}
   </Card>
+  {deferredPixPreview&&<Card className="provider-card provider-pix-post-service-pilot">
+   <ProviderPixAfterService payment={{
+    stage:['esperando_aprobacion','completado'].includes(s.estado)?'error':'not_finished',
+    amountBRL:Number(s.tarifa||0),
+    message:locale==='pt-BR'?'O Pix após o serviço ainda aguarda uma cobrança vinculada e verificada pelo backend TEST. Não gere uma segunda cobrança.':locale==='es'?'El Pix después del servicio espera un cobro vinculado y verificado por el backend TEST. No generes otro cobro.':'Post-service Pix requires a linked, backend-verified TEST charge. Do not create another charge.'
+   }}/>
+  </Card>}
   <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
   <Card className="provider-card provider-job-summary">
    <div className="provider-job-problem"><small>{t('screen.active.6')}</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||t('providerJob.serviceDefault')}</h2><p>{s.descripcion}</p></div>
