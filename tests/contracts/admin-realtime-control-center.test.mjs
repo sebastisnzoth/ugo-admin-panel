@@ -16,7 +16,9 @@ test('admin operations recover from missed realtime events without tab refresh',
  assert.match(hook,/visibilitychange/)
  assert.match(hook,/addEventListener\('online'/)
  assert.match(hook,/setInterval\([^]*POLL_MS/)
- assert.match(hook,/POLL_MS=8000/)
+ assert.match(hook,/POLL_MS=60_000/)
+ assert.match(hook,/MIN_SILENT_REFRESH_MS=30_000/)
+ assert.match(hook,/DEGRADED_RETRY_MS=90_000/)
 })
 
 test('admin dashboard metrics stay live and truthfully show degraded realtime',async()=>{
