@@ -22,3 +22,10 @@ test('Sandbox webhook requires authenticated Preview, isolated TEST database and
  assert.doesNotMatch(source,/update ugo_payments_v2\.payment_intents/)
  assert.doesNotMatch(source,/providerPaid:true|splitSettled:true/)
 })
+
+test('Asaas event IDs may include ampersands and printable symbols but not control chars',()=>{
+ assert.match(source,/const eventIdValid=/)
+ assert.match(source,/charCodeAt\(0\)<32/)
+ assert.match(source,/!eventIdValid\(event\.id\)/)
+ assert.doesNotMatch(source,/!ID\.test\(event\.id\|\|''\)/)
+})
