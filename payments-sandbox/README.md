@@ -17,7 +17,7 @@ a dedicated Neon TEST database and the Asaas **Sandbox** base URL.
     makes **at most one** Asaas POST charge and persists its ID before returning
     the official QR. Repeated requests reuse an existing PENDING charge or fail
     closed if a previous result was uncertain.
-  - `confirm`: independently reads the registered Asaas charge, locks the
+  - `get_qr`: operator-authenticated read-only retrieval of the original QR Pix and copia-e-cola for a locally linked charge that Asaas still reports as `PENDING`. Never creates another charge, never returns a payable QR after `RECEIVED`, and never updates a balance. This response contains payment material; keep it out of logs and expose it only to authorized TEST operators.\n  - `confirm`: independently reads the registered Asaas charge, locks the
     confirmation locally, sends Sandbox-only payment confirmation and then
     rereads Asaas.
   - `reconcile`: authenticated remote readback and isolated Neon status update,
