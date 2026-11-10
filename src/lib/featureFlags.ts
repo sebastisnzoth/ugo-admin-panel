@@ -61,3 +61,15 @@ export function isPixPayAfterServicePreviewEnabled(env: Record<string, unknown> 
   return env.VITE_VERCEL_ENV === 'preview' &&
     parseFlagValue(env.VITE_FLAG_PIX_PAY_AFTER_SERVICE_PREVIEW)
 }
+
+/**
+ * Provider-initiated Pix charge in isolated TEST Preview. Both this browser
+ * switch and the independent server-side UGO_PROVIDER_PIX_CREATE_ENABLED
+ * must be enabled with an explicit allowlisted TEST service.
+ * Default OFF; never active in production.
+ */
+export function isPixProviderIssuePreviewEnabled(env:Record<string,unknown>=import.meta.env):boolean {
+  return env.VITE_VERCEL_ENV==='preview' &&
+    parseFlagValue(env.VITE_FLAG_PIX_PAY_AFTER_SERVICE_PREVIEW) &&
+    parseFlagValue(env.VITE_FLAG_PIX_PROVIDER_ISSUE_PREVIEW)
+}
