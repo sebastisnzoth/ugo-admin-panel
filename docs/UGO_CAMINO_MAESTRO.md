@@ -758,3 +758,105 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Tela informativa integrada no painel atual do Provedor, sem substituir Mercado Pago nem contas externas existentes. Campos Pix desabilitados por falta de vínculo subconta verificado, armazenamento privado, autorização de saques e backend financeiro TEST.
 - Nenhuma chave Pix é persistida, nenhuma cobrança Asaas gerada, nenhum deploy acionado neste passo. Não confundir seção visível com uma integração funcional do processador.
 - Próximo: finalizar PR #616 em ambiente TEST financeiro segregado, validar CI/E2E, só então habilitar cadastro Pix com backend seguro.
+
+
+## 2026-11-05 · Handoff PR #616 — Pix presencial Asaas Sandbox
+
+- Se preparó módulo independiente de consulta de QR y split porcentual, condicionado por servicio terminado y proveedor asignado; ruta Asaas fija en sandbox. Nuevos contratos de evento webhook autenticado sin efecto financiero; nunca confirma pagos por texto de webhook sin consultar el procesador. No modificar checkout Mercado Pago existente.
+- Despliegue prohibido por ahora: el código no llama a Asaas en el flujo UGO, no hay DB TEST aislada ni credenciales de subcuenta KYC/escrow verificadas. El token Asaas Sandbox está configurado en Vercel Production según usuario, pero no autoriza realizar transacciones ni encender APIs nuevas productivas.
+- Próximo: agregar ledger TEST aislado con UNIQUE de cobro/evento, validar API en entorno privado, abrir subcuenta sintética y verificar walletId/fees, mostrar QR en UI experimental aislada, confirmar PAYMENT_RECEIVED solo tras relectura API y conciliar split. Testear dos solicitudes simultáneas, webhook duplicado, QR expirado, disputa y rollback; mantener PR draft.
+- Roadmap Traceability exigía actualizar este documento y `UGO_ROADMAP_MASTER.md` cuando cambian código/tests; registro agregado por esa razón.
+
+
+## 2026-11-05 — PR #616: revisão de segurança e persistência de pagamentos isolada
+- Validado em documentação oficial Asaas que recibo PIX e `PAYMENT_SPLIT_DONE` não atestam disponibilidade de escrow; foi criado reconciliador puro para evitar crédito fictício.
+- Estado pendente sem vencimento comprovado ou com QR expirado deixa de permitir nova cobrança sem reconciliação; teste específico contra duplicidade.
+- Esquema SQL de TEST mantido em `docs/sql/` (não é migration), sem escrever em Arena PROD/TEST e sem alterar env Vercel nem checkout atual.
+- Próximo bloqueio: provisionar/verificar banco financeiro TEST independente e a conta/subconta Sandbox com chaves server-only para teste real. Exigir UNIQUE e lock ao criar cobrança, armazenamento durable antes de HTTP 200 do webhook, conciliar split e escrow separadamente.
+
+
+## 2026-11-05 — PR #616 checkout Pix, sem acesso a PROD
+- Orquestrador novo exige que repositório independente de pagamentos reserve a tentativa de Pix sob lock UNIQUE; falha fechada em timeout e IDs ambíguos. O código não está ligado ao checkout atual.
+- Testes de contrato puramente simulados: chamada de cobrança depois da reserva, obtenção de QR, reaproveitamento e impossibilidade de cobrança se prestador/wallet não verificados.
+- Nenhuma chamada à API autenticada nem SQL em Arena ou Neon UGOAPP foi executado. Banco isolado segue pendente. Próximo passo é provisioná-lo com validação de custos e permissões, implementar adapter e E2E Sandbox.
+
+
+## 2026-11-06 · Handoff financeiro: DB de TEST independente provisionado
+- Neon org `Sergio Sebastian` no plano Free: criado `ugo-pagamentos-v2-test` (`frosty-firefly-02365835`, sa-east-1). Oito tabelas do esquema isolado `ugo_payments_v2` verificadas. Não foi alterado Neon `UGOAPP` nem Arena Supabase PROD.
+- `reserve_pix_test` aplicada apenas à DB nova e testada com IDs sintéticos: 1a tentativa reservada e repetição encaminhada para conciliação. Função SECURITY INVOKER, schema privado; no PUBLIC execute grants.
+- Documentação Asaas: apenas conta raiz CNPJ pode criar subcontas via API; split com carteira de conta Asaas existente é alternativa a verificar quanto a titularidade/permissões. Custos de criação de subconta e Escrow precisam ser aprovados antes de operações.
+- UI informativa de recebimentos em main continua sem coleta de Pix; backend financeiro NÃO ligado ao frontend, sem POST Asaas real nem pagamentos reais. Não fazer merge PR #616 até CI e E2E Sandbox.
+
+
+## 2026-11-06 — PR #616 backend de TEST sem acesso a Arena
+- Código de reserva transacional agora tem adapter SQL isolado em `src/server/payments/neonPixTestRepository.mjs`, apoiado por serviços sintéticos somente na nova base Neon Pagamentos TEST.
+- O adapter precisa de wallet verificada por `GET /wallets/` antes de autorizar QR. Sem a chave Asaas em um runtime TEST segregado, nenhum código de PIX real foi executado.
+- `api/pagamentos` de produção, Mercadopago, Supabase Arena e envs de produção continuam intocados. O PR #616 permanece draft.
+
+## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
+- Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
+- Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
+
+
+## 2026-11-06 — Pagamentos V2: recepción durable de webhooks sin activar PROD
+- Rama PR #616: uso consistente de referencia `ugo_test_{serviceUUID sin guiones}` en el ledger y en Asaas. El webhook inbox únicamente recibe y registra eventos autenticados en TEST; el procesamiento posterior debe consultar Asaas por GET autenticado y actualizar la transacción atómicamente, sin dar por liquidado un Split.
+- Sin rutas públicas nuevas, sin variables de producción cambiadas, sin SQL en Arena. Probar y mantener PR draft hasta E2E Sandbox real.
+
+
+## 2026-11-06 — Handoff Asaas TEST: conciliación del cobro distinta de Split
+- En PR #616, cada cobranza TEST conserva cliente Asaas y wallet proveedor en el registro original; el trabajador de eventos valida por API autenticada el pago exacto y persiste actualización atómica en base financiera TEST.
+- El estado RECEIVED no implica que el Split esté DONE; sigue faltando consultar eventos/estado de Split por ID y reconciliar comisiones con importes netos.
+- Sin credenciales Sandbox en backend segregado ni wallet proveedor verificada, no se pudo generar QR auténtico ni completar operación simulada. Continuar con pruebas aisladas y CI antes de cualquier despliegue.
+
+
+## 2026-11-06 — Handoff PR #616 / Core CI
+- Falha da suite de contratos localizada no worker de webhook, variável `kind` não selecionada pelo SQL; commit `e1fe0ca` corrigiu. Não confundir CI anterior aprovado com CI do HEAD.
+- Implementado módulo puro de verificação de Split pago: consulta autenticada Sandbox read-only por id e valida dono/destinatário/montante para 85% do netValue. Permanece desligado de rotas e qualquer saída financeira.
+- Próximo P0: CI verde sobre HEAD, credencial Asaas Sandbox isolada de Vercel Production, wallet emissora e recebedora autenticadas, QR real de R$100, confirmação simulada, webhook e Split conciliados.
+
+
+## 2026-11-06 — Backend Sandbox separado implantado
+- Vercel TEST `ugo-pagamentos-v2-sandbox` criado e implantado em Preview `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4`, uso apenas de endpoints diagnósticos read-only. `/api/health` respondeu HTTP 200 com Neon TEST ready e financialWritesEnabled=false.
+- Projeto Neon TEST preservado, role exclusivo `ugo_asaas_wallet_audit_ro`, não-admin e sem escritas. Credencial da role e token de operador em env criptografado Preview, sem logar valores. Produção Arena e projeto principal Vercel não alterados.
+- Credenciais das contas Asaas Sandbox não foram importadas de Production. Sem elas, a verificação das wallets emisora e recebedora retorna bloqueio. Não permitir pagamento QR, simulação, webhooks públicos ou settlement até que wallets e secret TEST sejam configurados e verificados.
+
+## 2026-11-09 — Arena / PR #616: diagnóstico 4xx íntegro y dependencia segura
+- Se verificó HEAD financiero real `575e7de24d944031a19cf9e215fd2bc5f78f9d1c`; se incorporó por fast-forward a la rama aislada de Arena sin tocar `main`, PR ni producción.
+- Corrección ejecutada en `payments-sandbox/api/pix.js`: `create` y `recover_create` conservan los campos 4xx previamente incluidos en whitelist junto con los códigos sanitizados. Nunca devuelven descripciones crudas del procesador. Regresión contractual agregada.
+- Evidencia local posterior: **1.810 tests, 1.801 PASS, 0 FAIL, 9 SKIP** (RLS/TEST sin credenciales locales; no cuentan como PASS), TypeScript/Vite build PASS y lint sin errores con 1.009 warnings preexistentes. `npm audit`: **0 vulnerabilidades** tras fijar `minimatch@11.0.1`; no hubo downgrade ni `audit fix --force`.
+- CI del HEAD financiero `575e7de`: Core `42662965697`, Cross Security `42662965629`, Hugo Timeout `42662965657`, Cross-role UI `42662965729` y Roadmap `42662965731` SUCCESS. El CI del nuevo commit Arena debe verificarse por separado.
+- **P0 sigue BLOCKED:** el detalle original del HTTP 400 del 07/11 requiere Asaas Sandbox → Integrações → Logs de requisições (~15:01 BRT). El cliente existente necesita CPF/CNPJ legítimo autorizado. No se repitió POST, no se alteraron intents, no se generó QR ni se ejecutó confirmación, Split, comisión o escritura financiera. Evidencia estructurada: `docs/evidence/pagamentos-v2-arena-20261109.json`.
+- Próxima acción humana única: recuperar el campo/código original del log Asaas y completar el mismo cliente Sandbox con documentación legítima; después reanudar la recuperación controlada, sin crear otro cliente ni otro cargo.
+
+## 2026-11-09 — PR #616 Pix Sandbox E2E observado
+- Preparación del único cliente ficticio Sandbox: PASS; CPF sintético autorizado sólo en TEST, notificaciones desactivadas, sin segundo cliente.
+- Reintento controlado posterior: Asaas HTTP 400 `invalid_action`, sin cargo remoto; intento único persistido. El detalle histórico original sigue BLOCKED.
+- Se observó después un cambio no atribuido en el Sandbox: una clave Pix activa y un único cargo `pending` vinculado. El deployment que lo observó no ejecutó preparación de clave ni POST de creación.
+- Deployment `dpl_HV2A7mqm8SJD3tqzYBHHJZdqSN45`, commit `c962020038dccb13d89b2125398692f69b9c916f`: **UGO PIX SANDBOX E2E — PASS**. Reutilizó el único cargo, verificó QR/copia-pega y misma huella/payload, confirmó simuladamente a `RECEIVED` y concilió Neon a `received`; `remoteChargeCount=1`, neto 9901 centavos.
+- Split sigue **BLOCKED**: proyección local 8416/1485 centavos, `splitSettled=false`, `providerPaid=false`. Evidencia sanitizada en `docs/evidence/pagamentos-v2-arena-20261109.json`.
+- El runner transitorio fue retirado del build. Producción y operación comercial siguen PENDIENTES y requieren autorización.
+
+## 2026-11-09 — Gate de Release y rollback Pagos V2
+- Toda creación/recuperación Pix exige ahora una única clave Pix activa antes de reservar o llamar al POST; contrato añadido para impedir repetir `invalid_action` en una cuenta nueva.
+- `scripts/ugo-payment-release-gate.mjs` falla cerrado mientras Split real, Auth/Realtime/RLS, backup/restore, autorización de producción o servicio/comisión real no sean PASS. El PASS Sandbox no habilita producción.
+- Runbook `docs/UGO_PAYMENTS_RELEASE_ROLLBACK.md`: rollback de código Preview por redeploy queda documentado y acotado; backup/restore Neon financiero sigue NO EJECUTADO. No se ejecutó ningún reembolso, restore ni cambio PROD.
+
+## 2026-11-09 — Activación same-SHA de gates operativos
+- RPC/RLS, Admin Realtime y Provider GPS quedan activados en PR para cambios de la gate/evidencia de Pagos V2, exclusivamente contra UGO TEST. Antes RPC/RLS se saltaba en `workflow_run` de PR, Admin no coincidía con paths y GPS sólo aceptaba dispatch manual.
+- La gate acepta rollback Preview por redeploy como control de código, pero mantiene backup/restore como bloqueo independiente. Ningún secreto se añadió ni se amplió acceso a PROD.
+
+## 2026-11-09 — Resultado de gates operativos y observabilidad Super Admin
+- Admin Realtime, Provider GPS con Judge/Sentinel y Auth Isolation: PASS same-SHA `95fad6c5`. RPC/RLS superó el harness Cliente↔Proveedor↔Admin, chat Realtime y demás pasos hasta Super Admin UI; ese último paso falló, por lo que la gate agregada sigue FAIL/BLOCKED.
+- Los artifacts detallados no fueron descargables por la red del sandbox. Se añadió anotación Checks únicamente con el código sanitizado de aserción de Super Admin, sin body, credenciales ni queries, para diagnosticar la repetición sin cambiar la UI a ciegas.
+
+## 2026-11-09 — Auth/Realtime/RLS operacional desbloqueado en TEST
+- SHA `66f1ee7b58f4d917f28035d95995f4877ad24752`: RPC/RLS run 42684563943 PASS completo incluido Super Admin UI; Admin Realtime 42684564449 PASS; Provider GPS/Judge/Sentinel 42684563891 PASS; Auth Isolation 42684564229 PASS. Core/UI/Security/Hugo/Roadmap también SUCCESS.
+- La gate de release cambia `operationalAuthRealtimeRls` a PASS con evidencia same-SHA. No se reutilizaron los SKIP locales ni runs antiguos. Split real, backup/restore, autorización de producción y servicio/comisión real siguen bloqueando.
+
+## 2026-11-09 — Corrección del falso match de gate en Super Admin
+- El run 42685677720 volvió a fallar y reveló `AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY`; por ello se revierte el PASS provisional de la gate agregada a BLOCKED. Los demás gates same-SHA continuaron SUCCESS.
+- La prueba buscaba el estado Launch como subcadena en todo el contenido de autonomía. Ahora compara exactamente `autonomy-current-mode` y `autonomy-launch-gate-status`, sin relajar los valores backend. Se requiere repetición estable antes de aceptar la gate.
+
+## 2026-11-09 — Gate operacional TEST aceptada con nueve checks same-SHA
+- SHA `084417230a4f247a3a863359c68f82204c4056d8`: RPC/RLS 42697602262, Admin Realtime 42697602215, GPS/Judge/Sentinel 42697601912, Auth Isolation 42697602153, Core 42697602248, UI 42697602186, Security 42697601879, Hugo 42697602332 y Roadmap 42697601903 SUCCESS.
+- Super Admin ya no depende de `networkidle` ni de substrings: abre Launch Gate, espera hidratación acotada y compara modo/gate exactos con backend. `operationalAuthRealtimeRls=PASS`; Split real, backup/restore, autorización de producción y servicio/comisión real siguen BLOCKED.

@@ -24,3 +24,11 @@ test('non-idle shared TEST mode can never be reported as tested SHADOW transitio
  assert.ok(probe.includes('observed_mode:mode'))
  assert.ok(probe.includes('read_only_state_verified:true'))
 })
+
+test('administrative logout waits semantic auth state instead of Realtime network idle',()=>{
+ assert.match(source,/waitForURL\(url=>url\.searchParams\.get\('auth'\)==='1',\{timeout:30000,waitUntil:'domcontentloaded'\}\)/)
+ assert.ok(source.includes("localStorage.getItem('ugo-test-admin-auth')"))
+ assert.ok(source.includes('LOGOUT_RESTORED_PROTECTED_UI'))
+ assert.match(source,/async function testAdmin[\s\S]*selectOption\('es'\)[\s\S]*document\.documentElement\.lang==='es'/)
+ assert.match(source,/locator\.evaluate\(button=>button\.click\(\)\)/)
+})

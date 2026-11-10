@@ -112,7 +112,11 @@ async function openRole(role,viewport){
  const errors=[]
  const trace={step:role+' load'}
  pageContext.set(page,trace)
- page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
+ page.on('pageerror',error=>{
+  const message=String(error?.message||error)
+  trace.lastError=message.replace(/[^A-Za-z0-9_.:() -]/g,'_').slice(0,240)
+  errors.push(trace.step+': '+message)
+ })
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
    if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
@@ -125,8 +129,28 @@ async function openRole(role,viewport){
 const safeClick=async(page,locator,label)=>{
  const trace=pageContext.get(page)
  if(trace)trace.step=label
- await locator.waitFor({state:'visible',timeout:20000})
- await locator.click()
+ await locator.waitFor({state:'visible',timeout:60000}).catch(async error=>{
+  const state=await page.evaluate(()=>({
+   lang:document.documentElement.lang,width:window.innerWidth,
+   section:new URLSearchParams(location.search).get('section'),
+   auth:new URLSearchParams(location.search).get('auth')==='1',
+   login:Boolean(document.querySelector('form input[type="password"]')),
+   session:Boolean(localStorage.getItem('ugo-test-admin-auth')),
+   bodyClass:document.body.className,
+   adminRoot:Boolean(document.querySelector('.ugo-admin2')),
+   navs:Array.from(document.querySelectorAll('nav[aria-label="Navegación Admin"]')).map(nav=>({
+    visible:Boolean(nav.getBoundingClientRect().width&&nav.getBoundingClientRect().height),
+    buttons:Array.from(nav.querySelectorAll('button')).map(button=>button.textContent?.trim())
+   }))
+  })).catch(()=>null)
+  console.error(`::error::SAFE_CLICK_FAILURE step=${label} state=${JSON.stringify(state)}`)
+  if(trace?.lastError)console.error(`::error::ADMIN_PAGE_ERROR ${trace.lastError}`)
+  throw error
+ })
+ // Realtime can replace the navigation button between actionability checks.
+ // Visibility is required above; invoke the current DOM button and still verify
+ // the destination below instead of racing a continuously re-rendered node.
+ await locator.evaluate(button=>button.click())
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
 }
@@ -333,7 +357,9 @@ async function testAdministrativeSession(viewport,name,key){
   await page.reload({waitUntil:'domcontentloaded'})
   await navigation.waitFor({state:'visible',timeout:20000})
   await page.getByRole('button',{name:'Cerrar sesión',exact:true}).click()
-  await page.waitForURL(url=>url.searchParams.get('auth')==='1',{timeout:10000})
+  // Auth is proved by the auth URL, removed session and protected UI absence;
+  // do not wait for global load while Realtime connections remain active.
+  await page.waitForURL(url=>url.searchParams.get('auth')==='1',{timeout:30000,waitUntil:'domcontentloaded'})
   await page.getByTestId('language-selector').waitFor({state:'visible',timeout:20000})
   assert.equal(await page.evaluate(()=>localStorage.getItem('ugo-test-admin-auth')),null,'LOGOUT_LEFT_ADMIN_SESSION')
   await page.reload({waitUntil:'domcontentloaded'})
@@ -364,6 +390,10 @@ async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
    await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:20000})
+   // A previous translation case may persist English remotely and apply it
+   // asynchronously midway through this Spanish-name navigation flow.
+   await page.getByTestId('language-selector').first().selectOption('es')
+   await page.waitForFunction(()=>document.documentElement.lang==='es')
    await assertResponsive(page,'admin '+name+' home')
    const mainNav=page.getByRole('navigation',{name:'Navegación Admin'})
    const superAdminButton=mainNav.getByRole('button',{name:/Super Admin/i})
@@ -414,7 +444,16 @@ async function testTranslations(role,viewport,name){
  try{
   // Preserve authenticated Profile overlay after prior client flow; never accept login as a translation check.
   const root=role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
-  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  await page.locator(root).waitFor({state:'visible',timeout:30000}).catch(async error=>{
+   const state=await page.evaluate(role=>({
+    auth: new URLSearchParams(location.search).get('auth')==='1',
+    login: Boolean(document.querySelector('form input[type="password"]')),
+    root: Boolean(document.querySelector(role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2')),
+    session: Boolean(localStorage.getItem(role==='admin'||role==='superadmin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'))
+   }),role).catch(()=>({auth:null,login:null,root:null,session:null}))
+   console.error(`::error::ROLE_ROOT_FAILURE role=${role} viewport=${name} auth=${state.auth} login=${state.login} root=${state.root} session_present=${state.session}`)
+   throw error
+  })
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
    if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))

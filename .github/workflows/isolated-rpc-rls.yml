@@ -9,7 +9,10 @@ on:
       - '.github/workflows/isolated-rpc-rls.yml'
       - 'scripts/autonomous-qa-auth-runtime.mjs'
       - 'scripts/autonomous-uploaded-media-runtime.mjs'
+      - 'scripts/super-admin-ui-runtime.mjs'
       - 'tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs'
+      - 'scripts/ugo-payment-release-gate.mjs'
+      - 'docs/evidence/pagamentos-v2-arena-20261109.json'
   workflow_dispatch:
   workflow_run:
     workflows: ["UGO Core CI"]

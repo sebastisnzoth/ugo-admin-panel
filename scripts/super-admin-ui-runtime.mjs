@@ -91,7 +91,9 @@ try{
     key:'ugo-test-admin-auth',
     value:JSON.stringify(login.session)
   });
-  await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
+  // Realtime keeps network activity alive; DOM readiness plus explicit state
+  // assertions below is deterministic, unlike a global network-idle signal.
+  await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded',timeout:60000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
   await page.locator('.ugo-superadmin-header h2').waitFor({state:'visible',timeout:20000});
@@ -101,13 +103,25 @@ try{
 
   await page.locator('.ugo-superadmin-statebar button').first().click();
   await page.locator('.ugo-autonomous-content').waitFor({state:'visible',timeout:20000});
-  let headerMatched=false;
-  for(let attempt=0;attempt<30;attempt++){
-    const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
-    if(autonomyText.includes(before.mode)&&autonomyText.includes(before.launch)){headerMatched=true;break}
-    await page.waitForTimeout(250);
-  }
-  assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
+  // The exact Launch Gate node is mounted only in its own view, not Overview.
+  await page.getByTestId('autonomy-view-launch').click();
+  // Compare the exact persisted fields, never a substring in unrelated cards.
+  await page.waitForFunction(({mode,launch})=>
+    document.querySelector('[data-testid="autonomy-current-mode"]')?.textContent?.trim()===mode &&
+    document.querySelector('[data-testid="autonomy-launch-gate-status"]')?.textContent?.trim()===launch,
+    {mode:before.mode,launch:before.launch},{timeout:90000}
+  ).catch(async()=>{
+    const actualMode=await page.getByTestId('autonomy-current-mode').textContent().catch(()=>null);
+    const actualLaunch=await page.getByTestId('autonomy-launch-gate-status').textContent().catch(()=>null);
+    const cleanEnum=(value,fallback)=>String(value||fallback).replace(/[^A-Za-z0-9_.:-]/g,'_').slice(0,60);
+    const diagnostics=await page.locator('.ugo-superadmin').evaluate(node=>({
+      loading:node.getAttribute('data-loading'),error:node.getAttribute('data-load-error'),
+      company:node.getAttribute('data-company-readable'),gates:node.getAttribute('data-gates-readable')
+    })).catch(()=>({loading:'MISSING',error:'MISSING',company:'MISSING',gates:'MISSING'}));
+    console.error(`::error::AUTONOMY_STATE_DIFF mode_expected=${cleanEnum(before.mode,'MISSING')} mode_actual=${cleanEnum(actualMode,'MISSING')} launch_expected=${cleanEnum(before.launch,'MISSING')} launch_actual=${cleanEnum(actualLaunch,'MISSING')}`);
+    console.error(`::error::AUTONOMY_LOAD_STATE loading=${diagnostics.loading} error=${diagnostics.error} company_readable=${diagnostics.company} gates_readable=${diagnostics.gates}`);
+    throw new Error('AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
+  });
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
   await page.getByTestId('autonomy-view-departments').click();
@@ -126,7 +140,9 @@ try{
     await row.waitFor({state:'visible'});
     const cells=row.locator('td');
     let activeText='',totalText='',activeCount=NaN,totalCount=NaN;
-    for(let attempt=0;attempt<40;attempt++){
+    // Department summaries load after company/gates; keep numeric validation
+    // strict while allowing the same bounded 90 s hydration window.
+    for(let attempt=0;attempt<360;attempt++){
       activeText=((await cells.nth(5).textContent())||'').trim();
       totalText=((await cells.nth(6).textContent())||'').trim();
       activeCount=activeText==='—'?NaN:Number(activeText);
@@ -258,6 +274,10 @@ try{
 }catch(error){
   await page.screenshot({path:'artifacts/super-admin-ui-failure.png',fullPage:true}).catch(()=>{});
   await fs.writeFile('artifacts/super-admin-ui-failure.txt',await page.locator('body').innerText().catch(()=>String(error))).catch(()=>{});
+  // Expose only the fixed assertion/error code in Checks. Never annotate page
+  // text, URLs with queries, backend payloads or credentials.
+  const code=String(error?.message||'UNKNOWN').replace(/[^A-Za-z0-9_.:-]/g,'_').slice(0,180);
+  console.error(`::error::SUPER_ADMIN_UI_FAILURE ${code}`);
   throw error;
 }finally{
   await browser.close();
