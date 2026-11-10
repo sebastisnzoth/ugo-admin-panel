@@ -125,8 +125,23 @@ async function openRole(role,viewport){
 const safeClick=async(page,locator,label)=>{
  const trace=pageContext.get(page)
  if(trace)trace.step=label
- await locator.waitFor({state:'visible',timeout:20000})
- await locator.click()
+ // Realtime/profile refresh can remount Admin navigation between the
+ // visibility check and the click. Retry only transient detached-node errors.
+ let clicked=false
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   await locator.waitFor({state:'visible',timeout:20000})
+   await locator.click({timeout:10000})
+   clicked=true
+   break
+  }catch(error){
+   const message=String(error?.message||error)
+   if(attempt===2||!/detached from the DOM|Element is not attached|element was detached/i.test(message))
+    throw error
+   await page.waitForTimeout(250*(attempt+1))
+  }
+ }
+ assert.ok(clicked,label+' click never completed')
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
 }
