@@ -50,7 +50,7 @@ The operator token is an independent TEST secret; it is not the Asaas key.
 
 ## Provider authenticated QR read — opt-in TEST only
 
-The **read-only** `GET /api/provider-checkout?serviceId=<UUID>` endpoint
+The `GET /api/provider-checkout?serviceId=<UUID>` endpoint
 accepts the Provider's own Supabase TEST access token in the
 `Authorization: Bearer` header (never the operator token).
 It verifies the current user with TEST Supabase Auth, selects the assigned
@@ -62,6 +62,23 @@ no payable QR unless Asaas confirms that the linked charge is still PENDING;
 RECEIVED is independently verified, and refunded/cancelled/uncertain or
 unlinked charges fail closed. No new Asaas charge, split, payout or service
 state write is performed by this route.
+
+**Optional creation (not activated)**: `POST /api/provider-checkout` with JSON
+`{"action":"create","serviceId":"<UUID>"}` is independently gated by
+`UGO_PROVIDER_PIX_CREATE_ENABLED=1` **on the isolated Sandbox project only**.
+It requires the same Provider TEST JWT and real final photo, the precise
+service allowlist, the verified Asaas issuer wallet and sole Sandbox customer
+with a valid test document and disabled notifications. Within a Neon TEST
+transaction it locks the service row and reserves exactly one payment intent
+per service. It queries Asaas by exact canonical external reference before
+its *single* Sandbox charge POST, then verifies and persists the processor
+payment ID before returning the official QR. Any ambiguous result retains a
+non-retryable `unknown_processor_result` intent; known 4xx require manual
+review. Split and payout are never performed. The opt-in variable is **not
+configured** by this PR's release code and remains disabled until E2E
+authorization and regression tests have passed. The Provider UI also requires
+the separate Preview-only `VITE_FLAG_PIX_PROVIDER_ISSUE_PREVIEW=true` opt-in.
+Neither flag alone grants service authorization or creates a charge.
 
 Additional **Preview-only**, opt-in environment values (never PROD):
 
