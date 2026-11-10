@@ -4,6 +4,7 @@
  */
 import { timingSafeEqual, createHash } from 'node:crypto'
 import pg from 'pg'
+import {reconcileInboxEvent} from '../lib/reconcileInboxEvent.js'
 const {Client}=pg
 const ID=/^[a-zA-Z0-9_-]{1,160}$/
 const eventIdValid=x=>typeof x==='string'&&x.length>0&&x.length<=160&&
@@ -62,13 +63,40 @@ export default async function handler(req,res){
     (event_id,processor_payment_id,kind,status)
     values($1,$2,$3,'received') on conflict (event_id) do nothing
     returning event_id`,[event.id,event.payment.id,event.event])
-  if(written.rows.length===1)return send(res,200,{accepted:true,duplicate:false})
-  const prior=await db.query(`select processor_payment_id,kind
-   from ugo_payments_v2.payment_events where event_id=$1`,[event.id])
-  if(prior.rows.length!==1||prior.rows[0].processor_payment_id!==event.payment.id||
-     prior.rows[0].kind!==event.event)
-   return send(res,409,{error:'event_id_conflict'})
-  return send(res,200,{accepted:true,duplicate:true})
+  // Conflicting duplicate IDs are never silently acknowledged.
+  if(written.rows.length===0){
+   const prior=await db.query(`select processor_payment_id,kind
+    from ugo_payments_v2.payment_events where event_id=$1`,[event.id])
+   if(prior.rows.length!==1||prior.rows[0].processor_payment_id!==event.payment.id||
+      prior.rows[0].kind!==event.event)
+    return send(res,409,{error:'event_id_conflict'})
+  }
+  // Process only actual settlement-relevant receipt statuses. Keep other
+  // events durably stored for explicit review; no financial state change.
+  if(!['PAYMENT_RECEIVED','PAYMENT_CONFIRMED'].includes(event.event))
+   return send(res,200,{accepted:true,processed:false,reviewRequired:true})
+  if(!process.env.ASAAS_SANDBOX_API_KEY)
+   return send(res,503,{error:'sandbox_processor_not_configured'})
+  const asaasGet=async paymentId=>{
+   const response=await fetch('https://api-sandbox.asaas.com/v3/payments/'+
+    encodeURIComponent(paymentId),{
+     headers:{access_token:process.env.ASAAS_SANDBOX_API_KEY,
+      accept:'application/json','User-Agent':'UGO-Pix-Webhook-Sandbox/1.0'},
+     signal:AbortSignal.timeout(10000)
+    })
+   if(!response.ok)throw Error('asaas_readback_unavailable')
+   return response.json()
+  }
+  try{
+   const reconciled=await reconcileInboxEvent({db,eventId:event.id,asaasGet})
+   return send(res,200,{accepted:true,processed:true,
+    receivedVerified:reconciled.receivedVerified,
+    duplicate:reconciled.state==='duplicate'})
+  }catch{
+   // Event is stored but not acknowledged as successfully processed: Asaas
+   // retries delivery. Operator reconciliation remains available separately.
+   return send(res,503,{error:'webhook_reconciliation_pending'})
+  }
  }catch{
   return send(res,503,{error:'inbox_unavailable'})
  }finally{if(db)await db.end().catch(()=>{})}
