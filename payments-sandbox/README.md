@@ -133,3 +133,42 @@ Sanitized response fields distinguish `paymentVerified` from
 `splitSettled:false`, and `providerPaid:false`; they do **not** assert
 Pix E2E completion. Handle mismatches without retries. Keep the API bearer
 token private; never paste it into tickets, messages or version control.
+
+## Provider-presented Pix QR after the work ends (Uber-like UX)
+
+The provider does **not** request payment before finishing the service. The future
+authenticated app integration must use the following sequence:
+
+1. Provider marks assigned service as completed. Backend verifies assignment,
+   server-side price, currency and finalized status; only then enables checkout.
+2. A trusted backend atomically reserves one charge per service and creates
+   a Pix charge **in Sandbox only** (or reuses an existing pending charge).
+   No operator bearer token or Asaas key may be included in app code.
+3. Server retrieves Asaas `GET /v3/payments/{paymentId}/pixQrCode`.
+   Provider's phone displays the official QR plus copy-and-paste code and
+   amount. The customer scans it with a banking app. Do not show QR for
+   already-received, expired, cancelled, or otherwise uncertain charges.
+4. Provider sees `Aguardando pagamento` until authenticated reconciliation
+   confirms the processor's payment status. Manual customer confirmation is
+   **not** trusted as proof.
+5. Asaas `PAYMENT_RECEIVED` webhook is authenticated, durably persisted and
+   processed with a fresh server-to-server Asaas GET, checking amount, service
+   reference, payer and payment ID. Use authenticated status polling as a
+   recovery path if webhooks are delayed. Duplicate events must be harmless.
+6. Once confirmed, hide the QR and show `Pagamento recebido` to both
+   provider and customer. Settlement/payout/split remain separate operations.
+
+`src/mvp/ProviderPixAfterService.tsx` is the **presentation-only** component for
+the provider's phone, driven by trusted server-derived props. It has no
+payment network calls and is not yet mounted in the production provider app.
+The existing `POST /api/pix` action `get_qr` is operator-only for the
+isolated single-fixture Preview harness; **do not expose its bearer token
+directly to mobile or browser clients**.
+
+Remaining before production-like E2E: dedicated provider-authenticated API
+with real service ownership enforcement, backend session verification,
+webhook event worker wiring, synchronized client/provider paid state,
+Preview deploy, and test coverage of concurrency, expired QR, delayed
+webhooks and idempotency. No external provider Split or automatic payout
+has been demonstrated. Do not merge into Arena PROD merely because the
+Sandbox confirmation of the 9 November payment succeeded.
