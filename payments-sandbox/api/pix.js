@@ -228,6 +228,28 @@ async function create(db){
   qrCopyPaste:qr.payload,qrImageBase64:qr.encodedImage,
   splitSettled:false,providerPaid:false}
 }
+/**
+ * Return the QR of an already linked, still-pending TEST charge.
+ * This endpoint is operator-authenticated and NEVER makes a charge or confirms it.
+ * A received payment must be reconciled, not presented as payable again.
+ */
+async function getPendingQr(db){
+ const row=await existing(db)
+ if(!row||!row.asaas_payment_id||row.status!=='pending')
+  throw Error('pending_linked_payment_required')
+ const payment=await getVerifiedPayment(row)
+ if(payment.status!=='PENDING')
+  throw Error('payment_no_longer_pending_reconcile')
+ const qr=await processor('/payments/'+encodeURIComponent(payment.id)+'/pixQrCode')
+ if(typeof qr.payload!=='string'||!qr.payload||
+    typeof qr.encodedImage!=='string'||!qr.encodedImage||
+    qr.encodedImage.length>200000)
+  throw Error('existing_qr_unavailable')
+ return {action:'get_qr',paymentId:payment.id,processorStatus:'PENDING',
+  qrCopyPaste:qr.payload,qrImageBase64:qr.encodedImage,
+  expiresAt:qr.expirationDate||null,financialWritesPerformed:false,
+  splitSettled:false,providerPaid:false}
+}
 async function confirm(db){
  const row=await existing(db)
  if(!row)throw Error('no_reserved_payment')
@@ -425,7 +447,7 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received','get_qr'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
@@ -433,6 +455,7 @@ export default async function handler(req,res){
   const result=action==='diagnose'?await diagnose(db):
     action==='audit_intents'?await auditIntents(db):
     action==='verify_received'?await verifyReceived(db):
+    action==='get_qr'?await getPendingQr(db):
     action==='prepare_customer'?await prepareCustomer():
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
@@ -443,6 +466,7 @@ export default async function handler(req,res){
   const raw=String(e?.message||'')
   const allowed=new Set([
    'received_intent_not_ready_for_verification','received_intent_identity_mismatch',
+   'pending_linked_payment_required','payment_no_longer_pending_reconcile',
    'sandbox_customer_update_requires_review',
    'too_many_test_intents_for_audit','payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
