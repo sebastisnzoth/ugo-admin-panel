@@ -1,11 +1,25 @@
 import React,{useEffect,useState} from 'react'
 import{useLocale}from'../i18n/locale'
+import{isPixProviderIssuePreviewEnabled}from'../lib/featureFlags'
 import {ProviderPixAfterService,type ProviderPixView} from './ProviderPixAfterService'
 
 /**
- * Preview-only. Reads an already linked Pix from the isolated TEST backend.
- * Never sends a TEST operator token, makes a charge, or infers a payout.
+ * Preview-only QR and explicitly user-triggered Sandbox charge.
+ * Never sends operator secrets, infers payout or authorizes PROD billing.
  */
+function providerTestEndpoint(serviceId:string):URL|null{
+ const base=String(import.meta.env.VITE_UGO_PIX_SANDBOX_API_BASE_URL||'').replace(/\/$/,'')
+ try{
+  const parsed=new URL(base)
+  if(parsed.protocol!=='https:'||
+     !parsed.hostname.startsWith('ugo-pagamentos-v2-sandbox-')||
+     !parsed.hostname.endsWith('.vercel.app')||parsed.pathname!=='/'||
+     !/^[0-9a-f-]{36}$/i.test(serviceId))return null
+  const endpoint=new URL('/api/provider-checkout',parsed.origin)
+  endpoint.searchParams.set('serviceId',serviceId)
+  return endpoint
+ }catch{return null}
+}
 export function ProviderDeferredPixStatus({
  serviceId,serviceState,amountBRL,accessToken,
 }:{serviceId:string;serviceState:string;amountBRL:number;accessToken:string}){
@@ -13,6 +27,8 @@ export function ProviderDeferredPixStatus({
  const [payment,setPayment]=useState<ProviderPixView>({stage:'not_finished',amountBRL})
  const [revision,setRevision]=useState(0)
  const [copyFailed,setCopyFailed]=useState(false)
+ const [issuing,setIssuing]=useState(false)
+ const issuanceEnabled=isPixProviderIssuePreviewEnabled()
  const finished=serviceState==='esperando_aprobacion'||serviceState==='completado'
  useEffect(()=>{
   let alive=true,timer:number|undefined
@@ -21,17 +37,7 @@ export function ProviderDeferredPixStatus({
    setPayment({stage:'not_finished',amountBRL})
    return()=>{alive=false;controller.abort()}
   }
-  const base=String(import.meta.env.VITE_UGO_PIX_SANDBOX_API_BASE_URL||'').replace(/\/$/,'')
-  let endpoint:URL|null=null
-  try{
-   const parsed=new URL(base)
-   if(parsed.protocol!=='https:'||
-      !parsed.hostname.startsWith('ugo-pagamentos-v2-sandbox-')||
-      !parsed.hostname.endsWith('.vercel.app')||parsed.pathname!=='/'||
-      !/^[0-9a-f-]{36}$/i.test(serviceId))throw Error('invalid_test_endpoint')
-   endpoint=new URL('/api/provider-checkout',parsed.origin)
-   endpoint.searchParams.set('serviceId',serviceId)
-  }catch{/* A disabled Preview backend must never expose a stale QR. */}
+  const endpoint=providerTestEndpoint(serviceId)
   if(!endpoint||!accessToken){
    setPayment({stage:'error',amountBRL})
    return()=>{alive=false;controller.abort()}
@@ -96,6 +102,24 @@ export function ProviderDeferredPixStatus({
    {stage:'expired',amountBRL}:p),delay)
   return()=>window.clearTimeout(timer)
  },[payment.stage,payment.expiresAt,amountBRL])
+ const create=async()=>{
+  if(!finished||!issuanceEnabled||issuing||!accessToken)return
+  const endpoint=providerTestEndpoint(serviceId)
+  if(!endpoint){setPayment({stage:'error',amountBRL});return}
+  setIssuing(true)
+  try{
+   const response=await fetch(endpoint.toString(),{
+    method:'POST',headers:{
+     Authorization:'Bearer '+accessToken,Accept:'application/json',
+     'Content-Type':'application/json'
+    },cache:'no-store',body:JSON.stringify({action:'create',serviceId})
+   })
+   if(!response.ok){setPayment({stage:'error',amountBRL});return}
+   // Backend independently verifies Asaas and owns the transaction lock.
+   setRevision(n=>n+1)
+  }catch{setPayment({stage:'error',amountBRL})}
+  finally{setIssuing(false)}
+ }
  const copy=(value:string)=>{
   setCopyFailed(false)
   void navigator.clipboard.writeText(value).catch(()=>setCopyFailed(true))
@@ -103,6 +127,10 @@ export function ProviderDeferredPixStatus({
  return <>
   <ProviderPixAfterService payment={payment} onRefresh={()=>setRevision(n=>n+1)}
    onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>
+  {issuanceEnabled&&finished&&['error','expired'].includes(payment.stage)&&
+   <button type="button" onClick={()=>void create()} disabled={issuing}>
+    {issuing?t('clientPayment.preparingPix'):t('clientPayment.generatePix')}
+   </button>}
   {copyFailed&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
  </>
 }
