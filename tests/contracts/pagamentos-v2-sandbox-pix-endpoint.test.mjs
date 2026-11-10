@@ -134,3 +134,13 @@ test('operator can retrieve only an already-linked pending QR without new charge
  assert.doesNotMatch(section,/db\.query\(/)
  assert.match(source,/action==='get_qr'\?await getPendingQr\(db\)/)
 })
+
+test('pending QR refuses expired and oversized/invalid payment materials',()=>{
+ const section=source.split('async function getPendingQr(db){')[1]?.split('async function confirm(db){')[0]||''
+ assert.match(section,/qr\.payload\.length>4096/)
+ assert.match(section,/qr\.encodedImage\.length>200000/)
+ assert.match(section,/Date\.parse\(qr\.expirationDate\)/)
+ assert.match(section,/expires<=Date\.now\(\)/)
+ assert.match(section,/existing_qr_expired_requires_reconciliation/)
+ assert.doesNotMatch(section,/processor\([^\n]*,'POST'/)
+})
