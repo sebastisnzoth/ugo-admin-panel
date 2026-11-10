@@ -3,6 +3,7 @@ import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
 import{isPixPayAfterServicePreviewEnabled}from'../../../lib/featureFlags'
 import{deferredPixPilotEligible}from'../../../lib/payments/deferredPixPilot'
+import{ClientDeferredPixReceipt}from'../payments/ClientDeferredPixReceipt'
 import{approvePendingClientService,confirmApprovedCashClientService}from'../services/clientActionService'
 
 type ReviewService={
@@ -118,6 +119,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   {!completed&&!payment&&!deferredPixWaiting&&<div className="ugo-completion-warning">{t('screen.client_review.1')}</div>}
   {!completed&&!isCash&&payment&&!electronicReady&&!deferredPixWaiting&&<div className="ugo-completion-warning">{t('screen.client_review.2')}</div>}
   {deferredPixWaiting&&<div className="ugo-completion-warning" role="status">{deferredPixHelp}</div>}
+  {deferredPixWaiting&&<ClientDeferredPixReceipt serviceId={service.id}/>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
   {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision"><strong>{t('clientReview.payAmount',{amount,provider:providerName})}</strong><span>{t('screen.client_review.3')}</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(isCash?t('clientReview.cashApproveFirst'):t('clientReview.digitalApproveFirst'))}</span></div>}
