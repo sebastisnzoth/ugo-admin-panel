@@ -1,9 +1,12 @@
 import{useLocale}from'../../../i18n/locale'
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
+import{isPixPayAfterServicePreviewEnabled}from'../../../lib/featureFlags'
+import{deferredPixPilotEligible}from'../../../lib/payments/deferredPixPilot'
 import{approvePendingClientService,confirmApprovedCashClientService}from'../services/clientActionService'
 
 type ReviewService={
+ ambiente?:string|null
  id:string
  numero:number|string
  estado:string
@@ -33,7 +36,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  const load=useCallback(async()=>{
   const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';setUserId(uid)
   if(!uid){setService(null);setPayment(null);setHasFinalEvidence(false);return}
-  let query=supabase.from('servicios').select('id,numero,estado,proveedor_id,tarifa,moneda,metadata,proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').eq('cliente_id',uid)
+  let query=supabase.from('servicios').select('id,numero,estado,proveedor_id,tarifa,moneda,ambiente,metadata,proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').eq('cliente_id',uid)
   if(serviceId)query=query.eq('id',serviceId).in('estado',['esperando_aprobacion','completado'])
   else query=query.eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(1)
   const{data,error}=await query
@@ -55,12 +58,17 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  if(!service)return null
 
  const completed=service.estado==='completado'
+ const deferredPix=isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(service)
+ const deferredPixHelp=locale==='es'?'Elegiste Pix. El profesional mostrará un código QR cuando termine el servicio. Esperá a que Asaas confirme el pago.':
+  locale==='en'?'You selected Pix. The professional will show a QR code after completing the work. Wait for Asaas to verify the payment.':
+  'Você escolheu Pix. O profissional mostrará um QR Code após finalizar o serviço. Aguarde a confirmação do Asaas.'
  const isCash=payment?.metodo==='efectivo'||payment?.modelo_pago==='presencial'
  const workApproved=Boolean(service.metadata?.trabajo_aprobado_at)
  const cashConfirmed=isCash&&payment?.estado==='liberado'
  const amount=money(payment?.monto_bruto??service.tarifa,payment?.moneda||service.moneda,locale)
  const providerName=service.proveedor?.nombre||t('clientReview.providerDefault')
  const electronicReady=!isCash&&payment?.estado==='retenido'
+ const deferredPixWaiting=deferredPix&&!completed&&!electronicReady
  const canApprove=!completed&&service.estado==='esperando_aprobacion'&&hasFinalEvidence&&Boolean(payment)&&(isCash?!workApproved:electronicReady)
  const canConfirmCash=!completed&&isCash&&workApproved&&!cashConfirmed&&service.estado==='esperando_aprobacion'
 
@@ -94,7 +102,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   }finally{setBusy(false)}
  }
 
- const blockedReason=!hasFinalEvidence
+ const blockedReason=deferredPixWaiting?deferredPixHelp:!hasFinalEvidence
   ?t('clientReview.needEvidence')
   :!payment
    ?t('clientReview.needPayment')
@@ -107,8 +115,9 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  return <section aria-live="polite" className="ugo-completion-review">
   <header><div><h2>{title}</h2><p>{completed?t('clientReview.closed',{number:service.numero}):isCash&&workApproved?t('clientReview.cashPending',{number:service.numero}):t('clientReview.reviewBefore',{number:service.numero})}</p></div><span aria-hidden="true">✓</span></header>
   {!completed&&!hasFinalEvidence&&<div className="ugo-completion-warning">{t('clientReview.noFinalPhoto')}</div>}
-  {!completed&&!payment&&<div className="ugo-completion-warning">{t('screen.client_review.1')}</div>}
-  {!completed&&!isCash&&payment&&!electronicReady&&<div className="ugo-completion-warning">{t('screen.client_review.2')}</div>}
+  {!completed&&!payment&&!deferredPixWaiting&&<div className="ugo-completion-warning">{t('screen.client_review.1')}</div>}
+  {!completed&&!isCash&&payment&&!electronicReady&&!deferredPixWaiting&&<div className="ugo-completion-warning">{t('screen.client_review.2')}</div>}
+  {deferredPixWaiting&&<div className="ugo-completion-warning" role="status">{deferredPixHelp}</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
   {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision"><strong>{t('clientReview.payAmount',{amount,provider:providerName})}</strong><span>{t('screen.client_review.3')}</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(isCash?t('clientReview.cashApproveFirst'):t('clientReview.digitalApproveFirst'))}</span></div>}
