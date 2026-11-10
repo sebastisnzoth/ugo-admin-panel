@@ -1,3 +1,4 @@
+# UGO free-tier safety: explicit manual/approved-only Supabase TEST integration.
 name: UGO Readiness Client Saved Places Repair TEST
 
 on:
@@ -11,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-readiness-client-saved-places-test
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -23,6 +24,7 @@ env:
 
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Saved places CRUD · UI · Judge · Sentinel
     runs-on: ubuntu-latest
     timeout-minutes: 25
