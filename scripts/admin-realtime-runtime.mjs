@@ -160,7 +160,10 @@ try{
  assert.ok(forwardLatencyMs<7000,'Realtime must beat 8s fallback polling window')
  const {error:restoreError}=await root.from('perfiles_proveedor').update(original).eq('usuario_id',fixture.usuario_id)
  assert.ifError(restoreError)
- const restoreResult=await waitForKpiMatchesDb(7000)
+ // A concurrent UGO TEST workflow may change the global online total while
+ // the fixture is being restored. The forward realtime event remains strictly
+ // bound by 7s; restoration requires eventual DB/UI consistency without reload.
+ const restoreResult=await waitForKpiMatchesDb(20000)
  const restoreLatencyMs=restoreResult.latencyMs
  restored=true
  assert.equal(topNavigations,1,'NO_MANUAL_OR_PROGRAMMATIC_REFRESH_ALLOWED')
