@@ -16,14 +16,25 @@ test('client Preview Pix choice saves the preference but does not issue the char
  assert.match(client,/if\(isPixPayAfterServicePreviewEnabled\(\)\)\{setMessage\(/)
  const choice=client.split('async function choosePix(){')[1].split('async function copyPix(){')[0]
  const preference=choice.indexOf("await persistPreference('pix')")
- const guard=choice.indexOf('if(isPixPayAfterServicePreviewEnabled())')
+ const guard=choice.indexOf('if(isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(service')
  const charge=choice.indexOf("fetch('/api/pagos/crear'")
  assert.ok(preference>=0&&guard>preference&&charge>guard)
  assert.match(choice.slice(guard,charge),/await load\(\);return/)
 })
 test('existing production Pix flow remains unchanged until coordinated backend upgrade',()=>{
  assert.match(client,/fetch\('\/api\/pagos\/crear'/)
- assert.match(provider,/effectivePaymentMethod==='pix'&&!funded/)
+ assert.match(provider,/effectivePaymentMethod==='pix'&&!funded&&!deferredPixAuthorized/)
  assert.match(sql,/v_has_ready_payment/)
  assert.match(sql,/La forma de pago todavía no está confirmada para empezar el trabajo/)
+})
+
+test('deferred Pix is restricted to a demo service with an explicit server-side marker',()=>{
+ const policy=file('src/lib/payments/deferredPixPilot.ts')
+ assert.match(policy,/service\.ambiente !== 'demo'/)
+ assert.match(policy,/metadata\.pix_after_service_authorized === true/)
+ assert.match(policy,/metadata\.payment_timing === 'after_service'/)
+ assert.match(policy,/requested_payment_method/)
+ assert.match(client,/deferredPixPilotEligible/)
+ assert.match(provider,/deferredPixPilotEligible/)
+ assert.match(provider,/const paymentPreferenceSelected=Boolean\(deferredPixAuthorized/)
 })
