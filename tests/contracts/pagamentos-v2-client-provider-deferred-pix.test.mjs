@@ -86,3 +86,12 @@ test('first Pix selection uses prospective Pix method after server RPC, not stal
  assert.match(choice,/deferredPixPilotEligible\(service as ServiceWithCurrency & \{ambiente\?:string\|null\},'pix'\)/)
  assert.ok(choice.indexOf("await persistPreference('pix')")<choice.indexOf("},'pix')"))
 })
+
+test('provider active-job mounts deferred Pix only in Preview and never exposes operator secrets',()=>{
+ const job=file('src/mvp/provider/ProviderActiveJob.tsx')
+ assert.match(job,/isPixPayAfterServicePreviewEnabled\(\)&&deferredPixPilotEligible\(s\)/)
+ assert.match(job,/deferredPixPreview&&<Card/)
+ assert.match(job,/<ProviderPixAfterService payment=/)
+ assert.match(job,/stage:\['esperando_aprobacion','completado'\]\.includes\(s\.estado\)\?'error':'not_finished'/)
+ assert.doesNotMatch(job,/UGO_TEST_OPERATOR_TOKEN|ASAAS_SANDBOX_API_KEY|\/api\/pix/)
+})
