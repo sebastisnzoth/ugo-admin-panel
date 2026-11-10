@@ -436,7 +436,14 @@ async function testAdmin(viewport,name){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
      await assertResponsive(page,'admin '+name+' finance '+item)
    }
-   await safeClick(page,mainNav.getByRole('button',{name:/Configuración/i}),'admin Configuración')
+   // The shared TEST profile may refresh between Finance and Settings.
+   // Recover only through the authenticated UI; do not bypass authorization.
+   await waitForAdminNavigationWithRecovery(page)
+   if(await page.locator('html').getAttribute('lang')!=='es'){
+    await page.getByTestId('language-selector').first().selectOption('es')
+    await page.waitForFunction(()=>document.documentElement.lang==='es')
+   }
+   await safeClick(page,page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Configuración/i}),'admin Configuración')
    for(const item of ['Categorías','Analytics|Análisis|Análises','Notificaciones','Reportes','Sistema']){
      await safeClick(page,item.includes('Analytics')?page.getByTestId('admin-settings-analytics'):page.getByRole('group',{name:'Configuración'}).getByRole('button',{name:new RegExp(item,'i')}),'admin settings '+item)
      await assertResponsive(page,'admin '+name+' settings '+item)
