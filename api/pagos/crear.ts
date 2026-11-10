@@ -94,7 +94,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       String(proveedor?.apellido || '').trim().toLowerCase() === 'zoth'
     )
 
-    const { data: existing } = await sb.from('pagos').select('*').eq('servicio_id', servicioId).limit(1).maybeSingle()
+    // Do not select an arbitrary historical attempt. If multiple attempts exist,
+// manual reconciliation is required before any new charge or overwrite.
+    const { data: priorPayments, error: priorPaymentsError } = await sb.from('pagos')
+      .select('*').eq('servicio_id', servicioId)
+      .order('created_at', { ascending: false }).order('id', { ascending: false }).limit(2)
+    if (priorPaymentsError) throw priorPaymentsError
+    if ((priorPayments || []).length > 1) return res.status(409).json({
+      error: 'Hay varios registros de pago para este servicio. Se requiere conciliación antes de generar otro cobro.',
+      code: 'MULTIPLE_PAYMENT_ATTEMPTS_REQUIRE_RECONCILIATION',
+    })
+    const existing = priorPayments?.[0] || null
     const confirmed = existing?.estado === 'liberado' || (existing?.estado === 'retenido' && Boolean(existing?.mp_payment_id || existing?.pix_e2e_id || existing?.pago_externo_id))
     if (confirmed) return res.status(200).json({ success: true, alreadyPaid: true, demo: existing?.procesador === 'demo', pagoId: existing.id, estado: existing.estado, metodo: existing.metodo || metodo, montoTotal: Number(existing.monto_bruto ?? montoTotal), comisionUgo: Number(existing.comision_ugo ?? comisionUgo), gananciaProveedor: Number(existing.ganancia_proveedor ?? gananciaProveedor) })
 
