@@ -254,7 +254,7 @@ async function processWebhookEvent(db,eventId){
   if(event.status==='processed'){
    await db.query('COMMIT')
    return {action:'process_webhook',alreadyProcessed:true,
-    paymentVerified:false,financialWritesPerformed:false,
+    paymentVerified:false,externalFinancialWritesPerformed:false,localReconciliationWritten:false,
     splitSettled:false,providerPaid:false}
   }
   if(event.status!=='received')throw Error('webhook_event_requires_review')
@@ -277,7 +277,7 @@ async function processWebhookEvent(db,eventId){
    paymentVerified:payment.status==='RECEIVED',
    processorStatus:payment.status,
    splitSettled:false,providerPaid:false,
-   financialWritesPerformed:false}
+   externalFinancialWritesPerformed:false,localReconciliationWritten:true}
  }catch(error){
   await db.query('ROLLBACK').catch(()=>{})
   throw error
