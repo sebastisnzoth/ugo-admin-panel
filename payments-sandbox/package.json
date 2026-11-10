@@ -8,6 +8,6 @@
     "@vercel/functions": "3.11.0"
   },
   "scripts": {
-    "build": "node --check api/pix.js && node --check api/provider-checkout.js && node --check lib/providerPixProof.js && node --check api/webhook.js && node --check api/wallets.js && node --check api/health.js && node --check lib/reconcileInboxEvent.js && node build.mjs"
+    "build": "node --check api/pix.js && node --check api/provider-checkout.js && node --check lib/providerPixProof.js && node --check lib/providerPixIssue.js && node --check lib/issueProviderPix.js && node --check api/webhook.js && node --check api/wallets.js && node --check api/health.js && node --check lib/reconcileInboxEvent.js && node build.mjs"
   }
 }
