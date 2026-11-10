@@ -423,6 +423,9 @@ async function testAdmin(viewport,name){
      await assertResponsive(page,'admin '+name+' people '+item)
    }
    results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha,session:sessions.admin}))})
+   // Persistence proof performs a real reload. Require authenticated Admin shell
+   // recovery before continuing navigation rather than clicking a stale shell.
+   await waitForAdminNavigationWithRecovery(page)
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
