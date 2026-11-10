@@ -38,7 +38,9 @@ export type AdminProviderOption = {
 }
 
 type LiveStatus='connecting'|'live'|'degraded'
-const POLL_MS=8000
+const POLL_MS=60_000
+const MIN_SILENT_REFRESH_MS=30_000
+const DEGRADED_RETRY_MS=90_000
 
 export function useAdminActiveServices() {
   const [services, setServices] = useState<any[]>([])
@@ -49,10 +51,15 @@ export function useAdminActiveServices() {
   const [lastSynced,setLastSynced]=useState<Date|null>(null)
   const [channelEpoch,setChannelEpoch]=useState(0)
   const inFlight=useRef(false)
+  const lastAttemptAt=useRef(0)
+  const retryAfter=useRef(0)
   const debounceRef=useRef<number|undefined>(undefined)
 
   const refetch = useCallback(async (options?:{silent?:boolean}) => {
+    const now=Date.now()
     if(inFlight.current)return
+    if(options?.silent&&(now<retryAfter.current||now-lastAttemptAt.current<MIN_SILENT_REFRESH_MS))return
+    lastAttemptAt.current=now
     inFlight.current=true
     if(!options?.silent)setLoading(true)
     setError(null)
@@ -79,6 +86,8 @@ export function useAdminActiveServices() {
           .limit(500),
       ])
 
+      if(queryError||providerError)retryAfter.current=Date.now()+DEGRADED_RETRY_MS
+      else retryAfter.current=0
       if (queryError) {
         console.error('[AdminServices] load failed:', queryError.message)
         setError(queryError.message)
@@ -111,7 +120,10 @@ export function useAdminActiveServices() {
         }
         setProviders(baseProviders.map(provider=>{const status=profileById.get(provider.id),pendingDebtCount=debtCountById.get(provider.id)||0;return{...provider,online:Boolean(status?.online),disponible:Boolean(status?.disponible),estado_verificacion:status?.estado_verificacion||null,pendingDebtCount,debtBlocked:pendingDebtCount>=3}}))
       }
-      setLastSynced(new Date())
+      if(!queryError&&!providerError)setLastSynced(new Date())
+    } catch(loadError){
+      retryAfter.current=Date.now()+DEGRADED_RETRY_MS
+      setError(loadError instanceof Error?loadError.message:'No se pudo cargar el panel')
     } finally {
       inFlight.current=false
       setLoading(false)
@@ -156,10 +168,11 @@ export function useAdminActiveServices() {
 
   useEffect(() => {
     let alive=true
+    let reconnectTimer:number|undefined
     const schedule=()=>{
       if(!alive)return
       window.clearTimeout(debounceRef.current)
-      debounceRef.current=window.setTimeout(()=>{if(alive)void refetch({silent:true})},120)
+      debounceRef.current=window.setTimeout(()=>{if(alive&&document.visibilityState==='visible')void refetch({silent:true})},1000)
     }
     const onOnline=()=>{setLiveStatus('connecting');schedule()}
     const onVisibility=()=>{if(document.visibilityState==='visible')schedule()}
@@ -180,7 +193,7 @@ export function useAdminActiveServices() {
         if(status==='SUBSCRIBED'){setLiveStatus('live');schedule();return}
         if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
           setLiveStatus('degraded')
-          window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)
+          if(!reconnectTimer)reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},30_000)
         }
       })
 
@@ -188,6 +201,7 @@ export function useAdminActiveServices() {
     return () => {
       alive=false
       window.clearTimeout(debounceRef.current)
+      if(reconnectTimer)window.clearTimeout(reconnectTimer)
       window.clearInterval(fallback)
       window.removeEventListener('online',onOnline)
       document.removeEventListener('visibilitychange',onVisibility)
