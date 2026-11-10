@@ -358,23 +358,6 @@ async function testAdministrativeSession(viewport,name,key){
  }catch(error){console.error('ADMIN_SESSION_FAILURE',key,name,JSON.stringify({lang:await page.locator('html').getAttribute('lang'),adminShell:await page.locator('.ugo-admin2').count(),loginForm:await page.locator('form input[type=password]').count()}));throw error}finally{await page.close()}
 }
 
-async function testAutonomyControl(page,name){
- const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
- assert.ifError(before.error)
- const mode=before.data?.mode
- assert.ok(['OFF','SHADOW','ON'].includes(mode),'AUTONOMY_UNRECOGNIZED_STATE')
- // Shared TEST must never be flipped into SHADOW merely to exercise a UI test.
- const active=page.getByRole('radio',{name:new RegExp(mode)})
- await active.waitFor({state:'visible',timeout:20000})
- await page.waitForFunction(expected=>Array.from(document.querySelectorAll('[role="radio"]')).some(el=>el.textContent?.includes(expected)&&el.getAttribute('aria-checked')==='true'),mode,{timeout:20000})
- const confirmed=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
- assert.ifError(confirmed.error)
- assert.equal(confirmed.data?.mode,mode,'AUTONOMY_STATE_CHANGED_DURING_TEST')
- assert.equal(confirmed.data?.updated_by,before.data?.updated_by,'AUTONOMY_ACTOR_CHANGED_DURING_TEST')
- assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
- results.push({role:'superadmin-autonomy-control',viewport:name,status:mode==='OFF'?'PASS':'SKIPPED',reason:mode==='OFF'?'READ_ONLY_OFF':'NON_IDLE_TEST_STATE',observed_mode:mode,read_only_state_verified:true,transition_tested:false})
-}
-
 async function waitForAdminNavigationWithRecovery(page){
  const nav=page.getByRole('navigation',{name:'Navegación Admin'})
  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
@@ -396,6 +379,23 @@ async function waitForAdminNavigationWithRecovery(page){
   }
  }
  throw new Error('ADMIN_NAVIGATION_PROFILE_RECOVERY_FAILED',{cause:lastError})
+}
+
+async function testAutonomyControl(page,name){
+ const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+ assert.ifError(before.error)
+ const mode=before.data?.mode
+ assert.ok(['OFF','SHADOW','ON'].includes(mode),'AUTONOMY_UNRECOGNIZED_STATE')
+ // Shared TEST must never be flipped into SHADOW merely to exercise a UI test.
+ const active=page.getByRole('radio',{name:new RegExp(mode)})
+ await active.waitFor({state:'visible',timeout:20000})
+ await page.waitForFunction(expected=>Array.from(document.querySelectorAll('[role="radio"]')).some(el=>el.textContent?.includes(expected)&&el.getAttribute('aria-checked')==='true'),mode,{timeout:20000})
+ const confirmed=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
+ assert.ifError(confirmed.error)
+ assert.equal(confirmed.data?.mode,mode,'AUTONOMY_STATE_CHANGED_DURING_TEST')
+ assert.equal(confirmed.data?.updated_by,before.data?.updated_by,'AUTONOMY_ACTOR_CHANGED_DURING_TEST')
+ assert.equal(await active.getAttribute('aria-checked'),'true','AUTONOMY_UI_STATE_MISMATCH')
+ results.push({role:'superadmin-autonomy-control',viewport:name,status:mode==='OFF'?'PASS':'SKIPPED',reason:mode==='OFF'?'READ_ONLY_OFF':'NON_IDLE_TEST_STATE',observed_mode:mode,read_only_state_verified:true,transition_tested:false})
 }
 
 async function testAdmin(viewport,name){
