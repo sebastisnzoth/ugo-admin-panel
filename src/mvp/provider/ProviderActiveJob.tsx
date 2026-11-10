@@ -9,7 +9,7 @@ import{ProviderEvidencePanel}from'./ProviderEvidencePanel'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import{Button,Card,EmptyState,SectionHeader}from'../../shared/ui'
 import{useDialog}from'../dialogs'
-import{ProviderPixAfterService}from'../ProviderPixAfterService'
+import{ProviderDeferredPixStatus}from'../ProviderDeferredPixStatus'
 import{isPixPayAfterServicePreviewEnabled}from'../../lib/featureFlags'
 import{deferredPixPilotEligible}from'../../lib/payments/deferredPixPilot'
 
@@ -74,11 +74,8 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>{t('screen.active.27')}</Button>}
   </Card>
   {deferredPixPreview&&<Card className="provider-card provider-pix-post-service-pilot">
-   <ProviderPixAfterService payment={{
-    stage:['esperando_aprobacion','completado'].includes(s.estado)?'error':'not_finished',
-    amountBRL:Number(s.tarifa||0),
-    message:locale==='pt-BR'?'O Pix após o serviço ainda aguarda uma cobrança vinculada e verificada pelo backend TEST. Não gere uma segunda cobrança.':locale==='es'?'El Pix después del servicio espera un cobro vinculado y verificado por el backend TEST. No generes otro cobro.':'Post-service Pix requires a linked, backend-verified TEST charge. Do not create another charge.'
-   }}/>
+   <ProviderDeferredPixStatus serviceId={s.id} serviceState={s.estado}
+    amountBRL={Number(s.tarifa||0)} accessToken={d.accessToken}/>
   </Card>}
   <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
   <Card className="provider-card provider-job-summary">
