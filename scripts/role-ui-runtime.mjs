@@ -375,10 +375,33 @@ async function testAutonomyControl(page,name){
  results.push({role:'superadmin-autonomy-control',viewport:name,status:mode==='OFF'?'PASS':'SKIPPED',reason:mode==='OFF'?'READ_ONLY_OFF':'NON_IDLE_TEST_STATE',observed_mode:mode,read_only_state_verified:true,transition_tested:false})
 }
 
+async function waitForAdminNavigationWithRecovery(page){
+ const nav=page.getByRole('navigation',{name:'Navegación Admin'})
+ const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+ let lastError=null
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   await nav.waitFor({state:'visible',timeout:20000})
+   return nav
+  }catch(error){
+   lastError=error
+   // TEST may return PROFILE_QUERY_TIMEOUT while retaining a valid Admin
+   // session. Exercise only its real recovery UI, never fabricate permission.
+   if(!(await retry.isVisible().catch(()=>false)))throw error
+   assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-admin-auth'))),
+    'ADMIN_PROFILE_RECOVERY_SESSION_LOST')
+   if(attempt===2)break
+   await page.waitForTimeout(700*(attempt+1))
+   await retry.click()
+  }
+ }
+ throw new Error('ADMIN_NAVIGATION_PROFILE_RECOVERY_FAILED',{cause:lastError})
+}
+
 async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
-   await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:20000})
+   await waitForAdminNavigationWithRecovery(page)
    await assertResponsive(page,'admin '+name+' home')
    const mainNav=page.getByRole('navigation',{name:'Navegación Admin'})
    const superAdminButton=mainNav.getByRole('button',{name:/Super Admin/i})
