@@ -241,10 +241,17 @@ async function getPendingQr(db){
  if(payment.status!=='PENDING')
   throw Error('payment_no_longer_pending_reconcile')
  const qr=await processor('/payments/'+encodeURIComponent(payment.id)+'/pixQrCode')
- if(typeof qr.payload!=='string'||!qr.payload||
+ if(typeof qr.payload!=='string'||!qr.payload||qr.payload.length>4096||
     typeof qr.encodedImage!=='string'||!qr.encodedImage||
-    qr.encodedImage.length>200000)
+    qr.encodedImage.length>200000||!/^[A-Za-z0-9+/]+={0,2}$/.test(qr.encodedImage))
   throw Error('existing_qr_unavailable')
+ // Never present an expired code as payable, even if Asaas has not
+ // reconciled its payment state yet. A fresh status check remains required.
+ if(qr.expirationDate!==undefined&&qr.expirationDate!==null){
+  const expires=Date.parse(qr.expirationDate)
+  if(!Number.isFinite(expires)||expires<=Date.now())
+   throw Error('existing_qr_expired_requires_reconciliation')
+ }
  return {action:'get_qr',paymentId:payment.id,processorStatus:'PENDING',
   qrCopyPaste:qr.payload,qrImageBase64:qr.encodedImage,
   expiresAt:qr.expirationDate||null,financialWritesPerformed:false,
@@ -467,6 +474,7 @@ export default async function handler(req,res){
   const allowed=new Set([
    'received_intent_not_ready_for_verification','received_intent_identity_mismatch',
    'pending_linked_payment_required','payment_no_longer_pending_reconcile',
+   'existing_qr_expired_requires_reconciliation',
    'sandbox_customer_update_requires_review',
    'too_many_test_intents_for_audit','payer_document_missing',
    'wallet_not_configured','issuer_wallet_not_verified',
