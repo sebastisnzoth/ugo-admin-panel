@@ -8,6 +8,8 @@ import {
  UUID,TEST_SUPABASE_URL,isApprovedOrigin,authorizedProviderService,
  verifiedIntentForService,verifiedProcessorPayment,pendingQrValid
 } from '../lib/providerPixProof.js'
+import {finalEvidenceValid} from '../lib/providerPixIssue.js'
+import {issueProviderPix} from '../lib/issueProviderPix.js'
 const {Client}=pg
 const out=(res,code,body)=>{
  res.statusCode=code
@@ -21,8 +23,8 @@ function cors(req,res){
  if(typeof origin==='string'&&origin){
   res.setHeader('Vary','Origin')
   res.setHeader('Access-Control-Allow-Origin',origin)
-  res.setHeader('Access-Control-Allow-Methods','GET, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers','Authorization')
+  res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type')
   res.setHeader('Access-Control-Max-Age','300')
  }
  return true
@@ -46,7 +48,7 @@ async function asaasGet(path){
  return r.json()
 }
 export default async function handler(req,res){
- if(req.method!=='GET'&&req.method!=='OPTIONS')
+ if(req.method!=='GET'&&req.method!=='POST'&&req.method!=='OPTIONS')
   return out(res,405,{error:'method_not_allowed'})
  if(process.env.VERCEL_ENV!=='preview'||process.env.UGO_PAYMENTS_TEST_ONLY!=='1')
   return out(res,503,{error:'test_only'})
@@ -58,7 +60,12 @@ export default async function handler(req,res){
     !process.env.ASAAS_SANDBOX_API_KEY||
     !process.env.UGO_PIX_APPROVED_PILOT_SERVICE_IDS)
   return out(res,503,{error:'provider_checkout_not_configured'})
- const serviceId=req.query?.serviceId
+ if(req.method==='POST'&&(process.env.UGO_PROVIDER_PIX_CREATE_ENABLED!=='1'||
+    !process.env.UGO_NEON_TEST_WRITE_URL))
+  return out(res,503,{error:'provider_issuance_disabled'})
+ if(req.method==='POST'&&req.body?.action!=='create')
+  return out(res,400,{error:'invalid_action'})
+ const serviceId=req.method==='GET'?req.query?.serviceId:req.body?.serviceId
  if(typeof serviceId!=='string'||!UUID.test(serviceId))
   return out(res,400,{error:'invalid_service_id'})
  const header=req.headers.authorization
@@ -77,16 +84,32 @@ export default async function handler(req,res){
      process.env.UGO_PIX_APPROVED_PILOT_SERVICE_IDS))
    return out(res,403,{error:'service_not_authorized_for_pix_pilot'})
   // Final uploaded evidence must be visible under the provider's own RLS.
-  const evidence=await supabaseGet('/rest/v1/evidencias_servicio?select=id&servicio_id=eq.'+
+  const evidence=await supabaseGet('/rest/v1/evidencias_servicio?select=id,storage_path&servicio_id=eq.'+
    serviceId+'&usuario_id=eq.'+user.id+'&tipo=eq.despues&limit=1',token,key)
-  if(!Array.isArray(evidence)||evidence.length!==1)
+  if(!finalEvidenceValid(evidence))
    return out(res,409,{error:'final_evidence_not_verified'})
-  db=new Client({connectionString:process.env.UGO_NEON_TEST_READONLY_URL,
+  const writing=req.method==='POST'
+  db=new Client({connectionString:writing?process.env.UGO_NEON_TEST_WRITE_URL:
+   process.env.UGO_NEON_TEST_READONLY_URL,
    connectionTimeoutMillis:5000,query_timeout:5000,statement_timeout:5000})
   await db.connect()
   const role=await db.query('select current_database() as db,current_user as role')
-  if(role.rows[0]?.db!=='neondb'||role.rows[0]?.role!=='ugo_asaas_wallet_audit_ro')
-   throw Error('test_readonly_role_required')
+  if(role.rows[0]?.db!=='neondb'||role.rows[0]?.role!==(writing?
+     'ugo_payments_sandbox_rw':'ugo_asaas_wallet_audit_ro'))
+   throw Error('test_database_role_required')
+  const issuedNow=writing?(await issueProviderPix({db,service,providerId:user.id,
+   issuerWalletId:process.env.UGO_ASAAS_ISSUER_WALLET_ID,asaasGet,
+   asaasCreate:async payload=>{
+    const response=await fetch('https://api-sandbox.asaas.com/v3/payments',{
+     method:'POST',headers:{access_token:process.env.ASAAS_SANDBOX_API_KEY,
+      accept:'application/json','Content-Type':'application/json',
+      'User-Agent':'UGO-Provider-Pix-TEST/0.1'},
+     body:JSON.stringify(payload),signal:AbortSignal.timeout(12000),redirect:'error'})
+    if(!response.ok)throw Error(response.status>=400&&response.status<500?
+     'processor_rejected':'processor_result_uncertain')
+    return response.json()
+   }
+  })).created:false
   const result=await db.query(
    'select ugo_service_id,ugo_client_id,ugo_provider_id,environment,'+
    'gross_cents,net_cents,provider_share_bps,status,asaas_payment_id,asaas_customer_id,external_reference '+
@@ -108,7 +131,7 @@ export default async function handler(req,res){
       net!==Number(intent.net_cents))
     throw Error('receipt_not_verified')
    return out(res,200,{environment:'sandbox',stage:'received',amountBRL,
-    paymentVerified:true,splitSettled:false,providerPaid:false,financialWritesPerformed:false})
+    paymentVerified:true,splitSettled:false,providerPaid:false,financialWritesPerformed:issuedNow})
   }
   if(intent.status==='pending'&&payment.status==='PENDING'){
    const qr=await asaasGet('/payments/'+encodeURIComponent(payment.id)+'/pixQrCode')
@@ -126,10 +149,16 @@ export default async function handler(req,res){
   const label=String(error?.message||'')
   const status=label==='not_authenticated'?401:
    label==='payment_ownership_mismatch'?403:
-   label==='payment_identity_mismatch'||label==='receipt_not_verified'?409:503
+   label==='payment_identity_mismatch'||label==='receipt_not_verified'||
+    label==='processor_rejected'||label==='existing_intent_requires_reconciliation'||
+    label==='remote_reference_requires_review'||label==='test_service_identity_mismatch'?409:503
   const allowed=new Set(['not_authenticated','payment_ownership_mismatch',
    'payment_identity_mismatch','receipt_not_verified',
-   'test_readonly_role_required','test_supabase_unavailable',
+   'test_database_role_required','test_supabase_unavailable',
+   'sandbox_payer_not_unique','sandbox_payer_not_ready','issuer_wallet_missing',
+   'issuer_wallet_not_verified','test_service_identity_mismatch',
+   'existing_intent_requires_reconciliation','reservation_not_persisted',
+   'remote_reference_requires_review','processor_rejected','processor_result_uncertain',
    'asaas_verification_unavailable'])
   return out(res,status,{error:allowed.has(label)?label:'provider_checkout_unavailable'})
  }finally{
