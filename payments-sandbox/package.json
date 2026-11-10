@@ -7,6 +7,6 @@
     "pg": "8.16.3"
   },
   "scripts": {
-    "build": "node --check api/pix.js && node --check api/webhook.js && node --check api/wallets.js && node --check api/health.js && node build.mjs"
+    "build": "node --check api/pix.js && node --check api/webhook.js && node --check api/wallets.js && node --check api/health.js && node --check lib/reconcileInboxEvent.js && node build.mjs"
   }
 }
