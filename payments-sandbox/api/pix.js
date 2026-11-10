@@ -233,6 +233,56 @@ async function create(db){
  * This endpoint is operator-authenticated and NEVER makes a charge or confirms it.
  * A received payment must be reconciled, not presented as payable again.
  */
+/**
+ * Operator-triggered drain of one authenticated, durable Asaas Sandbox event.
+ * The webhook itself only acknowledges durable storage. This worker independently
+ * reads the trusted charge before transitioning payment state. Rollbacks ensure
+ * the event is retried if the Asaas status has not yet reached its event kind.
+ * This is deliberately restricted to the single isolated TEST fixture.
+ */
+async function processWebhookEvent(db,eventId){
+ const eventIdValid=typeof eventId==='string'&&eventId.length>0&&eventId.length<=160&&
+  ![...eventId].some(c=>c.charCodeAt(0)<32||c.charCodeAt(0)===127)
+ if(!eventIdValid)throw Error('invalid_webhook_event_id')
+ await db.query('BEGIN')
+ try{
+  const eventRows=await db.query(`select event_id,kind,processor_payment_id,status
+    from ugo_payments_v2.payment_events where event_id=$1 for update`,[eventId])
+  const event=eventRows.rows[0]
+  if(!event||!['PAYMENT_RECEIVED','PAYMENT_CONFIRMED'].includes(event.kind))
+   throw Error('webhook_event_requires_review')
+  if(event.status==='processed'){
+   await db.query('COMMIT')
+   return {action:'process_webhook',alreadyProcessed:true,
+    paymentVerified:false,financialWritesPerformed:false,
+    splitSettled:false,providerPaid:false}
+  }
+  if(event.status!=='received')throw Error('webhook_event_requires_review')
+  const row=await existing(db)
+  if(!row||!row.asaas_payment_id||
+      row.asaas_payment_id!==event.processor_payment_id)
+   throw Error('webhook_payment_identity_mismatch')
+  const payment=await getVerifiedPayment(row)
+  if((event.kind==='PAYMENT_RECEIVED'&&payment.status!=='RECEIVED')||
+      (event.kind==='PAYMENT_CONFIRMED'&&
+        !['CONFIRMED','RECEIVED'].includes(payment.status)))
+   throw Error('webhook_processor_not_confirmed')
+  const settled=await sync(db,row,payment)
+  const done=await db.query(`update ugo_payments_v2.payment_events
+    set status='processed',processed_at=now()
+    where event_id=$1 and status='received' returning event_id`,[eventId])
+  if(done.rows.length!==1)throw Error('webhook_event_processing_conflict')
+  await db.query('COMMIT')
+  return {action:'process_webhook',alreadyProcessed:false,
+   paymentVerified:payment.status==='RECEIVED',
+   processorStatus:payment.status,
+   splitSettled:false,providerPaid:false,
+   financialWritesPerformed:false}
+ }catch(error){
+  await db.query('ROLLBACK').catch(()=>{})
+  throw error
+ }
+}
 async function getPendingQr(db){
  const row=await existing(db)
  if(!row||!row.asaas_payment_id||row.status!=='pending')
@@ -454,7 +504,7 @@ export default async function handler(req,res){
  if(!auth(req.headers.authorization,process.env.UGO_TEST_OPERATOR_TOKEN))
   return json(res,401,{error:'unauthorized'})
  const action=req.body?.action
- if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received','get_qr'].includes(action))
+ if(!['create','confirm','reconcile','recover_create','diagnose','audit_intents','prepare_customer','verify_received','get_qr','process_webhook'].includes(action))
   return json(res,400,{error:'invalid_action'})
  let db
  try{
@@ -463,6 +513,7 @@ export default async function handler(req,res){
     action==='audit_intents'?await auditIntents(db):
     action==='verify_received'?await verifyReceived(db):
     action==='get_qr'?await getPendingQr(db):
+    action==='process_webhook'?await processWebhookEvent(db,req.body?.eventId):
     action==='prepare_customer'?await prepareCustomer():
     action==='create'?await create(db):
     action==='recover_create'?await recoverCreate(db):
@@ -474,6 +525,9 @@ export default async function handler(req,res){
   const allowed=new Set([
    'received_intent_not_ready_for_verification','received_intent_identity_mismatch',
    'pending_linked_payment_required','payment_no_longer_pending_reconcile',
+   'invalid_webhook_event_id','webhook_event_requires_review',
+   'webhook_payment_identity_mismatch','webhook_processor_not_confirmed',
+   'webhook_event_processing_conflict',
    'existing_qr_expired_requires_reconciliation',
    'sandbox_customer_update_requires_review',
    'too_many_test_intents_for_audit','payer_document_missing',
