@@ -6,6 +6,11 @@ on:
     paths:
       - scripts/pix-sandbox-webhook-reachability.mjs
       - .github/workflows/ugo-pix-sandbox-reachability.yml
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/pix-sandbox-webhook-reachability.mjs'
+      - '.github/workflows/ugo-pix-sandbox-reachability.yml'
   workflow_dispatch:
 permissions:
   contents: read
