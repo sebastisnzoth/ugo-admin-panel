@@ -53,3 +53,17 @@ console.log(JSON.stringify({
 }))
 assert.equal(noSessionResponse.status,401,'PROVIDER_QR_MUST_REQUIRE_TEST_JWT')
 assert.equal(noSessionBody?.error,'provider_session_required','PROVIDER_QR_AUTH_GUARD_NOT_ENFORCED')
+
+/* Financial issuance is a second independent server-side switch.
+ * A public POST must never create even a Sandbox payment by default. */
+const disabledIssue=await fetch(url.replace('/api/webhook','/api/provider-checkout'),{
+ method:'POST',
+ headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({action:'create',serviceId:'11111111-1111-4111-8111-111111111111'}),
+ signal:AbortSignal.timeout(12000),redirect:'manual'
+})
+const disabledBody=await disabledIssue.json().catch(()=>null)
+console.log(JSON.stringify({probe:'UGO_PIX_PROVIDER_CREATE_DISABLED',
+ httpStatus:disabledIssue.status,guard:disabledBody?.error||null,financialWritesPerformed:false}))
+assert.equal(disabledIssue.status,503,'PROVIDER_ISSUE_FLAG_MUST_BE_OFF_BY_DEFAULT')
+assert.equal(disabledBody?.error,'provider_issuance_disabled','UNEXPECTED_PROVIDER_ISSUE_ENABLEMENT')
