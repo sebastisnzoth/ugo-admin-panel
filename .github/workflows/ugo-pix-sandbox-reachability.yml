@@ -1,0 +1,22 @@
+name: UGO Pix Sandbox webhook reachability (no financial writes)
+on:
+  push:
+    branches:
+      - feat/ugo-pagamentos-v2-escrow-sandbox
+    paths:
+      - scripts/pix-sandbox-webhook-reachability.mjs
+      - .github/workflows/ugo-pix-sandbox-reachability.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reachable:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Probe Preview webhook without credentials or payment mutation
+        run: node scripts/pix-sandbox-webhook-reachability.mjs
