@@ -368,14 +368,20 @@ async function waitForAdminNavigationWithRecovery(page){
    return nav
   }catch(error){
    lastError=error
-   // TEST may return PROFILE_QUERY_TIMEOUT while retaining a valid Admin
-   // session. Exercise only its real recovery UI, never fabricate permission.
-   if(!(await retry.isVisible().catch(()=>false)))throw error
+   // A transient TEST profile/route timeout may hide Admin navigation while
+   // preserving a real session. Use only the real retry control or page reload.
    assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-admin-auth'))),
     'ADMIN_PROFILE_RECOVERY_SESSION_LOST')
    if(attempt===2)break
    await page.waitForTimeout(700*(attempt+1))
-   await retry.click()
+   if(await retry.isVisible().catch(()=>false)){
+    await retry.click()
+   }else{
+    // A login form is not permission to continue the Admin test.
+    assert.equal(await page.locator('form input[type="password"]').isVisible().catch(()=>false),false,
+     'ADMIN_AUTHENTICATION_LOST_DURING_NAVIGATION_RECOVERY')
+    await page.reload({waitUntil:'domcontentloaded'})
+   }
   }
  }
  throw new Error('ADMIN_NAVIGATION_PROFILE_RECOVERY_FAILED',{cause:lastError})
