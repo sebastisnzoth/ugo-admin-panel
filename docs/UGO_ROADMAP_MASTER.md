@@ -1152,3 +1152,10 @@ RUNTIME VALIDATED             pendiente
 - Segurança: campos de chave Pix e botão **desabilitados**. Não salva dados, não faz chamadas Asaas, não chama API de saque e não altera `cuenta_pago_externa`. Mercado Pago e fluxo legado de retiradas permanecem montados.
 - Teste adicionado em `tests/contracts/provider-asaas-recebimentos-readonly-main.test.mjs`. E2E visual e build CI exato do main ainda requerem confirmação.
 - PR #616 permanece isolado e em draft, sem mudança financeira ou SQL PROD.
+
+
+## 2026-11-10 — P0 Supabase TEST Data API outage and request-rate guard
+- Verified on TEST project `tmossnqfwfwjrtzwcbmm`: PostgreSQL connection timeouts, Data API 503/504/522, auth fixture creation HTTP 522. API availability remains **BLOCKED**, despite occasional `ACTIVE_HEALTHY` project status.
+- PR #621 proposes client-side throttling (30-second minimum synchronization interval, 30-second Realtime reconnect backoff, 60-second fallback) in the Admin service trace panels. This is a preventive guard, **not** an upstream database recovery.
+- TEST scheduled-worker proof was set manual-only during the incident; its automatic cadence must not be restored until capacity is verified.
+- No production SQL, no migration, no credential rotation, no destructive writes, no payment action. Publish gate: stable API and DB, green CI, low-volume authenticated Cliente/Proveedor E2E on the correct environment.
