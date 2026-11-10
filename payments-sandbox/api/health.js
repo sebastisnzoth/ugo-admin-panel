@@ -7,7 +7,7 @@ export default async function handler(req,res){
    return json(res,503,{environment:'disabled'})
  const token=process.env.ASAAS_SANDBOX_WEBHOOK_TOKEN
  const webhookInboxConfigured=typeof token==='string'&&token.length>=32&&
-   token.length<=255&&!/\\s/.test(token)
+   token.length<=255&&!/\s/.test(token)
  const config=process.env.UGO_NEON_TEST_READONLY_URL
  if(!config)return json(res,503,{environment:'sandbox',testDatabase:'not_configured'})
  const db=new Client({connectionString:config,connectionTimeoutMillis:5000,
