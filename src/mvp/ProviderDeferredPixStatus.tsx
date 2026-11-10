@@ -1,4 +1,5 @@
 import React,{useEffect,useState} from 'react'
+import{useLocale}from'../i18n/locale'
 import {ProviderPixAfterService,type ProviderPixView} from './ProviderPixAfterService'
 
 /**
@@ -8,6 +9,7 @@ import {ProviderPixAfterService,type ProviderPixView} from './ProviderPixAfterSe
 export function ProviderDeferredPixStatus({
  serviceId,serviceState,amountBRL,accessToken,
 }:{serviceId:string;serviceState:string;amountBRL:number;accessToken:string}){
+ const{t}=useLocale()
  const [payment,setPayment]=useState<ProviderPixView>({stage:'not_finished',amountBRL})
  const [revision,setRevision]=useState(0)
  const [copyFailed,setCopyFailed]=useState(false)
@@ -31,8 +33,7 @@ export function ProviderDeferredPixStatus({
    endpoint.searchParams.set('serviceId',serviceId)
   }catch{/* A disabled Preview backend must never expose a stale QR. */}
   if(!endpoint||!accessToken){
-   setPayment({stage:'error',amountBRL,
-    message:'O backend Pix TEST ainda não está habilitado para este serviço.'})
+   setPayment({stage:'error',amountBRL})
    return()=>{alive=false;controller.abort()}
   }
   const endpointUrl=endpoint.toString()
@@ -50,8 +51,7 @@ export function ProviderDeferredPixStatus({
        !['awaiting_payment','confirming','received'].includes(payload?.stage)||
        !Number.isFinite(Number(payload?.amountBRL))||
        Math.abs(Number(payload.amountBRL)-amountBRL)>0.009){
-     setPayment({stage:'error',amountBRL,
-      message:'Ainda não existe cobrança Pix autorizada para este serviço no backend TEST.'})
+     setPayment({stage:'error',amountBRL})
     }else if(payload.stage==='received'){
      setPayment({stage:'received',amountBRL})
      return
@@ -66,8 +66,7 @@ export function ProviderDeferredPixStatus({
      }
     }else setPayment({stage:'confirming',amountBRL})
    }catch{
-    if(alive&&!controller.signal.aborted)setPayment({stage:'error',amountBRL,
-     message:'Não foi possível consultar a cobrança verificada no Sandbox.'})
+    if(alive&&!controller.signal.aborted)setPayment({stage:'error',amountBRL})
    }
    if(alive&&!controller.signal.aborted)
     timer=window.setTimeout(()=>void refresh(),20000)
@@ -104,6 +103,6 @@ export function ProviderDeferredPixStatus({
  return <>
   <ProviderPixAfterService payment={payment} onRefresh={()=>setRevision(n=>n+1)}
    onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>
-  {copyFailed&&<p role="alert">Não foi possível copiar o código Pix.</p>}
+  {copyFailed&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
  </>
 }
