@@ -77,3 +77,12 @@ test('private TEST allowlist cannot be populated by clients or ordinary authenti
  assert.match(gate,/ugo_pix_after_service_test_enabled/)
  assert.doesNotMatch(allowlist,/insert into private\.ugo_pix_after_service_allowed_services/)
 })
+
+test('first Pix selection uses prospective Pix method after server RPC, not stale metadata',()=>{
+ const helper=file('src/lib/payments/deferredPixPilot.ts')
+ const choice=client.split('async function choosePix(){')[1].split('async function copyPix(){')[0]
+ assert.match(helper,/methodOverride\?: 'pix'/)
+ assert.match(helper,/String\(methodOverride \|\| metadata\.requested_payment_method/)
+ assert.match(choice,/deferredPixPilotEligible\(service as ServiceWithCurrency & \{ambiente\?:string\|null\},'pix'\)/)
+ assert.ok(choice.indexOf("await persistPreference('pix')")<choice.indexOf("},'pix')"))
+})
