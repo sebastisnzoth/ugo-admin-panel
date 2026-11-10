@@ -447,12 +447,25 @@ async function testAdmin(viewport,name){
  } finally {await page.close()}
 }
 
+async function waitForTranslationRoleRoot(page,root,role){
+ try{await page.locator(root).waitFor({state:'visible',timeout:20000});return}
+ catch(initialError){
+  // Retain strict UI proof: retry only via the real authenticated profile
+  // recovery action after a TEST database timeout.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil|Tentar novamente|Retry profile/i}).first()
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  assert.equal(await page.locator('form input[type="password"]').isVisible().catch(()=>false),false,role+' session must survive recovery')
+ }
+}
+
 async function testTranslations(role,viewport,name){
  const {page,errors}=await openRole(role==='superadmin'?'admin':role,viewport)
  try{
   // Preserve authenticated Profile overlay after prior client flow; never accept login as a translation check.
   const root=role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
-  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  await waitForTranslationRoleRoot(page,root,role)
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
    if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
@@ -464,7 +477,7 @@ async function testTranslations(role,viewport,name){
    const snapshot=await page.locator('body').innerText()
    assert.ok(!/\b(?:clientNeed|clientTracking|clientAssigned|clientSummary|screen\.need|providerRoot)\.[A-Za-z0-9_.-]+/.test(snapshot),'visible translation key '+role+' '+locale)
    await page.reload({waitUntil:'domcontentloaded'})
-   await page.locator(root).waitFor({state:'visible',timeout:30000})
+   await waitForTranslationRoleRoot(page,root,role)
    await page.waitForFunction(value=>document.documentElement.lang===value,locale)
    results.push({role,locale,viewport:name,status:'PASS',checks:['language switch','reload persistence','no visible keys','responsive']})
   }
