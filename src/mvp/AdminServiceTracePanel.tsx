@@ -48,8 +48,10 @@ export function AdminServiceTracePanel({service}:{service:Service}){
  useEffect(()=>{void load()},[load])
  useEffect(()=>{
   let alive=true,reconnectTimer:number|undefined
-  const sync=()=>{if(alive)void load()}
-  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1200)}
+  // Degraded TEST Data API must not receive overlapping bursts from Realtime reconnect loops.
+  let lastSyncAt=0,reconnecting=false
+  const sync=()=>{const now=Date.now();if(!alive||document.visibilityState==='hidden'||now-lastSyncAt<30_000)return;lastSyncAt=now;void load()}
+  const reconnect=()=>{if(!alive||reconnecting)return;reconnecting=true;reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},30_000)}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
   const onOnline=()=>{sync();reconnect()}
   window.addEventListener('online',onOnline)
@@ -58,8 +60,8 @@ export function AdminServiceTracePanel({service}:{service:Service}){
   const scoped=['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']
   for(const table of scoped)channel=channel.on('postgres_changes',{event:'*',schema:'public',table,filter:`servicio_id=eq.${service.id}`},sync)
   channel=channel.on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},sync)
-  channel.subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
-  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},15000)
+  channel.subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){reconnect()}})
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},60_000)
   return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
  },[channelEpoch,load,service.id])
 
