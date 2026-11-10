@@ -8,10 +8,10 @@ export type DeferredPixService = {
  moneda?: string | null
  metadata?: Record<string, unknown> | null
 }
-export function deferredPixPilotEligible(service: DeferredPixService | null | undefined): boolean {
+export function deferredPixPilotEligible(service: DeferredPixService | null | undefined, methodOverride?: 'pix'): boolean {
  if (!service || service.ambiente !== 'demo' || (service.moneda || 'BRL') !== 'BRL') return false
  const metadata = service.metadata || {}
  return metadata.pix_after_service_authorized === true &&
   metadata.payment_timing === 'after_service' &&
-  String(metadata.requested_payment_method || metadata.payment_method || '').toLowerCase() === 'pix'
+  String(methodOverride || metadata.requested_payment_method || metadata.payment_method || '').toLowerCase() === 'pix'
 }
