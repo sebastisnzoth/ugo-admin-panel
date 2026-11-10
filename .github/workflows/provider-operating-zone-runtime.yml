@@ -11,6 +11,12 @@ on:
       - '.github/workflows/provider-operating-zone-runtime.yml'
   workflow_dispatch:
 
+# The operating-radius QA RPC creates and verifies shared TEST fixtures.
+# Do not race runs from successive PR commits against the same database.
+concurrency:
+  group: ugo-provider-zone-shared-test-fixture
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
