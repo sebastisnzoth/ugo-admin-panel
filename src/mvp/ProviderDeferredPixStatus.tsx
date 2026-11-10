@@ -40,7 +40,6 @@ export function ProviderDeferredPixStatus({
    if(!alive||controller.signal.aborted||document.hidden||!navigator.onLine)return
    setPayment(current=>current.stage==='received'?current:
      {...current,stage:'loading',qrImageBase64:undefined,qrCopyPaste:undefined})
-   )
    try{
     const response=await fetch(endpointUrl,{method:'GET',headers:{
      Authorization:'Bearer '+accessToken,Accept:'application/json',
