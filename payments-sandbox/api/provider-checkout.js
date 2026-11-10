@@ -139,11 +139,11 @@ export default async function handler(req,res){
    return out(res,200,{environment:'sandbox',stage:'awaiting_payment',
     amountBRL,qrImageBase64:qr.encodedImage,qrCopyPaste:qr.payload,
     expiresAt:qr.expirationDate||null,paymentVerified:false,
-    splitSettled:false,providerPaid:false,financialWritesPerformed:false})
+    splitSettled:false,providerPaid:false,financialWritesPerformed:issuedNow})
   }
   if(['CONFIRMED','RECEIVED'].includes(payment.status))
    return out(res,200,{environment:'sandbox',stage:'confirming',amountBRL,
-    paymentVerified:false,splitSettled:false,providerPaid:false,financialWritesPerformed:false})
+    paymentVerified:false,splitSettled:false,providerPaid:false,financialWritesPerformed:issuedNow})
   return out(res,409,{error:'payment_not_payable'})
  }catch(error){
   const label=String(error?.message||'')
