@@ -48,6 +48,39 @@ and require `Authorization: Bearer <UGO_TEST_OPERATOR_TOKEN>`.
 Never paste a token into a browser URL, GitHub issue or build log.
 The operator token is an independent TEST secret; it is not the Asaas key.
 
+## Provider authenticated QR read — opt-in TEST only
+
+The **read-only** `GET /api/provider-checkout?serviceId=<UUID>` endpoint
+accepts the Provider's own Supabase TEST access token in the
+`Authorization: Bearer` header (never the operator token).
+It verifies the current user with TEST Supabase Auth, selects the assigned
+service under that user's RLS, checks the explicit allowlisted service ID,
+`ambiente=demo`, BRL, deferred-Pix metadata and final provider evidence.
+It then matches the same service/client/provider/amount against Neon TEST
+and fetches the existing charge and QR from Asaas **Sandbox**. It returns
+no payable QR unless Asaas confirms that the linked charge is still PENDING;
+RECEIVED is independently verified, and refunded/cancelled/uncertain or
+unlinked charges fail closed. No new Asaas charge, split, payout or service
+state write is performed by this route.
+
+Additional **Preview-only**, opt-in environment values (never PROD):
+
+- `UGO_PROVIDER_PIX_READ_ONLY_ENABLED=1`
+- `UGO_TEST_SUPABASE_PUBLISHABLE_KEY` (the publishable key of the **exact**
+  Supabase TEST project `tmossnqfwfwjrtzwcbmm`, not service-role)
+- `UGO_PIX_APPROVED_PILOT_SERVICE_IDS` (comma-separated explicit TEST service UUIDs)
+- `UGO_PIX_ALLOWED_CLIENT_ORIGINS` (exact HTTPS Preview origins, no wildcard)
+- `VITE_UGO_PIX_SANDBOX_API_BASE_URL` (public base URL, **only on client Preview**,
+  together with its existing opt-in deferred Pix flags)
+
+Browser callers send their existing Provider JWT, never the operator secret.
+With the above settings missing, the route intentionally returns 503.
+This is **not** a new charge creation API: a real service still needs
+an independently reviewed, idempotent TEST charge-creation and webhook-to-app
+reconciliation path before `UGO PIX SANDBOX E2E — PASS` can be claimed.
+The existing `POST /api/pix` remains operator-only and limited to the
+historical single synthetic R$100 fixture.
+
 ## Isolated Preview-only environment
 
 - `UGO_PAYMENTS_TEST_ONLY=1`
