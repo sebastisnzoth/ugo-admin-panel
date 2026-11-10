@@ -113,17 +113,24 @@ async function clickMenu(page,label){
 }
 async function waitClientHomeWithRecovery(page,label){
  const home=page.getByRole('main',{name:'Inicio'})
- try{
-  await home.waitFor({state:'visible',timeout:20000})
- }catch(initialError){
-  // On a transient TEST profile timeout exercise the existing UI recovery once.
-  // Never bypass the home assertion or silently reauthenticate the user.
-  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
-  if(!(await retry.isVisible().catch(()=>false)))throw initialError
-  assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-client-auth'))),label+': session missing')
-  await retry.click()
-  await home.waitFor({state:'visible',timeout:20000})
+ const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+ // Shared TEST can temporarily return PROFILE_QUERY_TIMEOUT under parallel E2E load.
+ // Exercise the real client recovery affordance, never fake a login or skip HOME.
+ let lastError
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   await home.waitFor({state:'visible',timeout:20000})
+   return
+  }catch(error){
+   lastError=error
+   if(!(await retry.isVisible().catch(()=>false)))throw error
+   assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-client-auth'))),label+': session missing')
+   if(attempt===2)break
+   await page.waitForTimeout(700*(attempt+1))
+   await retry.click()
+  }
  }
+ throw new Error(label+': profile recovery failed after 2 real UI retries',{cause:lastError})
 }
 async function freshPage(viewport){
  const page=await browser.newPage({viewport})
