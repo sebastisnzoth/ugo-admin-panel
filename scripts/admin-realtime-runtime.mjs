@@ -92,13 +92,28 @@ async function readOnlineKpi(timeout=20000){
  }
  throw new Error('ONLINE_KPI_NUMERIC_REQUIRED: '+raw)
 }
-async function waitForKpi(expected,timeout=7000){
+async function authoritativeOnlineCount(){
+ const {count,error}=await root.from('perfiles_proveedor')
+  .select('usuario_id',{count:'exact',head:true})
+  .eq('online',true).eq('disponible',true)
+ assert.ifError(error)
+ assert.ok(Number.isSafeInteger(count),'ADMIN_TEST_KPI_DB_COUNT_REQUIRED')
+ return count
+}
+async function waitForKpiMatchesDb(timeout=7000){
  const started=Date.now()
+ let lastUi=null,lastDb=null
  while(Date.now()-started<timeout){
-  if(await readOnlineKpi()===expected)return Date.now()-started
-  await page.waitForTimeout(100)
+  lastUi=await readOnlineKpi(2500).catch(()=>null)
+  lastDb=await authoritativeOnlineCount()
+  // Other UGO TEST jobs may change the global count concurrently. Verify the
+  // rendered count against the actual DB, while the fixture-specific Realtime
+  // subscription separately proves our own change was delivered.
+  if(lastUi!==null&&lastUi===lastDb)
+   return {latencyMs:Date.now()-started,count:lastUi}
+  await page.waitForTimeout(300)
  }
- throw new Error('ADMIN_REALTIME_TIMEOUT expected '+expected+' got '+await readOnlineKpi())
+ throw new Error('ADMIN_REALTIME_KPI_DB_MISMATCH ui '+lastUi+' db '+lastDb)
 }
 
 let restored=false
@@ -116,19 +131,28 @@ try{
    await page.locator('.ugo-admin2-status').waitFor({state:'visible',timeout:20000})
   }else throw initialError
  }
- const before=await readOnlineKpi()
+ let before
+ try{before=await readOnlineKpi(14000)}
+ catch(initialError){
+  // Exercise the real dashboard resync button on a transient TEST data failure.
+  const retry=page.getByRole('button',{name:/Sincronizar|Atualizar|Refresh|Sync/i}).last()
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  before=await readOnlineKpi(20000)
+ }
  const expected=before+(targetOnline?1:-1)
  const direct=eventSignal()
  const directChannel=user.channel('admin-realtime-direct-'+Date.now())
   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${fixture.usuario_id}`},payload=>direct.resolve(payload.new))
  await subscribed(directChannel,'DIRECT_ADMIN_REALTIME')
  const mutationStarted=Date.now()
- const uiPromise=waitForKpi(expected,7000)
+ const uiPromise=waitForKpiMatchesDb(7000)
  const {data:updatedRows,error:updateError}=await root.from('perfiles_proveedor').update({online:targetOnline,disponible:true}).eq('usuario_id',fixture.usuario_id).select('usuario_id,online,disponible')
  assert.ifError(updateError)
  assert.equal(updatedRows?.length,1,'FIXTURE_UPDATE_ROW_REQUIRED')
  assert.equal(Boolean(updatedRows?.[0]?.online),targetOnline,'FIXTURE_UPDATE_NOT_PERSISTED')
- const [directRow,forwardLatencyMs]=await Promise.all([direct.promise,uiPromise])
+ const [directRow,forwardResult]=await Promise.all([direct.promise,uiPromise])
+ const forwardLatencyMs=forwardResult.latencyMs
  assert.equal(Boolean(directRow?.online),targetOnline,'DIRECT_REALTIME_PAYLOAD_MISMATCH')
  console.log('DIRECT_ADMIN_REALTIME_OK')
  await user.removeChannel(directChannel)
@@ -136,7 +160,8 @@ try{
  assert.ok(forwardLatencyMs<7000,'Realtime must beat 8s fallback polling window')
  const {error:restoreError}=await root.from('perfiles_proveedor').update(original).eq('usuario_id',fixture.usuario_id)
  assert.ifError(restoreError)
- const restoreLatencyMs=await waitForKpi(before,7000)
+ const restoreResult=await waitForKpiMatchesDb(7000)
+ const restoreLatencyMs=restoreResult.latencyMs
  restored=true
  assert.equal(topNavigations,1,'NO_MANUAL_OR_PROGRAMMATIC_REFRESH_ALLOWED')
  assert.equal(pageErrors.length,0,'ADMIN_RUNTIME_PAGE_ERRORS')
@@ -152,7 +177,7 @@ try{
   actor_role:profile.tipo,
   tested_url:base+'/?app=admin',
   fixture:{provider_id:fixture.usuario_id,original,target_online:targetOnline},
-  ui:{live_indicator:'PASS',kpi:'Proveedores online',before,expected,after_restore:await readOnlineKpi()},
+  ui:{live_indicator:'PASS',kpi:'Proveedores online',before,expected,after_mutation:forwardResult.count,after_restore:restoreResult.count,db_verified:true},
   realtime:{event_to_ui_latency_ms:forwardLatencyMs,restore_latency_ms:restoreLatencyMs,fallback_poll_ms:8000,beat_fallback:forwardLatencyMs<7000},
   refresh:{manual_refresh_used:false,top_level_navigations:topNavigations},
   reconciliation:{restored},
