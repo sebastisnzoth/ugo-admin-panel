@@ -449,7 +449,15 @@ async function testAdmin(viewport,name){
     await page.getByTestId('language-selector').first().selectOption('es')
     await page.waitForFunction(()=>document.documentElement.lang==='es')
    }
-   await safeClick(page,page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Configuración/i}),'admin Configuración')
+   // The Settings control is the only labeled sidebar action. Select it by
+   // stable accessibility semantics, even if TEST rehydrates a different
+   // supported language during the preceding Finance route transition.
+   const settingsControl=page.getByRole('navigation',{name:'Navegación Admin'}).locator('button[aria-label]').filter({has:page.locator('span')})
+   assert.equal(await settingsControl.count(),1,'ADMIN_SETTINGS_SIDEBAR_CONTROL_NOT_UNIQUE')
+   assert.match(await settingsControl.getAttribute('aria-label')||'',/^(Configuración|Configurações|Settings)$/i,
+    'ADMIN_SETTINGS_ARIA_LABEL_INVALID')
+   await safeClick(page,settingsControl,'admin Configuración')
+   await page.getByRole('group',{name:'Configuración'}).waitFor({state:'visible',timeout:20000})
    for(const item of ['Categorías','Analytics|Análisis|Análises','Notificaciones','Reportes','Sistema']){
      await safeClick(page,item.includes('Analytics')?page.getByTestId('admin-settings-analytics'):page.getByRole('group',{name:'Configuración'}).getByRole('button',{name:new RegExp(item,'i')}),'admin settings '+item)
      await assertResponsive(page,'admin '+name+' settings '+item)
