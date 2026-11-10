@@ -67,3 +67,16 @@ console.log(JSON.stringify({probe:'UGO_PIX_PROVIDER_CREATE_DISABLED',
  httpStatus:disabledIssue.status,guard:disabledBody?.error||null,financialWritesPerformed:false}))
 assert.equal(disabledIssue.status,503,'PROVIDER_ISSUE_FLAG_MUST_BE_OFF_BY_DEFAULT')
 assert.equal(disabledBody?.error,'provider_issuance_disabled','UNEXPECTED_PROVIDER_ISSUE_ENABLEMENT')
+
+const noClientSession=await fetch(
+ url.replace('/api/webhook','/api/client-checkout?serviceId=11111111-1111-4111-8111-111111111111'),
+ {method:'GET',signal:AbortSignal.timeout(12000),redirect:'manual'}
+)
+const clientBody=await noClientSession.json().catch(()=>null)
+console.log(JSON.stringify({
+ probe:'UGO_PIX_CLIENT_JWT_AUTH_BOUNDARY',
+ httpStatus:noClientSession.status,
+ denied:clientBody?.error==='client_session_required',financialWritesPerformed:false
+}))
+assert.equal(noClientSession.status,401,'CLIENT_RECEIPT_MUST_REQUIRE_TEST_JWT')
+assert.equal(clientBody?.error,'client_session_required','CLIENT_RECEIPT_AUTH_GUARD_NOT_ENFORCED')
