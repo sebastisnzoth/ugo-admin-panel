@@ -39,7 +39,9 @@ test('P0 real TEST journey executes after matching/provider/client changes reach
 })
 
 
-test('private-media PR changes re-run the real P0 browser proof, only for trusted PRs',()=>{
+test('private-media PR changes remain gated by quota and fork trust before a real browser proof',()=>{
  assert.match(workflow,/pull_request:[\s\S]*?scripts\/autonomous-uploaded-media-runtime\.mjs/)
- assert.match(workflow,/if: \$\{\{ github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.full_name == github\.repository \}\}/)
+ assert.match(workflow,/UGO_TEST_REMOTE_E2E_ENABLED/)
+ assert.match(workflow,/github\.event_name == 'workflow_dispatch'/)
+ assert.match(workflow,/github\.event\.pull_request\.head\.repo\.full_name == github\.repository/)
 })

@@ -45,7 +45,7 @@ permissions:
 
 concurrency:
   # Isolated P0 accounts must not replace pending RPC/RLS jobs in GitHub concurrency.
-  group: ugo-supabase-test-remote-e2e-budget
+  group: ugo-p0-client-provider-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 env:
