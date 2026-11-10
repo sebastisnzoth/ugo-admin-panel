@@ -136,8 +136,15 @@ async function freshPage(viewport){
  const page=await browser.newPage({viewport})
  page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
  const browserSession=await freshTestSession()
- await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},browserSession)
+ // Seed once. addInitScript would restore a signed-out client every time
+ // navigation or a page reload occurs and invalidate the logout proof.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
+ await page.evaluate(session=>{
+  localStorage.setItem('ugo-test-client-auth',JSON.stringify(session))
+  localStorage.setItem('ugo.locale.guest.client','es')
+  localStorage.setItem('ugo.locale.client.'+session.user.id,'es')
+ },browserSession)
+ await page.reload({waitUntil:'domcontentloaded'})
  try{
   await waitClientHomeWithRecovery(page,'client navigation')
  }catch(error){
@@ -228,7 +235,9 @@ try{
  const logoutPage=await freshPage({width:390,height:844})
  try{
   await clickMenu(logoutPage,'Cerrar sesión')
-  await logoutPage.getByRole('heading',{name:/Ingresar|Acceso|Cliente/i}).first().waitFor({state:'visible',timeout:15000})
+  await logoutPage.waitForFunction(()=>localStorage.getItem('ugo-test-client-auth')===null,null,{timeout:15000})
+  await logoutPage.locator('input[type="password"]').first().waitFor({state:'visible',timeout:15000})
+  assert.equal(await logoutPage.locator('.ugo-client-root').isVisible().catch(()=>false),false,'CLIENT_LOGOUT_RETAINED_PROTECTED_HOME')
   clickMap.push({control:'Cerrar sesión auth boundary',result:'PASS'})
  } finally {await logoutPage.close()}
 
