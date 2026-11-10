@@ -1,5 +1,27 @@
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
+import {createClient} from '@supabase/supabase-js'
+
+// A 522/fetch failure can happen after Auth committed the user. Before any
+// retry, prove whether these exact random credentials already work. This keeps
+// recovery idempotent and never treats an unavailable Auth service as PASS.
+async function createConfirmedAuthUser(db,{email,password,role}){
+ let lastError=null
+ for(let attempt=1;attempt<=3;attempt++){
+  const created=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{tipo:role}})
+  if(!created.error&&created.data.user)return created
+  lastError=created.error
+  const status=Number(lastError?.status||0),message=String(lastError?.message||'')
+  const recoverable=status===408||status===409||status===429||status>=500||/fetch|network|timeout|already|exists/i.test(message)
+  if(!recoverable)return created
+  const recovery=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+  const login=await recovery.auth.signInWithPassword({email,password})
+  if(!login.error&&login.data.user){await recovery.auth.signOut({scope:'local'});return{data:{user:login.data.user},error:null}}
+  await recovery.auth.signOut({scope:'local'})
+  if(attempt<3)await new Promise(resolve=>setTimeout(resolve,attempt*1000))
+ }
+ return{data:{user:null},error:lastError}
+}
 
 export async function createRoleUiFixtures(db,sha){
  const identities=[]
@@ -40,7 +62,7 @@ export async function createRoleUiFixtures(db,sha){
  try{
   for(const [key,role] of [['client','cliente'],['provider','proveedor'],['admin','superadmin'],['operator','admin']]){
    const email=`role-ui-${sha.slice(0,8)}-${key}-${randomUUID().slice(0,8)}@example.com`,password='TestAa1!'+randomUUID()
-   const created=await db.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{tipo:role}})
+   const created=await createConfirmedAuthUser(db,{email,password,role})
    assert.ifError(created.error)
    const id=created.data.user.id
    identities.push({id,key,email,password})
