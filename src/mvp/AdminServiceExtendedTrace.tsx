@@ -42,8 +42,10 @@ export function AdminServiceExtendedTrace({service}:{service:Service}){
  useEffect(()=>{void load()},[load])
  useEffect(()=>{
   let alive=true,reconnectTimer:number|undefined
-  const sync=()=>{if(alive)void load()}
-  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1200)}
+  // Prevent an unhealthy Data API from receiving parallel refreshes on reconnect.
+  let lastSyncAt=0,reconnecting=false
+  const sync=()=>{const now=Date.now();if(!alive||document.visibilityState==='hidden'||now-lastSyncAt<30_000)return;lastSyncAt=now;void load()}
+  const reconnect=()=>{if(!alive||reconnecting)return;reconnecting=true;reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},30_000)}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
   const onOnline=()=>{sync();reconnect()}
   window.addEventListener('online',onOnline)
@@ -55,8 +57,8 @@ export function AdminServiceExtendedTrace({service}:{service:Service}){
    .on('postgres_changes',{event:'*',schema:'public',table:'disputa_mensajes'},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},sync)
-   .subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
-  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
+   .subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){reconnect()}})
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},60_000)
   return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
  },[channelEpoch,load,service.id])
  return <div className="ugo-admin-extended-trace">
