@@ -54,3 +54,14 @@ test('TEST-only SQL proposal requires explicit operator config and preserves pho
  assert.match(proposal,/v_servicio\.programado_para/)
  assert.doesNotMatch(proposal,/insert into public\.pagos|delete from public\.pagos/)
 })
+
+test('client post-service Pix review waits for Asaas without claiming payment',()=>{
+ const review=file('src/features/client/order/ClientCompletionReview.tsx')
+ assert.match(review,/deferredPixPilotEligible\(service\)/)
+ assert.match(review,/isPixPayAfterServicePreviewEnabled/)
+ assert.match(review,/const deferredPixWaiting=deferredPix&&!completed&&!electronicReady/)
+ assert.match(review,/role="status">\{deferredPixHelp\}/)
+ assert.match(review,/!deferredPixWaiting&&<div className="ugo-completion-warning"/)
+ assert.match(review,/const canApprove=.*electronicReady/)
+ assert.doesNotMatch(review,/if\(deferredPixWaiting\).*approvePendingClientService/)
+})
