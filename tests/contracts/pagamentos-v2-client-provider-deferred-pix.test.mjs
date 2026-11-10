@@ -8,7 +8,7 @@ const flags=file('src/lib/featureFlags.ts')
 const sql=file('supabase/migrations/20260930190000_variable_price_lifecycle_payment_gate.sql')
 test('Pix pay-after-service is locked out of production and defaults disabled',()=>{
  assert.match(flags,/isPixPayAfterServicePreviewEnabled/)
- assert.match(flags,/env.MODE === 'production' \|\| env.PROD === true/)
+ assert.match(flags,/env.VITE_VERCEL_ENV === 'preview'/)
  assert.match(flags,/VITE_FLAG_PIX_PAY_AFTER_SERVICE_PREVIEW/)
 })
 test('client Preview Pix choice saves the preference but does not issue the charge',()=>{
