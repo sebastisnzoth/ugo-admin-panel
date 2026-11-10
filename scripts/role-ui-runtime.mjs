@@ -426,6 +426,11 @@ async function testAdmin(viewport,name){
    // Persistence proof performs a real reload. Require authenticated Admin shell
    // recovery before continuing navigation rather than clicking a stale shell.
    await waitForAdminNavigationWithRecovery(page)
+   // The preceding persistence check reloads Admin and the account may carry
+   // a previously saved English locale. Restore Spanish before asserting the
+   // localized navigation labels; this uses the real language selector.
+   await page.getByTestId('language-selector').first().selectOption('es')
+   await page.waitForFunction(()=>document.documentElement.lang==='es')
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
