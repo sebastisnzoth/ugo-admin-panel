@@ -1,3 +1,6 @@
+# Shared UGO TEST free-tier load gate: remote runtimes disabled by default.
+# Enable only for controlled release via workflow_dispatch or explicitly set
+# repository var UGO_TEST_REMOTE_E2E_ENABLED=true after quota check.
 # readiness refresh 2026-10-01 final-same-sha-r2
 name: UGO Provider Jobs Runtime TEST
 
@@ -16,11 +19,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-provider-jobs-persisted-proof
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 jobs:
   runtime:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     environment: test
     steps:

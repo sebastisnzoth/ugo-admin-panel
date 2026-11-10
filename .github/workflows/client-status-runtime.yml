@@ -1,3 +1,6 @@
+# Shared UGO TEST free-tier load gate: remote runtimes disabled by default.
+# Enable only for controlled release via workflow_dispatch or explicitly set
+# repository var UGO_TEST_REMOTE_E2E_ENABLED=true after quota check.
 name: UGO Client Status Runtime TEST
 
 on:
@@ -20,7 +23,7 @@ on:
       - '.github/workflows/client-status-runtime.yml'
 
 concurrency:
-  group: ugo-client-status-runtime-v7
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 permissions:
@@ -38,6 +41,7 @@ env:
 
 jobs:
   client-status:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Cliente seguimiento exacto por serviceId
     runs-on: ubuntu-24.04
     timeout-minutes: 20
