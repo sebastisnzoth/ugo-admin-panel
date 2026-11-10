@@ -6,7 +6,8 @@ import { timingSafeEqual, createHash } from 'node:crypto'
 import pg from 'pg'
 const {Client}=pg
 const ID=/^[a-zA-Z0-9_-]{1,160}$/
-const eventIdValid=x=>typeof x==='string'&&x.length>0&&x.length<=160&&\n ![...x].some(char=>char.charCodeAt(0)<32||char.charCodeAt(0)===127)
+const eventIdValid=x=>typeof x==='string'&&x.length>0&&x.length<=160&&
+ ![...x].some(char=>char.charCodeAt(0)<32||char.charCodeAt(0)===127)
 function send(res,code,payload){
  res.statusCode=code
  res.setHeader('Cache-Control','no-store')
