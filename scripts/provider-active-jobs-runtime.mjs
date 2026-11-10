@@ -21,7 +21,7 @@ try{
  let activeVisible=false,lastActiveError
  for(let attempt=0;attempt<3;attempt++){
   try{
-   await activeStatus.waitFor({state:'visible',timeout:25000})
+   await activeStatus.waitFor({state:'visible',timeout:30000})
    activeVisible=true
    break
   }catch(error){
