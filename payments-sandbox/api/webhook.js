@@ -4,6 +4,7 @@
  */
 import { timingSafeEqual, createHash } from 'node:crypto'
 import pg from 'pg'
+import {waitUntil} from '@vercel/functions'
 import {reconcileInboxEvent} from '../lib/reconcileInboxEvent.js'
 const {Client}=pg
 const ID=/^[a-zA-Z0-9_-]{1,160}$/
@@ -22,6 +23,35 @@ function matchToken(actual,expected){
  const b=createHash('sha256').update(expected).digest()
  return timingSafeEqual(a,b)
 }
+// After durable inbox persistence, reconcile using a separate DB connection.
+// waitUntil keeps the Vercel function alive after acknowledging delivery.
+// Failed jobs remain in the durable inbox for operator process_webhook replay.
+async function processPersistedEvent(eventId){
+ const db=new Client({connectionString:process.env.UGO_NEON_TEST_WRITE_URL,
+  connectionTimeoutMillis:6000,query_timeout:6000,statement_timeout:6000})
+ try{
+  await db.connect()
+  const meta=await db.query(`select current_database() as db,current_user as role,
+   pg_has_role(current_user,'neon_superuser','member') as privileged`)
+  if(meta.rows[0]?.db!=='neondb'||meta.rows[0]?.role!=='ugo_payments_sandbox_rw'||
+    meta.rows[0]?.privileged!==false)throw Error('invalid_worker_database')
+  const asaasGet=async paymentId=>{
+   const response=await fetch('https://api-sandbox.asaas.com/v3/payments/'+
+    encodeURIComponent(paymentId),{
+     headers:{access_token:process.env.ASAAS_SANDBOX_API_KEY,
+      accept:'application/json','User-Agent':'UGO-Pix-Webhook-Sandbox/1.0'},
+     signal:AbortSignal.timeout(10000)
+    })
+   if(!response.ok)throw Error('asaas_readback_unavailable')
+   return response.json()
+  }
+  await reconcileInboxEvent({db,eventId,asaasGet})
+ }catch{
+  // No customer data or processor payloads in logs; the event remains durable.
+  console.warn('UGO_PIX_WEBHOOK_RECONCILIATION_REQUIRES_REPLAY')
+ }finally{await db.end().catch(()=>{})}
+}
+
 export default async function handler(req,res){
  if(req.method!=='POST')return send(res,405,{error:'method_not_allowed'})
  if(process.env.VERCEL_ENV!=='preview'||process.env.UGO_PAYMENTS_TEST_ONLY!=='1')
@@ -77,26 +107,12 @@ export default async function handler(req,res){
    return send(res,200,{accepted:true,processed:false,reviewRequired:true})
   if(!process.env.ASAAS_SANDBOX_API_KEY)
    return send(res,503,{error:'sandbox_processor_not_configured'})
-  const asaasGet=async paymentId=>{
-   const response=await fetch('https://api-sandbox.asaas.com/v3/payments/'+
-    encodeURIComponent(paymentId),{
-     headers:{access_token:process.env.ASAAS_SANDBOX_API_KEY,
-      accept:'application/json','User-Agent':'UGO-Pix-Webhook-Sandbox/1.0'},
-     signal:AbortSignal.timeout(10000)
-    })
-   if(!response.ok)throw Error('asaas_readback_unavailable')
-   return response.json()
-  }
-  try{
-   const reconciled=await reconcileInboxEvent({db,eventId:event.id,asaasGet})
-   return send(res,200,{accepted:true,processed:true,
-    receivedVerified:reconciled.receivedVerified,
-    duplicate:reconciled.state==='duplicate'})
-  }catch{
-   // Event is stored but not acknowledged as successfully processed: Asaas
-   // retries delivery. Operator reconciliation remains available separately.
-   return send(res,503,{error:'webhook_reconciliation_pending'})
-  }
+  // Asaas requires fast 200 after durable persistence. Never wait for its
+  // readback inside the webhook response budget, or imply settlement on ACK.
+  // The verified reconciliation runs after ACK with a separate DB connection;
+  // failed jobs remain 'received' in Neon for the operator replay action.
+  waitUntil(processPersistedEvent(event.id))
+  return send(res,200,{accepted:true,processed:false,queued:true})
  }catch{
   return send(res,503,{error:'inbox_unavailable'})
  }finally{if(db)await db.end().catch(()=>{})}
