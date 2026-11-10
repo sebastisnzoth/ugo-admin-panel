@@ -65,3 +65,15 @@ test('client post-service Pix review waits for Asaas without claiming payment',(
  assert.match(review,/const canApprove=.*electronicReady/)
  assert.doesNotMatch(review,/if\(deferredPixWaiting\).*approvePendingClientService/)
 })
+
+test('private TEST allowlist cannot be populated by clients or ordinary authenticated users',()=>{
+ const allowlist=file('docs/sql/ugo_pix_after_service_test_allowlist.sql')
+ const gate=file('docs/sql/ugo_pix_after_service_test_policy_review_only.sql')
+ assert.match(allowlist,/create table if not exists private\.ugo_pix_after_service_allowed_services/)
+ assert.match(allowlist,/enable row level security/)
+ assert.match(allowlist,/revoke all on private\.ugo_pix_after_service_allowed_services from public,anon,authenticated/)
+ assert.match(gate,/exists \([\s\S]*private\.ugo_pix_after_service_allowed_services a/)
+ assert.match(gate,/a\.service_id=v_servicio\.id and a\.expires_at>now\(\)/)
+ assert.match(gate,/ugo_pix_after_service_test_enabled/)
+ assert.doesNotMatch(allowlist,/insert into private\.ugo_pix_after_service_allowed_services/)
+})
