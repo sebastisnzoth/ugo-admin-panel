@@ -758,3 +758,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Tela informativa integrada no painel atual do Provedor, sem substituir Mercado Pago nem contas externas existentes. Campos Pix desabilitados por falta de vínculo subconta verificado, armazenamento privado, autorização de saques e backend financeiro TEST.
 - Nenhuma chave Pix é persistida, nenhuma cobrança Asaas gerada, nenhum deploy acionado neste passo. Não confundir seção visível com uma integração funcional do processador.
 - Próximo: finalizar PR #616 em ambiente TEST financeiro segregado, validar CI/E2E, só então habilitar cadastro Pix com backend seguro.
+
+
+## 2026-11-10 · Handoff incident TEST Data API — PR #621
+- Incident confined to investigation of TEST `tmossnqfwfwjrtzwcbmm`; do not confuse with PROD `trfsjuseqjxlhrxuvdsm`. Error samples include HTTP 503/504/522, direct PostgreSQL connection timeout and CI AuthRetryableFetchError 522 during fixture creation.
+- GitHub TEST scheduled-worker proof has manual-only trigger as emergency load shedding. PR #621 bounds both Admin trace panel refresh/reconnect loops and adds source contract checks; merge/deploy pending CI and recovered TEST connectivity.
+- PR roadmap/continuity gates are required. TEST runtime failure while API is down is a genuine blocked acceptance gate, not a reason to bypass or falsify E2E results.
+- Resume with light health checks, provider/client login and profile tests after recovery; restore scheduled operations only when quota and traffic are controlled. Keep PROD isolated, avoid paid upgrades and destructive recovery.
