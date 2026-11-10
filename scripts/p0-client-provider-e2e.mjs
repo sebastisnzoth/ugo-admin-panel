@@ -477,6 +477,14 @@ try{
   if(ui){
    realtimeRecovery=await proveProviderRealtimeRecovery(ui)
    await armProviderLiveOfferProbe(ui.page)
+   // Supabase TEST can be busy for over 90s while verifying role sessions.
+   // Publish another real browser GPS device fix immediately before requesting
+   // matching. Never bypass the provider's age/accuracy server-side gate.
+   const gpsBeforeMatching=must(await admin.from('perfiles_proveedor')
+     .select('online,disponible,ubicacion_updated_at,ubicacion_accuracy_m')
+     .eq('usuario_id',providerId).single(),'read GPS before matching')
+   await proveAutomaticGpsHeartbeat(ui,gpsBeforeMatching.data)
+   stage('pre_matching_browser_gps_refresh',{source:'browser_device_sensor',serverGateUnchanged:true})
   }
 
   // 4 · client creates the request and persists the pickup ---------------
