@@ -34,3 +34,22 @@ assert.equal(health.webhookInboxConfigured,true,'WEBHOOK_SECRET_NOT_CONFIGURED')
 // This backend is an isolated operator-only test fixture, not user-authorized Pix.
 assert.equal(health.providerAuthenticatedCheckoutReady,false,'UNREVIEWED_PROVIDER_CHECKOUT_FLAG')
 console.log(JSON.stringify({probe:'UGO_PIX_SANDBOX_HEALTH',httpStatus:healthResponse.status,environment:health.environment,testDatabase:health.testDatabase,webhookInboxConfigured:health.webhookInboxConfigured,providerAuthenticatedCheckoutReady:health.providerAuthenticatedCheckoutReady,financialWritesPerformed:false}))
+
+/*
+ * The new Provider QR route must deny every browser/client request without
+ * a valid TEST Provider JWT before it reads any payment or QR. This is only
+ * a harmless GET against a synthetic UUID: never send an Asaas token.
+ */
+const noSessionResponse=await fetch(
+ url.replace('/api/webhook','/api/provider-checkout?serviceId=11111111-1111-4111-8111-111111111111'),
+ {method:'GET',signal:AbortSignal.timeout(12000),redirect:'manual'}
+)
+const noSessionBody=await noSessionResponse.json().catch(()=>null)
+console.log(JSON.stringify({
+ probe:'UGO_PIX_PROVIDER_JWT_AUTH_BOUNDARY',
+ httpStatus:noSessionResponse.status,
+ denied:noSessionBody?.error==='provider_session_required',
+ financialWritesPerformed:false
+}))
+assert.equal(noSessionResponse.status,401,'PROVIDER_QR_MUST_REQUIRE_TEST_JWT')
+assert.equal(noSessionBody?.error,'provider_session_required','PROVIDER_QR_AUTH_GUARD_NOT_ENFORCED')
