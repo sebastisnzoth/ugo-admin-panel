@@ -87,7 +87,7 @@ export function AdminPhase2(){
    console.warn('UGO Admin metrics unavailable',error)
    if(generation===metricsRequestGeneration.current)
     setMetricsError('No pudimos actualizar los indicadores. Conservamos los últimos datos válidos para no mostrar ceros falsos.')
-  }finally{if(generation===metricsRequestGeneration.current&&!options?.silent)setLoading(false)}
+  }finally{if(!options?.silent)setLoading(false)}
  },[])
  useEffect(()=>{
   let alive=true
