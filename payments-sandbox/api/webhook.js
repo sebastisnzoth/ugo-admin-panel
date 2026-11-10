@@ -6,7 +6,7 @@ import { timingSafeEqual, createHash } from 'node:crypto'
 import pg from 'pg'
 const {Client}=pg
 const ID=/^[a-zA-Z0-9_-]{1,160}$/
-const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const eventIdValid=x=>typeof x==='string'&&x.length>0&&x.length<=160&&\n ![...x].some(char=>char.charCodeAt(0)<32||char.charCodeAt(0)===127)
 function send(res,code,payload){
  res.statusCode=code
  res.setHeader('Cache-Control','no-store')
@@ -39,7 +39,7 @@ export default async function handler(req,res){
  let event
  try{event=JSON.parse(raw)}catch{return send(res,400,{error:'invalid_json'})}
  if(!event||Array.isArray(event)||typeof event!=='object'||
-    !ID.test(event.id||'')||!ID.test(event.event||'')||
+    !eventIdValid(event.id)||!ID.test(event.event||'')||
     !ID.test(event.payment?.id||'')||!event.event.startsWith('PAYMENT_'))
   return send(res,400,{error:'invalid_event'})
  let db
