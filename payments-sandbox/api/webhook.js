@@ -52,6 +52,11 @@ export default async function handler(req,res){
   if(meta.rows[0]?.db!=='neondb'||meta.rows[0]?.role!=='ugo_payments_sandbox_rw'||
      meta.rows[0]?.privileged!==false)
    return send(res,503,{error:'not_isolated_test_role'})
+  // Never fill the inbox with unrelated payment IDs. A charge can race
+  // with its local persistence; return 503 so Asaas can retry later.
+  const linked=await db.query(`select id from ugo_payments_v2.payment_intents
+    where environment='sandbox' and asaas_payment_id=$1 limit 2`,[event.payment.id])
+  if(linked.rows.length!==1)return send(res,503,{error:'payment_not_yet_linked'})
   const written=await db.query(`insert into ugo_payments_v2.payment_events
     (event_id,processor_payment_id,kind,status)
     values($1,$2,$3,'received') on conflict (event_id) do nothing
