@@ -13,7 +13,19 @@ async function cleanup(){if(serviceId){await admin.from('pagos').delete().eq('se
 try{
  const p=await admin.auth.admin.createUser({email:pe,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Provider Runtime',tipo:'proveedor'}});if(p.error)throw p.error;providerId=p.data.user.id
  const c=await admin.auth.admin.createUser({email:ce,password,email_confirm:true,user_metadata:{nombre:'UGO Hugo Client Runtime',tipo:'cliente'}});if(c.error)throw c.error;clientId=c.data.user.id
- const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId});assert.ifError(prep.error);serviceId=prep.data.service_id;assert.equal(prep.data.state,'asignado')
+ // PostgreSQL 57014 aborts the SQL transaction, including temporary QA
+ // service writes. Retry ONLY the explicitly rolled-back statement timeout;
+ // never retry unknown HTTP/network outcomes that may have committed.
+ let prep
+ for(let attempt=0;attempt<3;attempt++){
+  prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId})
+  if(!prep.error)break
+  const rolledBack=String(prep.error.code||'')==='57014'&&/canceling statement due to statement timeout/i.test(String(prep.error.message||''))
+  if(!rolledBack||attempt===2)break
+  console.warn('UGO_HUGO_QA_TRANSACTION_ROLLED_BACK',JSON.stringify({attempt:attempt+1}))
+  await new Promise(resolve=>setTimeout(resolve,(attempt+1)*3000))
+ }
+ assert.ifError(prep.error);serviceId=prep.data.service_id;assert.equal(prep.data.state,'asignado')
  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:390,height:844},permissions:['geolocation'],geolocation:{latitude:-27.5949,longitude:-48.5482,accuracy:12}});const page=await context.newPage()
  await page.addInitScript(userId=>{localStorage.setItem('ugo.locale.guest.provider','es');localStorage.setItem(`ugo.locale.provider.${userId}`,'es')},providerId)
  await page.addInitScript(()=>{window.__ugoToolResponses=[];window.UGOVoiceBridge={isAvailable:()=>true,startListening:async()=>{},stopListening:()=>{},stopSpeaking:()=>{},sendToolResponse:(id,name,response)=>{window.__ugoToolResponses.push({id,name,response});return true}}})
