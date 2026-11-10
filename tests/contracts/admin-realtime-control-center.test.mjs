@@ -29,11 +29,15 @@ test('admin dashboard metrics stay live and truthfully show degraded realtime',a
  assert.match(src,/t\('adminPhase2\.live'\)/)
  assert.match(src,/t\('adminPhase2\.degraded'\)/)
  assert.match(src,/setInterval/)
- assert.match(src,/scheduleReconcile\(250\)/)
- assert.match(src,/scheduleReconcile\(1000\)/)
- assert.match(src,/scheduleReconcile\(2500\)/)
- assert.match(src,/scheduleReconcile\(5000\)/)
- assert.match(src,/reconcileTimers\.forEach\(timer=>window\.clearTimeout\(timer\)\)/)
+ // Coalesce event bursts and discard out-of-order query results. Never
+ // restore the old five-query-storm reconciliation loop.
+ assert.match(src,/metricsRequestGeneration=useRef\(0\)/)
+ assert.match(src,/generation!==metricsRequestGeneration\.current/)
+ assert.match(src,/initialSyncTimer=window\.setTimeout/)
+ assert.match(src,/trailingSyncTimer=window\.setTimeout/)
+ assert.match(src,/window\.clearTimeout\(initialSyncTimer\)/)
+ assert.match(src,/window\.clearTimeout\(trailingSyncTimer\)/)
+ assert.doesNotMatch(src,/scheduleReconcile\(5000\)/)
 })
 
 test('service 360 sheet refreshes trace chat payments disputes and evidence live',async()=>{
