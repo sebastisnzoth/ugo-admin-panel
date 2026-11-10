@@ -13,7 +13,7 @@ test('Pix pay-after-service is locked out of production and defaults disabled',(
 })
 test('client Preview Pix choice saves the preference but does not issue the charge',()=>{
  assert.match(client,/const preference=await persistPreference\('pix'\)/)
- assert.match(client,/if\\(isPixPayAfterServicePreviewEnabled\\(\\)\\&\\&deferredPixPilotEligible\\(service/)
+ assert.match(client,/if\(isPixPayAfterServicePreviewEnabled\(\)&&deferredPixPilotEligible\(service/)
  const choice=client.split('async function choosePix(){')[1].split('async function copyPix(){')[0]
  const preference=choice.indexOf("await persistPreference('pix')")
  const guard=choice.indexOf('if(isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(service')
