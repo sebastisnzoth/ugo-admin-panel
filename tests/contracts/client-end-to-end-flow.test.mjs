@@ -64,7 +64,7 @@ test('payment and closure remain service-scoped from assignment through rating',
  assert.match(completion,/confirmApprovedCashClientService/)
  assert.match(actions,/rpc\('aprobar_trabajo_sin_pago'/)
  assert.match(actions,/rpc\('confirmar_pago_efectivo_cliente'/)
- assert.match(completion,/t\('clientReview\.confirmWork'\)/)
+ assert.match(completion,/ui\.approveButton/)
  assert.match(completion,/CONFIRMO QUE ENTREGUÉ EL EFECTIVO/)
  assert.match(rating,/submitServiceRating/)
  assert.match(ratingService,/autor_tipo:authorType\(role\)/)
