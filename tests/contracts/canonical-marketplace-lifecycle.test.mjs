@@ -46,7 +46,7 @@ test('backend remains authoritative for marketplace mutations',async()=>{
   assert.match(providerService,/rpc\('aceptar_oferta'/)
   assert.match(providerService,/rpc\('marcar_llegada_proveedor'/)
   assert.match(providerService,/rpc\('avanzar_servicio'/)
-  assert.match(clientActions,/rpc\('aprobar_servicio'/)
+  assert.match(clientActions,/rpc\('aprobar_trabajo_sin_pago'/)
   assert.match(clientActions,/rpc\('confirmar_pago_efectivo_cliente'/)
 
   assert.match(lifecycleSql,/Transición de estado no permitida/)
