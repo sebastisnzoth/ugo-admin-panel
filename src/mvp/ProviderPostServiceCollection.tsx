@@ -47,7 +47,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
   <p><strong>{new Intl.NumberFormat(locale==='pt-BR'?'pt-BR':'es-AR',{style:'currency',currency:/^[A-Z]{3}$/.test(currency)?currency:'BRL'}).format(amount)}</strong></p>
   {(!chosen||chosen==='pix')&&<div className="ugo-provider-payment-methods">
    <button type="button" disabled={busy||chosen==='efectivo'} onClick={()=>void pick('efectivo')}>{labels.cash}</button>
-   {currency==='BRL'&&!chosen&&<button type="button" disabled={busy} onClick={()=>void pick('pix')}>{labels.pix}</button>}
+   {currency==='BRL'&&!chosen&&<button type="button" disabled aria-disabled="true" title={labels.qrUnavailable}>{labels.pix}</button>}
   </div>}
   {chosen==='efectivo'&&<div role="status"><p>{labels.cashPending}</p><p>{labels.cashDebt}</p></div>}
   {chosen==='pix'&&<div role="status"><p>{labels.pixPending}</p><p>{labels.qrUnavailable}</p></div>}
