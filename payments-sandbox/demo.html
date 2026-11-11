@@ -89,15 +89,17 @@ body.embedded .warning{margin-top:10px}
  }
  const refresh=async()=>{
   if(busy)return
+  let autoIssue=false
   busy=true;renderButtons()
   try{
    const response=await fetch('/api/demo-checkout',{credentials:'same-origin',cache:'no-store'})
    const body=await response.text();let result;try{result=JSON.parse(body)}catch{throw Error('Servidor Sandbox indisponível (HTTP '+response.status+'). Recarregue a página.')}
    if(!response.ok)throw Error(result.error||'Falha no Sandbox')
    update(result)
-   if(embedded&&result.stage==='not_issued')void submit('create')
+   if(embedded&&result.stage==='not_issued')autoIssue=true
   }catch(e){message('Erro ao consultar Sandbox: '+String(e.message||e));$('newArea').hidden=true;$('qrArea').hidden=true}
   finally{busy=false;renderButtons()}
+  if(autoIssue)void submit('create')
  }
  $('generate').addEventListener('click',()=>void submit('create'))
  $('simulate').addEventListener('click',()=>void submit('simulate'))
