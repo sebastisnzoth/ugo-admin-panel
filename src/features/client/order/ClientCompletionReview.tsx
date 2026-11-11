@@ -24,6 +24,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  const[payment,setPayment]=useState<ReviewPayment|null>(null)
  const[hasFinalEvidence,setHasFinalEvidence]=useState(false)
  const[busy,setBusy]=useState(false)
+ const[syncing,setSyncing]=useState(false)
  const[notice,setNotice]=useState('')
  const load=useCallback(async()=>{
   const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';setUserId(uid)
@@ -52,7 +53,8 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  const completed=service.estado==='completado'
  const workApproved=Boolean(service.metadata?.trabajo_aprobado_at)
  const canApprove=!completed&&service.estado==='esperando_aprobacion'&&hasFinalEvidence&&!workApproved
- const cashPending=workApproved&&service.metadata?.cobro_metodo==='efectivo'&&payment?.metodo==='efectivo'&&payment.estado==='pendiente'
+ const cashSelected=workApproved&&service.metadata?.cobro_metodo==='efectivo'
+ const cashPending=cashSelected&&payment?.metodo==='efectivo'&&payment.estado==='pendiente'
 
  async function approve(){
   if(!canApprove||!userId)return
@@ -83,17 +85,18 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   finally{setBusy(false)}
  }
 
+ const refreshCash=async()=>{if(syncing)return;setSyncing(true);try{await load()}finally{setSyncing(false)}}
  const blockedReason=!hasFinalEvidence?t('clientReview.needEvidence'):''
 
  const ui=locale==='pt-BR'?{
   approved:'Trabalho aprovado',waiting:'Aguardando o profissional escolher a forma de cobrança.',cashPrompt:'O profissional escolheu dinheiro. Confirme somente depois de entregar o valor.',
-  approveHelp:'Confira o trabalho e aprove. O pagamento é decidido depois.',cashConfirm:'CONFIRMO QUE ENTREGUEI O DINHEIRO',approveButton:'APROVAR O TRABALHO'
+  approveHelp:'Confira o trabalho e aprove. O pagamento é decidido depois.',cashConfirm:'CONFIRMO QUE ENTREGUEI O DINHEIRO',approveButton:'APROVAR O TRABALHO',refresh:'Atualizar situação do pagamento',cashSync:'O profissional escolheu dinheiro. Confirme apenas após entregar o valor.'
  }:locale==='en'?{
   approved:'Work approved',waiting:'Waiting for the professional to choose the collection method.',cashPrompt:'The professional selected cash. Confirm only after handing over the money.',
-  approveHelp:'Review and approve the work. Payment comes later.',cashConfirm:'I CONFIRM CASH HANDOVER',approveButton:'APPROVE WORK'
+  approveHelp:'Review and approve the work. Payment comes later.',cashConfirm:'I CONFIRM CASH HANDOVER',approveButton:'APPROVE WORK',refresh:'Refresh payment status',cashSync:'The professional selected cash. Confirm only after handing over the money.'
  }:{
   approved:'Trabajo aprobado',waiting:'Esperando que el proveedor elija cómo cobrar.',cashPrompt:'El proveedor eligió efectivo. Confirmá solamente después de entregar el dinero.',
-  approveHelp:'Revisá y aprobá el trabajo. El pago se decide después.',cashConfirm:'CONFIRMO QUE ENTREGUÉ EL EFECTIVO',approveButton:'APROBAR EL TRABAJO'
+  approveHelp:'Revisá y aprobá el trabajo. El pago se decide después.',cashConfirm:'CONFIRMO QUE ENTREGUÉ EL EFECTIVO',approveButton:'APROBAR EL TRABAJO',refresh:'Actualizar estado del cobro',cashSync:'El proveedor eligió efectivo. Confirmá después de entregar el dinero.'
  }
 
  const title=workApproved?ui.approved:completed?t('clientReview.confirmedTitle'):t('clientReview.workQuestion')
@@ -102,12 +105,13 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   <header><div><h2>{title}</h2><p>{workApproved?ui.waiting:t('clientReview.reviewBefore',{number:service.numero})}</p></div><span aria-hidden="true">✓</span></header>
   {!completed&&!hasFinalEvidence&&<div className="ugo-completion-warning">{t('clientReview.noFinalPhoto')}</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
-  {cashPending&&<div className="ugo-completion-decision"><span>{ui.cashPrompt}</span></div>}
+  {cashSelected&&<div className="ugo-completion-decision"><span>{cashPending?ui.cashPrompt:ui.cashSync}</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||ui.approveHelp}</span></div>}
   {!completed&&<div className="ugo-completion-actions">
-   {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>{t('screen.client_review.4')}</button>}
-   {cashPending&&<button type="button" onClick={()=>void confirmCash()} disabled={busy}>{busy?t('clientReview.processing'):ui.cashConfirm}</button>}
+   {cashPending&&<button type="button" className="ugo-completion-cash-confirm" onClick={()=>void confirmCash()} disabled={busy||syncing}>{busy?t('clientReview.processing'):ui.cashConfirm}</button>}
+   {cashSelected&&<button type="button" className="ugo-completion-cash-refresh" onClick={()=>void refreshCash()} disabled={busy||syncing}>{syncing?t('clientReview.processing'):ui.refresh}</button>}
    {!workApproved&&<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?t('clientReview.processing'):ui.approveButton}</button>}
+   {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>{t('screen.client_review.4')}</button>}
   </div>}
  </section>
 }
