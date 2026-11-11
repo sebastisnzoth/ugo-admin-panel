@@ -23,7 +23,7 @@ function providerTestEndpoint(serviceId:string):URL|null{
 export function ProviderDeferredPixStatus({
  serviceId,serviceState,amountBRL,accessToken,workApproved,
 }:{serviceId:string;serviceState:string;amountBRL:number;accessToken:string;workApproved:boolean}){
- const{t}=useLocale()
+ const{t,locale}=useLocale()
  const [payment,setPayment]=useState<ProviderPixView>({stage:'not_finished',amountBRL})
  const [revision,setRevision]=useState(0)
  const [copyFailed,setCopyFailed]=useState(false)
@@ -132,7 +132,7 @@ export function ProviderDeferredPixStatus({
    onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>
   {issuanceEnabled&&readyForPix&&payment.stage==='not_issued'&&
    <button type="button" onClick={()=>void create()} disabled={issuing}>
-    {issuing?t('clientPayment.preparingPix'):(t('clientPayment.generatePix'))}
+    {issuing?t('clientPayment.preparingPix'):locale==='es'?'Cobrar con Pix':locale==='en'?'Charge with Pix':'Cobrar com Pix'}
    </button>}
   {copyFailed&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
  </>
