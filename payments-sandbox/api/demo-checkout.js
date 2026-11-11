@@ -8,7 +8,8 @@
 import {randomBytes,createHmac,timingSafeEqual} from 'node:crypto'
 import pg from 'pg'
 import {issueProviderPix} from '../lib/issueProviderPix.js'
-import {sandboxChargeSpec,issuedChargeIdentityValid,pendingQrValid} from '../lib/providerPixIssue.js'
+import {sandboxChargeSpec,issuedChargeIdentityValid} from '../lib/providerPixIssue.js'
+import {pendingQrValid} from '../lib/providerPixProof.js'
 const{Client}=pg
 const BASE='https://api-sandbox.asaas.com/v3'
 const SERVICE='7f4bbad5-8965-4e3a-97b7-98913e8e7fe1'
