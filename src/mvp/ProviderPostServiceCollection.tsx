@@ -5,8 +5,8 @@ import{useLocale}from'../i18n/locale'
 type CollectionMethod='pix'|'efectivo'
 
 /** Choosing a collection method never confirms that money was received. */
-export function ProviderPostServiceCollection({serviceId,amount,approvedAt,selected,onUpdated}:{
- serviceId:string;amount:number;approvedAt:unknown;selected:unknown;onUpdated:()=>Promise<void>
+export function ProviderPostServiceCollection({serviceId,amount,currency,approvedAt,selected,onUpdated}:{
+ serviceId:string;amount:number;currency:string;approvedAt:unknown;selected:unknown;onUpdated:()=>Promise<void>
 }){
  const{locale}=useLocale()
  const[busy,setBusy]=useState(false)
@@ -41,10 +41,10 @@ export function ProviderPostServiceCollection({serviceId,amount,approvedAt,selec
  return <section className="ugo-provider-post-service-collection" aria-label={labels.aria}>
   <h3>{labels.title}</h3>
   <p>{labels.question}</p>
-  <p><strong>{new Intl.NumberFormat(locale==='pt-BR'?'pt-BR':'es-AR',{style:'currency',currency:'BRL'}).format(amount)}</strong></p>
+  <p><strong>{new Intl.NumberFormat(locale==='pt-BR'?'pt-BR':'es-AR',{style:'currency',currency:/^[A-Z]{3}$/.test(currency)?currency:'BRL'}).format(amount)}</strong></p>
   {!chosen&&<div className="ugo-provider-payment-methods">
    <button type="button" disabled={busy} onClick={()=>void pick('efectivo')}>{labels.cash}</button>
-   <button type="button" disabled={busy} onClick={()=>void pick('pix')}>{labels.pix}</button>
+   {currency==='BRL'&&<button type="button" disabled={busy} onClick={()=>void pick('pix')}>{labels.pix}</button>}
   </div>}
   {chosen==='efectivo'&&<p role="status">{labels.cashPending}</p>}
   {chosen==='pix'&&<p role="status">{labels.pixPending}</p>}
