@@ -854,3 +854,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - El diálogo busca **solo lectura** pagos Pix ya emitidos, del mismo servicio asignado al JWT Proveedor, estado pendiente y monto exacto, sin consultar ni generar nuevo cobro Asaas ni tocar tablas.
 - Si no hay Pix válido existente, expresa que aún no existe QR; NO inventa imagen/código, NO confirma pago y NO habilita cobro real sin Asaas PROD.
 - Prohibición de DB Arena: sin migración, cambios de env, secretos ni dinero. Pruebas de contrato incluidas. La emisión real de nuevos Pix Asaas queda pendiente de infraestructura productiva e idempotencia E2E.
+
+
+### 2026-11-11 — Acceso Pix Sandbox desde UGO Pro
+- En el diálogo de cobro Pix de la aplicación Proveedor (`ProviderPostServiceCollection`), se habilita el botón **Testar QR Pix Sandbox** que abre la demostración protegida de Asaas en una pestaña nueva, sin enviar identidad, importe o UUID del servicio real.
+- La demostración aislada ofrece un cobro ficticio fijo de R$100 con QR, copia y pega y simulación; se ejecuta en el proyecto separado `ugo-pagamentos-v2-sandbox`, Vercel Preview protegido y Neon TEST. No valida ni salda servicio alguno de UGO Arena.
+- Se mantiene deshabilitada la creación de Pix real desde la tarjeta; el piloto usa su propia idempotencia y sesión. **NO DDL, DML, secretos ni migraciones en Arena**.
+- Comprobar ruta HTTP 200 Sandbox antes de liberar, tests de integración UI y checks CI; no confundir prueba con pago real.
