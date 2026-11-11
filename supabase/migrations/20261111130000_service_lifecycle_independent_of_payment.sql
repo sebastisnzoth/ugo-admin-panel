@@ -19,8 +19,7 @@ declare
   v_servicio public.servicios%rowtype;
   v_dist_m double precision;
   v_demo boolean := false;
-  v_requested_method text;
-  v_has_ready_payment boolean := false;
+
 begin
   if auth.uid() is null then raise exception 'Autenticación requerida'; end if;
 
@@ -46,35 +45,7 @@ begin
     raise exception 'Transición de estado no permitida';
   end if;
 
-  v_requested_method:=lower(coalesce(
-    v_servicio.metadata->>'requested_payment_method',
-    v_servicio.metadata->>'payment_method',
-    ''
-  ));
-  if v_requested_method='cash' then v_requested_method:='efectivo'; end if;
-
-  select exists(
-    select 1
-    from public.pagos p
-    where p.servicio_id=p_servicio_id
-      and p.ambiente=v_servicio.ambiente
-      and (
-        (
-          p.estado='retenido'
-          and (
-            nullif(btrim(coalesce(p.mp_payment_id,'')),'') is not null
-            or nullif(btrim(coalesce(p.pix_e2e_id,'')),'') is not null
-            or nullif(btrim(coalesce(p.pago_externo_id,'')),'') is not null
-          )
-        )
-        or (
-          p.metodo='efectivo'
-          and p.procesador='efectivo'
-          and p.modelo_pago='presencial'
-          and p.estado in ('pendiente','liberado')
-        )
-      )
-  ) into v_has_ready_payment;
+  -- No consultar pagos en cada transición: evita carga innecesaria sobre la base.
 
   if v_servicio.estado='asignado' and p_estado='en_camino' and not private.is_admin(auth.uid()) then
     if v_servicio.programado_para is not null
