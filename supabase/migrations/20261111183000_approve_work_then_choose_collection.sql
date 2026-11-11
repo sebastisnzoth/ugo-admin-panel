@@ -44,6 +44,9 @@ declare
  v_uid uuid := auth.uid();
  v_method text:=lower(trim(coalesce(p_metodo,'')));
  v_previous text;
+ v_existing public.pagos%rowtype;
+ v_total numeric(12,2);
+ v_comission numeric(12,2);
 begin
  if v_uid is null then raise exception 'Autenticación requerida'; end if;
  if v_method not in ('pix','efectivo') then raise exception 'Forma de cobro no válida'; end if;
@@ -60,6 +63,30 @@ begin
  v_previous:=coalesce(v_service.metadata->>'cobro_metodo','');
  if v_previous<>'' and v_previous<>v_method then
   raise exception 'Ya se eligió un método de cobro; para cambiarlo solicitá revisión';
+ end if;
+ if v_method='efectivo' then
+  if not exists(select 1 from public.config_sistema where clave='pago_efectivo_activo'
+      and lower(trim(both '"' from valor::text)) in ('true','1','si','sí','on'))
+      and exists(select 1 from public.config_sistema where clave='pago_efectivo_activo') then
+    raise exception 'El efectivo está deshabilitado';
+  end if;
+  select * into v_existing from public.pagos where servicio_id=v_service.id for update;
+  if found and not (v_existing.metodo='efectivo' and v_existing.estado='pendiente') then
+    raise exception 'Existe otro intento de cobro; requiere conciliación';
+  end if;
+  if not found then
+   v_total:=round(v_service.tarifa::numeric,2);
+   v_comission:=round(coalesce(v_service.comision_ugo,v_total*0.15)::numeric,2);
+   insert into public.pagos(
+    servicio_id,cliente_id,proveedor_id,procesador,metodo,modelo_pago,ambiente,
+    monto_bruto,comision_ugo,ganancia_proveedor,moneda,estado
+   ) values(
+    v_service.id,v_service.cliente_id,v_service.proveedor_id,'efectivo','efectivo',
+    'presencial',v_service.ambiente,v_total,v_comission,
+    round(coalesce(v_service.ganancia_proveedor,v_total-v_comission)::numeric,2),
+    coalesce(v_service.moneda,'BRL'),'pendiente'
+   );
+  end if;
  end if;
  if v_previous=v_method then return v_service; end if;
  update public.servicios
