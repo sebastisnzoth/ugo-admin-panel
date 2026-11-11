@@ -5,7 +5,7 @@ import{useLocale}from'../i18n/locale'
 type CollectionMethod='pix'|'efectivo'
 
 /** An isolated, immutable R$100 Asaas Sandbox demo. No real service ID is sent. */
-const PIX_SANDBOX_DEMO_URL='https://ugo-pagamentos-v2-sandbox-9htdvodx2-sebastisnzoths-projects.vercel.app/demo.html'
+const PIX_SANDBOX_DEMO_URL='https://ugo-pagamentos-v2-sandbox-git-fe-44813e-sebastisnzoths-projects.vercel.app/demo.html'
 
 /** Choosing a collection method never confirms that money was received. */
 export function ProviderPostServiceCollection({serviceId,amount,currency,commission,openDebtCount,approvedAt,selected,onUpdated,onOpenEarnings}:{
