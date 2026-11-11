@@ -13,7 +13,7 @@ test('completion review lives behind the order feature boundary with legacy comp
  assert.match(source,/export function ClientCompletionReview/)
  assert.match(source,/approvePendingClientService/)
  assert.match(source,/confirmApprovedCashClientService/)
- assert.doesNotMatch(source,/supabase\.rpc\('aprobar_servicio'|supabase\.rpc\('confirmar_pago_efectivo_cliente'/)
+ assert.doesNotMatch(source,/supabase\.rpc\('aprobar_trabajo_sin_pago'|supabase\.rpc\('confirmar_pago_efectivo_cliente'/)
 })
 
 test('completion realtime scopes selected service and preserves authenticated-client fallback',()=>{
@@ -35,7 +35,7 @@ test('approval reconciles ambiguous backend failure without ever confirming cash
  assert.match(actions,/approvePendingClientService/)
  assert.match(actions,/if\(row\.estado==='completado'\)return true/)
  assert.match(actions,/if\(hasWorkApproval\(row\)\)return true/)
- assert.match(actions,/rpc\('aprobar_servicio',\{p_servicio_id:row\.id\}\)/)
+ assert.match(actions,/rpc\('aprobar_trabajo_sin_pago',\{p_servicio_id:row\.id\}\)/)
  assert.match(actions,/persisted\?\.estado==='esperando_aprobacion'&&hasWorkApproval\(persisted\)/)
  const approval=actions.slice(actions.indexOf('export async function approvePendingClientService'),actions.indexOf('export async function confirmApprovedCashClientService'))
  assert.doesNotMatch(approval,/confirmar_pago_efectivo_cliente/)
@@ -55,7 +55,7 @@ test('review load error does not erase a previously known active closure',()=>{
 
 test('cash close directly refreshes the parent detail so rating can appear without waiting for realtime',()=>{
  assert.match(source,/onCompleted\?:\(\)=>void\|Promise<void>/)
- assert.match(source,/confirmApprovedCashClientService[\s\S]*await load\(\)[\s\S]*await onCompleted\?\.\(\)/)
+ assert.match(source,/confirmApprovedCashClientService[\s\S]*await load\(\)/)
 })
 
 

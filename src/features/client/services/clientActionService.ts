@@ -1,6 +1,7 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{getDispatchProvider}from'../../../lib/dispatch/provider'
 import{MATCHING_SERVICE_STATES}from'../../../lib/marketplace/lifecycle'
+import{hasExistingProtectedPayment}from'./clientPaymentLegacyApproval'
 
 export const CLIENT_CANCELLABLE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado']
 export const CLIENT_MATCHING_RETRY_STATES=[...MATCHING_SERVICE_STATES]
@@ -57,7 +58,14 @@ export async function approvePendingClientService(supabase:SupabaseClient,userId
  if(row.estado!=='esperando_aprobacion')return false
  if(hasWorkApproval(row))return true
 
- const result=await supabase.rpc('aprobar_servicio',{p_servicio_id:row.id})
+ // Preserve the original settlement route for legacy services that were already funded.
+ // A new work-only approval never changes payment state or releases funds.
+ if(await hasExistingProtectedPayment(supabase,row.id)){
+  const legacy=await supabase.rpc('aprobar_servicio',{p_servicio_id:row.id})
+  if(legacy.error)throw legacy.error
+  return true
+ }
+ const result=await supabase.rpc('aprobar_trabajo_sin_pago',{p_servicio_id:row.id})
  if(!result.error)return true
 
  try{

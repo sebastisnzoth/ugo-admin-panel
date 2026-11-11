@@ -23,7 +23,7 @@ test('client approval and YA PAGUÉ are distinct exact-service mutation boundari
  assert.match(bridge,/approvePendingClientService\(supabase,userId,serviceId\)/)
  assert.match(bridge,/confirmApprovedCashClientService\(supabase,userId,serviceId\)/)
  assert.match(service,/readOwnedClosureService[\s\S]*\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)\.maybeSingle\(\)/)
- assert.match(service,/approvePendingClientService[\s\S]*if\(hasWorkApproval\(row\)\)return true[\s\S]*rpc\('aprobar_servicio',\{p_servicio_id:row\.id\}\)/)
+ assert.match(service,/approvePendingClientService[\s\S]*if\(hasWorkApproval\(row\)\)return true[\s\S]*rpc\('aprobar_trabajo_sin_pago',\{p_servicio_id:row\.id\}\)/)
  assert.match(service,/confirmApprovedCashClientService[\s\S]*!hasWorkApproval\(row\)[\s\S]*rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:row\.id\}\)/)
  assert.doesNotMatch(service,/workApproved\?'confirmar_pago_efectivo_cliente':'aprobar_servicio'/)
 })

@@ -1238,3 +1238,10 @@ RUNTIME VALIDATED             pendiente
 - Cambios de código propuestos: eliminar bloqueos de pago en pantallas del proveedor y nueva versión de `private.avanzar_servicio_impl`; mantener seguridad, autorización, tarifa aprobada, GPS 200m, fotos y programación.
 - **NO liberado / NO desplegado**: PR aún en revisión; migración no aplicada ni en UGO Arena PROD ni en otro entorno. El checkout final Pix/efectivo y conciliación no están completos en el flujo real, aunque existe validación Pix Sandbox aislada.
 - Puertas: Core CI y seguridad en SHA exacto; E2E Cliente↔Proveedor en TEST, auditoría SQL/deploy y evidencia de cobro final; no fusionar por mergeable solamente.
+
+
+### 2026-11-11 — Corrección aprobación posterior a servicio #3451 (PR pendiente)
+- La aprobación del trabajo se separa de cualquier pago: `aprobar_trabajo_sin_pago` valida cliente dueño, estado `esperando_aprobacion` y evidencia final, persiste solo `metadata.trabajo_aprobado_at`, idempotente; no libera ni crea pagos.
+- Proveedor elige método `efectivo` o `pix` después de aprobación mediante `elegir_cobro_post_servicio`, verifica propiedad; efectivo genera únicamente `pagos.estado=pendiente` si no hay pago existente. Pix se registra como selección sin crear cobro ficticio ni anunciar fondos recibidos.
+- Cliente puede confirmar la entrega de efectivo solamente después de que el proveedor lo elige. La pantalla de aprobación no exige pago.
+- **No habilitar Pix real sin backend transaccional Asaas y conciliación webhook**. El piloto Pix Sandbox sigue aislado. Mantener PROD sin DDL hasta CI y verificación de firma/roles.

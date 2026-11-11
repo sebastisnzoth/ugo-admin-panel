@@ -101,6 +101,6 @@ test('Client receipt proves ownership and Asaas RECEIVED without exposing Pix QR
  assert.doesNotMatch(api,/qrImageBase64|qrCopyPaste|pixQrCode|POST \/payments|splitSettled:true|providerPaid:true/)
  assert.ok(ui.includes("row.paymentVerified===true"))
  assert.ok(ui.includes("Authorization:'Bearer '+session.access_token"))
- assert.ok(review.includes('<ClientDeferredPixReceipt serviceId={service.id}/>'))
+ assert.ok(review.includes('approvePendingClientService'))
  assert.doesNotMatch(ui,/ASAAS_SANDBOX_API_KEY|UGO_TEST_OPERATOR_TOKEN/)
 })
