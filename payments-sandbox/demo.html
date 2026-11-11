@@ -22,6 +22,19 @@ label{font-size:12px;font-weight:800;color:#245b48}textarea{width:100%;margin:8p
 [hidden]{display:none!important}.warning{background:#fff7e8;color:#80551b;padding:12px;border-radius:12px;font-size:12px;margin-top:16px}
 footer{max-width:790px;padding:15px 20px;margin:auto;color:#789186;font-size:12px}
 @media(max-width:550px){main{margin:4px 12px 40px;padding:22px;border-radius:22px}.amount strong{font-size:36px}}
+/* UGO Pro's in-app Pix modal: keep all QR controls inside the embedded frame. */
+body.embedded{background:#fff;min-height:0}
+body.embedded>header,body.embedded>footer{display:none}
+body.embedded main{margin:0 auto;padding:12px 14px 18px;border:0;border-radius:0;box-shadow:none;max-width:440px}
+body.embedded h1{font-size:20px}
+body.embedded .eyebrow{font-size:10px}
+body.embedded .amount{padding:12px 14px;margin:12px 0}
+body.embedded .amount strong{font-size:28px}
+body.embedded .qr{max-width:220px;margin:12px auto;padding:7px}
+body.embedded #state{margin-bottom:10px}
+body.embedded .actions{margin-top:12px}
+body.embedded button{min-height:46px}
+body.embedded .warning{margin-top:10px}
 </style></head>
 <body><header><div class="logo">UGO <span>PIX</span></div><div class="pill">SANDBOX · TESTE</div></header>
 <main>
@@ -43,6 +56,8 @@ footer{max-width:790px;padding:15px 20px;margin:auto;color:#789186;font-size:12p
 <script>
 (()=>{
  const $=id=>document.getElementById(id)
+ const embedded=new URLSearchParams(location.search).get('embed')==='1'
+ if(embedded)document.body.classList.add('embedded')
  let busy=false,stage=''
  const message=(msg)=>{$('state').textContent=msg}
  const submit=async(action)=>{
@@ -80,6 +95,7 @@ footer{max-width:790px;padding:15px 20px;margin:auto;color:#789186;font-size:12p
    const body=await response.text();let result;try{result=JSON.parse(body)}catch{throw Error('Servidor Sandbox indisponível (HTTP '+response.status+'). Recarregue a página.')}
    if(!response.ok)throw Error(result.error||'Falha no Sandbox')
    update(result)
+   if(embedded&&result.stage==='not_issued')void submit('create')
   }catch(e){message('Erro ao consultar Sandbox: '+String(e.message||e));$('newArea').hidden=true;$('qrArea').hidden=true}
   finally{busy=false;renderButtons()}
  }
