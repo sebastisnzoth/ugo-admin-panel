@@ -78,6 +78,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
   </Card>
   {s.estado==='esperando_aprobacion'&&<Card className="provider-card provider-post-service-payment">
    <ProviderPostServiceCollection serviceId={s.id} amount={Number(s.tarifa||0)} currency={String(s.moneda||'BRL')}
+    commission={Number(s.comision_ugo||0)} openDebtCount={d.pendingDebtCount} onOpenEarnings={flow.actions.openEarnings}
     approvedAt={workApprovalStamp}
     selected={(s as{metadata?:Record<string,unknown>|null}).metadata?.cobro_metodo}
     onUpdated={d.reload}/>
