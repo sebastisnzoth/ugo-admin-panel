@@ -150,7 +150,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
    </button>
    {currencyCode==='BRL'&&<button type="button" className={`ugo-collection-method ${chosen==='pix'?'is-selected':''}`} aria-pressed={chosen==='pix'}
     onClick={()=>setPixDetailsOpen(true)}>
-    <span className="ugo-collection-method-icon ugo-collection-method-pix" aria-hidden="true">◆</span><span><strong>Pix · QR Code</strong><small>{labels.pixHelp}</small></span><span className="ugo-collection-check" aria-hidden="true">›</span>
+    <span className="ugo-collection-method-icon ugo-collection-method-pix" aria-hidden="true">◆</span><span><strong>{labels.pix}</strong><small>{labels.pixHelp}</small></span><span className="ugo-collection-check" aria-hidden="true">›</span>
    </button>}
   </div>
   {chosen==='efectivo'&&<div className="ugo-collection-step" role="status">
@@ -188,7 +188,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
     <div className="ugo-collection-modal-total">{money(amount)}</div>
     {pixLoading?<p role="status">{labels.pixLoading}</p>:
       pixCode?<div className="ugo-collection-modal-pay">
-       {pixImage&&<img src={`data:image/png;base64,${pixImage}`} alt="Pix QR Code" width={210} height={210}/>}
+       {pixImage&&<img src={`data:image/png;base64,${pixImage}`} alt={labels.pix} width={210} height={210}/>}
        <textarea readOnly aria-label={labels.copyPix} value={pixCode} rows={3}/>
        <button type="button" className="ugo-collection-action" onClick={()=>void copyExistingPix()}>{labels.copyPix}</button>
        {pixCopyStatus&&<p role="status">{pixCopyStatus}</p>}
