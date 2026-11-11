@@ -1,5 +1,5 @@
 -- Approval and collection choice are operational states, not payment settlements.
--- Safe to run independently of the legacy payment lifecycle. No writes to pagos.
+-- Approval never writes to pagos. Cash selection creates only a pending payment.
 create or replace function public.aprobar_trabajo_sin_pago(p_servicio_id uuid)
 returns public.servicios
 language plpgsql security definer
@@ -80,6 +80,9 @@ begin
      select 1 from public.config_sistema where clave='pago_efectivo_ar_activo'
      and lower(trim(both '"' from valor::text)) not in ('true','1','si','sí','on')
     ) then raise exception 'El efectivo está deshabilitado para Argentina'; end if;
+  if (select count(*) from public.pagos p where p.servicio_id=v_service.id)>1 then
+   raise exception 'Varios intentos de pago: requiere conciliación';
+  end if;
   select * into v_existing from public.pagos where servicio_id=v_service.id for update;
   if found and not (v_existing.metodo='efectivo' and v_existing.estado='pendiente') then
     raise exception 'Existe otro intento de cobro; requiere conciliación';
