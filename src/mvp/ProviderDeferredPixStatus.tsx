@@ -21,8 +21,8 @@ function providerTestEndpoint(serviceId:string):URL|null{
  }catch{return null}
 }
 export function ProviderDeferredPixStatus({
- serviceId,serviceState,amountBRL,accessToken,
-}:{serviceId:string;serviceState:string;amountBRL:number;accessToken:string}){
+ serviceId,serviceState,amountBRL,accessToken,workApproved,
+}:{serviceId:string;serviceState:string;amountBRL:number;accessToken:string;workApproved:boolean}){
  const{t}=useLocale()
  const [payment,setPayment]=useState<ProviderPixView>({stage:'not_finished',amountBRL})
  const [revision,setRevision]=useState(0)
@@ -30,11 +30,12 @@ export function ProviderDeferredPixStatus({
  const [issuing,setIssuing]=useState(false)
  const issuanceEnabled=isPixProviderIssuePreviewEnabled()
  const finished=serviceState==='esperando_aprobacion'||serviceState==='completado'
+ const readyForPix=finished&&workApproved
  useEffect(()=>{
   let alive=true,timer:number|undefined
   const controller=new AbortController()
-  if(!finished){
-   setPayment({stage:'not_finished',amountBRL})
+  if(!readyForPix){
+   setPayment({stage:finished?'awaiting_approval':'not_finished',amountBRL})
    return()=>{alive=false;controller.abort()}
   }
   const endpoint=providerTestEndpoint(serviceId)
@@ -54,10 +55,12 @@ export function ProviderDeferredPixStatus({
     const payload=await response.json().catch(()=>null)
     if(!alive||controller.signal.aborted)return
     if(!response.ok||payload?.environment!=='sandbox'||
-       !['awaiting_payment','confirming','received'].includes(payload?.stage)||
+       !['not_issued','awaiting_payment','confirming','received'].includes(payload?.stage)||
        !Number.isFinite(Number(payload?.amountBRL))||
        Math.abs(Number(payload.amountBRL)-amountBRL)>0.009){
      setPayment({stage:'error',amountBRL})
+    }else if(payload.stage==='not_issued'){
+     setPayment({stage:'not_issued',amountBRL})
     }else if(payload.stage==='received'){
      setPayment({stage:'received',amountBRL})
      return
@@ -92,7 +95,7 @@ export function ProviderDeferredPixStatus({
    document.removeEventListener('visibilitychange',visible)
    window.removeEventListener('online',online)
   }
- },[serviceId,serviceState,finished,amountBRL,accessToken,revision])
+ },[serviceId,serviceState,finished,readyForPix,amountBRL,accessToken,revision])
  useEffect(()=>{
   if(payment.stage!=='awaiting_payment'||!payment.expiresAt)return
   const expires=Date.parse(payment.expiresAt)
@@ -103,7 +106,7 @@ export function ProviderDeferredPixStatus({
   return()=>window.clearTimeout(timer)
  },[payment.stage,payment.expiresAt,amountBRL])
  const create=async()=>{
-  if(!finished||!issuanceEnabled||issuing||!accessToken)return
+  if(!readyForPix||!issuanceEnabled||issuing||payment.stage!=='not_issued'||!accessToken)return
   const endpoint=providerTestEndpoint(serviceId)
   if(!endpoint){setPayment({stage:'error',amountBRL});return}
   setIssuing(true)
@@ -127,9 +130,9 @@ export function ProviderDeferredPixStatus({
  return <>
   <ProviderPixAfterService payment={payment} onRefresh={()=>setRevision(n=>n+1)}
    onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>
-  {issuanceEnabled&&finished&&['error','expired'].includes(payment.stage)&&
+  {issuanceEnabled&&readyForPix&&payment.stage==='not_issued'&&
    <button type="button" onClick={()=>void create()} disabled={issuing}>
-    {issuing?t('clientPayment.preparingPix'):t('clientPayment.generatePix')}
+    {issuing?t('clientPayment.preparingPix'):(t('clientPayment.generatePix'))}
    </button>}
   {copyFailed&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
  </>
