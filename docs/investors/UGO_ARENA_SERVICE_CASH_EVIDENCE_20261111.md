@@ -1,3 +1,5 @@
+> **ACLARACIÓN DEL FUNDADOR — 11/11/2026:** El fundador confirmó expresamente que los servicios y pagos en efectivo encontrados en UGO Arena corresponden a **pruebas realizadas por él mismo con dos celulares**. Esto incluye los registros etiquetados `real`: esa etiqueta **no representa clientes reales ni ventas comerciales**. **Clientes comerciales verificados: 0; ingresos comerciales verificados: R$0.** Los importes de servicios y comisiones son **simulados/nominales**, no facturación ni dinero cobrado por UGO. No presentar 66 servicios o 64 pagos como tracción comercial ante inversores. La evidencia sí respalda pruebas funcionales del flujo Cliente–Proveedor.
+
 # UGO — Evidencia de servicios y efectivo de Arena (lectura 2026-11-11)
 
 **Fuente:** consulta SQL de solo lectura a Supabase UGO Arena, proyecto `tmossnqfwfwjrtzwcbmm`, tablas `public.servicios` y `public.pagos`. No contiene datos personales ni identificadores de cuentas.
