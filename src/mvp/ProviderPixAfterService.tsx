@@ -3,7 +3,7 @@ import {useLocale} from '../i18n/locale'
 
 /** Preview-only presentation. Trusted backend owns all payment transitions. */
 export type ProviderPixStage =
- | 'not_finished' | 'loading' | 'awaiting_payment'
+ | 'not_finished' | 'awaiting_approval' | 'not_issued' | 'loading' | 'awaiting_payment'
  | 'confirming' | 'received' | 'expired' | 'error'
 export type ProviderPixView = {
  stage: ProviderPixStage
@@ -19,6 +19,8 @@ const COPY={
   label:'Pagamento Pix após o serviço',
   title:'Pagamento do serviço',
   unfinished:'Finalize o serviço para liberar a cobrança Pix.',
+  awaitingApproval:'Aguardando o cliente aprovar o trabalho antes da cobrança.',
+  notIssued:'Trabalho aprovado. Toque em Cobrar com Pix para gerar o QR Code Sandbox.',
   loading:'Preparando o pagamento com segurança…',
   received:'Pagamento recebido!',
   receivedDetail:'Asaas confirmou o pagamento. Não apresente o QR novamente.',
@@ -40,6 +42,8 @@ const COPY={
   label:'Pago Pix después del servicio',
   title:'Pago del servicio',
   unfinished:'Finalizá el trabajo para habilitar el cobro Pix.',
+  awaitingApproval:'Esperando que el cliente apruebe el trabajo antes de cobrar.',
+  notIssued:'Trabajo aprobado. Tocá Cobrar con Pix para generar el QR Sandbox.',
   loading:'Preparando el cobro de forma segura…',
   received:'¡Pago recibido!',
   receivedDetail:'Asaas confirmó el pago. No vuelvas a mostrar el QR.',
@@ -61,6 +65,8 @@ const COPY={
   label:'Pix payment after service',
   title:'Service payment',
   unfinished:'Finish the service before generating the Pix charge.',
+  awaitingApproval:'Waiting for the customer to approve the work before charging.',
+  notIssued:'Work approved. Choose Charge with Pix to generate the Sandbox QR code.',
   loading:'Preparing your payment securely…',
   received:'Payment received!',
   receivedDetail:'Asaas confirmed payment. Do not show the QR again.',
@@ -101,6 +107,8 @@ export function ProviderPixAfterService({
    aria-label={t.label} aria-live="polite">
    <h2>{t.title}</h2>
    {stage==='not_finished'?<p>{t.unfinished}</p>:
+    stage==='awaiting_approval'?<p role="status">{t.awaitingApproval}</p>:
+    stage==='not_issued'?<p role="status">{t.notIssued}</p>:
     stage==='loading'?<p>{t.loading}</p>:
     stage==='received'?<div role="status"><strong>{t.received}</strong><p>{t.receivedDetail}</p></div>:
     stage==='expired'?<div role="status"><strong>{t.expired}</strong><p>{t.expiredDetail}</p></div>:
