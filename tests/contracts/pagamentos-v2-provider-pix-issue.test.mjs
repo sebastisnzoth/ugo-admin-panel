@@ -147,3 +147,14 @@ test('provider charge creation requires independent Preview-only flags, JWT and 
  assert.ok(ui.includes("Authorization:'Bearer '+accessToken"))
  assert.doesNotMatch(ui,/UGO_TEST_OPERATOR_TOKEN|ASAAS_SANDBOX_API_KEY/)
 })
+
+test('provider only presents Sandbox Pix after client approval and explicit collection choice',()=>{
+ const source=readFileSync(new URL('../../src/mvp/ProviderDeferredPixStatus.tsx',import.meta.url),'utf8')
+ assert.match(source,/const readyForPix=finished&&workApproved/)
+ assert.match(source,/collectionMethod==='pix'&&payment.stage==='not_issued'/)
+ assert.match(source,/locale==='pt-BR'\\?'Cobrar com Pix'/)
+ assert.match(source,/locale==='pt-BR'\\?'Cobrar em dinheiro'/)
+ assert.match(source,/Esta selección no registra el pago ni genera Pix/)
+ assert.match(source,/payment.stage==='awaiting_payment'/)
+ assert.doesNotMatch(source,/setPayment\\(\\{stage:'received'/)
+})
