@@ -46,10 +46,20 @@ function authenticate(req,res){
  }
  return false
 }
-function issueSession(res){
+function issueSession(req,res){
  const ts=String(Date.now()),nonce=randomBytes(16).toString('hex')
  const cookie=ts+'.'+nonce+'.'+sign(ts+'.'+nonce)
- res.setHeader('Set-Cookie','ugo_pix_demo_session='+cookie+'; Path=/api/demo-checkout; Max-Age=3600; Secure; HttpOnly; SameSite=Strict')
+ // Partitioned cookie allows the same isolated demo to run in UGO Pro's iframe.
+ // The signing secret never leaves the server; no Arena credentials are sent.
+ const ref=String(req.headers.referer||'')
+ let embedded=false
+ try{
+  const parsed=new URL(ref)
+  embedded=parsed.origin==='https://'+String(req.headers.host||'').toLowerCase()&&
+   parsed.pathname==='/demo.html'&&parsed.searchParams.get('embed')==='1'
+ }catch{}
+ const sameSite=embedded?'SameSite=None; Partitioned':'SameSite=Strict'
+ res.setHeader('Set-Cookie','ugo_pix_demo_session='+cookie+'; Path=/api/demo-checkout; Max-Age=3600; Secure; HttpOnly; '+sameSite)
 }
 function originOk(req){
  const origin=req.headers.origin
@@ -165,7 +175,7 @@ export default async function handler(req,res){
  if(!process.env.UGO_NEON_TEST_READONLY_URL||!process.env.UGO_NEON_TEST_WRITE_URL||
     !process.env.UGO_ASAAS_ISSUER_WALLET_ID)
   return json(res,503,{error:'sandbox_not_configured'})
- if(req.method==='GET'&&!authenticate(req,res))issueSession(res)
+ if(req.method==='GET'&&!authenticate(req,res))issueSession(req,res)
  if(req.method==='POST'&&(!authenticate(req,res)||!originOk(req)))
   return json(res,403,{error:'sandbox_session_required'})
  const action=req.method==='POST'?req.body?.action:'status'
