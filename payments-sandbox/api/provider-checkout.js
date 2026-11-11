@@ -116,7 +116,9 @@ export default async function handler(req,res){
    "from ugo_payments_v2.payment_intents where ugo_service_id=$1 and environment='sandbox'",
    [serviceId])
   const intent=result.rows.length===1?result.rows[0]:null
-  if(!intent)return out(res,409,{error:'payment_not_linked'})
+  if(!intent)return out(res,200,{environment:'sandbox',stage:'not_issued',
+   amountBRL:Number(service.tarifa),paymentVerified:false,
+   splitSettled:false,providerPaid:false,financialWritesPerformed:false})
   if(!verifiedIntentForService(intent,service,user.id))
    throw Error('payment_ownership_mismatch')
   if(!intent.asaas_payment_id)
