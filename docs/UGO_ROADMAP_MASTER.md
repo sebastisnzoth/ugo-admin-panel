@@ -1231,3 +1231,10 @@ RUNTIME VALIDATED             pendiente
 - Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
 - Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
 - Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
+
+
+### 2026-11-11 — P0: ejecución del servicio independiente del cobro (PR #624, DRAFT)
+- Regla producto: no exigir Pix ni efectivo antes de que el proveedor se traslade, llegue, inicie o finalice el servicio. El proveedor solicita el método de pago luego del trabajo y la aprobación.
+- Cambios de código propuestos: eliminar bloqueos de pago en pantallas del proveedor y nueva versión de `private.avanzar_servicio_impl`; mantener seguridad, autorización, tarifa aprobada, GPS 200m, fotos y programación.
+- **NO liberado / NO desplegado**: PR aún en revisión; migración no aplicada ni en UGO Arena PROD ni en otro entorno. El checkout final Pix/efectivo y conciliación no están completos en el flujo real, aunque existe validación Pix Sandbox aislada.
+- Puertas: Core CI y seguridad en SHA exacto; E2E Cliente↔Proveedor en TEST, auditoría SQL/deploy y evidencia de cobro final; no fusionar por mergeable solamente.
