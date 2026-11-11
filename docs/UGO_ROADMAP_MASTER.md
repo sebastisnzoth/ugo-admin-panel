@@ -1259,3 +1259,10 @@ RUNTIME VALIDATED             pendiente
 - Cliente ve botón principal `CONFIRMO QUE ENTREGUEI O DINHEIRO`, ejecuta `confirmar_pago_efectivo_cliente` tras entrega física; se ofrece actualización manual de estado si falla la notificación Realtime. Una confirmación genera deuda de comisión REAL y el límite de 3 se aplica por trigger (no al seleccionar efectivo).
 - Trabajos adicionales no presupuestados: proveedor puede escribir un **nuevo total propuesto** y enviarlo al cliente por chat, pero esto no altera el valor congelado ni emite Pix. La aprobación formal del monto y el QR oficial Asaas por valor final siguen bloqueados hasta una integración segura y E2E; no permitir importes unilaterales.
 - Solo frontend + pruebas y documentación. Ninguna migración ni escritura directa sobre UGO Arena; sin cambios de variables ni conexiones de producción.
+
+
+### 2026-11-11 — UI premium cobro Proveedor y lectura QR Pix existente
+- Nuevo panel posservicio responsive con tarjetas grandes de Dinheiro/Pix, estado de cobro, contador visual de comisiones abiertas, CTA de confirmación, propuesta de extras y diálogo accesible para Pix.
+- El diálogo busca **solo lectura** pagos Pix ya emitidos, del mismo servicio asignado al JWT Proveedor, estado pendiente y monto exacto, sin consultar ni generar nuevo cobro Asaas ni tocar tablas.
+- Si no hay Pix válido existente, expresa que aún no existe QR; NO inventa imagen/código, NO confirma pago y NO habilita cobro real sin Asaas PROD.
+- Prohibición de DB Arena: sin migración, cambios de env, secretos ni dinero. Pruebas de contrato incluidas. La emisión real de nuevos Pix Asaas queda pendiente de infraestructura productiva e idempotencia E2E.

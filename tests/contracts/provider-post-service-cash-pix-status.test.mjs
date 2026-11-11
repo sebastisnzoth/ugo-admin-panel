@@ -6,7 +6,7 @@ const read=(p)=>readFileSync(new URL('../../'+p,import.meta.url),'utf8')
 test('provider screen never advertises an unavailable real Pix QR',()=>{
  const collection=read('src/mvp/ProviderPostServiceCollection.tsx')
  const job=read('src/mvp/provider/ProviderActiveJob.tsx')
- assert.match(collection,/disabled aria-disabled="true" title=\{labels\.qrUnavailable\}/)
+ assert.match(collection,/onClick=\{\(\)=>setPixDetailsOpen\(true\)\}/)
  assert.match(collection,/Pix selecionado, mas não há QR Asaas/)
  assert.match(collection,/cashDebt/)
  assert.match(job,/openDebtCount=\{d\.pendingDebtCount\}/)
