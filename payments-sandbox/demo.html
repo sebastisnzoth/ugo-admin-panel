@@ -50,7 +50,7 @@ footer{max-width:790px;padding:15px 20px;margin:auto;color:#789186;font-size:12p
   busy=true;renderButtons();message(action==='create'?'Gerando QR no Asaas Sandbox…':action==='simulate'?'Confirmando pagamento fictício no Asaas…':'Consultando o status…')
   try{
    const response=await fetch('/api/demo-checkout',{method:'POST',headers:{'Content-Type':'application/json','X-UGO-Demo-Action':'1'},credentials:'same-origin',cache:'no-store',body:JSON.stringify({action})})
-   const result=await response.json()
+   const body=await response.text();let result;try{result=JSON.parse(body)}catch{throw Error('Servidor Sandbox indisponível (HTTP '+response.status+'). Recarregue a página.')}
    if(!response.ok)throw Error(result.error||'Falha no ambiente Sandbox')
    update(result)
   }catch(e){message('Não foi possível concluir: '+String(e.message||e)+'. Não repita automaticamente.');$('newArea').hidden=true;$('qrArea').hidden=true}
@@ -77,7 +77,7 @@ footer{max-width:790px;padding:15px 20px;margin:auto;color:#789186;font-size:12p
   busy=true;renderButtons()
   try{
    const response=await fetch('/api/demo-checkout',{credentials:'same-origin',cache:'no-store'})
-   const result=await response.json()
+   const body=await response.text();let result;try{result=JSON.parse(body)}catch{throw Error('Servidor Sandbox indisponível (HTTP '+response.status+'). Recarregue a página.')}
    if(!response.ok)throw Error(result.error||'Falha no Sandbox')
    update(result)
   }catch(e){message('Erro ao consultar Sandbox: '+String(e.message||e));$('newArea').hidden=true;$('qrArea').hidden=true}
