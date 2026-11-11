@@ -41,3 +41,13 @@ R$0; solo lectura; no modificar Arena PROD, no hacer pruebas sobre PROD; no publ
 
 ## Próxima tarea
 Buscar evidencias TEST de #2697 y adjuntar referencias sanitizadas. Si el backend TEST no está disponible, dejar explícito el bloqueo y preservar los testimonios fechados.
+
+## Comprobación de ubicación de datos — 2026-11-11
+
+Se consultó **solo metadatos** de proyectos Neon accesibles: `ugo-pagamentos-v2-test` (creado 2026-11-06) y `UGOAPP` (creado 2026-10-30). **Ninguno de estos proyectos puede presumirse origen del servicio físico #2697 del 2026-10-28**, dado que ambos se crearon después de la prueba reportada. No se ejecutó SQL ni se consultaron filas de usuarios, servicios o pagos.
+
+El runbook de dos dispositivos identifica un proyecto Supabase TEST distinto (`tmossnqfwfwjrtzwcbmm`), pero el procedimiento no confirma que esa fuera la instancia del servicio #2697. No se intentó consultar Supabase PROD.
+
+**Estado:** origen de datos primarios de #2697 sin identificar con certeza; pendiente acceso de solo lectura a la instancia TEST histórica correcta y a sus artefactos. Evitar buscar #2697 en Neon Pagamentos V2 como si fuera el sistema original.
+
+**Siguiente verificación segura:** contrastar despliegue/fecha/entorno de la prueba histórica con los registros TEST disponibles, sin tocar PROD.
