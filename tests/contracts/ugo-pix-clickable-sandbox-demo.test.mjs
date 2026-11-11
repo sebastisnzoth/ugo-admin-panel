@@ -18,7 +18,7 @@ test('sandbox click demo isolated from Arena, real money and production',()=>{
 
 test('sandbox only issues one canonical test charge and requires signed same-origin action',()=>{
  const src=read('payments-sandbox/api/demo-checkout.js')
- assert.match(src,/if\(old\)return readStatus\(db\)/)
+ assert.match(src,/if\(old\)return readStatus\(db,fixture\)/)
  assert.match(src,/authenticate\(req,res\)/)
  assert.match(src,/originOk\(req\)/)
  assert.match(src,/SameSite=Strict/)
@@ -46,4 +46,18 @@ test('simulation is only on the Asaas Sandbox endpoint and never releases a spli
  assert.match(src,/splitSettled:false/)
  assert.match(src,/providerPaid:false/)
  assert.doesNotMatch(src,/\/transfers|\/split|\/wallets\/transfer/)
+})
+
+test('embedded sandbox session uses Partitioned cookie and a unique TEST fixture',()=>{
+ const src=read('payments-sandbox/api/demo-checkout.js')
+ const html=read('payments-sandbox/demo.html')
+ const config=read('payments-sandbox/vercel.json')
+ assert.match(src,/SameSite=None; Partitioned/)
+ assert.match(src,/function sessionFixture\(session\)/)
+ assert.match(src,/sessionFixture\(session\)/)
+ assert.match(src,/sandbox_daily_limit/)
+ assert.match(html,/if\(embedded&&result\.stage==='not_issued'\)autoIssue=true/)
+ assert.match(html,/if\(autoIssue\)void submit\('create'\)/)
+ assert.match(config,/frame-ancestors/)
+ assert.doesNotMatch(src,/UGO_ARENA|SUPABASE_SERVICE_ROLE_KEY/)
 })
