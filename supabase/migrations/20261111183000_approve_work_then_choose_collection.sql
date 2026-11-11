@@ -70,6 +70,14 @@ begin
       and exists(select 1 from public.config_sistema where clave='pago_efectivo_activo') then
     raise exception 'El efectivo está deshabilitado';
   end if;
+  if coalesce(v_service.moneda,'BRL')='BRL' and exists(
+     select 1 from public.config_sistema where clave='pago_efectivo_br_activo'
+     and lower(trim(both '"' from valor::text)) not in ('true','1','si','sí','on')
+    ) then raise exception 'El efectivo está deshabilitado para Brasil'; end if;
+  if coalesce(v_service.moneda,'BRL')='ARS' and exists(
+     select 1 from public.config_sistema where clave='pago_efectivo_ar_activo'
+     and lower(trim(both '"' from valor::text)) not in ('true','1','si','sí','on')
+    ) then raise exception 'El efectivo está deshabilitado para Argentina'; end if;
   select * into v_existing from public.pagos where servicio_id=v_service.id for update;
   if found and not (v_existing.metodo='efectivo' and v_existing.estado='pendiente') then
     raise exception 'Existe otro intento de cobro; requiere conciliación';
