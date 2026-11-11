@@ -65,15 +65,14 @@ test('provider agenda resyncs from realtime and reports operational failures to 
 })
 
 
-test('provider agenda blocks early departure and waits for persisted payment before enabling ESTOY YENDO',async()=>{
+test('provider agenda enforces the scheduled departure window but not payment collection',async()=>{
  const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
  assert.match(agenda,/TRAVEL_LEAD_MS=60\*60\*1000/)
  assert.match(agenda,/departureReady=departureAt==null\|\|clock>=departureAt/)
- assert.match(agenda,/selectedPaymentReady=Boolean/)
  assert.match(agenda,/Trabajo programado/)
  assert.match(agenda,/60 minutos antes/)
- assert.match(agenda,/Esperando forma de pago/)
- assert.match(agenda,/selected\.estado==='asignado'&&departureReady&&selectedPaymentReady/)
+ assert.doesNotMatch(agenda,/if\(target==='en_camino'&&!selectedPaymentReady/)
+ assert.match(agenda,/selected\.estado==='asignado'&&departureReady&&<button/)
 })
 
 test('cash is materialized server-side when an assigned service requested efectivo',async()=>{
