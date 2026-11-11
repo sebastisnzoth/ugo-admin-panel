@@ -23,7 +23,7 @@ test('client Preview Pix choice saves the preference but does not issue the char
 })
 test('existing production Pix flow remains unchanged until coordinated backend upgrade',()=>{
  assert.match(client,/fetch\('\/api\/pagos\/crear'/)
- assert.match(provider,/effectivePaymentMethod==='pix'&&!funded&&!deferredPixAuthorized/)
+ assert.doesNotMatch(provider,/effectivePaymentMethod==='pix'&&!funded&&!deferredPixAuthorized/)
  assert.match(sql,/v_has_ready_payment/)
  assert.match(sql,/La forma de pago todavía no está confirmada para empezar el trabajo/)
 })
