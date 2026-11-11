@@ -1,7 +1,7 @@
 import{useLocale}from'../../../i18n/locale'
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
-import{approvePendingClientService}from'../services/clientActionService'
+import{approvePendingClientService,confirmApprovedCashClientService}from'../services/clientActionService'
 
 type ReviewService={
  ambiente?:string|null
@@ -21,7 +21,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
  const[service,setService]=useState<ReviewService|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
- const[,setPayment]=useState<ReviewPayment|null>(null)
+ const[payment,setPayment]=useState<ReviewPayment|null>(null)
  const[hasFinalEvidence,setHasFinalEvidence]=useState(false)
  const[busy,setBusy]=useState(false)
  const[notice,setNotice]=useState('')
@@ -52,6 +52,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
  const completed=service.estado==='completado'
  const workApproved=Boolean(service.metadata?.trabajo_aprobado_at)
  const canApprove=!completed&&service.estado==='esperando_aprobacion'&&hasFinalEvidence&&!workApproved
+ const cashPending=workApproved&&service.metadata?.cobro_metodo==='efectivo'&&payment?.metodo==='efectivo'&&payment.estado==='pendiente'
 
  async function approve(){
   if(!canApprove||!userId)return
@@ -69,6 +70,18 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
  }
 
 
+ async function confirmCash(){
+  if(!cashPending||busy||!userId)return
+  setBusy(true);setNotice('')
+  try{
+   const ok=await confirmApprovedCashClientService(supabase,userId,service.id)
+   if(!ok)throw new Error(t('clientReview.cashNotReady'))
+   setNotice(locale==='pt-BR'?'Pagamento em dinheiro registrado.':locale==='en'?'Cash payment confirmed.':'Pago en efectivo confirmado.')
+   await load()
+  }catch(e){await load().catch(()=>{});setNotice(e instanceof Error?e.message:t('clientReview.cashFailed'))}
+  finally{setBusy(false)}
+ }
+
  const blockedReason=!hasFinalEvidence?t('clientReview.needEvidence'):''
 
  const title=workApproved?(locale==='pt-BR'?'Trabalho aprovado':locale==='en'?'Work approved':'Trabajo aprobado'):completed?t('clientReview.confirmedTitle'):t('clientReview.workQuestion')
@@ -77,9 +90,11 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
   <header><div><h2>{title}</h2><p>{workApproved?(locale==='pt-BR'?'Aguardando o profissional escolher a forma de cobrança.':locale==='en'?'Waiting for the professional to choose the collection method.':'Esperando que el proveedor elija cómo cobrar.'):t('clientReview.reviewBefore',{number:service.numero})}</p></div><span aria-hidden="true">✓</span></header>
   {!completed&&!hasFinalEvidence&&<div className="ugo-completion-warning">{t('clientReview.noFinalPhoto')}</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
+  {cashPending&&<div className="ugo-completion-decision"><span>{locale==='pt-BR'?'O profissional escolheu dinheiro. Confirme somente depois de entregar o valor.':locale==='en'?'The professional selected cash. Confirm only after handing over the money.':'El proveedor eligió efectivo. Confirmá solamente después de entregar el dinero.'}</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(locale==='pt-BR'?'Confira o trabalho e aprove. O pagamento é decidido depois.':locale==='en'?'Review and approve the work. Payment comes later.':'Revisá y aprobá el trabajo. El pago se decide después.')}</span></div>}
   {!completed&&<div className="ugo-completion-actions">
    {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>{t('screen.client_review.4')}</button>}
+   {cashPending&&<button type="button" onClick={()=>void confirmCash()} disabled={busy}>{busy?t('clientReview.processing'):(locale==='pt-BR'?'CONFIRMO QUE ENTREGUEI O DINHEIRO':locale==='en'?'I CONFIRM CASH HANDOVER':'CONFIRMO QUE ENTREGUÉ EL EFECTIVO')}</button>}
    {!workApproved&&<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?t('clientReview.processing'):(locale==='pt-BR'?'APROVAR O TRABALHO':locale==='en'?'APPROVE WORK':'APROBAR EL TRABAJO')}</button>}
   </div>}
  </section>
