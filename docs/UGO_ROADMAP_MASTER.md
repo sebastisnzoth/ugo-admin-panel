@@ -1245,3 +1245,10 @@ RUNTIME VALIDATED             pendiente
 - Proveedor elige método `efectivo` o `pix` después de aprobación mediante `elegir_cobro_post_servicio`, verifica propiedad; efectivo genera únicamente `pagos.estado=pendiente` si no hay pago existente. Pix se registra como selección sin crear cobro ficticio ni anunciar fondos recibidos.
 - Cliente puede confirmar la entrega de efectivo solamente después de que el proveedor lo elige. La pantalla de aprobación no exige pago.
 - **No habilitar Pix real sin backend transaccional Asaas y conciliación webhook**. El piloto Pix Sandbox sigue aislado. Mantener PROD sin DDL hasta CI y verificación de firma/roles.
+
+
+### 2026-11-11 — Proveedor: QR Pix y comisiones UGO al cierre (seguridad)
+- Pantalla posservicio: cuando el proveedor ya marcó Pix pero no existe un emisor real Asaas, mostrar explícitamente que no se creó QR ni pago y permitir volver a efectivo si no hay un intento financiero. Nuevas selecciones Pix REAL quedan deshabilitadas hasta habilitación segura del procesador, webhook y conciliación.
+- Efectivo: el clic de selección crea como máximo un pago pendiente, no consume cupo de deuda hasta que cliente confirme la entrega y exista una deuda REAL liberada. `deudas_ugo_proveedor`: 0–2 deudas abiertas puede continuar, 3 bloquea trabajos nuevos, nunca el servicio en marcha.
+- UI provee acceso directo a Ganhos, número de comisiones abiertas y comisión del servicio. El cobro de comisión UGO es independiente: endpoint autenticado `/api/test?ugo_debt=1` exige `UGO_PIX_KEY`; jamás salda deuda antes de conciliación Admin. El QR de comisión sigue pendiente de presentación visual; Pix copia y pega se genera sólo si la clave existe.
+- No se realizan operaciones de escritura ni migraciones sobre UGO Arena como parte de este parche de UI. El cobro Pix Asaas real requiere configuración y validación aparte en entorno TEST aislado.
