@@ -30,7 +30,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
     const sb=getRoleSupabase('provider')
     const{data:auth,error:authError}=await sb.auth.getUser()
     if(authError||!auth.user)throw authError||new Error('Session required')
-    const{data:owned,error:ownershipError}=await sb.from('servicios').select('id,provedor_id:proveedor_id,tarifa,moneda').eq('id',serviceId).eq('proveedor_id',auth.user.id).maybeSingle()
+    const{data:owned,error:ownershipError}=await sb.from('servicios').select('id').eq('id',serviceId).eq('proveedor_id',auth.user.id).maybeSingle()
     if(ownershipError||!owned)throw ownershipError||new Error('Service not authorized')
     const{data:payments,error:readError}=await sb.from('pagos')
      .select('metodo,estado,procesador,monto_bruto,pix_copia_cola,pix_qr_code,pix_expira_at')
