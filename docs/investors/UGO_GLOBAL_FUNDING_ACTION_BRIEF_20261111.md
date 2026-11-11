@@ -1,3 +1,9 @@
+> **Actualización 11/11/2026 — corrección crítica:** El portal oficial de Inova Startups 6 exige MRR mínimo de **R$10.000/mes**, producto operacional validado y problem-solution fit. UGO no acredita esos requisitos; **NO ELEGIBLE ACTUALMENTE**. No priorizar postulación por la cercanía del plazo ni por el monto anunciado. Fuente oficial: https://programas.sebraestartups.com.br/in/inova-startups-6%C2%AA-ed---2027-1784661770721x554993476191244900
+>
+> **500 Global LatAm:** su FAQ oficial confirma que no exige ventas iniciales y que el proceso comienza con un perfil online, seguido de evaluación, entrevistas y eventual oferta. **Eso no confirma elegibilidad final ni inversión.** https://latam.aplica.500.co/es/faq
+>
+> **ELDORADO IA:** descartar por presupuesto: requiere contrapartida de R$60.000 según FAQ oficial, incompatible con R$0. https://www.eldorado.org.br/startups/
+
 # UGO — Global funding action brief — 11 November 2026
 
 ## Resultado verificable
