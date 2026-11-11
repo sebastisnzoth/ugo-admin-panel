@@ -549,3 +549,11 @@
 .ugo-provider-root .ugo-collection-modal-pay{display:grid;justify-items:stretch;gap:12px}
 .ugo-provider-root .ugo-collection-modal-pay img{display:block;justify-self:center;object-fit:contain;max-width:100%;border:8px solid #f8fbfa;border-radius:18px}
 .ugo-provider-root .ugo-collection-modal-pay textarea{box-sizing:border-box;width:100%;max-height:120px;resize:vertical;padding:12px;border:1px solid #d7e5dd;background:#f6faf8;border-radius:12px;color:#1a4c3d;font:600 11px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace}
+
+
+/* Isolated Sandbox testing is a visibly separate action, never a real-service checkout. */
+.ugo-provider-root .ugo-collection-sandbox-demo{display:grid;gap:9px;background:#f5f1ff;border:1px solid #dcd4ff;border-radius:15px;padding:15px}
+.ugo-provider-root .ugo-collection-sandbox-demo .ugo-collection-sandbox-explanation{font-size:12px;line-height:1.55;color:#514780;margin:0}
+.ugo-provider-root .ugo-collection-sandbox-demo a.ugo-collection-sandbox-action{display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;min-height:50px;box-sizing:border-box;border-radius:13px;padding:12px 15px;text-decoration:none;background:#087b58;color:#fff;border:1px solid #087b58;font-size:14px;font-weight:800;transition:background .18s}
+.ugo-provider-root .ugo-collection-sandbox-demo a.ugo-collection-sandbox-action:hover{background:#065d43}
+.ugo-provider-root .ugo-collection-sandbox-demo a.ugo-collection-sandbox-action:focus-visible{outline:3px solid #42b698;outline-offset:3px}
