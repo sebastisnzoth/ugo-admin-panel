@@ -84,18 +84,29 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
 
  const blockedReason=!hasFinalEvidence?t('clientReview.needEvidence'):''
 
- const title=workApproved?(locale==='pt-BR'?'Trabalho aprovado':locale==='en'?'Work approved':'Trabajo aprobado'):completed?t('clientReview.confirmedTitle'):t('clientReview.workQuestion')
+ const ui=locale==='pt-BR'?{
+  approved:'Trabalho aprovado',waiting:'Aguardando o profissional escolher a forma de cobrança.',cashPrompt:'O profissional escolheu dinheiro. Confirme somente depois de entregar o valor.',
+  approveHelp:'Confira o trabalho e aprove. O pagamento é decidido depois.',cashConfirm:'CONFIRMO QUE ENTREGUEI O DINHEIRO',approveButton:'APROVAR O TRABALHO'
+ }:locale==='en'?{
+  approved:'Work approved',waiting:'Waiting for the professional to choose the collection method.',cashPrompt:'The professional selected cash. Confirm only after handing over the money.',
+  approveHelp:'Review and approve the work. Payment comes later.',cashConfirm:'I CONFIRM CASH HANDOVER',approveButton:'APPROVE WORK'
+ }:{
+  approved:'Trabajo aprobado',waiting:'Esperando que el proveedor elija cómo cobrar.',cashPrompt:'El proveedor eligió efectivo. Confirmá solamente después de entregar el dinero.',
+  approveHelp:'Revisá y aprobá el trabajo. El pago se decide después.',cashConfirm:'CONFIRMO QUE ENTREGUÉ EL EFECTIVO',approveButton:'APROBAR EL TRABAJO'
+ }
+
+ const title=workApproved?ui.approved:completed?t('clientReview.confirmedTitle'):t('clientReview.workQuestion')
 
  return <section aria-live="polite" className="ugo-completion-review">
-  <header><div><h2>{title}</h2><p>{workApproved?(locale==='pt-BR'?'Aguardando o profissional escolher a forma de cobrança.':locale==='en'?'Waiting for the professional to choose the collection method.':'Esperando que el proveedor elija cómo cobrar.'):t('clientReview.reviewBefore',{number:service.numero})}</p></div><span aria-hidden="true">✓</span></header>
+  <header><div><h2>{title}</h2><p>{workApproved?ui.waiting:t('clientReview.reviewBefore',{number:service.numero})}</p></div><span aria-hidden="true">✓</span></header>
   {!completed&&!hasFinalEvidence&&<div className="ugo-completion-warning">{t('clientReview.noFinalPhoto')}</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
-  {cashPending&&<div className="ugo-completion-decision"><span>{locale==='pt-BR'?'O profissional escolheu dinheiro. Confirme somente depois de entregar o valor.':locale==='en'?'The professional selected cash. Confirm only after handing over the money.':'El proveedor eligió efectivo. Confirmá solamente después de entregar el dinero.'}</span></div>}
-  {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(locale==='pt-BR'?'Confira o trabalho e aprove. O pagamento é decidido depois.':locale==='en'?'Review and approve the work. Payment comes later.':'Revisá y aprobá el trabajo. El pago se decide después.')}</span></div>}
+  {cashPending&&<div className="ugo-completion-decision"><span>{ui.cashPrompt}</span></div>}
+  {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||ui.approveHelp}</span></div>}
   {!completed&&<div className="ugo-completion-actions">
    {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>{t('screen.client_review.4')}</button>}
-   {cashPending&&<button type="button" onClick={()=>void confirmCash()} disabled={busy}>{busy?t('clientReview.processing'):(locale==='pt-BR'?'CONFIRMO QUE ENTREGUEI O DINHEIRO':locale==='en'?'I CONFIRM CASH HANDOVER':'CONFIRMO QUE ENTREGUÉ EL EFECTIVO')}</button>}
-   {!workApproved&&<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?t('clientReview.processing'):(locale==='pt-BR'?'APROVAR O TRABALHO':locale==='en'?'APPROVE WORK':'APROBAR EL TRABAJO')}</button>}
+   {cashPending&&<button type="button" onClick={()=>void confirmCash()} disabled={busy}>{busy?t('clientReview.processing'):ui.cashConfirm}</button>}
+   {!workApproved&&<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?t('clientReview.processing'):ui.approveButton}</button>}
   </div>}
  </section>
 }
