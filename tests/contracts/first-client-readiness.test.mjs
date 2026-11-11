@@ -56,7 +56,7 @@ test('client can recover cancellation from Services outside the matching screen'
 test('client and provider critical lifecycle is backend-authoritative and realtime-observable', async () => {
   const lifecycle = await read('tests/contracts/client-provider-lifecycle.test.mjs')
   assert.match(lifecycle, /canonical backend transition RPC/)
-  assert.match(lifecycle, /provider cannot leave assigned without a valid payment path/)
+  assert.match(lifecycle, /provider can advance work without forcing an upfront payment method/)
   assert.match(lifecycle, /client approval is scoped to its service/)
   assert.match(lifecycle, /provider and client observe critical service changes through realtime/)
 })
