@@ -24,12 +24,13 @@ export function authorizedProviderService(service,userId,serviceId,allowedIds){
  const allowed=String(allowedIds||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean)
  if(!allowed.includes(serviceId.toLowerCase()))return false
  const metadata=service.metadata||{}
- const method=String(metadata.requested_payment_method||metadata.payment_method||'').toLowerCase()
+ const approvedAt=metadata.trabajo_aprobado_at
+ const workApproved=typeof approvedAt==='string'&&Number.isFinite(Date.parse(approvedAt))
  const amount=Number(service.tarifa)
  return service.ambiente==='demo'&&service.moneda==='BRL'&&
    ['esperando_aprobacion','completado'].includes(service.estado)&&
    metadata.pix_after_service_authorized===true&&
-   metadata.payment_timing==='after_service'&&method==='pix'&&
+   metadata.payment_timing==='after_service'&&workApproved&&
    Number.isFinite(amount)&&amount>0&&amount<=2000&&
    Number.isSafeInteger(Math.round(amount*100))&&
    Math.abs(amount*100-Math.round(amount*100))<1e-7
