@@ -10,6 +10,7 @@ import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import{Button,Card,EmptyState,SectionHeader}from'../../shared/ui'
 import{useDialog}from'../dialogs'
 import{ProviderDeferredPixStatus}from'../ProviderDeferredPixStatus'
+import{ProviderPostServiceCollection}from'../ProviderPostServiceCollection'
 import{isPixPayAfterServicePreviewEnabled}from'../../lib/featureFlags'
 import{deferredPixPilotEligible}from'../../lib/payments/deferredPixPilot'
 
@@ -75,6 +76,12 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    {!['esperando_aprobacion','disputado','completado'].includes(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide provider-dispute-entry" onClick={()=>flow.actions.openDispute(s.id)}>{t('screen.active.26')}</Button>}
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>{t('screen.active.27')}</Button>}
   </Card>
+  {s.estado==='esperando_aprobacion'&&<Card className="provider-card provider-post-service-payment">
+   <ProviderPostServiceCollection serviceId={s.id} amount={Number(s.tarifa||0)}
+    approvedAt={workApprovalStamp}
+    selected={(s as{metadata?:Record<string,unknown>|null}).metadata?.cobro_metodo}
+    onUpdated={d.reload}/>
+  </Card>}
   {deferredPixPreview&&<Card className="provider-card provider-pix-post-service-pilot">
    <ProviderDeferredPixStatus serviceId={s.id} serviceState={s.estado}
     amountBRL={Number(s.tarifa||0)} accessToken={d.accessToken} workApproved={workApproved}/>
