@@ -40,3 +40,10 @@ Conservar fuera del repositorio cualquier evidencia antigua de la idea (correos,
 
 ## Próxima acción técnica
 Auditoría **de solo lectura** de autoría, dependencias, licencias y estado del producto; producir un inventario de evidencias con enlaces a commits y pruebas. No iniciar contacto con inversores hasta revisar el material público.
+
+## Primera revisión documental (2026-11-10)
+- **VERIFICADO:** existe historial de commits consultable; muestra de referencias: [b3fb12f](https://github.com/sebastisnzoth/ugo-admin-panel/commit/b3fb12f105531aa39fd0ce0a8ec8e22ff8307344) y [d41ff98](https://github.com/sebastisnzoth/ugo-admin-panel/commit/d41ff98153d40813450c45e1fabfd91dac3263d7). **No** se ha determinado aún el primer commit ni todos los autores.
+- **VERIFICADO:** el código contiene integraciones de pagos sandbox (por ejemplo, `payments-sandbox/api/webhook.js`); esto **no demuestra** que el flujo comercial esté validado.
+- **VERIFICADO:** existen referencias a licencia MIT de componentes externos en `docs/UGO_AGENT_SKILLS_INTEGRACION.md`; falta auditoría integral de licencias.
+- **PENDIENTE:** revisión integral de secretos. Una búsqueda de nombres de variables de entorno no confirma ni descarta filtración de valores.
+- **PENDIENTE:** inventario de colaboradores, titularidad de assets y aportes de IA; evitar conclusiones legales anticipadas.
