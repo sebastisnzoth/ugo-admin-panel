@@ -1,0 +1,33 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import{readFileSync}from'node:fs'
+const file=path=>readFileSync(new URL('../../'+path,import.meta.url),'utf8')
+test('service #3451 can be approved without selecting or paying a method',()=>{
+ const approval=file('src/features/client/order/ClientCompletionReview.tsx')
+ const action=file('src/features/client/services/clientActionService.ts')
+ const sql=file('supabase/migrations/20261111183000_approve_work_then_choose_collection.sql')
+ assert.match(approval,/hasFinalEvidence&&!workApproved/)
+ assert.match(approval,/APROBAR EL TRABAJO/)
+ assert.doesNotMatch(approval,/clientReview\.needPayment|clientReview\.paymentProtectedWait/)
+ assert.match(action,/rpc\('aprobar_trabajo_sin_pago'/)
+ assert.match(sql,/function public\.aprobar_trabajo_sin_pago/)
+ assert.match(sql,/v_service\.cliente_id is distinct from v_uid/)
+ assert.match(sql,/e\.tipo='despues'/)
+ assert.match(sql,/trabajo_aprobado_at/)
+ assert.doesNotMatch(sql,/update public\.pagos set estado='liberado'/)
+})
+test('only assigned provider chooses after approved work and does not mark Pix paid',()=>{
+ const sql=file('supabase/migrations/20261111183000_approve_work_then_choose_collection.sql')
+ const job=file('src/mvp/provider/ProviderActiveJob.tsx')
+ const chooser=file('src/mvp/ProviderPostServiceCollection.tsx')
+ assert.match(sql,/v_service\.proveedor_id is distinct from v_uid/)
+ assert.match(sql,/v_service\.estado<>'esperando_aprobacion'/)
+ assert.match(sql,/coalesce\(v_service\.metadata->>'trabajo_aprobado_at',''\)=''/)
+ assert.match(sql,/p\.estado in \('retenido','liberado'\)/)
+ assert.match(sql,/v_method='efectivo'/)
+ assert.match(sql,/'pendiente'/)
+ assert.doesNotMatch(sql,/estado='retenido'/)
+ assert.match(job,/ProviderPostServiceCollection/)
+ assert.match(chooser,/rpc\('elegir_cobro_post_servicio'/)
+ assert.match(chooser,/no payment was marked received|nenhum pagamento foi confirmado/)
+})
