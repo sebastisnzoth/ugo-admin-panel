@@ -47,3 +47,43 @@ Auditoría **de solo lectura** de autoría, dependencias, licencias y estado del
 - **VERIFICADO:** existen referencias a licencia MIT de componentes externos en `docs/UGO_AGENT_SKILLS_INTEGRACION.md`; falta auditoría integral de licencias.
 - **PENDIENTE:** revisión integral de secretos. Una búsqueda de nombres de variables de entorno no confirma ni descarta filtración de valores.
 - **PENDIENTE:** inventario de colaboradores, titularidad de assets y aportes de IA; evitar conclusiones legales anticipadas.
+
+## Inventario técnico preliminar — 2026-11-10 (lectura de main)
+
+### Stack comprobado en `package.json`
+- React 19, React DOM 19, TypeScript 6, Vite 8.
+- `@supabase/supabase-js` para integración con Supabase.
+- `@tomtom-org/maps-sdk` y `maplibre-gl` para mapas.
+- Herramientas de pruebas y análisis: Node test runner, ESLint y PGlite.
+- Scripts definidos: `build`, `lint`, `test`, `test:p0`, `test:integration`, `verify:test-env`. **La existencia de scripts no significa que se hayan ejecutado ni aprobado.**
+
+### Dependencias directas declaradas
+| Paquete | Versión declarada | Estado de revisión legal |
+| --- | --- | --- |
+| react / react-dom | ^19.2.6 | Licencia y avisos: pendiente de verificación específica |
+| @supabase/supabase-js | ^2.108.1 | Pendiente |
+| @tomtom-org/maps-sdk | ^0.34.0 | Pendiente; revisar además términos de servicio/API |
+| maplibre-gl | ^6.9.0 | Pendiente |
+| vite | 8.1.6 | Pendiente |
+| typescript | ~6.0.2 | Pendiente |
+| @electric-sql/pglite | 0.5.10 | Pendiente |
+
+La lista es **parcial**: no sustituye el inventario del lockfile, dependencias transitivas, imágenes, fuentes, iconos, SDK, contenidos o código de terceros.
+
+### Hallazgos sobre procedencia
+- La documentación `docs/UGO_AGENT_SKILLS_INTEGRACION.md` identifica un fork externo de Agent Skills, revisión `aeac41d4d005999432bb7312f7ff06383a91d59d`, licencia MIT y aviso en `docs/third-party/agent-skills-LICENSE`.
+- Esta procedencia está **documentada** pero requiere comprobar el archivo de licencia y la correspondencia con el contenido incorporado.
+- La declaración del fundador sobre desarrollo asistido por IA sigue siendo **declaración**, no auditoría legal de contribuciones ni titularidad.
+- **No se ha comprobado** la existencia o ausencia de un archivo de licencia general en la raíz; no inferir que todo el repositorio sea libre o propietario por los avisos de terceros.
+
+### Riesgos prioritarios antes de mostrar el repositorio a terceros
+1. **Alto — repositorio público:** revisar historial completo por secretos, identificadores personales, claves y datos de clientes; la búsqueda textual parcial no permite descartar filtraciones.
+2. **Alto — derechos y titularidad:** verificar autores de commits, material externo, assets y términos de herramientas IA.
+3. **Alto — madurez comercial:** validar flujo completo de servicio y pagos en TEST; no atribuir ingresos, clientes o volumen sin registros.
+4. **Medio — mapas y APIs:** verificar condiciones y límites de uso comercial de SDK/proveedores.
+5. **Medio — evidencia para inversión:** preparar demo sin datos reales, presupuesto documentado y dossier sin código fuente.
+
+### Próxima tarea verificable
+Auditoría de historial de autores y secretos con herramientas de lectura, sin copiar secretos al expediente. Si aparece un posible secreto, documentar únicamente ruta/tipo/riesgo y solicitar rotación segura en el entorno autorizado; **no modificar PROD**.
+
+**Alcance de esta actualización:** exclusivamente documentación pública no sensible. No se ejecutaron tests, cambios de infraestructura ni comprobación de producción.
