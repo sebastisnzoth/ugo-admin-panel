@@ -16,18 +16,12 @@ type ReviewService={
 }
 type ReviewPayment={metodo:string|null;estado:string;modelo_pago:string|null;monto_bruto:number|null;moneda:string|null}
 
-function money(value:number|null|undefined,currency:string|null|undefined,locale:string){
- const code=String(currency||'BRL').toUpperCase()
- try{return new Intl.NumberFormat(locale,{style:'currency',currency:/^[A-Z]{3}$/.test(code)?code:'BRL'}).format(Number(value||0))}
- catch{return `R$ ${Number(value||0).toFixed(2).replace(locale==='pt-BR'||locale==='es'?'.':',',locale==='pt-BR'||locale==='es'?',':'.')}`}
-}
-
-export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted}:{onOpenDispute?:()=>void;serviceId?:string|null;onCompleted?:()=>void|Promise<void>}){
+export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDispute?:()=>void;serviceId?:string|null;onCompleted?:()=>void|Promise<void>}){
  const{t,locale}=useLocale();
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
  const[service,setService]=useState<ReviewService|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
- const[payment,setPayment]=useState<ReviewPayment|null>(null)
+ const[,setPayment]=useState<ReviewPayment|null>(null)
  const[hasFinalEvidence,setHasFinalEvidence]=useState(false)
  const[busy,setBusy]=useState(false)
  const[notice,setNotice]=useState('')
