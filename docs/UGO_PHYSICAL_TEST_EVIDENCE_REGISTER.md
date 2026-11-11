@@ -51,3 +51,16 @@ El runbook de dos dispositivos identifica un proyecto Supabase TEST distinto (`t
 **Estado:** origen de datos primarios de #2697 sin identificar con certeza; pendiente acceso de solo lectura a la instancia TEST histórica correcta y a sus artefactos. Evitar buscar #2697 en Neon Pagamentos V2 como si fuera el sistema original.
 
 **Siguiente verificación segura:** contrastar despliegue/fecha/entorno de la prueba histórica con los registros TEST disponibles, sin tocar PROD.
+
+## Verificación del mapa de entornos — 2026-11-11
+
+Fuentes consultadas:
+- [UGO_ENVIRONMENTS.md](UGO_ENVIRONMENTS.md): declara canónicamente `tmossnqfwfwjrtzwcbmm` como UGO TEST y `trfsjuseqjxlhrxuvdsm` como producción; advierte que el nombre visible puede confundirse con Arena.
+- [src/lib/supabaseProject.ts](../src/lib/supabaseProject.ts): confirma que la configuración del cliente `main` fija `UGO_ENVIRONMENT='test'` y el mismo project ref TEST.
+- [complete-test-journey-20260929.json](evidence/complete-test-journey-20260929.json): acredita documentalmente una corrida **automatizada** en UGO TEST, servicio #815, SHA de ejecución `e523862f6913cc3f3ee02f84de09e7cbaa71e27f`, con estados y pago efectivo, pero **expresamente no valida GPS físico ni aceptación humana**.
+
+**Conclusión:** `tmossnqfwfwjrtzwcbmm` es el candidato canónico para localizar los registros físicos históricos de #2697. Esto **no prueba todavía** que #2697 exista en ese proyecto ni que sus archivos sigan conservados.
+
+**Limitación de acceso:** las herramientas conectadas en esta sesión permiten leer metadatos Neon, pero no proporcionan acceso de lectura directa a las tablas/Storage del proyecto Supabase TEST histórico. No se ejecutó SQL ni se consultó PROD. No se inventan resultados de base de datos.
+
+**Próximo paso ejecutable al contar con acceso de solo lectura a Supabase TEST:** buscar el identificador numérico 2697 en la tabla de servicios de TEST; obtener ID interno y eventos por referencia; corroborar evidencias Storage y pagos con consultas mínimas y RLS; publicar únicamente un resumen sanitizado.
