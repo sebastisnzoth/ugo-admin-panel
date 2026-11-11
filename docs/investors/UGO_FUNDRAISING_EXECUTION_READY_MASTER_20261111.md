@@ -1,3 +1,14 @@
+## VERIFICACIÓN OFICIAL DE OPORTUNIDADES — 11/11/2026 (actualización)
+**500 Global LatAm:** https://latam.aplica.500.co/es/faq confirma aceptación de startups sin ventas, fundador único y sin sociedad constituida para **postular**; evaluación continua indicada en FAQ, pero la landing https://latam.aplica.500.co/es/sites/latam muestra cierre de convocatoria específica el 31/07/2026: confirmar si actualmente aceptan nuevas candidaturas de inversión antes de afirmar convocatoria abierta. Registro de perfil: https://latam.aplica.500.co/auth/signup . Oferta publicada: US$300.000 por 10%, menos US$15.000 del programa (US$285.000 netos para la empresa); exige constituir matriz en EE.UU. o Cayman antes de desembolso, cesión IP y vesting; fuente https://latam.aplica.500.co/en/terminos . Programa descrito como remoto en https://latam.aplica.500.co/es/programa, pero landing de otra convocatoria menciona viaje a SF; verificar la modalidad de la edición concreta.
+
+**Techstars Anywhere:** convocatoria oficial hasta 18/11/2026, remoto con **tres encuentros presenciales**, https://www.techstars.com/accelerators/anywhere . Requiere evaluar capacidad de viaje y ajuste del sector; no prometer inversión.
+
+**Start-Up Chile Build 13:** convocatoria abierta 03–24/11/2026, 13:00 GMT-3; personas naturales extranjeras mayores de 18 años pueden postular; hasta CLP 15.000.000 **cofinanciando máximo 90%**; requiere verificar contraparte y operación en Chile, lo que puede no encajar con presupuesto R$0 y piloto en Brasil. Fuentes https://www.corfo.gob.cl/sites/cpp/convocatoria/start-up-chile-build-13/ y https://startupchile.org/postula/ .
+
+**Estado:** rutas de postulación localizadas; ninguna candidatura enviada, ninguna inversión conseguida. Prioridad permanece financiar finalización de UGO y piloto, no captar clientes antes del lanzamiento.
+
+---
+
 # DIRECTIVA ESTRATÉGICA DEL FUNDADOR — 11/11/2026
 
 **OBJETIVO INMEDIATO: CONSEGUIR INVERSORES PARA TERMINAR UGO Y FINANCIAR EL LANZAMIENTO DEL PILOTO EN FLORIANÓPOLIS.** No condicionar fundraising a captar clientes o cobrar servicios reales previamente. La app aún **NO está lista para lanzamiento**. Evitar sugerir comercialización antes de solucionar fallos de estabilidad, autenticación, infraestructura, pagos y QA.
