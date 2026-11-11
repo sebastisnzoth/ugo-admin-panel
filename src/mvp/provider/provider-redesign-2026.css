@@ -557,3 +557,13 @@
 .ugo-provider-root .ugo-collection-sandbox-demo a.ugo-collection-sandbox-action{display:flex;align-items:center;justify-content:center;gap:9px;text-align:center;min-height:50px;box-sizing:border-box;border-radius:13px;padding:12px 15px;text-decoration:none;background:#087b58;color:#fff;border:1px solid #087b58;font-size:14px;font-weight:800;transition:background .18s}
 .ugo-provider-root .ugo-collection-sandbox-demo a.ugo-collection-sandbox-action:hover{background:#065d43}
 .ugo-provider-root .ugo-collection-sandbox-demo a.ugo-collection-sandbox-action:focus-visible{outline:3px solid #42b698;outline-offset:3px}
+
+
+/* Embedded isolated Pix Sandbox lives inside the existing Pro modal. */
+.ugo-provider-root .ugo-collection-modal.ugo-collection-modal-embedded{width:min(100%,550px);padding:20px;max-height:min(92vh,940px);overflow:auto;gap:10px}
+.ugo-provider-root .ugo-collection-modal-embedded .ugo-collection-modal-icon{width:40px;height:40px;font-size:23px;border-radius:12px}
+.ugo-provider-root .ugo-collection-modal-embedded h3{font-size:19px;margin:0}
+.ugo-provider-root .ugo-collection-sandbox-embedded{display:grid;gap:11px;min-width:0}
+.ugo-provider-root .ugo-collection-sandbox-embedded .ugo-collection-sandbox-disclaimer{margin:0;background:#f6f2ff;border:1px solid #e4dafa;color:#625681;padding:10px;border-radius:12px;font-size:12px;line-height:1.45}
+.ugo-provider-root .ugo-collection-sandbox-frame{width:100%;border:1px solid #dcece3;border-radius:14px;background:#fff;height:min(570px,65vh);min-height:340px;display:block}
+@media(max-width:540px){.ugo-provider-root .ugo-collection-modal.ugo-collection-modal-embedded{padding:14px}.ugo-provider-root .ugo-collection-sandbox-frame{height:62vh;min-height:340px}}
