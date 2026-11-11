@@ -90,3 +90,12 @@ Fuentes consultadas:
 **PENDIENTE:** evidencia de geofence/GPS y verificación no invasiva de objetos Storage.
 
 **Corrección a notas anteriores:** la limitación de acceso Supabase ya no aplica; se obtuvo acceso de lectura en esta sesión. Las notas históricas permanecen como registro de decisiones anteriores, no como estado actual.
+
+## Segunda corroboración: objetos Storage y auditoría — 2026-11-11
+
+Consultas **solo SELECT**, restringidas al servicio #2697 de Supabase TEST `tmossnqfwfwjrtzwcbmm`:
+- `public.servicios.metadata.demo` devuelve `false`. Esto caracteriza el registro como **no demo**; no es certificación externa de personas, geofence ni facturación real.
+- Dos objetos coinciden en `storage.objects.name` con las rutas de `public.evidencias_servicio.storage_path`: `antes` con metadato MIME `image/png` y `despues` con `image/jpeg`. **Existencia de objetos corroborada**; no se descargaron, visualizaron ni divulgaron imágenes.
+- `public.audit_log` contiene dos eventos vinculados al servicio: `cliente_ubicacion_servicio_guardada` y `client.cash_payment.confirmed`. Confirman registros de auditoría de ubicación del cliente y confirmación de efectivo; **no prueban precisión GPS del proveedor, radio de geofence, ni liquidación bancaria**.
+
+**Actualización del estado:** existencia de objetos Storage y auditoría de pago/ubicación = **CORROBORADO EN TEST**. Evidencia GPS/geofence físico detallada = **PENDIENTE**. Ninguna modificación a datos ni a producción.
