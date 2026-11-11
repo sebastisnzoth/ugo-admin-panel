@@ -1,3 +1,5 @@
+> **ACLARACIÓN DEL FUNDADOR — 11/11/2026:** El fundador confirmó expresamente que los servicios y pagos en efectivo encontrados en UGO Arena corresponden a **pruebas realizadas por él mismo con dos celulares**. Esto incluye los registros etiquetados `real`: esa etiqueta **no representa clientes reales ni ventas comerciales**. **Clientes comerciales verificados: 0; ingresos comerciales verificados: R$0.** Los importes de servicios y comisiones son **simulados/nominales**, no facturación ni dinero cobrado por UGO. No presentar 66 servicios o 64 pagos como tracción comercial ante inversores. La evidencia sí respalda pruebas funcionales del flujo Cliente–Proveedor.
+
 # UGO — Paquete operativo de fundraising listo para completar y presentar
 **Fecha:** 2026-11-11 · **Estado:** PREPARADO, NO ENVIADO · **Presupuesto:** R$0
 
