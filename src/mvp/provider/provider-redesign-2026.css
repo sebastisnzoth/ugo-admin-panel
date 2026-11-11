@@ -487,3 +487,61 @@
 .ugo-provider-root .provider-debt-payment-actions .provider-primary,.ugo-provider-root .provider-debt-payment-actions .provider-secondary{min-height:var(--ugo-touch-target)}
 .ugo-provider-root .provider-balance-grid article.provider-debt-card .provider-primary{margin-top:8px;align-self:end}
 @media(max-width:430px){.ugo-provider-root .provider-debt-payment-actions{grid-template-columns:1fr}.ugo-provider-root .provider-debt-payment-actions .provider-secondary{width:100%}}
+
+
+/* Post-service collection — premium responsive controls, scoped to Provider. */
+.ugo-provider-root .provider-post-service-payment{border:1px solid var(--pro-line);border-radius:24px;padding:0;overflow:visible}
+.ugo-provider-root .ugo-provider-post-service-collection{display:grid;gap:18px;padding:clamp(16px,3vw,24px);color:var(--pro-ink)}
+.ugo-provider-root .ugo-collection-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ugo-provider-root .ugo-collection-eyebrow{font-size:11px;letter-spacing:.11em;text-transform:uppercase;font-weight:800;color:var(--pro-green)}
+.ugo-provider-root .ugo-collection-header h3{margin:7px 0 0;font-size:clamp(18px,2.6vw,24px);line-height:1.2;letter-spacing:-.035em;color:var(--pro-ink)}
+.ugo-provider-root .ugo-collection-status{display:inline-flex;align-items:center;gap:7px;border-radius:999px;background:var(--pro-mint);padding:8px 11px;font-size:11px;font-weight:750;color:var(--pro-green)}
+.ugo-provider-root .ugo-collection-status-dot{width:7px;height:7px;background:#d6a23e;border-radius:50%}
+.ugo-provider-root .ugo-collection-amount{border-radius:18px;background:linear-gradient(125deg,#e5f4ee,#f7fcfa);padding:16px 18px;display:flex;align-items:baseline;gap:10px;border:1px solid #d6e9df}
+.ugo-provider-root .ugo-collection-amount>span{font-size:12px;color:#326754;font-weight:750}
+.ugo-provider-root .ugo-collection-amount strong{font-size:clamp(25px,4vw,34px);font-variant-numeric:tabular-nums;letter-spacing:-.045em;color:#104c3b}
+.ugo-provider-root .ugo-collection-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ugo-provider-root .ugo-collection-method{all:unset;box-sizing:border-box;cursor:pointer;display:flex;min-width:0;align-items:center;gap:11px;min-height:86px;border:1.5px solid #dce6e1;border-radius:18px;padding:14px;background:#fff;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
+.ugo-provider-root .ugo-collection-method:hover{border-color:#237e62;box-shadow:0 8px 22px rgba(12,83,59,.09);transform:translateY(-1px)}
+.ugo-provider-root .ugo-collection-method:focus-visible,.ugo-provider-root .ugo-provider-post-service-collection button:focus-visible,.ugo-provider-root .ugo-provider-post-service-collection input:focus-visible,.ugo-provider-root .ugo-provider-post-service-collection summary:focus-visible{outline:3px solid #42b698;outline-offset:3px}
+.ugo-provider-root .ugo-collection-method.is-selected{border-color:#147657;background:#ebf8f1}
+.ugo-provider-root .ugo-collection-method:disabled{opacity:.68;cursor:default;transform:none}
+.ugo-provider-root .ugo-collection-method-icon{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;background:#ebf4ef;color:#166949;font-weight:900;font-size:21px}
+.ugo-provider-root .ugo-collection-method-pix{background:#eeebfc;color:#6754af}
+.ugo-provider-root .ugo-collection-method>span:nth-child(2){display:grid;min-width:0;gap:4px;flex:1}
+.ugo-provider-root .ugo-collection-method strong{font-size:14px;color:var(--pro-ink)}
+.ugo-provider-root .ugo-collection-method small{font-size:11px;color:var(--pro-muted);line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.ugo-provider-root .ugo-collection-check{font-size:21px;color:#138263}
+.ugo-provider-root .ugo-collection-step,.ugo-provider-root .ugo-collection-debt{display:grid;gap:10px;background:#f4f9f6;border:1px solid #dcece2;border-radius:16px;padding:15px}
+.ugo-provider-root .ugo-collection-step-head{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.4}
+.ugo-provider-root .ugo-collection-step-head>span{color:#167354;font-size:18px}
+.ugo-provider-root .ugo-collection-step p,.ugo-provider-root .ugo-collection-debt p{margin:0;color:var(--pro-muted);font-size:12px;line-height:1.5}
+.ugo-provider-root .ugo-collection-debt-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:700}
+.ugo-provider-root .ugo-collection-debt-head strong{color:#14674d;font-variant-numeric:tabular-nums}
+.ugo-provider-root .ugo-collection-meter{height:7px;background:#dce7e1;border-radius:99px;overflow:hidden}
+.ugo-provider-root .ugo-collection-meter span{display:block;height:100%;background:#167d5c;border-radius:99px}
+.ugo-provider-root .ugo-provider-post-service-collection button.ugo-collection-action,.ugo-provider-root .ugo-provider-post-service-collection button.ugo-collection-secondary-action{box-sizing:border-box;width:100%;min-height:48px;border-radius:13px;padding:12px 16px;font-size:13px;font-weight:800;line-height:1.25;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .18s,transform .18s}
+.ugo-provider-root .ugo-provider-post-service-collection button.ugo-collection-action{background:#117a58;color:#fff;border:1px solid #117a58;box-shadow:0 5px 13px rgba(17,122,88,.16)}
+.ugo-provider-root .ugo-provider-post-service-collection button.ugo-collection-action:hover{background:#075e43}
+.ugo-provider-root .ugo-provider-post-service-collection button.ugo-collection-secondary-action{background:#fff;color:#126a4e;border:1px solid #bfdacc}
+.ugo-provider-root .ugo-provider-post-service-collection button.ugo-collection-secondary-action:hover{background:#e7f5ed}
+.ugo-provider-root .ugo-provider-post-service-collection button:disabled{opacity:.58;cursor:not-allowed;box-shadow:none}
+.ugo-provider-root .ugo-provider-extra-quote{border-radius:16px;border:1px solid var(--pro-line);background:#fff}
+.ugo-provider-root .ugo-provider-extra-quote summary{cursor:pointer;list-style:none;padding:16px;font-size:13px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ugo-provider-root .ugo-provider-extra-quote summary:after{content:'+';font-size:22px;color:#147657}
+.ugo-provider-root .ugo-provider-extra-quote[open] summary:after{content:'−'}
+.ugo-provider-root .ugo-provider-extra-quote summary::-webkit-details-marker{display:none}
+.ugo-provider-root .ugo-collection-quote-fields{display:grid;gap:11px;padding:0 16px 16px}
+.ugo-provider-root .ugo-collection-quote-fields label{font-size:12px;font-weight:700;color:var(--pro-ink);display:grid;gap:8px}
+.ugo-provider-root .ugo-collection-quote-fields input{border:1px solid var(--pro-line);border-radius:12px;min-height:48px;font-size:16px;padding:10px 12px;width:100%;box-sizing:border-box;background:#fff;color:var(--pro-ink)}
+.ugo-provider-root .ugo-collection-quote-fields p{margin:0;color:var(--pro-muted);font-size:12px;line-height:1.5}
+.ugo-provider-root .ugo-collection-error{margin:0;color:#b42332;font-size:13px;font-weight:650}
+.ugo-provider-root .ugo-collection-modal-backdrop{position:fixed;inset:0;background:rgba(13,35,29,.54);z-index:1200;display:grid;place-items:center;padding:16px}
+.ugo-provider-root .ugo-collection-modal{position:relative;box-sizing:border-box;width:min(100%,430px);border-radius:24px;padding:26px;background:#fff;box-shadow:0 22px 70px rgba(0,0,0,.22);display:grid;gap:14px;text-align:center;color:var(--pro-ink)}
+.ugo-provider-root .ugo-collection-modal-close{position:absolute;right:14px;top:13px;background:#f0f4f2;border:0;border-radius:99px;width:36px;height:36px;cursor:pointer;font-size:23px}
+.ugo-provider-root .ugo-collection-modal-icon{display:grid;place-items:center;justify-self:center;width:60px;height:60px;border-radius:18px;background:#f0ecff;color:#6e5bac;font-size:30px}
+.ugo-provider-root .ugo-collection-modal h3{margin:0;font-size:23px}
+.ugo-provider-root .ugo-collection-modal-total{font-size:30px;font-weight:850;color:#116b4e;letter-spacing:-.035em}
+.ugo-provider-root .ugo-collection-modal p{margin:0;color:var(--pro-muted);font-size:13px;line-height:1.5}
+@media(max-width:540px){.ugo-provider-root .ugo-collection-methods{grid-template-columns:1fr}.ugo-provider-root .ugo-collection-method{min-height:70px}.ugo-provider-root .ugo-provider-post-service-collection{padding:16px}}
+@media(prefers-reduced-motion:reduce){.ugo-provider-root .ugo-collection-method,.ugo-provider-root .ugo-provider-post-service-collection button{transition:none}}
