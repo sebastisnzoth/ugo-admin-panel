@@ -1,4 +1,4 @@
-import React,{useState}from'react'
+import React,{useEffect,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{useLocale}from'../i18n/locale'
 
@@ -16,7 +16,49 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
  const[requestedTotal,setRequestedTotal]=useState('')
  const[proposalSent,setProposalSent]=useState(false)
  const[pixDetailsOpen,setPixDetailsOpen]=useState(false)
+ const[pixCode,setPixCode]=useState('')
+ const[pixImage,setPixImage]=useState('')
+ const[pixLoading,setPixLoading]=useState(false)
+ const[pixCopyStatus,setPixCopyStatus]=useState('')
  const chosen=optimistic||((selected==='pix'||selected==='efectivo')?selected:null)
+ useEffect(()=>{
+  if(!pixDetailsOpen)return
+  let active=true
+  const fetchExisting=async()=>{
+   setPixLoading(true);setPixCode('');setPixImage('');setPixCopyStatus('')
+   try{
+    const sb=getRoleSupabase('provider')
+    const{data:auth,error:authError}=await sb.auth.getUser()
+    if(authError||!auth.user)throw authError||new Error('Session required')
+    const{data:owned,error:ownershipError}=await sb.from('servicios').select('id,provedor_id:proveedor_id,tarifa,moneda').eq('id',serviceId).eq('proveedor_id',auth.user.id).maybeSingle()
+    if(ownershipError||!owned)throw ownershipError||new Error('Service not authorized')
+    const{data:payments,error:readError}=await sb.from('pagos')
+     .select('metodo,estado,monto_bruto,pix_copia_cola,pix_qr_code')
+     .eq('servicio_id',serviceId).in('metodo',['pix','pix_direto','openpix']).limit(2)
+    if(readError)throw readError
+    if((payments||[]).length===1){
+     const row=payments![0]
+     const validAmount=Math.abs(Number(row.monto_bruto)-amount)<0.009
+     const validStatus=row.estado==='pendiente'
+     const code=String(row.pix_copia_cola||'')
+     const image=String(row.pix_qr_code||'').replace(/^data:image\/png;base64,/, '')
+     if(validAmount&&validStatus&&code.length>35&&code.length<4096&&active){
+      setPixCode(code)
+      if(/^[A-Za-z0-9+/]+={0,2}$/.test(image)&&image.length<200000)setPixImage(image)
+     }
+    }
+   }catch{/* Never display a QR without validated, readable service payment. */}
+   finally{if(active)setPixLoading(false)}
+  }
+  void fetchExisting()
+  return()=>{active=false}
+ },[pixDetailsOpen,serviceId,amount])
+
+ const copyExistingPix=async()=>{
+  if(!pixCode)return
+  try{await navigator.clipboard.writeText(pixCode);setPixCopyStatus(labels.copyOk)}
+  catch{setPixCopyStatus(labels.copyError)}
+ }
  const currencyCode=/^[A-Z]{3}$/.test(currency)?currency:'BRL'
  const money=(value:number)=>new Intl.NumberFormat(locale==='pt-BR'?'pt-BR':locale==='en'?'en-US':'es-AR',{style:'currency',currency:currencyCode}).format(value)
  const writeChat=async(message:string,source:string)=>{
@@ -71,17 +113,17 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
   waiting:'Aguardando aprovação do cliente.',title:'Trabalho aprovado',question:'Como o cliente vai pagar?',cash:'Dinheiro',pix:'Pix · QR Code',aria:'Cobro após serviço',
   cashPending:'Dinheiro escolhido. O cliente deve confirmar a entrega; o pagamento ainda não foi registrado como recebido.',cashAction:'Solicitar confirmação ao cliente',cashRequested:'Pedido enviado no chat. Aguarde a confirmação do cliente em UGO.',extraTitle:'Trabalho adicional fora do orçamento?',extraLabel:'Total proposto (R$)',extraAction:'Enviar proposta para aprovação',extraNote:'A proposta é enviada pelo chat. Não altera o valor do serviço nem gera Pix até aprovação formal no UGO.',proposalSent:'Proposta enviada. O valor original continua sendo o único valor aprovado.',invalidAmount:'Informe um total positivo diferente do valor atual.',
   pixPending:'Pix selecionado, mas não há QR Asaas para este serviço. Nenhum pagamento foi criado nem confirmado.',
-  cashDebt:'O cliente confirma o dinheiro após entregar. Só então UGO registra a comissão como dívida.',count:'Comissões UGO em aberto:',debtHelp:'Ao atingir 3 comissões abertas, novos pedidos ficam bloqueados até a conciliação.',openEarnings:'Ver comissões e pagar UGO',commissionLabel:'comissão deste serviço se for dinheiro',qrUnavailable:'Cobrança Pix Asaas ainda não configurada para pedidos reais. Nenhum código ou débito foi criado.',pixAction:'Ver opções do Pix',pixTitle:'Cobrar com Pix',pixHelp:'UGO precisa de uma integração Asaas de produção para emitir o QR real. O valor do trabalho continua registrado, mas não está pago.',pixClose:'Fechar',pendingTag:'Aguardando pagamento',cashSubtitle:'O cliente entrega o dinheiro e confirma no próprio aplicativo.',changeToCash:'Trocar para dinheiro',
+  cashDebt:'O cliente confirma o dinheiro após entregar. Só então UGO registra a comissão como dívida.',count:'Comissões UGO em aberto:',debtHelp:'Ao atingir 3 comissões abertas, novos pedidos ficam bloqueados até a conciliação.',openEarnings:'Ver comissões e pagar UGO',commissionLabel:'comissão deste serviço se for dinheiro',qrUnavailable:'Cobrança Pix Asaas ainda não configurada para pedidos reais. Nenhum código ou débito foi criado.',pixAction:'Ver opções do Pix',pixTitle:'Cobrar com Pix',pixHelp:'UGO precisa de uma integração Asaas de produção para emitir o QR real. O valor do trabalho continua registrado, mas não está pago.',pixClose:'Fechar',copyPix:'Copiar Pix',copyOk:'Código Pix copiado',copyError:'Não foi possível copiar. Selecione o código manualmente.',pixLoading:'Consultando cobrança existente…',pendingTag:'Aguardando pagamento',cashSubtitle:'O cliente entrega o dinheiro e confirma no próprio aplicativo.',changeToCash:'Trocar para dinheiro',
  }:locale==='en'?{
   waiting:'Waiting for customer approval.',title:'Work approved',question:'How will the customer pay?',cash:'Cash',pix:'Pix · QR Code',aria:'Collection after service',
   cashPending:'Cash selected. Awaiting customer confirmation; no payment was marked received.',cashAction:'Ask customer to confirm',cashRequested:'Request sent in chat. Await the customer confirmation in UGO.',extraTitle:'Additional work outside the original quote?',extraLabel:'Proposed total',extraAction:'Send quote for approval',extraNote:'The quote is sent through chat. It does not change the service price or generate Pix until formally approved in UGO.',proposalSent:'Quote sent. The original amount remains the only approved amount.',invalidAmount:'Enter a positive total different from the current amount.',
   pixPending:'Pix selected, but no Asaas QR is available for this service. No payment was created or confirmed.',
-  cashDebt:'The customer confirms cash after handing it over. Only then does UGO record a commission debt.',count:'Open UGO commissions:',debtHelp:'At 3 open commissions, new jobs are blocked until reconciliation.',openEarnings:'See commissions and pay UGO',commissionLabel:'commission if paid in cash',qrUnavailable:'Asaas Pix payments are not yet configured for real services. No code or charge was created.',pixAction:'View Pix options',pixTitle:'Charge with Pix',pixHelp:'UGO needs a production Asaas integration to issue an official QR. The job amount is recorded but not paid.',pixClose:'Close',pendingTag:'Payment pending',cashSubtitle:'Customer hands over the cash and confirms in their own app.',changeToCash:'Switch to cash',
+  cashDebt:'The customer confirms cash after handing it over. Only then does UGO record a commission debt.',count:'Open UGO commissions:',debtHelp:'At 3 open commissions, new jobs are blocked until reconciliation.',openEarnings:'See commissions and pay UGO',commissionLabel:'commission if paid in cash',qrUnavailable:'Asaas Pix payments are not yet configured for real services. No code or charge was created.',pixAction:'View Pix options',pixTitle:'Charge with Pix',pixHelp:'UGO needs a production Asaas integration to issue an official QR. The job amount is recorded but not paid.',pixClose:'Close',copyPix:'Copy Pix',copyOk:'Pix code copied',copyError:'Could not copy. Select the code manually.',pixLoading:'Checking existing payment…',pendingTag:'Payment pending',cashSubtitle:'Customer hands over the cash and confirms in their own app.',changeToCash:'Switch to cash',
  }:{
   waiting:'Esperando aprobación del cliente.',title:'Trabajo aprobado',question:'¿Cómo va a pagar el cliente?',cash:'Efectivo',pix:'Pix · QR Code',aria:'Cobro al finalizar el servicio',
   cashPending:'Efectivo elegido. Esperando confirmación del cliente; todavía no figura como recibido.',cashAction:'Solicitar confirmación al cliente',cashRequested:'Solicitud enviada por chat. Esperá la confirmación del cliente en UGO.',extraTitle:'¿Hubo trabajo adicional fuera del presupuesto?',extraLabel:'Total propuesto',extraAction:'Enviar propuesta para aprobación',extraNote:'Se envía la propuesta por chat. No modifica el precio del servicio ni genera Pix hasta que UGO valide la aprobación.',proposalSent:'Propuesta enviada. El importe original sigue siendo el único aprobado.',invalidAmount:'Ingresá un total positivo diferente del actual.',
   pixPending:'Pix elegido, pero no hay QR de Asaas para este servicio. No se creó ni confirmó un pago.',
-  cashDebt:'El cliente confirma el efectivo después de entregarlo. Recién entonces UGO registra la deuda de comisión.',count:'Comisiones UGO abiertas:',debtHelp:'Al llegar a 3 comisiones abiertas se bloquean nuevos trabajos hasta conciliar.',openEarnings:'Ver comisiones y pagar UGO',commissionLabel:'comisión de este servicio si es en efectivo',qrUnavailable:'Los cobros Pix Asaas todavía no están configurados para servicios reales. No se creó ningún QR ni cobro.',pixAction:'Ver opciones Pix',pixTitle:'Cobrar con Pix',pixHelp:'UGO necesita la integración productiva de Asaas para emitir un QR oficial. El importe está registrado, pero no pagado.',pixClose:'Cerrar',pendingTag:'Pago pendiente',cashSubtitle:'El cliente entrega el efectivo y lo confirma desde su aplicación.',changeToCash:'Cambiar a efectivo'
+  cashDebt:'El cliente confirma el efectivo después de entregarlo. Recién entonces UGO registra la deuda de comisión.',count:'Comisiones UGO abiertas:',debtHelp:'Al llegar a 3 comisiones abiertas se bloquean nuevos trabajos hasta conciliar.',openEarnings:'Ver comisiones y pagar UGO',commissionLabel:'comisión de este servicio si es en efectivo',qrUnavailable:'Los cobros Pix Asaas todavía no están configurados para servicios reales. No se creó ningún QR ni cobro.',pixAction:'Ver opciones Pix',pixTitle:'Cobrar con Pix',pixHelp:'UGO necesita la integración productiva de Asaas para emitir un QR oficial. El importe está registrado, pero no pagado.',pixClose:'Cerrar',copyPix:'Copiar Pix',copyOk:'Código Pix copiado',copyError:'No se pudo copiar. Seleccioná el código manualmente.',pixLoading:'Consultando cobro existente…',pendingTag:'Pago pendiente',cashSubtitle:'El cliente entrega el efectivo y lo confirma desde su aplicación.',changeToCash:'Cambiar a efectivo'
  })
  if(!approvedAt)return <p role="status">{labels.waiting}</p>
  const pick=async(method:CollectionMethod)=>{
@@ -144,8 +186,14 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
     <button type="button" className="ugo-collection-modal-close" aria-label={labels.pixClose} onClick={()=>setPixDetailsOpen(false)}>×</button>
     <div className="ugo-collection-modal-icon" aria-hidden="true">◆</div><h3>{labels.pixTitle}</h3>
     <div className="ugo-collection-modal-total">{money(amount)}</div>
-    <p role="status">{labels.qrUnavailable}</p><p>{labels.pixHelp}</p>
-    <button type="button" className="ugo-collection-action" onClick={()=>setPixDetailsOpen(false)}>{labels.pixClose}</button>
+    {pixLoading?<p role="status">{labels.pixLoading}</p>:
+      pixCode?<div className="ugo-collection-modal-pay">
+       {pixImage&&<img src={`data:image/png;base64,${pixImage}`} alt="Pix QR Code" width={210} height={210}/>}
+       <textarea readOnly aria-label={labels.copyPix} value={pixCode} rows={3}/>
+       <button type="button" className="ugo-collection-action" onClick={()=>void copyExistingPix()}>{labels.copyPix}</button>
+       {pixCopyStatus&&<p role="status">{pixCopyStatus}</p>}
+      </div>:<><p role="status">{labels.qrUnavailable}</p><p>{labels.pixHelp}</p></>}
+    <button type="button" className="ugo-collection-secondary-action" onClick={()=>setPixDetailsOpen(false)}>{labels.pixClose}</button>
    </div>
   </div>}
  </section>
