@@ -16,7 +16,7 @@ type ReviewService={
 }
 type ReviewPayment={metodo:string|null;estado:string;modelo_pago:string|null;monto_bruto:number|null;moneda:string|null}
 
-export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDispute?:()=>void;serviceId?:string|null;onCompleted?:()=>void|Promise<void>}){
+export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted}:{onOpenDispute?:()=>void;serviceId?:string|null;onCompleted?:()=>void|Promise<void>}){
  const{t,locale}=useLocale();
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
@@ -78,6 +78,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
    if(!ok)throw new Error(t('clientReview.cashNotReady'))
    setNotice(locale==='pt-BR'?'Pagamento em dinheiro registrado.':locale==='en'?'Cash payment confirmed.':'Pago en efectivo confirmado.')
    await load()
+   await onCompleted?.()
   }catch(e){await load().catch(()=>{});setNotice(e instanceof Error?e.message:t('clientReview.cashFailed'))}
   finally{setBusy(false)}
  }
