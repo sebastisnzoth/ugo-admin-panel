@@ -28,7 +28,9 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
  if(!s)return <section className="provider-screen provider-empty-screen"><EmptyState title={t('providerJob.emptyTitle')} description={t('providerJob.emptyDescription')} action={<Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>{t('screen.active.1')}</Button>}/></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
  const paymentReady=d.funded||d.cashSelected||d.paymentPreferenceSelected
- const deferredPixPreview=isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(s)
+ const deferredPixPreview=isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(s,'pix')
+ const workApprovalStamp=(s as{metadata?:Record<string,unknown>|null}).metadata?.trabajo_aprobado_at
+ const workApproved=typeof workApprovalStamp==='string'&&Number.isFinite(Date.parse(workApprovalStamp))
  const amountReady=Number(s.tarifa||0)>0
  const address=s.direccion_cliente||t('providerAgenda.addressPending')
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
@@ -75,7 +77,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
   </Card>
   {deferredPixPreview&&<Card className="provider-card provider-pix-post-service-pilot">
    <ProviderDeferredPixStatus serviceId={s.id} serviceState={s.estado}
-    amountBRL={Number(s.tarifa||0)} accessToken={d.accessToken}/>
+    amountBRL={Number(s.tarifa||0)} accessToken={d.accessToken} workApproved={workApproved}/>
   </Card>}
   <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
   <Card className="provider-card provider-job-summary">
