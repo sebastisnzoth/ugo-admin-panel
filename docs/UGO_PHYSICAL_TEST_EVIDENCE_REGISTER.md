@@ -99,3 +99,15 @@ Consultas **solo SELECT**, restringidas al servicio #2697 de Supabase TEST `tmos
 - `public.audit_log` contiene dos eventos vinculados al servicio: `cliente_ubicacion_servicio_guardada` y `client.cash_payment.confirmed`. Confirman registros de auditoría de ubicación del cliente y confirmación de efectivo; **no prueban precisión GPS del proveedor, radio de geofence, ni liquidación bancaria**.
 
 **Actualización del estado:** existencia de objetos Storage y auditoría de pago/ubicación = **CORROBORADO EN TEST**. Evidencia GPS/geofence físico detallada = **PENDIENTE**. Ninguna modificación a datos ni a producción.
+
+## Auditoría específica GPS/geofence — 2026-11-11
+
+Consultas SELECT a Supabase TEST para el servicio #2697:
+- Dos ofertas con `distancia_km` registrada, ambas **0,30 km (300 m)**. **Distancia de oferta/matching, no distancia de llegada**. No usar esta cifra como validación del geofence de 200 m.
+- Un evento persistido de transición a `llegado` (2026-10-28). **Estado de llegada acreditado**; el evento por sí solo no conserva la lectura GPS que permitió la transición.
+- Ningún evento de `audit_log` asociado directamente al ID del servicio con nombre que incluya `gps`, `geofence` o `llegad`. **Ausencia en ese filtro no demuestra que no se haya verificado GPS**.
+- El esquema incluye `perfiles_proveedor.ubicacion_accuracy_m` y `ubicacion_updated_at`, pero representan ubicación del perfil (potencialmente actualizada desde la prueba), no necesariamente una instantánea histórica del 28 de octubre. No se consultaron coordenadas privadas.
+
+**Dictamen:** llegada y matching con distancias registradas = **corroborado**; cumplimiento físico del umbral geofence y precisión GPS histórica = **no certificable con los registros inspeccionados**. No repetir pruebas por defecto; buscar logs históricos o capturas fechadas antes de solicitar nueva ejecución.
+
+Esta verificación no alteró TEST ni PROD.
