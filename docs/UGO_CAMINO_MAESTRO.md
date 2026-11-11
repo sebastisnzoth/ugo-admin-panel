@@ -819,3 +819,10 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Vercel TEST `ugo-pagamentos-v2-sandbox` criado e implantado em Preview `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4`, uso apenas de endpoints diagnósticos read-only. `/api/health` respondeu HTTP 200 com Neon TEST ready e financialWritesEnabled=false.
 - Projeto Neon TEST preservado, role exclusivo `ugo_asaas_wallet_audit_ro`, não-admin e sem escritas. Credencial da role e token de operador em env criptografado Preview, sem logar valores. Produção Arena e projeto principal Vercel não alterados.
 - Credenciais das contas Asaas Sandbox não foram importadas de Production. Sem elas, a verificação das wallets emisora e recebedora retorna bloqueio. Não permitir pagamento QR, simulação, webhooks públicos ou settlement até que wallets e secret TEST sejam configurados e verificados.
+
+
+### 2026-11-11 — P0: ejecución del servicio independiente del cobro (PR #624, DRAFT)
+- Regla producto: no exigir Pix ni efectivo antes de que el proveedor se traslade, llegue, inicie o finalice el servicio. El proveedor solicita el método de pago luego del trabajo y la aprobación.
+- Cambios de código propuestos: eliminar bloqueos de pago en pantallas del proveedor y nueva versión de `private.avanzar_servicio_impl`; mantener seguridad, autorización, tarifa aprobada, GPS 200m, fotos y programación.
+- **NO liberado / NO desplegado**: PR aún en revisión; migración no aplicada ni en UGO Arena PROD ni en otro entorno. El checkout final Pix/efectivo y conciliación no están completos en el flujo real, aunque existe validación Pix Sandbox aislada.
+- Puertas: Core CI y seguridad en SHA exacto; E2E Cliente↔Proveedor en TEST, auditoría SQL/deploy y evidencia de cobro final; no fusionar por mergeable solamente.
