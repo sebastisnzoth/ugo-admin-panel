@@ -64,3 +64,29 @@ Fuentes consultadas:
 **Limitación de acceso:** las herramientas conectadas en esta sesión permiten leer metadatos Neon, pero no proporcionan acceso de lectura directa a las tablas/Storage del proyecto Supabase TEST histórico. No se ejecutó SQL ni se consultó PROD. No se inventan resultados de base de datos.
 
 **Próximo paso ejecutable al contar con acceso de solo lectura a Supabase TEST:** buscar el identificador numérico 2697 en la tabla de servicios de TEST; obtener ID interno y eventos por referencia; corroborar evidencias Storage y pagos con consultas mínimas y RLS; publicar únicamente un resumen sanitizado.
+
+## Evidencia primaria corroborada en Supabase TEST — 2026-11-11
+
+**NOVEDAD: acceso de solo lectura obtenido mediante conector Supabase.** Proyecto `tmossnqfwfwjrtzwcbmm` confirmó estado `ACTIVE_HEALTHY`. Se consultaron únicamente metadatos, esquema y filas filtradas por servicio; **ninguna escritura ni consulta a PROD**.
+
+### Servicio físico #2697 — verificado en base TEST
+- `public.servicios.numero=2697`; identificador interno `1e3151b2-c920-4a5e-a47b-751516a3808e`; creado 2026-10-25 00:57:09 UTC; estado actual `completado`.
+- Eventos de estado persistidos: `ofrecido → asignado` (2026-10-27 04:43:42 UTC), `asignado → en_camino` (04:43:54); `en_camino → llegado` (2026-10-28 10:50:05 UTC), `llegado → en_progreso` (10:50:22), `en_progreso → esperando_aprobacion` (10:50:51), `esperando_aprobacion → completado` (10:51:53).
+- Dos filas en `public.evidencias_servicio`: `antes` (2026-10-28 10:50:21 UTC) y `despues` (10:50:51 UTC), ambas con `storage_path` no nulo. **No se abrieron fotografías ni se validó contenido de los objetos Storage**.
+- Una fila en `public.pagos`: método `efectivo`, monto bruto **R$120**, estado `liberado`, fecha de confirmación presente. Esto **no** acredita una transferencia electrónica.
+- Una fila en `public.deudas_ugo_proveedor`: monto de servicio **R$120**, monto pagado UGO **R$18**, estado `pagado`. Son registros de TEST, **no ingresos comerciales auditados**.
+- Ofertas consultadas: una `aceptada` y una `expirada`. Hay transiciones de búsqueda/oferta previas, que no se deben omitir si se evalúa la experiencia completa.
+
+### Qué queda sin corroborar
+- Capturas/fotos originales y su contenido; metadatos de Storage solo acreditan referencias.
+- GPS físico, precisión, geofence y ubicación real; no se inspeccionaron eventos específicos de ubicación.
+- Dos dispositivos reales y acciones humanas: respaldados por reporte del fundador, no por la sola base de datos.
+- Conciliación bancaria/efectivo real y facturación de una empresa; no inferirlas desde filas TEST.
+- Prueba Pix/split/escrow; el servicio #2697 usó efectivo.
+
+### Estado de evidencia para inversores
+**CORROBORADO EN TEST:** existencia, cadena final de estados, referencias de dos evidencias, importe y comisión registrada del servicio #2697.  
+**REPORTADO POR FUNDADOR:** ejecución física con dos teléfonos.  
+**PENDIENTE:** evidencia de geofence/GPS y verificación no invasiva de objetos Storage.
+
+**Corrección a notas anteriores:** la limitación de acceso Supabase ya no aplica; se obtuvo acceso de lectura en esta sesión. Las notas históricas permanecen como registro de decisiones anteriores, no como estado actual.
