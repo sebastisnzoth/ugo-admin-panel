@@ -1231,3 +1231,11 @@ RUNTIME VALIDATED             pendiente
 - Foi identificado bug de formato: API Asaas retorna `data: [{object:'wallet',id:'...'}]` e o verificador antigo exigia `walletId`. Corrigido no adapter e na rota privada de Preview, com testes de contrato para resposta real, outras carteiras e identificadores conflitantes.
 - Verificação temporária `api/issuer-audit.js` foi incluída **somente em deploys transitórios** para diagnóstico de schema, sem chaves, wallet IDs ou pagamentos na resposta. **Não faz parte do repo** e não deve ser promovida; deploy Preview regular deve conter somente health e wallet autenticada com token de operador.
 - Wallet de prestador separada ainda **não verificada**: depende de chave da conta Sandbox prestadora e wallet vinculada verificada. Nenhum Pix, confirmação, Split ou Escrow executado.
+
+
+### 2026-11-10 · Pix pós-serviço: aprovação de trabalho em TEST (PR #623)
+
+- **Estado: PARCIAL / NÃO HABILITAR**. Preview Cliente passou a permitir aprovação do serviço DEMO Pix autorizado após evidência final, sem criar cobrança; RPC dedicada `aprobar_trabajo_pix_diferido_test` está em `docs/sql/ugo_pix_after_service_test_approval_review_only.sql` **como proposta não aplicada**.
+- A aprovação não encerra o serviço nem marca Pix como recebido; o profissional só deve emitir o QR após autorização server-side e Asaas Sandbox.
+- Segurança: feature flags desativadas, sem alterações em UGO Arena, UGO PROD, Neon TEST, Asaas ou chaves; migração futura exige Supabase TEST isolado, allowlist privada, CI e E2E completo.
+- Pendente: método escolhido somente ao fim, duas partes no efetivo, backend lifecycle, webhook reconciliado e testes ponta a ponta; não fazer deploy nem merge sem os gates.
