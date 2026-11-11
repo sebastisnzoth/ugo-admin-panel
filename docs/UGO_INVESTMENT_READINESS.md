@@ -110,3 +110,11 @@ Auditoría de historial de autores y secretos con herramientas de lectura, sin c
 
 ### Próxima acción
 Revisar un inventario completo de autores/archivos y un escaneo de secretos de Git con herramienta adecuada, sin divulgar resultados sensibles. Luego preparar una ficha comercial verificable, separada del expediente técnico público.
+
+## Continuidad — 2026-11-11: primera ficha comercial creada
+- **HECHO:** creado [borrador de ficha comercial](UGO_INVESTOR_ONE_PAGER_DRAFT.md), sin datos personales ni secretos, marcado **NO ENVIAR** hasta completar diligencia.
+- **HECHO:** búsqueda reciente de 30 commits, con registros entre 2026-11-06 y 2026-11-11; muestra limitada, no inventario completo de autores.
+- **LIMITACIÓN:** no fue posible clonar el repositorio en el entorno de auditoría por falta de resolución DNS hacia GitHub. No se ejecutó `git log --all` ni un escáner de secretos de historial completo.
+- **PENDIENTE:** ejecutar escaneo de secretos sobre clon local completo, sin copiar valores a documentos públicos. Validar resultados y registrar solo clasificación, rutas y acciones.
+- **NO REALIZADO:** contacto a inversores, auditoría legal, valoración, pruebas E2E, despliegues, escrituras en PROD.
+- **PRÓXIMA ACCIÓN:** obtener acceso de lectura a historial Git completo para análisis de contribuyentes y secretos, y comprobar evidencia funcional en TEST sin escrituras en producción.
