@@ -11,7 +11,7 @@ test('provider screen never advertises an unavailable real Pix QR',()=>{
  assert.match(collection,/cashDebt/)
  assert.match(job,/openDebtCount=\{d\.pendingDebtCount\}/)
  assert.match(job,/onOpenEarnings=\{flow\.actions\.openEarnings\}/)
- assert.match(collection,/openDebtCount\}\/3/)
+ assert.match(collection,/Math\.min\(Math\.max\(0,openDebtCount\),3\)\}\/3/)
 })
 
 test('cash only counts against the three-service cap after client confirms payment',()=>{
