@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>UGO · Pix Sandbox</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;color:#123d30;background:#eef5f1}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,#d4f3e4 0,transparent 34rem),#eef5f1}
+header{display:flex;align-items:center;justify-content:space-between;margin:auto;padding:24px 20px;max-width:790px}
+.logo{font-size:27px;letter-spacing:-1.5px;font-weight:950}.logo span{font-size:10px;vertical-align:middle;letter-spacing:1.5px}
+.pill{font-size:11px;letter-spacing:1px;font-weight:800;border-radius:999px;background:#dff8e8;padding:9px 12px;border:1px solid #a5ddba}
+main{max-width:520px;margin:36px auto 80px;padding:28px;border:1px solid #d1e9d9;background:white;border-radius:28px;box-shadow:0 24px 80px rgba(9,65,45,.09)}
+.eyebrow{font-size:11px;color:#087354;letter-spacing:1.3px;font-weight:900}
+h1{font-size:27px;line-height:1.13;letter-spacing:-.9px;margin:10px 0}
+p{font-size:14px;line-height:1.55;color:#586b62}
+.amount{background:linear-gradient(135deg,#def5e8,#f5fcf8);border-radius:19px;padding:22px;margin:22px 0;border:1px solid #c7e5d4}
+.amount strong{font-size:42px;letter-spacing:-1.6px;color:#076a4f}.amount small{display:block;margin-bottom:4px;color:#497362;font-weight:700}
+button{width:100%;min-height:54px;border:1px solid #047451;background:#087b58;color:white;border-radius:14px;font-size:15px;font-weight:800;padding:12px 16px;cursor:pointer;transition:.2s}button:hover:not(:disabled){background:#05694c;transform:translateY(-1px)}button:focus-visible{outline:3px solid #36cba3;outline-offset:2px}
+button.secondary{background:white;border-color:#b7d8c7;color:#0b7052}button.secondary:hover:not(:disabled){background:#ecf8f1}button:disabled{opacity:.55;cursor:not-allowed}
+.actions{display:grid;gap:10px;margin-top:20px}
+.qr{width:min(100%,280px);height:auto;display:block;margin:20px auto;padding:12px;background:white;border:1px solid #dbece1;border-radius:18px}
+label{font-size:12px;font-weight:800;color:#245b48}textarea{width:100%;margin:8px 0 10px;background:#f4faf7;border:1px solid #caddd2;border-radius:12px;padding:12px;resize:vertical;color:#205b47;font:12px/1.5 ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
+#state{border-radius:13px;padding:13px;background:#f0f9f4;color:#25654e;font-size:13px;margin-bottom:16px;line-height:1.5}
+[hidden]{display:none!important}.warning{background:#fff7e8;color:#80551b;padding:12px;border-radius:12px;font-size:12px;margin-top:16px}
+footer{max-width:790px;padding:15px 20px;margin:auto;color:#789186;font-size:12px}
+@media(max-width:550px){main{margin:4px 12px 40px;padding:22px;border-radius:22px}.amount strong{font-size:36px}}
+</style></head>
+<body><header><div class="logo">UGO <span>PIX</span></div><div class="pill">SANDBOX · TESTE</div></header>
+<main>
+<div class="eyebrow">TESTE ISOLADO · ASAAS SANDBOX</div>
+<h1>Experimente o Pix do UGO</h1>
+<p>Uma cobrança fictícia para testar o QR Code, o código copia e cola e a confirmação. Sem dinheiro real, sem alterar UGO Arena.</p>
+<div class="amount"><small>Pagamento de teste</small><strong>R$ 100,00</strong></div>
+<div id="state" role="status" aria-live="polite">Verificando o ambiente de teste…</div>
+<div id="qrArea" hidden>
+<img id="qrImage" class="qr" alt="QR Code Pix Sandbox" width="270" height="270">
+<label for="pixCode">Código Pix copia e cola</label><textarea id="pixCode" readonly rows="4"></textarea>
+<div class="actions"><button id="copy" class="secondary">Copiar código Pix</button><button id="simulate">Simular pagamento no Asaas Sandbox</button></div>
+<div class="warning">Este QR é exclusivamente Sandbox. Não transfira dinheiro real pelo aplicativo do banco.</div>
+</div>
+<div id="newArea" class="actions" hidden><button id="generate">Gerar QR Pix Sandbox</button></div>
+<div class="actions"><button class="secondary" id="refresh">Atualizar status</button></div>
+</main>
+<footer>UGO Pagamentos V2 · TEST separado · Asaas Sandbox + Neon TEST. Nenhum split ou pagamento ao profissional é realizado.</footer>
+<script>
+(()=>{
+ const $=id=>document.getElementById(id)
+ let busy=false,stage=''
+ const message=(msg)=>{$('state').textContent=msg}
+ const submit=async(action)=>{
+  if(busy)return
+  busy=true;renderButtons();message(action==='create'?'Gerando QR no Asaas Sandbox…':action==='simulate'?'Confirmando pagamento fictício no Asaas…':'Consultando o status…')
+  try{
+   const response=await fetch('/api/demo-checkout',{method:'POST',headers:{'Content-Type':'application/json','X-UGO-Demo-Action':'1'},credentials:'same-origin',cache:'no-store',body:JSON.stringify({action})})
+   const result=await response.json()
+   if(!response.ok)throw Error(result.error||'Falha no ambiente Sandbox')
+   update(result)
+  }catch(e){message('Não foi possível concluir: '+String(e.message||e)+'. Não repita automaticamente.');$('newArea').hidden=true;$('qrArea').hidden=true}
+  finally{busy=false;renderButtons()}
+ }
+ const renderButtons=()=>{for(const id of ['generate','copy','simulate','refresh'])$(id).disabled=busy}
+ const update=(data)=>{
+  if(data.environment!=='sandbox'||data.realMoney!==false)throw Error('Resposta inválida do teste')
+  stage=data.stage;$('qrArea').hidden=true;$('newArea').hidden=true
+  if(stage==='not_issued'){$('newArea').hidden=false;message('Pronto para gerar uma cobrança fictícia de R$ 100,00.')}
+  else if(stage==='awaiting_payment'){
+   const image=String(data.qrImageBase64||'')
+   const copy=String(data.qrCopyPaste||'')
+   if(!/^[A-Za-z0-9+/]+={0,2}$/.test(image)||image.length>200000||copy.length<36||copy.length>4096)throw Error('QR inválido')
+   $('qrImage').src='data:image/png;base64,'+image
+   $('pixCode').value=copy
+   $('qrArea').hidden=false
+   message('QR Pix Sandbox gerado! Use Copiar Pix ou Simular pagamento.')
+  }else if(stage==='received'||stage==='confirmed')message('Pagamento de teste '+(stage==='received'?'RECEBIDO':'CONFIRMADO')+' pelo Asaas Sandbox. Nenhum dinheiro real foi transferido.')
+  else message('Este teste requer revisão ('+stage+'). Nenhuma nova cobrança será criada.')
+ }
+ const refresh=async()=>{
+  if(busy)return
+  busy=true;renderButtons()
+  try{
+   const response=await fetch('/api/demo-checkout',{credentials:'same-origin',cache:'no-store'})
+   const result=await response.json()
+   if(!response.ok)throw Error(result.error||'Falha no Sandbox')
+   update(result)
+  }catch(e){message('Erro ao consultar Sandbox: '+String(e.message||e));$('newArea').hidden=true;$('qrArea').hidden=true}
+  finally{busy=false;renderButtons()}
+ }
+ $('generate').addEventListener('click',()=>void submit('create'))
+ $('simulate').addEventListener('click',()=>void submit('simulate'))
+ $('copy').addEventListener('click',()=>{const value=$('pixCode').value;navigator.clipboard.writeText(value).then(()=>message('Código Pix Sandbox copiado.')).catch(()=>{$('pixCode').focus();$('pixCode').select();message('Selecione e copie o código manualmente.')})})
+ $('refresh').addEventListener('click',()=>void refresh())
+ void refresh()
+})()
+</script></body></html>
