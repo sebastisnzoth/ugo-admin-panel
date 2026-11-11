@@ -545,3 +545,7 @@
 .ugo-provider-root .ugo-collection-modal p{margin:0;color:var(--pro-muted);font-size:13px;line-height:1.5}
 @media(max-width:540px){.ugo-provider-root .ugo-collection-methods{grid-template-columns:1fr}.ugo-provider-root .ugo-collection-method{min-height:70px}.ugo-provider-root .ugo-provider-post-service-collection{padding:16px}}
 @media(prefers-reduced-motion:reduce){.ugo-provider-root .ugo-collection-method,.ugo-provider-root .ugo-provider-post-service-collection button{transition:none}}
+
+.ugo-provider-root .ugo-collection-modal-pay{display:grid;justify-items:stretch;gap:12px}
+.ugo-provider-root .ugo-collection-modal-pay img{display:block;justify-self:center;object-fit:contain;max-width:100%;border:8px solid #f8fbfa;border-radius:18px}
+.ugo-provider-root .ugo-collection-modal-pay textarea{box-sizing:border-box;width:100%;max-height:120px;resize:vertical;padding:12px;border:1px solid #d7e5dd;background:#f6faf8;border-radius:12px;color:#1a4c3d;font:600 11px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace}
