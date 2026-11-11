@@ -27,7 +27,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
  const[evidence,setEvidence]=useState({initial:false,final:false})
  if(!s)return <section className="provider-screen provider-empty-screen"><EmptyState title={t('providerJob.emptyTitle')} description={t('providerJob.emptyDescription')} action={<Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>{t('screen.active.1')}</Button>}/></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
- const paymentReady=d.funded||d.cashSelected||d.paymentPreferenceSelected
+ const paymentReady=true // Service execution is independent of payment collection.
  const deferredPixPreview=isPixPayAfterServicePreviewEnabled()&&deferredPixPilotEligible(s,'pix')
  const workApprovalStamp=(s as{metadata?:Record<string,unknown>|null}).metadata?.trabajo_aprobado_at
  const workApproved=typeof workApprovalStamp==='string'&&Number.isFinite(Date.parse(workApprovalStamp))
