@@ -129,17 +129,17 @@ export function ProviderDeferredPixStatus({
   void navigator.clipboard.writeText(value).catch(()=>setCopyFailed(true))
  }
  return <>
-  {readyForPix&&<div className="ugo-provider-payment-methods" role="group" aria-label={locale==='pt-BR'?'Como o cliente vai pagar?':locale==='es'?'¿Cómo va a pagar el cliente?':'How will the client pay?'}>
-   <p>{locale==='pt-BR'?'Trabalho aprovado pelo cliente. Escolha como cobrar.':locale==='es'?'Trabajo aprobado por el cliente. Elegí cómo cobrar.':'Work approved by the client. Choose how to collect payment.'}</p>
+  {readyForPix&&<div className="ugo-provider-payment-methods" role="group" aria-label={t('providerPix.collectionQuestion')}>
+   <p>{t('providerPix.approvedHelp')}</p>
    <button type="button" aria-pressed={collectionMethod==='pix'} onClick={()=>setCollectionMethod('pix')}>
-    {locale==='pt-BR'?'Cobrar com Pix':locale==='es'?'Cobrar con Pix':'Collect with Pix'}
+    {t('providerPix.charge')}
    </button>
    <button type="button" aria-pressed={collectionMethod==='cash'} onClick={()=>setCollectionMethod('cash')}>
-    {locale==='pt-BR'?'Cobrar em dinheiro':locale==='es'?'Cobrar en efectivo':'Collect cash'}
+    {t('providerPix.cash')}
    </button>
   </div>}
   {collectionMethod==='cash'&&readyForPix&&<p role="status">
-   {locale==='pt-BR'?'Receba o dinheiro e aguarde a confirmação do cliente. Esta seleção não registra o pagamento nem gera Pix.':locale==='es'?'Recibí el efectivo y esperá la confirmación del cliente. Esta selección no registra el pago ni genera Pix.':'Collect cash and wait for the client to confirm. This selection does not record payment or create a Pix charge.'}
+   {t('providerPix.cashInstructions')}
   </p>}
   {(!readyForPix||collectionMethod==='pix')&&<ProviderPixAfterService payment={payment} onRefresh={()=>setRevision(n=>n+1)}
    onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>}

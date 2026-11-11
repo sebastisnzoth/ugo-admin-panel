@@ -1,6 +1,10 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "providerPix.collectionQuestion": "Como o cliente vai pagar?",
+    "providerPix.approvedHelp": "Trabalho aprovado pelo cliente. Escolha como cobrar.",
+    "providerPix.cash": "Cobrar em dinheiro",
+    "providerPix.cashInstructions": "Receba o dinheiro e aguarde a confirmação do cliente. Esta seleção não registra o pagamento nem gera Pix.",
     "providerPix.charge": "Cobrar com Pix",
     "ugoUserEdit.relatedFailed": "Não foi possível carregar os dados relacionados.",
     "ugoUserEdit.relatedLoading": "Carregando dados relacionados...",
@@ -1121,6 +1125,10 @@ export const extendedMessages={
 
   },
   "es": {
+    "providerPix.collectionQuestion": "¿Cómo va a pagar el cliente?",
+    "providerPix.approvedHelp": "Trabajo aprobado por el cliente. Elegí cómo cobrar.",
+    "providerPix.cash": "Cobrar en efectivo",
+    "providerPix.cashInstructions": "Recibí el efectivo y esperá la confirmación del cliente. Esta selección no registra el pago ni genera Pix.",
     "providerPix.charge": "Cobrar con Pix",
     "ugoUserEdit.relatedFailed": "No se pudieron cargar los datos relacionados.",
     "ugoUserEdit.relatedLoading": "Cargando datos relacionados...",
@@ -2241,6 +2249,10 @@ export const extendedMessages={
 
   },
   "en": {
+    "providerPix.collectionQuestion": "How will the client pay?",
+    "providerPix.approvedHelp": "Work approved by the client. Choose how to collect payment.",
+    "providerPix.cash": "Collect cash",
+    "providerPix.cashInstructions": "Collect cash and wait for the client to confirm. This selection does not record payment or create a Pix charge.",
     "providerPix.charge": "Charge with Pix",
     "ugoUserEdit.relatedFailed": "Could not load related profile details.",
     "ugoUserEdit.relatedLoading": "Loading related profile details...",
