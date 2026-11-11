@@ -12,7 +12,7 @@ const providerId='33333333-3333-4333-8333-333333333333'
 const baseService={
  id:serviceId,cliente_id:clientId,proveedor_id:providerId,
  estado:'esperando_aprobacion',tarifa:100,ambiente:'demo',moneda:'BRL',
- metadata:{pix_after_service_authorized:true,payment_timing:'after_service',requested_payment_method:'pix'}
+ metadata:{pix_after_service_authorized:true,payment_timing:'after_service',requested_payment_method:'pix',trabajo_aprobado_at:'2026-11-10T22:00:00Z'}
 }
 const intent={
  ugo_service_id:serviceId,ugo_client_id:clientId,ugo_provider_id:providerId,
@@ -37,7 +37,10 @@ test('provider TEST proof fails closed on unknown or foreign services',()=>{
  assert.equal(eligible({...baseService,moneda:'USD'}),false)
  assert.equal(eligible({...baseService,estado:'llegado'}),false)
  assert.equal(eligible({...baseService,estado:'en_progreso'}),false)
- assert.equal(eligible({...baseService,metadata:{...baseService.metadata,requested_payment_method:'efectivo'}}),false)
+ assert.equal(eligible({...baseService,metadata:{...baseService.metadata,requested_payment_method:'efectivo'}}),true) // Provider chooses Pix after approval
+ assert.equal(eligible({...baseService,metadata:{...baseService.metadata,trabajo_aprobado_at:null}}),false)
+ assert.equal(eligible({...baseService,metadata:{...baseService.metadata,trabajo_aprobado_at:'not-a-date'}}),false)
+ assert.equal(eligible({...baseService,metadata:{...baseService.metadata,requested_payment_method:null}}),true)
  assert.equal(eligible({...baseService,metadata:{...baseService.metadata,pix_after_service_authorized:false}}),false)
  assert.equal(eligible({...baseService,metadata:{...baseService.metadata,payment_timing:'before_service'}}),false)
  assert.equal(eligible({...baseService,tarifa:0}),false)
