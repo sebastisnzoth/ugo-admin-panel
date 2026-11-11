@@ -7,7 +7,9 @@ test('provider realtime rebuilds after foreground recovery',async()=>{
  const src=await read('src/mvp/provider/useProviderRealtime.ts')
  assert.match(src,/visibilityState==='visible'\)\{resync\(\);reconnect\(\)\}/)
  assert.match(src,/CHANNEL_ERROR.*TIMED_OUT.*CLOSED/)
- assert.match(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)resync\(\)\},20_000\)/)
+ assert.match(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)resync\(\)\},60_000\)/)
+ assert.match(src,/now-backpressure\.current\.lastSyncAt<30_000/)
+ assert.match(src,/Math\.min\(120_000,3_000\*2\*\*Math\.min\(backpressure\.current\.failures,5\)\)/)
  assert.match(src,/addEventListener\('focus',onFocus\)/)
 })
 

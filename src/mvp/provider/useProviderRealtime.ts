@@ -41,7 +41,7 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor',filter:`proveedor_id=eq.${userId}`},resync)
-   .subscribe(status=>{if(!alive)return;if(status==='SUBSCRIBED'){backpressure.current.failures=0;backpressure.current.nextSyncAt=0;recordSessionDiagnostic('provider','realtime','channel_ready');resync()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){recordSessionDiagnostic('provider','realtime','channel_failed');reconnect()}})
+   .subscribe(status=>{if(!alive)return;if(status==='SUBSCRIBED'){if(reconnectTimer!==undefined){window.clearTimeout(reconnectTimer);reconnectTimer=undefined}backpressure.current.failures=0;backpressure.current.nextSyncAt=0;recordSessionDiagnostic('provider','realtime','channel_ready');resync()}else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){recordSessionDiagnostic('provider','realtime','channel_failed');reconnect()}})
   return()=>{
    alive=false
    if(reconnectTimer)window.clearTimeout(reconnectTimer)
