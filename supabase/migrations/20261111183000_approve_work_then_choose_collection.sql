@@ -61,9 +61,11 @@ begin
     and p.ambiente=v_service.ambiente and p.estado in ('retenido','liberado'))
  then raise exception 'Existe un pago confirmado: no se puede cambiar el método'; end if;
  v_previous:=coalesce(v_service.metadata->>'cobro_metodo','');
- if v_previous<>'' and v_previous<>v_method then
-  raise exception 'Ya se eligió un método de cobro; para cambiarlo solicitá revisión';
- end if;
+ -- A Pix choice without any issued charge can be changed to cash.
+ -- Once a payment attempt exists the method is locked for reconciliation.
+ if v_previous<>'' and v_previous<>v_method and exists(
+   select 1 from public.pagos p where p.servicio_id=v_service.id
+ ) then raise exception 'Existe un cobro previo; solicitá revisión antes de cambiarlo'; end if;
  if v_method='efectivo' then
   if not exists(select 1 from public.config_sistema where clave='pago_efectivo_activo'
       and lower(trim(both '"' from valor::text)) in ('true','1','si','sí','on'))
