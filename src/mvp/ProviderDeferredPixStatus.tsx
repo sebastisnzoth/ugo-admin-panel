@@ -23,7 +23,7 @@ function providerTestEndpoint(serviceId:string):URL|null{
 export function ProviderDeferredPixStatus({
  serviceId,serviceState,amountBRL,accessToken,workApproved,
 }:{serviceId:string;serviceState:string;amountBRL:number;accessToken:string;workApproved:boolean}){
- const{t,locale}=useLocale()
+ const{t}=useLocale()
  const [payment,setPayment]=useState<ProviderPixView>({stage:'not_finished',amountBRL})
  const [revision,setRevision]=useState(0)
  const [copyFailed,setCopyFailed]=useState(false)
