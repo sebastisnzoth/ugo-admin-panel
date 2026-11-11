@@ -87,3 +87,26 @@ La lista es **parcial**: no sustituye el inventario del lockfile, dependencias t
 Auditoría de historial de autores y secretos con herramientas de lectura, sin copiar secretos al expediente. Si aparece un posible secreto, documentar únicamente ruta/tipo/riesgo y solicitar rotación segura en el entorno autorizado; **no modificar PROD**.
 
 **Alcance de esta actualización:** exclusivamente documentación pública no sensible. No se ejecutaron tests, cambios de infraestructura ni comprobación de producción.
+
+## Segunda revisión — historial y exposición (2026-11-11)
+
+**Método:** consultas de lectura a GitHub Search y a dos commits. No se ejecutó un escaneo exhaustivo del árbol ni del historial Git completo.
+
+### Autoría observable
+- La consulta de commits devolvió una **muestra** de 18 referencias; el conector no certifica que sea la totalidad del historial ni permite establecer el primer commit a partir de esta muestra.
+- El commit [b3fb12f](https://github.com/sebastisnzoth/ugo-admin-panel/commit/b3fb12f105531aa39fd0ce0a8ec8e22ff8307344) está atribuido por GitHub a la cuenta `sebastisnzoth`, con fecha 2026-06-17. Es una evidencia de actividad del repositorio, **no** de la creación de la idea diez años antes ni de autoría exclusiva.
+- No se han revisado todos los autores/coautores de commits. **Titularidad: pendiente.**
+
+### Búsqueda preliminar de referencias sensibles
+- Una búsqueda de `SUPABASE_SERVICE_ROLE_KEY` encontró referencias en scripts. Una referencia al **nombre** de la variable no prueba que su **valor** esté expuesto.
+- Una búsqueda de `service_role` encontró migraciones SQL de controles de permisos. Tampoco demuestra exposición de una clave.
+- Una búsqueda literal con caracteres especiales de una cabecera de clave privada fue rechazada por el buscador; **no se ejecutó ni aprobó** esa comprobación.
+- **Resultado de seguridad:** no hay secreto confirmado con estas consultas; tampoco hay evidencia suficiente para declarar el repositorio libre de secretos. **Escaneo completo pendiente**.
+
+### Puerta de divulgación a inversores
+- Se puede preparar una ficha comercial sin secretos ni datos personales.
+- **No enviar todavía** un enlace al repositorio como dossier de diligencia debida: es público, pero requiere revisión de historial y permisos.
+- Si un escaneo posterior detecta una credencial real, no copiarla a documentación pública; priorizar evaluación de revocación/rotación por el responsable, con procedimiento seguro y autorización para entornos productivos.
+
+### Próxima acción
+Revisar un inventario completo de autores/archivos y un escaneo de secretos de Git con herramienta adecuada, sin divulgar resultados sensibles. Luego preparar una ficha comercial verificable, separada del expediente técnico público.
