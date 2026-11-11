@@ -43,3 +43,28 @@ No asignar horas arbitrarias ni tarifas sin fuente. No presentar la cifra del se
 
 ## Seguridad operativa
 Documentación únicamente. Sin cambios en TEST, PROD, credenciales, pagos, ramas funcionales ni despliegues.
+
+
+## Segunda pasada — rutas vigentes verificadas en `main` (2026-11-11)
+
+La búsqueda anterior de `src/features/client/ui/ClientHomeScreen.tsx` devolvió 404 porque la ubicación documentada es histórica. **La aplicación Cliente sí tiene entrada vigente comprobada**:
+
+| Área | Archivo leído y existente | Alcance demostrable |
+| --- | --- | --- |
+| Cliente | [`src/features/client/ClientRoot.tsx`](../src/features/client/ClientRoot.tsx) | Orquestación de pantallas Cliente, onboarding, solicitudes, perfil y flujo |
+| Compatibilidad de import Cliente | [`src/mvp/client/ClientRoot.tsx`](../src/mvp/client/ClientRoot.tsx) | Reexportación a la implementación en `features/client`; **no contar como módulo nuevo** |
+| Proveedor | [`src/mvp/provider/ProviderRoot.tsx`](../src/mvp/provider/ProviderRoot.tsx) | Punto de entrada de Proveedor; incluye historial, notificaciones y seguimiento de ubicación |
+| Composición de roles | [`src/mvp/MvpApp.tsx`](../src/mvp/MvpApp.tsx) | Enrutamiento y composición de aplicaciones, flags y estilos; **no contar por duplicado** |
+| Geofence backend | [`supabase/migrations/20260924162000_provider_arrival_gps_gate.sql`](../supabase/migrations/20260924162000_provider_arrival_gps_gate.sql) | Migración versionada para llegada con GPS y umbral de 200 m; evidencia de instalación activa en TEST documentada por separado |
+| Dependencias y scripts | [`package.json`](../package.json) | Manifiesto real de herramientas y dependencias; no equivale a auditoría completa del lockfile |
+
+### Ajustes al checklist
+- [x] Localizar entrada actual de Cliente y evitar falso negativo por ruta obsoleta.
+- [x] Localizar entrada actual de Proveedor y composición general de roles.
+- [x] Confirmar existencia de migración GPS y manifiesto de dependencias.
+- [ ] Obtener listado completo de archivos de cada módulo (aún no realizado).
+- [ ] Localizar entrada actual de Admin/Super Admin y permisos relacionados.
+- [ ] Auditar dependencias transitivas, licencias y titularidad.
+- [ ] Estimar horas por función con desglose, criterios y revisión independiente.
+
+**No se ejecutaron nuevas pruebas ni se comprobó estado actual de PROD.** Esta segunda pasada confirma archivos existentes, no calidad ni cobertura de extremo a extremo.
