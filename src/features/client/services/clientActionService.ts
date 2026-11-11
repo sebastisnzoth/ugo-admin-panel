@@ -49,7 +49,7 @@ export async function retryOwnedClientMatching(supabase:SupabaseClient,userId:st
  throw result.error
 }
 
-export async function approvePendingClientService(supabase:SupabaseClient,userId:string,serviceId:string){
+export async function approvePendingClientService(supabase:SupabaseClient,userId:string,serviceId:string,options:{deferredPixPreview?:boolean}={}){
  if(!serviceId)return false
  const row=await readOwnedClosureService(supabase,userId,serviceId)
  if(!row?.id)return false
@@ -57,7 +57,10 @@ export async function approvePendingClientService(supabase:SupabaseClient,userId
  if(row.estado!=='esperando_aprobacion')return false
  if(hasWorkApproval(row))return true
 
- const result=await supabase.rpc('aprobar_servicio',{p_servicio_id:row.id})
+ // The isolated TEST RPC records approval without claiming a Pix was paid.
+ // Its server-side demo allowlist and config are mandatory; the browser flag alone has no authority.
+ const rpc=options.deferredPixPreview===true?'aprobar_trabajo_pix_diferido_test':'aprobar_servicio'
+ const result=await supabase.rpc(rpc,{p_servicio_id:row.id})
  if(!result.error)return true
 
  try{

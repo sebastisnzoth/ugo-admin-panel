@@ -62,7 +62,9 @@ test('client post-service Pix review waits for Asaas without claiming payment',(
  assert.match(review,/const deferredPixWaiting=deferredPix&&!completed&&!electronicReady/)
  assert.match(review,/role="status">\{deferredPixHelp\}/)
  assert.match(review,/!deferredPixWaiting&&<div className="ugo-completion-warning"/)
- assert.match(review,/const canApprove=.*electronicReady/)
+ assert.match(review,/const canApprove=[\s\S]*?electronicReady/)
+ assert.match(review,/deferredPix\?!workApproved/)
+ assert.match(review,/deferredPixPreview:deferredPix/)
  assert.doesNotMatch(review,/if\(deferredPixWaiting\).*approvePendingClientService/)
 })
 
