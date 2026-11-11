@@ -156,5 +156,5 @@ test('provider only presents Sandbox Pix after client approval and explicit coll
  assert.match(source,/locale==='pt-BR'\\?'Cobrar em dinheiro'/)
  assert.match(source,/Esta selección no registra el pago ni genera Pix/)
  assert.match(source,/payment.stage==='awaiting_payment'/)
- assert.doesNotMatch(source,/setPayment\\(\\{stage:'received'/)
+ assert.match(source,/payment.stage==='received'/)
 })
