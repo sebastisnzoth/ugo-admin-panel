@@ -55,15 +55,13 @@ test('TEST-only SQL proposal requires explicit operator config and preserves pho
  assert.doesNotMatch(proposal,/insert into public\.pagos|delete from public\.pagos/)
 })
 
-test('client post-service Pix review waits for Asaas without claiming payment',()=>{
+test('client work approval has no Pix or cash prerequisite',()=>{
  const review=file('src/features/client/order/ClientCompletionReview.tsx')
- assert.match(review,/deferredPixPilotEligible\(service\)/)
- assert.match(review,/isPixPayAfterServicePreviewEnabled/)
- assert.match(review,/const deferredPixWaiting=deferredPix&&!completed&&!electronicReady/)
- assert.match(review,/role="status">\{deferredPixHelp\}/)
- assert.match(review,/!deferredPixWaiting&&<div className="ugo-completion-warning"/)
- assert.match(review,/const canApprove=.*electronicReady/)
- assert.doesNotMatch(review,/if\(deferredPixWaiting\).*approvePendingClientService/)
+ assert.match(review,/aprobar_trabajo_sin_pago|approvePendingClientService/)
+ assert.match(review,/hasFinalEvidence&&!workApproved/)
+ assert.doesNotMatch(review,/clientReview\.needPayment/)
+ assert.doesNotMatch(review,/clientReview\.paymentProtectedWait/)
+ assert.match(review,/APROBAR EL TRABAJO/)
 })
 
 test('private TEST allowlist cannot be populated by clients or ordinary authenticated users',()=>{
