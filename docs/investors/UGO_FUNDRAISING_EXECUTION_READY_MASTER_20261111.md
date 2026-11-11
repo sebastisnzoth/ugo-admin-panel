@@ -1,3 +1,15 @@
+# DIRECTIVA ESTRATÉGICA DEL FUNDADOR — 11/11/2026
+
+**OBJETIVO INMEDIATO: CONSEGUIR INVERSORES PARA TERMINAR UGO Y FINANCIAR EL LANZAMIENTO DEL PILOTO EN FLORIANÓPOLIS.** No condicionar fundraising a captar clientes o cobrar servicios reales previamente. La app aún **NO está lista para lanzamiento**. Evitar sugerir comercialización antes de solucionar fallos de estabilidad, autenticación, infraestructura, pagos y QA.
+
+**Etapa de financiación:** pre-seed / pre-lanzamiento / financiación de finalización del MVP y piloto. **Estado comercial:** pre-revenue, 0 clientes comerciales verificados. Las pruebas con dos celulares y los registros de pagos en efectivo son validación técnica, no ventas.
+
+**Propuesta de inversión:** financiar cierre de bloqueos críticos, infraestructura fiable, Pix/Asaas validado, seguridad, cumplimiento jurídico y operación de piloto controlado. Construir presupuesto de uso de fondos y milestones verificables; no inventar monto ni valoración.
+
+**Trabajo prioritario:** identificar programas e inversores que acepten startups pre-revenue y producto aún en desarrollo, comprobar convocatorias y elegibilidad de fundador sin CNPJ, preparar candidaturas y conseguir autorización antes de enviarlas. No pedir al fundador captar clientes como prerrequisito.
+
+---
+
 > **ACLARACIÓN DEL FUNDADOR — 11/11/2026:** El fundador confirmó expresamente que los servicios y pagos en efectivo encontrados en UGO Arena corresponden a **pruebas realizadas por él mismo con dos celulares**. Esto incluye los registros etiquetados `real`: esa etiqueta **no representa clientes reales ni ventas comerciales**. **Clientes comerciales verificados: 0; ingresos comerciales verificados: R$0.** Los importes de servicios y comisiones son **simulados/nominales**, no facturación ni dinero cobrado por UGO. No presentar 66 servicios o 64 pagos como tracción comercial ante inversores. La evidencia sí respalda pruebas funcionales del flujo Cliente–Proveedor.
 
 # UGO — Paquete operativo de fundraising listo para completar y presentar
