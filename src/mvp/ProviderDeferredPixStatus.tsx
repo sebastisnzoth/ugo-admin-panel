@@ -28,6 +28,7 @@ export function ProviderDeferredPixStatus({
  const [revision,setRevision]=useState(0)
  const [copyFailed,setCopyFailed]=useState(false)
  const [issuing,setIssuing]=useState(false)
+ const [collectionMethod,setCollectionMethod]=useState<'pix'|'cash'|null>(null)
  const issuanceEnabled=isPixProviderIssuePreviewEnabled()
  const finished=serviceState==='esperando_aprobacion'||serviceState==='completado'
  const readyForPix=finished&&workApproved
@@ -128,12 +129,24 @@ export function ProviderDeferredPixStatus({
   void navigator.clipboard.writeText(value).catch(()=>setCopyFailed(true))
  }
  return <>
-  <ProviderPixAfterService payment={payment} onRefresh={()=>setRevision(n=>n+1)}
-   onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>
-  {issuanceEnabled&&readyForPix&&payment.stage==='not_issued'&&
+  {readyForPix&&<div className="ugo-provider-payment-methods" role="group" aria-label={locale==='pt-BR'?'Como o cliente vai pagar?':locale==='es'?'¿Cómo va a pagar el cliente?':'How will the client pay?'}>
+   <p>{locale==='pt-BR'?'Trabalho aprovado pelo cliente. Escolha como cobrar.':locale==='es'?'Trabajo aprobado por el cliente. Elegí cómo cobrar.':'Work approved by the client. Choose how to collect payment.'}</p>
+   <button type="button" aria-pressed={collectionMethod==='pix'} onClick={()=>setCollectionMethod('pix')}>
+    {locale==='pt-BR'?'Cobrar com Pix':locale==='es'?'Cobrar con Pix':'Collect with Pix'}
+   </button>
+   <button type="button" aria-pressed={collectionMethod==='cash'} onClick={()=>setCollectionMethod('cash')}>
+    {locale==='pt-BR'?'Cobrar em dinheiro':locale==='es'?'Cobrar en efectivo':'Collect cash'}
+   </button>
+  </div>}
+  {collectionMethod==='cash'&&readyForPix&&<p role="status">
+   {locale==='pt-BR'?'Receba o dinheiro e aguarde a confirmação do cliente. Esta seleção não registra o pagamento nem gera Pix.':locale==='es'?'Recibí el efectivo y esperá la confirmación del cliente. Esta selección no registra el pago ni genera Pix.':'Collect cash and wait for the client to confirm. This selection does not record payment or create a Pix charge.'}
+  </p>}
+  {(!readyForPix||collectionMethod==='pix')&&<ProviderPixAfterService payment={payment} onRefresh={()=>setRevision(n=>n+1)}
+   onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>}
+  {issuanceEnabled&&readyForPix&&collectionMethod==='pix'&&payment.stage==='not_issued'&&
    <button type="button" onClick={()=>void create()} disabled={issuing}>
     {issuing?t('clientPayment.preparingPix'):t('providerPix.charge')}
    </button>}
-  {copyFailed&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
+  {copyFailed&&collectionMethod==='pix'&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
  </>
 }
