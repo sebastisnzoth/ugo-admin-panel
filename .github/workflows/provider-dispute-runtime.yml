@@ -1,3 +1,4 @@
+# UGO TEST free-tier safety: heavy dispute QA only runs via explicit request.
 name: UGO Provider Dispute Runtime TEST
 # retrigger: client-dispute-unblock-20260930
 
@@ -22,8 +23,13 @@ env:
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
 
+concurrency:
+  group: ugo-supabase-test-remote-e2e-budget
+  cancel-in-progress: false
+
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
