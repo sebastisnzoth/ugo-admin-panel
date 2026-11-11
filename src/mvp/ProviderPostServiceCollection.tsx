@@ -5,7 +5,7 @@ import{useLocale}from'../i18n/locale'
 type CollectionMethod='pix'|'efectivo'
 
 /** An isolated, immutable R$100 Asaas Sandbox demo. No real service ID is sent. */
-const PIX_SANDBOX_DEMO_URL='https://ugo-pagamentos-v2-sandbox-9htdvodx2-sebastisnzoths-projects.vercel.app/demo.html'
+const PIX_SANDBOX_DEMO_URL='https://ugo-pagamentos-v2-sandbox-git-fe-44813e-sebastisnzoths-projects.vercel.app/demo.html'
 
 /** Choosing a collection method never confirms that money was received. */
 export function ProviderPostServiceCollection({serviceId,amount,currency,commission,openDebtCount,approvedAt,selected,onUpdated,onOpenEarnings}:{
@@ -19,6 +19,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
  const[requestedTotal,setRequestedTotal]=useState('')
  const[proposalSent,setProposalSent]=useState(false)
  const[pixDetailsOpen,setPixDetailsOpen]=useState(false)
+ const[sandboxEmbedOpen,setSandboxEmbedOpen]=useState(false)
  const[pixCode,setPixCode]=useState('')
  const[pixImage,setPixImage]=useState('')
  const[pixLoading,setPixLoading]=useState(false)
@@ -185,11 +186,18 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
    </div>
   </details>
   {error&&<p className="ugo-collection-error" role="alert">{error}</p>}
-  {pixDetailsOpen&&<div className="ugo-collection-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setPixDetailsOpen(false)}}>
-   <div className="ugo-collection-modal" role="dialog" aria-modal="true" aria-label={labels.pixTitle}>
-    <button type="button" className="ugo-collection-modal-close" aria-label={labels.pixClose} onClick={()=>setPixDetailsOpen(false)}>×</button>
-    <div className="ugo-collection-modal-icon" aria-hidden="true">◆</div><h3>{labels.pixTitle}</h3>
-    <div className="ugo-collection-modal-total">{money(amount)}</div>
+  {pixDetailsOpen&&<div className="ugo-collection-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget){setSandboxEmbedOpen(false);setPixDetailsOpen(false)}}}>
+   <div className={`ugo-collection-modal ${sandboxEmbedOpen?'ugo-collection-modal-embedded':''}`} role="dialog" aria-modal="true" aria-label={sandboxEmbedOpen?labels.sandboxAction:labels.pixTitle}>
+    <button type="button" className="ugo-collection-modal-close" aria-label={labels.pixClose} onClick={()=>{setSandboxEmbedOpen(false);setPixDetailsOpen(false)}}>×</button>
+    <div className="ugo-collection-modal-icon" aria-hidden="true">◆</div><h3>{sandboxEmbedOpen?labels.sandboxAction:labels.pixTitle}</h3>
+    {!sandboxEmbedOpen&&<div className="ugo-collection-modal-total">{money(amount)}</div>}
+    {sandboxEmbedOpen?<div className="ugo-collection-sandbox-embedded">
+      <p className="ugo-collection-sandbox-disclaimer" role="note">{labels.sandboxNote}</p>
+      <iframe title={labels.sandboxAction} src={PIX_SANDBOX_DEMO_URL+'?embed=1'}
+       loading="eager" sandbox="allow-scripts allow-same-origin allow-forms" allow="clipboard-write"
+       referrerPolicy="no-referrer" className="ugo-collection-sandbox-frame"/>
+      <button type="button" className="ugo-collection-secondary-action" onClick={()=>setSandboxEmbedOpen(false)}>{labels.pixClose}</button>
+    </div>:<>
     {pixLoading?<p role="status">{labels.pixLoading}</p>:
       pixCode?<div className="ugo-collection-modal-pay">
        {pixImage&&<img src={`data:image/png;base64,${pixImage}`} alt={labels.pix} width={210} height={210}/>}
@@ -199,13 +207,12 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
       </div>:<><p role="status">{labels.qrUnavailable}</p><p>{labels.pixHelp}</p></>}
     <div className="ugo-collection-sandbox-demo">
      <p className="ugo-collection-sandbox-explanation">{labels.sandboxNote}</p>
-     <a className="ugo-collection-action ugo-collection-sandbox-action"
-       href={PIX_SANDBOX_DEMO_URL} target="_blank" rel="noopener noreferrer"
-       referrerPolicy="no-referrer" aria-label={labels.sandboxAction}>
-       <span aria-hidden="true">◆</span> {labels.sandboxAction} <span aria-hidden="true">↗</span>
-     </a>
+     <button type="button" className="ugo-collection-action ugo-collection-sandbox-action"
+       onClick={()=>setSandboxEmbedOpen(true)} aria-label={labels.sandboxAction}>
+       <span aria-hidden="true">◆</span> {labels.sandboxAction}
+     </button>
     </div>
-    <button type="button" className="ugo-collection-secondary-action" onClick={()=>setPixDetailsOpen(false)}>{labels.pixClose}</button>
+    <button type="button" className="ugo-collection-secondary-action" onClick={()=>{setSandboxEmbedOpen(false);setPixDetailsOpen(false)}}>{labels.pixClose}</button></>}
    </div>
   </div>}
  </section>

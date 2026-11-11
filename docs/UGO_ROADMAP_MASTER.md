@@ -1273,3 +1273,9 @@ RUNTIME VALIDATED             pendiente
 - La demostración aislada ofrece un cobro ficticio fijo de R$100 con QR, copia y pega y simulación; se ejecuta en el proyecto separado `ugo-pagamentos-v2-sandbox`, Vercel Preview protegido y Neon TEST. No valida ni salda servicio alguno de UGO Arena.
 - Se mantiene deshabilitada la creación de Pix real desde la tarjeta; el piloto usa su propia idempotencia y sesión. **NO DDL, DML, secretos ni migraciones en Arena**.
 - Comprobar ruta HTTP 200 Sandbox antes de liberar, tests de integración UI y checks CI; no confundir prueba con pago real.
+
+
+### 2026-11-11 — Pix Sandbox dentro del popup del Proveedor (PR #631)
+- Reemplazado enlace externo por una pantalla embebida en el mismo modal Pix de UGO Pro, con iframe aislado y clase responsive. Proveedor mantiene tarifa real intacta; emisor de pruebas fija R$100 ficticios. No se transmiten ID ni credenciales de UGO Arena al iframe.
+- Dependencia del backend Sandbox (PR #629): `?embed=1`, sesión Particionada, CSP `frame-ancestors`, servicio sintético por sesión y QR idempotente. No existe interacción financiera real.
+- **Bloqueado en publicación**: Vercel API respondió 402 por cuota free de despliegues (>100 al día); backend nuevo no pudo desplegarse, por lo que frontend NO debe fusionarse ni darse como funcional hasta validar QR dentro de iframe sobre un Preview READY. Sin escritura ni migración a Arena.
