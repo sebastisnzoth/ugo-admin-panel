@@ -1252,3 +1252,10 @@ RUNTIME VALIDATED             pendiente
 - Efectivo: el clic de selección crea como máximo un pago pendiente, no consume cupo de deuda hasta que cliente confirme la entrega y exista una deuda REAL liberada. `deudas_ugo_proveedor`: 0–2 deudas abiertas puede continuar, 3 bloquea trabajos nuevos, nunca el servicio en marcha.
 - UI provee acceso directo a Ganhos, número de comisiones abiertas y comisión del servicio. El cobro de comisión UGO es independiente: endpoint autenticado `/api/test?ugo_debt=1` exige `UGO_PIX_KEY`; jamás salda deuda antes de conciliación Admin. El QR de comisión sigue pendiente de presentación visual; Pix copia y pega se genera sólo si la clave existe.
 - No se realizan operaciones de escritura ni migraciones sobre UGO Arena como parte de este parche de UI. El cobro Pix Asaas real requiere configuración y validación aparte en entorno TEST aislado.
+
+
+### 2026-11-11 — P0: cobro efectivo no termina el flujo / propuesta de importe extra
+- Si Proveedor elige Dinheiro tras aprobación, se registra pago presencial **pendiente**. Proveedor puede usar `Solicitar confirmación al cliente`, enviando un mensaje autenticado al chat exacto del servicio; nunca marca dinero como recibido.
+- Cliente ve botón principal `CONFIRMO QUE ENTREGUEI O DINHEIRO`, ejecuta `confirmar_pago_efectivo_cliente` tras entrega física; se ofrece actualización manual de estado si falla la notificación Realtime. Una confirmación genera deuda de comisión REAL y el límite de 3 se aplica por trigger (no al seleccionar efectivo).
+- Trabajos adicionales no presupuestados: proveedor puede escribir un **nuevo total propuesto** y enviarlo al cliente por chat, pero esto no altera el valor congelado ni emite Pix. La aprobación formal del monto y el QR oficial Asaas por valor final siguen bloqueados hasta una integración segura y E2E; no permitir importes unilaterales.
+- Solo frontend + pruebas y documentación. Ninguna migración ni escritura directa sobre UGO Arena; sin cambios de variables ni conexiones de producción.
