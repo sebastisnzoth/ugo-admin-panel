@@ -13,7 +13,20 @@ export function ProviderPostServiceCollection({serviceId,amount,approvedAt,selec
  const[error,setError]=useState('')
  const[optimistic,setOptimistic]=useState<CollectionMethod|null>(null)
  const chosen=optimistic||((selected==='pix'||selected==='efectivo')?selected:null)
- if(!approvedAt)return <p role="status">{locale==='pt-BR'?'Aguardando aprovação do cliente.':locale==='en'?'Waiting for customer approval.':'Esperando aprobación del cliente.'}</p>
+ const labels=(locale==='pt-BR'?{
+  waiting:'Aguardando aprovação do cliente.',title:'Trabalho aprovado',question:'Como o cliente vai pagar?',cash:'Dinheiro',pix:'Pix · QR Code',aria:'Cobro após serviço',
+  cashPending:'Dinheiro escolhido. O cliente deve confirmar a entrega; o pagamento ainda não foi registrado como recebido.',
+  pixPending:'Pix escolhido. Aguardando QR oficial da integração; nenhum pagamento foi confirmado.',
+ }:locale==='en'?{
+  waiting:'Waiting for customer approval.',title:'Work approved',question:'How will the customer pay?',cash:'Cash',pix:'Pix · QR Code',aria:'Collection after service',
+  cashPending:'Cash selected. Awaiting customer confirmation; no payment was marked received.',
+  pixPending:'Pix selected. Waiting for the official processor QR; no payment confirmed.',
+ }:{
+  waiting:'Esperando aprobación del cliente.',title:'Trabajo aprobado',question:'¿Cómo va a pagar el cliente?',cash:'Efectivo',pix:'Pix · QR Code',aria:'Cobro al finalizar el servicio',
+  cashPending:'Efectivo elegido. Esperando confirmación del cliente; todavía no figura como recibido.',
+  pixPending:'Pix elegido. Pendiente del QR oficial del procesador; ningún pago se confirmó.'
+ })
+ if(!approvedAt)return <p role="status">{labels.waiting}</p>
  const pick=async(method:CollectionMethod)=>{
   if(busy||chosen)return
   setError('');setBusy(true)
@@ -25,16 +38,16 @@ export function ProviderPostServiceCollection({serviceId,amount,approvedAt,selec
   }catch(e){setError(e instanceof Error?e.message:'No se pudo guardar el método de cobro.')}
   finally{setBusy(false)}
  }
- return <section className="ugo-provider-post-service-collection" aria-label="Cobro al finalizar el servicio">
-  <h3>{locale==='pt-BR'?'Trabalho aprovado':locale==='en'?'Work approved':'Trabajo aprobado'}</h3>
-  <p>{locale==='pt-BR'?'Como o cliente vai pagar?':locale==='en'?'How will the customer pay?':'¿Cómo va a pagar el cliente?'}</p>
+ return <section className="ugo-provider-post-service-collection" aria-label={labels.aria}>
+  <h3>{labels.title}</h3>
+  <p>{labels.question}</p>
   <p><strong>{new Intl.NumberFormat(locale==='pt-BR'?'pt-BR':'es-AR',{style:'currency',currency:'BRL'}).format(amount)}</strong></p>
   {!chosen&&<div className="ugo-provider-payment-methods">
-   <button type="button" disabled={busy} onClick={()=>void pick('efectivo')}>{locale==='pt-BR'?'Dinheiro':locale==='en'?'Cash':'Efectivo'}</button>
-   <button type="button" disabled={busy} onClick={()=>void pick('pix')}>Pix · QR Code</button>
+   <button type="button" disabled={busy} onClick={()=>void pick('efectivo')}>{labels.cash}</button>
+   <button type="button" disabled={busy} onClick={()=>void pick('pix')}>{labels.pix}</button>
   </div>}
-  {chosen==='efectivo'&&<p role="status">{locale==='pt-BR'?'Dinheiro escolhido. O cliente deve confirmar a entrega; o pagamento ainda não foi registrado como recebido.':locale==='en'?'Cash selected. Awaiting customer confirmation; no payment was marked received.':'Efectivo elegido. Esperando confirmación del cliente; todavía no figura como recibido.'}</p>}
-  {chosen==='pix'&&<p role="status">{locale==='pt-BR'?'Pix escolhido. Aguardando QR oficial da integração; nenhum pagamento foi confirmado.':locale==='en'?'Pix selected. Waiting for the official processor QR; no payment confirmed.':'Pix elegido. Pendiente del QR oficial del procesador; ningún pago se confirmó.'}</p>}
+  {chosen==='efectivo'&&<p role="status">{labels.cashPending}</p>}
+  {chosen==='pix'&&<p role="status">{labels.pixPending}</p>}
   {error&&<p role="alert">{error}</p>}
  </section>
 }
