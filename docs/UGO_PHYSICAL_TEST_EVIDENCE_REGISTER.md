@@ -111,3 +111,15 @@ Consultas SELECT a Supabase TEST para el servicio #2697:
 **Dictamen:** llegada y matching con distancias registradas = **corroborado**; cumplimiento físico del umbral geofence y precisión GPS histórica = **no certificable con los registros inspeccionados**. No repetir pruebas por defecto; buscar logs históricos o capturas fechadas antes de solicitar nueva ejecución.
 
 Esta verificación no alteró TEST ni PROD.
+
+## Corroboración del control de llegada en backend ACTIVO — 2026-11-11
+
+Se inspeccionó **en la base TEST activa**, sin mutaciones, la definición de las funciones PostgreSQL y el estado de los triggers:
+- `public.marcar_llegada_proveedor` **sí** contiene la condición de rechazo por distancia `> 200 m`, controles de GPS antiguo (`gps_stale`) y precisión insuficiente (`gps_inaccurate`).
+- `private.enforce_validated_provider_arrival` está presente y su trigger `trg_enforce_validated_provider_arrival` sobre `public.servicios` aparece **habilitado** (`tgenabled='O'`). La migración versionada `supabase/migrations/20260924162000_provider_arrival_gps_gate.sql` explica que el trigger requiere el marcador transaccional de llegada validada para pasar de `en_camino` a `llegado`.
+- En #2697 consta la transición `en_camino → llegado` el 2026-10-28 10:50:05 UTC, seguida por `llegado → en_progreso` a las 10:50:22, `en_progreso → esperando_aprobacion` a las 10:50:51 y `esperando_aprobacion → completado` a las 10:51:53.
+- En TEST consta pago efectivo R$120, confirmación auditada `client.cash_payment.confirmed` y comisión R$18 registrada `pagado`.
+
+**Interpretación probatoria precisa:** se corroboró que **hoy** el backend TEST tiene una barrera activa de GPS/geofence de 200 m, y que #2697 pasó por la secuencia de llegada, inicio y finalización. Es evidencia conjunta sólida del flujo funcional. No se ha demostrado mediante una instantánea histórica de definición de función/trigger que la misma configuración exacta estuviera activa el 28/10; tampoco se recuperó la distancia/precisión GPS exacta usada en esa transición. No presentar el matching de 300 m como distancia de llegada.
+
+**Sin acciones sobre producción ni escrituras en TEST.**
