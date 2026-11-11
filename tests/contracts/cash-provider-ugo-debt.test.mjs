@@ -86,7 +86,7 @@ test('quoted UGO price cannot be silently replaced at assignment',()=>{
 test('cash responsibility is visible and client-confirmed',()=>{
  assert.match(cashUi,/seleccionar_metodo_pago_servicio/)
  assert.match(cashUi,/UGO registra la confirmación/)
- assert.match(completion,/YA PAGUÉ/)
+ assert.match(completion,/CONFIRMO QUE ENTREGUÉ EL EFECTIVO/)
  assert.match(completion,/Después de entregar el efectivo/)
  assert.equal(fs.existsSync('src/mvp/ClientCashPaymentOption.tsx'),false)
  assert.equal(fs.existsSync('src/mvp/ClientPixPaymentPanel.tsx'),false)
