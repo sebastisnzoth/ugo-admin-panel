@@ -118,3 +118,25 @@ Revisar un inventario completo de autores/archivos y un escaneo de secretos de G
 - **PENDIENTE:** ejecutar escaneo de secretos sobre clon local completo, sin copiar valores a documentos públicos. Validar resultados y registrar solo clasificación, rutas y acciones.
 - **NO REALIZADO:** contacto a inversores, auditoría legal, valoración, pruebas E2E, despliegues, escrituras en PROD.
 - **PRÓXIMA ACCIÓN:** obtener acceso de lectura a historial Git completo para análisis de contribuyentes y secretos, y comprobar evidencia funcional en TEST sin escrituras en producción.
+
+## Revisión de evidencias funcionales para inversores — 2026-11-11
+
+### Evidencia automatizada histórica, no comercial
+Archivo: [readiness-client-provider-lifecycle-20261002.json](evidence/readiness-client-provider-lifecycle-20261002.json).
+- Entorno declarado: UGO TEST; SHA probado `5603f21cb7527ddb208eb27e36e2c1d0292e2614`; workflow `37008933184`.
+- El registro declara `runtime.result=PASS`, `Judge=PASS` y `Sentinel=PASS` para un servicio **simulado** y un ciclo de estados.
+- El mismo registro reconoce explícitamente `physical_gps_verified=false`, `physical_camera_verified=false`, `real_human_customer_acceptance=false` y `live_microphone_hugo_verified=false`.
+- **Interpretación correcta:** evidencia histórica de pruebas automatizadas declaradas; no equivale a prueba actual de `main`, operación real o ingresos. No se verificaron en esta revisión los artefactos externos ni el estado actual de CI.
+
+### Riesgo financiero documentado en producto
+Archivo: [UGO_PIX_POST_SERVICE_CLIENT_PROVIDER_AUDIT_20261110.md](UGO_PIX_POST_SERVICE_CLIENT_PROVIDER_AUDIT_20261110.md).
+- Documenta bloqueos P0 entre selección Pix, desplazamiento del proveedor, reglas PostgreSQL, idempotencia, webhook y sincronización de estados.
+- Registra que un pago de prueba Asaas marcado como recibido **no** acredita split 85/15, custodia ni transferencia.
+- El documento describe funcionalidades Preview incompletas/no montadas y advierte que no debe activarse el nuevo flag sin validación integrada.
+- **Conclusión comercial:** no afirmar que UGO ofrece pagos Pix con split/escrow operativo de extremo a extremo. Estado sujeto a nueva verificación SAME-SHA en TEST.
+
+### Criterio para material de inversión
+Afirmación permitida: «UGO tiene una base de software desarrollada y evidencia histórica de pruebas automatizadas en entorno de test».
+Afirmaciones no autorizadas sin evidencia nueva: «piloto funcionando con clientes reales», «pagos Pix y split operativos», «ingresos comprobados», «producto listo para escalar».
+
+**Próximo paso:** verificar estado actual del flujo Cliente-Proveedor y pagos en TEST y preparar una demostración reproducible. Mantener producción sin escrituras ni pruebas de carga.
