@@ -140,3 +140,25 @@ Afirmación permitida: «UGO tiene una base de software desarrollada y evidencia
 Afirmaciones no autorizadas sin evidencia nueva: «piloto funcionando con clientes reales», «pagos Pix y split operativos», «ingresos comprobados», «producto listo para escalar».
 
 **Próximo paso:** verificar estado actual del flujo Cliente-Proveedor y pagos en TEST y preparar una demostración reproducible. Mantener producción sin escrituras ni pruebas de carga.
+
+## Rectificación — antecedentes de pruebas físicas (2026-11-11)
+
+**Motivo:** la revisión anterior se apoyó en un JSON de prueba simulada de 2026-10-02 y omitió antecedentes posteriores de pruebas reales reportadas en conversaciones del proyecto. **No debe interpretarse que UGO solo fue probado mediante simulaciones.**
+
+### Pruebas físicas reportadas por el fundador y antecedentes conversacionales
+- **2026-10-01:** el fundador confirmó una prueba física de Hugo Cliente por voz, llegada de Proveedor dentro del geofence y fotografías de inicio y final del trabajo.
+- **2026-10-03:** confirmó funcionamiento de Proveedor en Chrome, permanencia de sesión al ponerse Online y funcionamiento GPS.
+- **2026-10-28 — servicio de prueba #2697:** antecedentes de una comprobación en TEST con dos teléfonos, llegada/geofence, fotografías antes y después, finalización y pago **en efectivo** por **R$120**, con **R$18** de comisión registrada y **R$102** de importe restante para proveedor. **No confundir comisión/deuda registrada con transferencia bancaria efectivamente liquidada.**
+- **2026-10-29:** hay antecedentes de correcciones y pruebas de GPS/matching; la cobertura física FULL-E2E en dos dispositivos no quedó acreditada íntegramente en los registros recuperados.
+
+### Clasificación de evidencia
+- **REPORTADO POR FUNDADOR / HISTORIAL CONVERSACIONAL:** los resultados anteriores. Se deben preservar como pruebas realizadas reportadas, no descartarlas.
+- **EVIDENCIA TÉCNICA PRIMARIA PENDIENTE DE VINCULAR:** registros TEST del servicio #2697, fotos y sus metadatos (sin publicar datos de personas), logs GPS/geofence, estados del servicio, comprobantes de efectivo y trazas de notificaciones/matching.
+- La búsqueda textual de GitHub por `2697` no devolvió coincidencias; esto **no niega la prueba**, sino que el expediente público aún no contiene un artefacto localizado con ese identificador.
+- **NO DEMOSTRADO POR ESTA RECTIFICACIÓN:** cobro Pix real, split/escrow, pagos productivos, prueba actual SAME-SHA o cobertura física completa de todos los controles.
+
+### Regla para dossier de inversión
+Usar: «El fundador realizó y reportó pruebas físicas de Cliente y Proveedor, incluido un servicio de prueba #2697 completado en TEST con pago en efectivo; se está reuniendo la evidencia técnica primaria para su verificación independiente».
+No usar: «UGO solo tiene pruebas simuladas» ni «UGO tiene Pix y split comercialmente operativos».
+
+**Acción documental siguiente:** localizar y validar artefactos técnicos TEST de #2697 mediante lectura autorizada, sin consultar ni modificar PROD, y anexar referencias sanitizadas.
