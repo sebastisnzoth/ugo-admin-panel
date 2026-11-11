@@ -1,4 +1,4 @@
-import {mkdirSync,writeFileSync} from 'node:fs'
+import {mkdirSync,writeFileSync,copyFileSync} from 'node:fs'
 mkdirSync('dist',{recursive:true})
 writeFileSync('dist/index.html',`<!doctype html>
 <html lang="pt-BR">
@@ -7,3 +7,5 @@ writeFileSync('dist/index.html',`<!doctype html>
 <body><main><h1>UGO Payments Sandbox</h1>
 <p>Ambiente de teste isolado. Nenhuma cobrança real está habilitada nesta página.</p>
 </main></body></html>`)
+
+copyFileSync('demo.html','dist/demo.html')
