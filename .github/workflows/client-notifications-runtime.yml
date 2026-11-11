@@ -1,3 +1,4 @@
+# UGO free-tier safety: explicit manual/approved-only Supabase TEST integration.
 name: UGO Client Notifications Runtime TEST
 # retrigger: attempt-2-20260930T1345Z
 
@@ -47,7 +48,7 @@ on:
       - '.github/workflows/client-notifications-runtime.yml'
 
 concurrency:
-  group: ugo-client-notifications-runtime-v7
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 permissions:
@@ -65,6 +66,7 @@ env:
 
 jobs:
   client-notifications:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Cliente notificaciones web por serviceId
     runs-on: ubuntu-24.04
     timeout-minutes: 20

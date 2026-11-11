@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Readiness Auto Inbox TEST
 
 on:
@@ -16,7 +17,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ugo-readiness-auto-inbox-test
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -29,6 +30,7 @@ env:
 
 jobs:
   verify:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Executive Inbox ↔ authoritative UGO TEST
     runs-on: ubuntu-latest
     timeout-minutes: 25

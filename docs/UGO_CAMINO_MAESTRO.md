@@ -758,3 +758,64 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Tela informativa integrada no painel atual do Provedor, sem substituir Mercado Pago nem contas externas existentes. Campos Pix desabilitados por falta de vínculo subconta verificado, armazenamento privado, autorização de saques e backend financeiro TEST.
 - Nenhuma chave Pix é persistida, nenhuma cobrança Asaas gerada, nenhum deploy acionado neste passo. Não confundir seção visível com uma integração funcional do processador.
 - Próximo: finalizar PR #616 em ambiente TEST financeiro segregado, validar CI/E2E, só então habilitar cadastro Pix com backend seguro.
+
+
+## 2026-11-05 · Handoff PR #616 — Pix presencial Asaas Sandbox
+
+- Se preparó módulo independiente de consulta de QR y split porcentual, condicionado por servicio terminado y proveedor asignado; ruta Asaas fija en sandbox. Nuevos contratos de evento webhook autenticado sin efecto financiero; nunca confirma pagos por texto de webhook sin consultar el procesador. No modificar checkout Mercado Pago existente.
+- Despliegue prohibido por ahora: el código no llama a Asaas en el flujo UGO, no hay DB TEST aislada ni credenciales de subcuenta KYC/escrow verificadas. El token Asaas Sandbox está configurado en Vercel Production según usuario, pero no autoriza realizar transacciones ni encender APIs nuevas productivas.
+- Próximo: agregar ledger TEST aislado con UNIQUE de cobro/evento, validar API en entorno privado, abrir subcuenta sintética y verificar walletId/fees, mostrar QR en UI experimental aislada, confirmar PAYMENT_RECEIVED solo tras relectura API y conciliar split. Testear dos solicitudes simultáneas, webhook duplicado, QR expirado, disputa y rollback; mantener PR draft.
+- Roadmap Traceability exigía actualizar este documento y `UGO_ROADMAP_MASTER.md` cuando cambian código/tests; registro agregado por esa razón.
+
+
+## 2026-11-05 — PR #616: revisão de segurança e persistência de pagamentos isolada
+- Validado em documentação oficial Asaas que recibo PIX e `PAYMENT_SPLIT_DONE` não atestam disponibilidade de escrow; foi criado reconciliador puro para evitar crédito fictício.
+- Estado pendente sem vencimento comprovado ou com QR expirado deixa de permitir nova cobrança sem reconciliação; teste específico contra duplicidade.
+- Esquema SQL de TEST mantido em `docs/sql/` (não é migration), sem escrever em Arena PROD/TEST e sem alterar env Vercel nem checkout atual.
+- Próximo bloqueio: provisionar/verificar banco financeiro TEST independente e a conta/subconta Sandbox com chaves server-only para teste real. Exigir UNIQUE e lock ao criar cobrança, armazenamento durable antes de HTTP 200 do webhook, conciliar split e escrow separadamente.
+
+
+## 2026-11-05 — PR #616 checkout Pix, sem acesso a PROD
+- Orquestrador novo exige que repositório independente de pagamentos reserve a tentativa de Pix sob lock UNIQUE; falha fechada em timeout e IDs ambíguos. O código não está ligado ao checkout atual.
+- Testes de contrato puramente simulados: chamada de cobrança depois da reserva, obtenção de QR, reaproveitamento e impossibilidade de cobrança se prestador/wallet não verificados.
+- Nenhuma chamada à API autenticada nem SQL em Arena ou Neon UGOAPP foi executado. Banco isolado segue pendente. Próximo passo é provisioná-lo com validação de custos e permissões, implementar adapter e E2E Sandbox.
+
+
+## 2026-11-06 · Handoff financeiro: DB de TEST independente provisionado
+- Neon org `Sergio Sebastian` no plano Free: criado `ugo-pagamentos-v2-test` (`frosty-firefly-02365835`, sa-east-1). Oito tabelas do esquema isolado `ugo_payments_v2` verificadas. Não foi alterado Neon `UGOAPP` nem Arena Supabase PROD.
+- `reserve_pix_test` aplicada apenas à DB nova e testada com IDs sintéticos: 1a tentativa reservada e repetição encaminhada para conciliação. Função SECURITY INVOKER, schema privado; no PUBLIC execute grants.
+- Documentação Asaas: apenas conta raiz CNPJ pode criar subcontas via API; split com carteira de conta Asaas existente é alternativa a verificar quanto a titularidade/permissões. Custos de criação de subconta e Escrow precisam ser aprovados antes de operações.
+- UI informativa de recebimentos em main continua sem coleta de Pix; backend financeiro NÃO ligado ao frontend, sem POST Asaas real nem pagamentos reais. Não fazer merge PR #616 até CI e E2E Sandbox.
+
+
+## 2026-11-06 — PR #616 backend de TEST sem acesso a Arena
+- Código de reserva transacional agora tem adapter SQL isolado em `src/server/payments/neonPixTestRepository.mjs`, apoiado por serviços sintéticos somente na nova base Neon Pagamentos TEST.
+- O adapter precisa de wallet verificada por `GET /wallets/` antes de autorizar QR. Sem a chave Asaas em um runtime TEST segregado, nenhum código de PIX real foi executado.
+- `api/pagamentos` de produção, Mercadopago, Supabase Arena e envs de produção continuam intocados. O PR #616 permanece draft.
+
+## 2026-11-06 — Pagamentos V2: confirmação simulada exclusivamente no Sandbox
+- Método `AsaasPixQrSandbox.confirmSyntheticPayment` usa somente POST `https://api-sandbox.asaas.com/v3/sandbox/payment/{id}/confirm`, segundo documentação Asaas, e exige autorização explícita do harness de TEST. Não está exposto em rota de app/cliente/provedor, não usa credenciais PROD e não transfere valores reais.
+- Contrato offline cobre chamada bloqueada por padrão, ID inválido e endpoint/método correto; confirmação autenticada no Sandbox não executada, pois chave não está disponível em runtime segregado. Webhook e conciliação continuam bloqueadores de E2E.
+
+
+## 2026-11-06 — Pagamentos V2: recepción durable de webhooks sin activar PROD
+- Rama PR #616: uso consistente de referencia `ugo_test_{serviceUUID sin guiones}` en el ledger y en Asaas. El webhook inbox únicamente recibe y registra eventos autenticados en TEST; el procesamiento posterior debe consultar Asaas por GET autenticado y actualizar la transacción atómicamente, sin dar por liquidado un Split.
+- Sin rutas públicas nuevas, sin variables de producción cambiadas, sin SQL en Arena. Probar y mantener PR draft hasta E2E Sandbox real.
+
+
+## 2026-11-06 — Handoff Asaas TEST: conciliación del cobro distinta de Split
+- En PR #616, cada cobranza TEST conserva cliente Asaas y wallet proveedor en el registro original; el trabajador de eventos valida por API autenticada el pago exacto y persiste actualización atómica en base financiera TEST.
+- El estado RECEIVED no implica que el Split esté DONE; sigue faltando consultar eventos/estado de Split por ID y reconciliar comisiones con importes netos.
+- Sin credenciales Sandbox en backend segregado ni wallet proveedor verificada, no se pudo generar QR auténtico ni completar operación simulada. Continuar con pruebas aisladas y CI antes de cualquier despliegue.
+
+
+## 2026-11-06 — Handoff PR #616 / Core CI
+- Falha da suite de contratos localizada no worker de webhook, variável `kind` não selecionada pelo SQL; commit `e1fe0ca` corrigiu. Não confundir CI anterior aprovado com CI do HEAD.
+- Implementado módulo puro de verificação de Split pago: consulta autenticada Sandbox read-only por id e valida dono/destinatário/montante para 85% do netValue. Permanece desligado de rotas e qualquer saída financeira.
+- Próximo P0: CI verde sobre HEAD, credencial Asaas Sandbox isolada de Vercel Production, wallet emissora e recebedora autenticadas, QR real de R$100, confirmação simulada, webhook e Split conciliados.
+
+
+## 2026-11-06 — Backend Sandbox separado implantado
+- Vercel TEST `ugo-pagamentos-v2-sandbox` criado e implantado em Preview `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4`, uso apenas de endpoints diagnósticos read-only. `/api/health` respondeu HTTP 200 com Neon TEST ready e financialWritesEnabled=false.
+- Projeto Neon TEST preservado, role exclusivo `ugo_asaas_wallet_audit_ro`, não-admin e sem escritas. Credencial da role e token de operador em env criptografado Preview, sem logar valores. Produção Arena e projeto principal Vercel não alterados.
+- Credenciais das contas Asaas Sandbox não foram importadas de Production. Sem elas, a verificação das wallets emisora e recebedora retorna bloqueio. Não permitir pagamento QR, simulação, webhooks públicos ou settlement até que wallets e secret TEST sejam configurados e verificados.

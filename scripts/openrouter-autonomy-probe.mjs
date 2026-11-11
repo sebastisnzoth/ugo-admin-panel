@@ -6,7 +6,11 @@ const base=process.env.OPENROUTER_BASE_URL||'https://openrouter.ai/api/v1'
 const headers={authorization:'Bearer '+key,'content-type':'application/json','HTTP-Referer':'https://github.com/sebastisnzoth/ugo-admin-panel','X-Title':'UGO Autonomous Company'}
 const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
 const timedFetch=(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(8000)})
-const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false},global:{fetch:timedFetch}}):null
+// Core CI must not issue four upserts to a degraded/free-tier Supabase TEST.
+// Opt in only from an explicitly approved isolated persistence test.
+const db=process.env.UGO_OPENROUTER_PROBE_PERSIST_TEST==='1'&&su&&sk&&
+ su.includes('tmossnqfwfwjrtzwcbmm')?
+ createClient(su,sk,{auth:{persistSession:false},global:{fetch:timedFetch}}):null
 function isRetryablePersistenceError(error){
  const text=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(' ')
  // PGRST002 / this exact schema-cache message means PostgREST cannot reach DB.

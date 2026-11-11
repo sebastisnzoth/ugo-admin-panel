@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 # retry: 2026-09-30 cross-visual r3 merge-trigger canonical
 name: UGO Cross Visual Runtime TEST
 
@@ -20,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-visual-${{ github.sha }}
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -36,6 +37,7 @@ env:
 
 jobs:
   cross-visual:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Cross visual same-SHA proof + Judge + Sentinel
     runs-on: ubuntu-24.04
     timeout-minutes: 35

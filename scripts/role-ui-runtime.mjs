@@ -125,8 +125,23 @@ async function openRole(role,viewport){
 const safeClick=async(page,locator,label)=>{
  const trace=pageContext.get(page)
  if(trace)trace.step=label
- await locator.waitFor({state:'visible',timeout:20000})
- await locator.click()
+ // Realtime/profile refresh can remount Admin navigation between the
+ // visibility check and the click. Retry only transient detached-node errors.
+ let clicked=false
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   await locator.waitFor({state:'visible',timeout:20000})
+   await locator.click({timeout:10000})
+   clicked=true
+   break
+  }catch(error){
+   const message=String(error?.message||error)
+   if(attempt===2||!/detached from the DOM|Element is not attached|element was detached/i.test(message))
+    throw error
+   await page.waitForTimeout(250*(attempt+1))
+  }
+ }
+ assert.ok(clicked,label+' click never completed')
  await page.waitForTimeout(250)
  assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
 }
@@ -343,6 +358,35 @@ async function testAdministrativeSession(viewport,name,key){
  }catch(error){console.error('ADMIN_SESSION_FAILURE',key,name,JSON.stringify({lang:await page.locator('html').getAttribute('lang'),adminShell:await page.locator('.ugo-admin2').count(),loginForm:await page.locator('form input[type=password]').count()}));throw error}finally{await page.close()}
 }
 
+async function waitForAdminNavigationWithRecovery(page){
+ const nav=page.getByRole('navigation',{name:'Navegación Admin'})
+ const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+ let lastError=null
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   await nav.waitFor({state:'visible',timeout:20000})
+   return nav
+  }catch(error){
+   lastError=error
+   // A transient TEST profile/route timeout may hide Admin navigation while
+   // preserving a real session. Use only the real retry control or page reload.
+   assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-admin-auth'))),
+    'ADMIN_PROFILE_RECOVERY_SESSION_LOST')
+   if(attempt===2)break
+   await page.waitForTimeout(700*(attempt+1))
+   if(await retry.isVisible().catch(()=>false)){
+    await retry.click()
+   }else{
+    // A login form is not permission to continue the Admin test.
+    assert.equal(await page.locator('form input[type="password"]').isVisible().catch(()=>false),false,
+     'ADMIN_AUTHENTICATION_LOST_DURING_NAVIGATION_RECOVERY')
+    await page.reload({waitUntil:'domcontentloaded'})
+   }
+  }
+ }
+ throw new Error('ADMIN_NAVIGATION_PROFILE_RECOVERY_FAILED',{cause:lastError})
+}
+
 async function testAutonomyControl(page,name){
  const before=await privileged.from('autonomous_company_state').select('mode,updated_by').maybeSingle()
  assert.ifError(before.error)
@@ -363,7 +407,7 @@ async function testAutonomyControl(page,name){
 async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
-   await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:20000})
+   await waitForAdminNavigationWithRecovery(page)
    await assertResponsive(page,'admin '+name+' home')
    const mainNav=page.getByRole('navigation',{name:'Navegación Admin'})
    const superAdminButton=mainNav.getByRole('button',{name:/Super Admin/i})
@@ -385,12 +429,35 @@ async function testAdmin(viewport,name){
      await assertResponsive(page,'admin '+name+' people '+item)
    }
    results.push({role:'admin-user-persistence',...(await verifyAdminUserPersistence({page,db:privileged,client:client.sb,sha,session:sessions.admin}))})
+   // Persistence proof performs a real reload. Require authenticated Admin shell
+   // recovery before continuing navigation rather than clicking a stale shell.
+   await waitForAdminNavigationWithRecovery(page)
+   // The preceding persistence check reloads Admin and the account may carry
+   // a previously saved English locale. Restore Spanish before asserting the
+   // localized navigation labels; this uses the real language selector.
+   await page.getByTestId('language-selector').first().selectOption('es')
+   await page.waitForFunction(()=>document.documentElement.lang==='es')
    await safeClick(page,mainNav.getByRole('button',{name:/Finanzas/i}),'admin Finanzas')
    for(const item of ['PIX','Bóveda y retiros','Tarifas']){
      await safeClick(page,page.getByRole('group',{name:'Finanzas'}).getByRole('button',{name:new RegExp(item,'i')}),'admin finance '+item)
      await assertResponsive(page,'admin '+name+' finance '+item)
    }
-   await safeClick(page,mainNav.getByRole('button',{name:/Configuración/i}),'admin Configuración')
+   // The shared TEST profile may refresh between Finance and Settings.
+   // Recover only through the authenticated UI; do not bypass authorization.
+   await waitForAdminNavigationWithRecovery(page)
+   if(await page.locator('html').getAttribute('lang')!=='es'){
+    await page.getByTestId('language-selector').first().selectOption('es')
+    await page.waitForFunction(()=>document.documentElement.lang==='es')
+   }
+   // The Settings control is the only labeled sidebar action. Select it by
+   // stable accessibility semantics, even if TEST rehydrates a different
+   // supported language during the preceding Finance route transition.
+   const settingsControl=page.getByRole('navigation',{name:'Navegación Admin'}).locator('button[aria-label]').filter({has:page.locator('span')})
+   assert.equal(await settingsControl.count(),1,'ADMIN_SETTINGS_SIDEBAR_CONTROL_NOT_UNIQUE')
+   assert.match(await settingsControl.getAttribute('aria-label')||'',/^(Configuración|Configurações|Settings)$/i,
+    'ADMIN_SETTINGS_ARIA_LABEL_INVALID')
+   await safeClick(page,settingsControl,'admin Configuración')
+   await page.getByRole('group',{name:'Configuración'}).waitFor({state:'visible',timeout:20000})
    for(const item of ['Categorías','Analytics|Análisis|Análises','Notificaciones','Reportes','Sistema']){
      await safeClick(page,item.includes('Analytics')?page.getByTestId('admin-settings-analytics'):page.getByRole('group',{name:'Configuración'}).getByRole('button',{name:new RegExp(item,'i')}),'admin settings '+item)
      await assertResponsive(page,'admin '+name+' settings '+item)
@@ -409,12 +476,25 @@ async function testAdmin(viewport,name){
  } finally {await page.close()}
 }
 
+async function waitForTranslationRoleRoot(page,root,role){
+ try{await page.locator(root).waitFor({state:'visible',timeout:20000});return}
+ catch(initialError){
+  // Retain strict UI proof: retry only via the real authenticated profile
+  // recovery action after a TEST database timeout.
+  const retry=page.getByRole('button',{name:/Reintentar carga del perfil|Tentar novamente|Retry profile/i}).first()
+  if(!(await retry.isVisible().catch(()=>false)))throw initialError
+  await retry.click()
+  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  assert.equal(await page.locator('form input[type="password"]').isVisible().catch(()=>false),false,role+' session must survive recovery')
+ }
+}
+
 async function testTranslations(role,viewport,name){
  const {page,errors}=await openRole(role==='superadmin'?'admin':role,viewport)
  try{
   // Preserve authenticated Profile overlay after prior client flow; never accept login as a translation check.
   const root=role==='client'?'.ugo-client-root,.ugo-client-profile-panel':role==='provider'?'.ugo-provider-root':'.ugo-admin2'
-  await page.locator(root).waitFor({state:'visible',timeout:30000})
+  await waitForTranslationRoleRoot(page,root,role)
   if(role==='superadmin')await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:/Super Admin/}).click()
   for(const locale of ['pt-BR','en','es']){
    if(role==='client')await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
@@ -426,7 +506,7 @@ async function testTranslations(role,viewport,name){
    const snapshot=await page.locator('body').innerText()
    assert.ok(!/\b(?:clientNeed|clientTracking|clientAssigned|clientSummary|screen\.need|providerRoot)\.[A-Za-z0-9_.-]+/.test(snapshot),'visible translation key '+role+' '+locale)
    await page.reload({waitUntil:'domcontentloaded'})
-   await page.locator(root).waitFor({state:'visible',timeout:30000})
+   await waitForTranslationRoleRoot(page,root,role)
    await page.waitForFunction(value=>document.documentElement.lang===value,locale)
    results.push({role,locale,viewport:name,status:'PASS',checks:['language switch','reload persistence','no visible keys','responsive']})
   }

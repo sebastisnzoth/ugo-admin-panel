@@ -8,6 +8,14 @@ type Row={id:string;storage_path:string;descripcion:string|null;created_at:strin
 type Props={draftId:string;inline?:boolean;onBusyChange?:(busy:boolean)=>void;onCountChange?:(count:number)=>void}
 const BUCKET='request-evidence'
 const MAX_FILE_SIZE=10*1024*1024
+const EVIDENCE_READ_TTL_MS=90_000
+const EVIDENCE_FAILURE_COOLDOWN_MS=120_000
+// Bound reads across repeated mounts on the same client/draft. Cache is only
+// in-memory, keyed by authenticated user, and cleared on any write.
+const evidenceReadCache=new Map<string,{at:number;rows:Row[]}>()
+const evidenceReadInFlight=new Map<string,Promise<Row[]>>()
+const evidenceRetryAfter=new Map<string,number>()
+
 
 function normalizedMime(file:File){const mime=(file.type||'image/jpeg').toLowerCase();if(mime==='image/jpg'||mime==='image/pjpeg')return'image/jpeg';return mime}
 function fallbackExtension(mime:string){if(mime==='image/png')return'png';if(mime==='image/webp')return'webp';if(mime==='image/heic')return'heic';if(mime==='image/heif')return'heif';return'jpg'}
@@ -16,7 +24,51 @@ export function ClientRequestEvidence({draftId,inline=false,onBusyChange,onCount
  const{t}=useLocale();
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[rows,setRows]=useState<Row[]>([]),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('')
- const load=useCallback(async()=>{if(!draftId){setRows([]);return}const{data:{user}}=await supabase.auth.getUser();if(!user){setRows([]);return}const{data,error}=await supabase.from('evidencias_solicitud').select('id,storage_path,descripcion,created_at').eq('cliente_id',user.id).eq('draft_id',draftId).is('servicio_id',null).order('created_at',{ascending:true});if(error){console.error('No pudimos cargar evidencia de solicitud.',error);setError(t('clientEvidence.loadFailed'));return}const signed=await Promise.all(((data||[])as Row[]).map(async row=>{const{data:signedData}=await supabase.storage.from(BUCKET).createSignedUrl(row.storage_path,900);return{...row,url:signedData?.signedUrl||null}}));setRows(signed)},[draftId,supabase,t])
+ const load=useCallback(async()=>{
+  if(!draftId){setRows([]);return}
+  const{data:{user}}=await supabase.auth.getUser()
+  if(!user){setRows([]);return}
+  const key=`${user.id}:${draftId}`,now=Date.now()
+  const cached=evidenceReadCache.get(key)
+  if(cached&&now-cached.at<EVIDENCE_READ_TTL_MS){
+   setRows(cached.rows)
+   return
+  }
+  if((evidenceRetryAfter.get(key)||0)>now){
+   if(cached)setRows(cached.rows)
+   setError(t('clientEvidence.loadFailed'))
+   return
+  }
+  let inFlight=evidenceReadInFlight.get(key)
+  if(!inFlight){
+   inFlight=(async()=>{
+    const{data,error}=await supabase.from('evidencias_solicitud')
+     .select('id,storage_path,descripcion,created_at')
+     .eq('cliente_id',user.id).eq('draft_id',draftId).is('servicio_id',null)
+     .order('created_at',{ascending:true})
+    if(error)throw error
+    return Promise.all(((data||[])as Row[]).map(async row=>{
+     const{data:signedData}=await supabase.storage.from(BUCKET)
+      .createSignedUrl(row.storage_path,900)
+     return{...row,url:signedData?.signedUrl||null}
+    }))
+   })().finally(()=>{evidenceReadInFlight.delete(key)})
+   evidenceReadInFlight.set(key,inFlight)
+  }
+  try{
+   const signed=await inFlight
+   if(evidenceReadCache.size>=32)evidenceReadCache.clear()
+   evidenceReadCache.set(key,{at:Date.now(),rows:signed})
+   evidenceRetryAfter.delete(key)
+   setRows(signed)
+  }catch(loadError){
+   // Do not flood a failing PostgREST endpoint on remount or re-render.
+   evidenceRetryAfter.set(key,Date.now()+EVIDENCE_FAILURE_COOLDOWN_MS)
+   if(cached)setRows(cached.rows)
+   console.warn('No pudimos cargar evidencia de solicitud.',loadError)
+   setError(t('clientEvidence.loadFailed'))
+  }
+ },[draftId,supabase,t])
  useEffect(()=>{setError('');load().catch(error=>{console.error('No pudimos cargar evidencia de solicitud.',error)})},[load])
  useEffect(()=>{onBusyChange?.(busy)},[busy,onBusyChange])
  useEffect(()=>{onCountChange?.(rows.length)},[onCountChange,rows.length])
@@ -39,6 +91,7 @@ export function ClientRequestEvidence({draftId,inline=false,onBusyChange,onCount
    uploadedPath=path
    const{error:insertError}=await supabase.from('evidencias_solicitud').insert({cliente_id:user.id,draft_id:draftId,storage_path:path,descripcion:'Evidencia aportada por el cliente antes del matching',metadata:{mime,size:file.size,request_draft_id:draftId}})
    if(insertError)throw insertError
+   evidenceReadCache.clear();evidenceRetryAfter.clear()
    await load()
   }catch(uploadFailure){
    if(uploadedPath)await supabase.storage.from(BUCKET).remove([uploadedPath])
@@ -50,7 +103,7 @@ export function ClientRequestEvidence({draftId,inline=false,onBusyChange,onCount
 
  async function takePhoto(){setError('');const result=await capturePhotoFromCamera();if(result.error){setError(result.error);return}await upload(result.file)}
 
- async function remove(row:Row){setBusy(true);setError('');try{const{error:deleteError}=await supabase.from('evidencias_solicitud').delete().eq('id',row.id).eq('draft_id',draftId).is('servicio_id',null);if(deleteError)throw deleteError;const{error:storageError}=await supabase.storage.from(BUCKET).remove([row.storage_path]);if(storageError)console.warn('La fila fue eliminada pero Storage no pudo limpiar el archivo.',storageError);await load()}catch(removeFailure){console.error('No pudimos quitar evidencia de solicitud.',removeFailure);setError(t('clientEvidence.removeFailed'))}finally{setBusy(false)}}
+ async function remove(row:Row){setBusy(true);setError('');try{const{error:deleteError}=await supabase.from('evidencias_solicitud').delete().eq('id',row.id).eq('draft_id',draftId).is('servicio_id',null);if(deleteError)throw deleteError;const{error:storageError}=await supabase.storage.from(BUCKET).remove([row.storage_path]);if(storageError)console.warn('La fila fue eliminada pero Storage no pudo limpiar el archivo.',storageError);evidenceReadCache.clear();evidenceRetryAfter.clear();await load()}catch(removeFailure){console.error('No pudimos quitar evidencia de solicitud.',removeFailure);setError(t('clientEvidence.removeFailed'))}finally{setBusy(false)}}
 
  const panel=<section className={`ugo-request-evidence-panel${inline?' is-inline':''}`}><header><div><strong>{t('screen.client_evidence.1')}</strong><p>{t('clientEvidence.help')}</p></div>{!inline&&<button type="button" onClick={()=>setOpen(false)} aria-label={t('clientEvidence.close')}>×</button>}</header><div className="ugo-request-evidence-upload-actions"><button type="button" className="ugo-request-evidence-upload" disabled={busy||!draftId} onClick={()=>void takePhoto()}>{busy?t('clientEvidence.uploading'):`📷 ${t('clientEvidence.takePhoto')}`}</button><label className="ugo-request-evidence-upload">{busy?t('clientEvidence.uploading'):`＋ ${t('clientEvidence.choosePhoto')}`}<input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" disabled={busy||!draftId} onChange={event=>{void upload(event.target.files?.[0]||null);event.currentTarget.value=''}}/></label></div>{error&&<div className="ugo-request-evidence-error" role="alert">{error}</div>}<div className="ugo-request-evidence-grid">{rows.map(row=><figure key={row.id}>{row.url?<img loading="lazy" decoding="async" src={row.url} alt={t('clientEvidence.photoAlt')}/>:<div/>}<button type="button" disabled={busy} onClick={()=>void remove(row)}>{t('screen.client_evidence.2')}</button></figure>)}</div>{rows.length===0?<small>{t('screen.client_evidence.3')}</small>:<small>✓ {rows.length} {t(rows.length===1?'clientEvidence.oneReady':'clientEvidence.manyReady')}</small>}</section>
  if(inline)return <div className="ugo-request-evidence-inline">{panel}</div>

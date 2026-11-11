@@ -113,24 +113,38 @@ async function clickMenu(page,label){
 }
 async function waitClientHomeWithRecovery(page,label){
  const home=page.getByRole('main',{name:'Inicio'})
- try{
-  await home.waitFor({state:'visible',timeout:20000})
- }catch(initialError){
-  // On a transient TEST profile timeout exercise the existing UI recovery once.
-  // Never bypass the home assertion or silently reauthenticate the user.
-  const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
-  if(!(await retry.isVisible().catch(()=>false)))throw initialError
-  assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-client-auth'))),label+': session missing')
-  await retry.click()
-  await home.waitFor({state:'visible',timeout:20000})
+ const retry=page.getByRole('button',{name:/Reintentar carga del perfil/i})
+ // Shared TEST can temporarily return PROFILE_QUERY_TIMEOUT under parallel E2E load.
+ // Exercise the real client recovery affordance, never fake a login or skip HOME.
+ let lastError
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   await home.waitFor({state:'visible',timeout:20000})
+   return
+  }catch(error){
+   lastError=error
+   if(!(await retry.isVisible().catch(()=>false)))throw error
+   assert.ok(await page.evaluate(()=>Boolean(localStorage.getItem('ugo-test-client-auth'))),label+': session missing')
+   if(attempt===2)break
+   await page.waitForTimeout(700*(attempt+1))
+   await retry.click()
+  }
  }
+ throw new Error(label+': profile recovery failed after 2 real UI retries',{cause:lastError})
 }
 async function freshPage(viewport){
  const page=await browser.newPage({viewport})
  page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
  const browserSession=await freshTestSession()
- await page.addInitScript(session=>{localStorage.setItem('ugo-test-client-auth',JSON.stringify(session));localStorage.setItem('ugo.locale.guest.client','es');localStorage.setItem('ugo.locale.client.'+session.user.id,'es')},browserSession)
+ // Seed once. addInitScript would restore a signed-out client every time
+ // navigation or a page reload occurs and invalidate the logout proof.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
+ await page.evaluate(session=>{
+  localStorage.setItem('ugo-test-client-auth',JSON.stringify(session))
+  localStorage.setItem('ugo.locale.guest.client','es')
+  localStorage.setItem('ugo.locale.client.'+session.user.id,'es')
+ },browserSession)
+ await page.reload({waitUntil:'domcontentloaded'})
  try{
   await waitClientHomeWithRecovery(page,'client navigation')
  }catch(error){
@@ -221,7 +235,9 @@ try{
  const logoutPage=await freshPage({width:390,height:844})
  try{
   await clickMenu(logoutPage,'Cerrar sesión')
-  await logoutPage.getByRole('heading',{name:/Ingresar|Acceso|Cliente/i}).first().waitFor({state:'visible',timeout:15000})
+  await logoutPage.waitForFunction(()=>localStorage.getItem('ugo-test-client-auth')===null,null,{timeout:15000})
+  await logoutPage.locator('input[type="password"]').first().waitFor({state:'visible',timeout:15000})
+  assert.equal(await logoutPage.locator('.ugo-client-root').isVisible().catch(()=>false),false,'CLIENT_LOGOUT_RETAINED_PROTECTED_HOME')
   clickMap.push({control:'Cerrar sesión auth boundary',result:'PASS'})
  } finally {await logoutPage.close()}
 

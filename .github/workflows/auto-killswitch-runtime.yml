@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Readiness Auto Kill Switch TEST
 # retrigger: attempt-2-20260930T1331Z
 
@@ -18,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-readiness-auto-killswitch
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: true
 
 env:
@@ -29,6 +30,7 @@ env:
 
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Kill switch stop ↔ recovery · UGO TEST · Judge · Sentinel
     runs-on: ubuntu-latest
     timeout-minutes: 25

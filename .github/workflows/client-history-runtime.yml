@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Readiness Client History TEST
 
 on:
@@ -18,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-readiness-client-history-test
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -29,6 +30,7 @@ env:
 
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Client history · payment · ratings · photos · Judge · Sentinel
     runs-on: ubuntu-latest
     timeout-minutes: 25

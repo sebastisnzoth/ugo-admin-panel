@@ -1,3 +1,4 @@
+# UGO free-tier safety: explicit manual/approved-only Supabase TEST integration.
 # readiness gate: provider-evidence v1
 name: UGO Provider Evidence Runtime TEST
 
@@ -35,11 +36,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-provider-evidence
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 jobs:
   provider-evidence-runtime:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     # TEST credentials must never run for forked pull requests.
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04

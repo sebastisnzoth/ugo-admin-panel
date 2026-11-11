@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Provider Alerts Runtime TEST
 
 on:
@@ -19,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: provider-alerts-runtime-${{ github.ref_name }}
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -29,6 +30,7 @@ env:
 
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Provider nueva oferta → alerta/sonido UGO TEST
     runs-on: ubuntu-24.04
     timeout-minutes: 25

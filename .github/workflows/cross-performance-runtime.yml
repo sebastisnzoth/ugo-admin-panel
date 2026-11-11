@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Cross Performance Runtime
 
 on:
@@ -27,7 +28,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-performance-${{ github.ref }}
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -43,6 +44,7 @@ env:
 
 jobs:
   runtime:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

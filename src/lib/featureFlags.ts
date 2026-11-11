@@ -37,3 +37,39 @@ export function isRideshareFlagEnabled(flag: RideshareFlag, env: Record<string, 
 export function isProviderPendingPoolEnabled(env: Record<string, unknown> = import.meta.env): boolean {
   return parseFlagValue(env.VITE_FLAG_PROVIDER_PENDING_POOL)
 }
+
+/**
+ * Asaas payout preview — deliberately unavailable in production builds,
+ * including when an operator accidentally sets the VITE flag.
+ * No payment provider calls, Pix key storage or account activation.
+ */
+export function isAsaasRecebimentosPreviewEnabled(env: Record<string, unknown> = import.meta.env): boolean {
+  if (env.MODE === 'production' || env.PROD === true) return false
+  return parseFlagValue(env.VITE_FLAG_ASAAS_RECEBIMENTOS_PREVIEW)
+}
+
+/**
+ * PIX after-service pilot, for isolated Preview development ONLY.
+ * Must remain disabled until the backend service-transition and webhook
+ * reconciliation contracts are deployed together in the same TEST environment.
+ * A client-side flag does not grant server-side authorization.
+ */
+export function isPixPayAfterServicePreviewEnabled(env: Record<string, unknown> = import.meta.env): boolean {
+  // Vite MODE='production' even for a Vercel Preview deployment.
+  // Require an explicitly declared Preview build AND an opt-in rollout flag.
+  // Backend must independently reject every payment action outside TEST.
+  return env.VITE_VERCEL_ENV === 'preview' &&
+    parseFlagValue(env.VITE_FLAG_PIX_PAY_AFTER_SERVICE_PREVIEW)
+}
+
+/**
+ * Provider-initiated Pix charge in isolated TEST Preview. Both this browser
+ * switch and the independent server-side UGO_PROVIDER_PIX_CREATE_ENABLED
+ * must be enabled with an explicit allowlisted TEST service.
+ * Default OFF; never active in production.
+ */
+export function isPixProviderIssuePreviewEnabled(env:Record<string,unknown>=import.meta.env):boolean {
+  return env.VITE_VERCEL_ENV==='preview' &&
+    parseFlagValue(env.VITE_FLAG_PIX_PAY_AFTER_SERVICE_PREVIEW) &&
+    parseFlagValue(env.VITE_FLAG_PIX_PROVIDER_ISSUE_PREVIEW)
+}

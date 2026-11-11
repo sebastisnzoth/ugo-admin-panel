@@ -180,7 +180,17 @@ try{
   const admin=await openRole('admin')
   try{
     const nav=admin.page.getByRole('navigation',{name:'Navegación Admin'})
-    await visible(nav)
+    try{
+      await visible(nav)
+    }catch(initialError){
+      // Exercise actual authenticated UI recovery on temporary TEST profile errors.
+      const retry=admin.page.getByRole('button',{name:/Reintentar carga del perfil/i})
+      if(!(await retry.isVisible().catch(()=>false)))throw initialError
+      result.performance.admin_profile_recovery_required=true
+      await persist()
+      await retry.click()
+      await visible(nav)
+    }
     await timed('admin_operations_navigation_ms',async()=>{
       await nav.getByRole('button',{name:/Operaciones/i}).click()
       await visible(admin.page.getByRole('group',{name:'Menú de operaciones'}))

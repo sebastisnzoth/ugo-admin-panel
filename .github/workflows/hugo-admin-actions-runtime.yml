@@ -1,3 +1,4 @@
+# Cost circuit breaker: browser tests must not auto-overload free Supabase TEST.
 name: UGO Hugo Admin Actions Runtime TEST
 on:
   pull_request:
@@ -12,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
@@ -22,6 +23,7 @@ env:
   UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
 jobs:
   runtime:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

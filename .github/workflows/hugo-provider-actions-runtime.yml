@@ -1,3 +1,4 @@
+# Supabase TEST cost circuit breaker: do not auto-run provider voice browser E2E.
 name: UGO Hugo Provider Actions Runtime TEST
 on:
   push:
@@ -17,13 +18,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-hugo-provider-actions-${{ github.event.pull_request.number || github.ref_name }}
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
 jobs:
   runtime:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

@@ -1,3 +1,6 @@
+# Supabase TEST cost gate: remote browser E2E is MANUAL by default.
+# Operators must explicitly enable repository var UGO_TEST_REMOTE_E2E_ENABLED=true
+# or dispatch ONE workflow after validating health and quota headroom.
 name: UGO P0 Client -> Provider Matching E2E TEST
 
 # Executes the P0 journey against UGO Arena TEST with isolated accounts:
@@ -54,7 +57,7 @@ jobs:
   e2e:
     name: P0 Cliente -> Oferta -> Proveedor -> Asignado
     # Fork PRs cannot access TEST credentials and must never run privileged E2E.
-    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    if: ${{ (github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:

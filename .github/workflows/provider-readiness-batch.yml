@@ -1,3 +1,4 @@
+# UGO free-tier safety: explicit manual/approved-only Supabase TEST integration.
 name: UGO Provider Readiness Batch TEST
 
 on:
@@ -35,7 +36,7 @@ permissions:
 # canonical provider gate refresh: 2026-10-01 final-same-sha-r3
 # Targeted provider workflows remain available through workflow_dispatch only.
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -48,6 +49,7 @@ env:
 
 jobs:
   provider-readiness:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     runs-on: ubuntu-24.04
     environment: test
     timeout-minutes: 35

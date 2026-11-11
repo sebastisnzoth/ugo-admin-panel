@@ -1,3 +1,6 @@
+# Supabase TEST cost gate: remote browser E2E is MANUAL by default.
+# Operators must explicitly enable repository var UGO_TEST_REMOTE_E2E_ENABLED=true
+# or dispatch ONE workflow after validating health and quota headroom.
 name: UGO Cross-role UI Runtime TEST
 
 on:
@@ -38,7 +41,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-role-ui-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -48,6 +51,7 @@ env:
 
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Cliente + Proveedor + Admin responsive/browser proof
     runs-on: ubuntu-24.04
     timeout-minutes: 30

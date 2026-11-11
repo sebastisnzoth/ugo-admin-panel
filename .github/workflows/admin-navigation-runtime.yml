@@ -1,3 +1,6 @@
+# Shared UGO TEST free-tier load gate: remote runtimes disabled by default.
+# Enable only for controlled release via workflow_dispatch or explicitly set
+# repository var UGO_TEST_REMOTE_E2E_ENABLED=true after quota check.
 name: UGO Admin Navigation Runtime TEST
 
 on:
@@ -17,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-admin-navigation-runtime
+  group: ugo-supabase-test-remote-e2e-budget
   cancel-in-progress: false
 
 env:
@@ -29,6 +32,7 @@ env:
 
 jobs:
   runtime-proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.UGO_TEST_REMOTE_E2E_ENABLED == 'true' }}
     name: Admin menus and buttons ↔ UGO TEST
     runs-on: ubuntu-latest
     timeout-minutes: 25

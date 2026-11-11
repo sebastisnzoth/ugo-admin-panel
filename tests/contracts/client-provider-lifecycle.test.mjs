@@ -75,7 +75,9 @@ test('provider cannot leave assigned without a valid payment path',async()=>{
   read('src/mvp/provider/providerData.tsx'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
- assert.match(providerData,/paymentPreferenceSelected=Boolean\(service&&!amountReady&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)\)/)
+ assert.match(providerData,/const deferredPixAuthorized=/)
+ assert.match(providerData,/paymentPreferenceSelected=Boolean\(deferredPixAuthorized/)
+ assert.match(providerData,/service&&!amountReady&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)/)
  assert.match(providerData,/service\.estado==='asignado'&&state==='en_camino'&&!funded&&!cashSelected&&!paymentPreferenceSelected/)
  assert.match(backend,/p\.estado='retenido'/)
  assert.match(backend,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
