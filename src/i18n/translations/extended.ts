@@ -1,6 +1,7 @@
 // Screen translations separated from the global locale state.
 export const extendedMessages={
   "pt-BR": {
+    "providerPix.charge": "Cobrar com Pix",
     "ugoUserEdit.relatedFailed": "Não foi possível carregar os dados relacionados.",
     "ugoUserEdit.relatedLoading": "Carregando dados relacionados...",
     "ugoUserEdit.addresses": "Endereços",
@@ -1120,6 +1121,7 @@ export const extendedMessages={
 
   },
   "es": {
+    "providerPix.charge": "Cobrar con Pix",
     "ugoUserEdit.relatedFailed": "No se pudieron cargar los datos relacionados.",
     "ugoUserEdit.relatedLoading": "Cargando datos relacionados...",
     "ugoUserEdit.addresses": "Direcciones",
@@ -2239,6 +2241,7 @@ export const extendedMessages={
 
   },
   "en": {
+    "providerPix.charge": "Charge with Pix",
     "ugoUserEdit.relatedFailed": "Could not load related profile details.",
     "ugoUserEdit.relatedLoading": "Loading related profile details...",
     "ugoUserEdit.addresses": "Addresses",

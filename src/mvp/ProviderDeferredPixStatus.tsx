@@ -132,7 +132,7 @@ export function ProviderDeferredPixStatus({
    onCopy={payment.stage==='awaiting_payment'?copy:undefined}/>
   {issuanceEnabled&&readyForPix&&payment.stage==='not_issued'&&
    <button type="button" onClick={()=>void create()} disabled={issuing}>
-    {issuing?t('clientPayment.preparingPix'):locale==='es'?'Cobrar con Pix':locale==='en'?'Charge with Pix':'Cobrar com Pix'}
+    {issuing?t('clientPayment.preparingPix'):t('providerPix.charge')}
    </button>}
   {copyFailed&&<p role="alert">{t('clientPayment.copyFailed')}</p>}
  </>

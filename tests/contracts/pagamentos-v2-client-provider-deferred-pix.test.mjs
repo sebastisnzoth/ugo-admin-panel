@@ -89,7 +89,11 @@ test('first Pix selection uses prospective Pix method after server RPC, not stal
 
 test('provider active-job mounts deferred Pix only in Preview and never exposes operator secrets',()=>{
  const job=file('src/mvp/provider/ProviderActiveJob.tsx')
- assert.match(job,/isPixPayAfterServicePreviewEnabled\(\)&&deferredPixPilotEligible\(s\)/)
+ assert.match(job,/isPixPayAfterServicePreviewEnabled\(\)&&deferredPixPilotEligible\(s,'pix'\)/)
+ assert.match(job,/workApproved=\{workApproved\}/)
+ assert.match(job,/const workApproved=typeof workApprovalStamp/)
+ assert.match(file('payments-sandbox/lib/providerPixProof.js'),/metadata\.payment_timing==='after_service'&&workApproved&&/)
+ assert.match(file('src/mvp/ProviderDeferredPixStatus.tsx'),/const readyForPix=finished&&workApproved/)
  assert.match(job,/deferredPixPreview&&<Card/)
   assert.ok(job.includes('<ProviderDeferredPixStatus serviceId={s.id}'))
   const status=file('src/mvp/ProviderDeferredPixStatus.tsx')
