@@ -57,7 +57,7 @@ export async function approvePendingClientService(supabase:SupabaseClient,userId
  if(row.estado!=='esperando_aprobacion')return false
  if(hasWorkApproval(row))return true
 
- const result=await supabase.rpc('aprobar_servicio',{p_servicio_id:row.id})
+ const result=await supabase.rpc('aprobar_trabajo_sin_pago',{p_servicio_id:row.id})
  if(!result.error)return true
 
  try{
