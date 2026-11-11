@@ -854,3 +854,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - El diálogo busca **solo lectura** pagos Pix ya emitidos, del mismo servicio asignado al JWT Proveedor, estado pendiente y monto exacto, sin consultar ni generar nuevo cobro Asaas ni tocar tablas.
 - Si no hay Pix válido existente, expresa que aún no existe QR; NO inventa imagen/código, NO confirma pago y NO habilita cobro real sin Asaas PROD.
 - Prohibición de DB Arena: sin migración, cambios de env, secretos ni dinero. Pruebas de contrato incluidas. La emisión real de nuevos Pix Asaas queda pendiente de infraestructura productiva e idempotencia E2E.
+
+
+### 2026-11-11 — Demo Pix Sandbox embebible, una prueba por sesión (PR #629)
+- Backend aislado Asaas Sandbox + Neon TEST: cada sesión firmada deriva un UUID TEST y reserva a lo sumo un cargo Pix de R$100. No reutiliza fixture ya recibido; límite diario para no agotar cuota externa. El navegador no recibe claves financieras.
+- Frontend `?embed=1` compacto, abre QR en iframe del popup del proveedor y genera el cargo Sandbox tras consentimiento expreso al botón Proveedor. Cookie Secure HttpOnly Partitioned para contexto embebido y cabecera CSP frame-ancestors únicamente para demo.
+- **Despliegue bloqueado Vercel 402 `api-deployments-free-per-day`**. No declarar E2E ni activar popup final hasta prueba real del QR al restablecerse cuota. No toca UGO Arena.
