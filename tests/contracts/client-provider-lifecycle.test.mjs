@@ -70,19 +70,21 @@ test('request photos are optional but any supplied evidence stays bound to its e
  assert.match(binding,/if v_draft_raw is null then[\s\S]*return new/)
 })
 
-test('provider cannot leave assigned without a valid payment path',async()=>{
- const [providerData,backend]=await Promise.all([
-  read('src/mvp/provider/providerData.tsx'),
-  read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
- ])
- assert.match(providerData,/const deferredPixAuthorized=/)
- assert.match(providerData,/paymentPreferenceSelected=Boolean\(deferredPixAuthorized/)
- assert.match(providerData,/service&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)/)
- assert.doesNotMatch(providerData,/service&&!amountReady&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)/)
- assert.match(providerData,/effectivePaymentMethod==='pix'&&!funded&&!deferredPixAuthorized/)
- assert.match(providerData,/service\.estado==='asignado'&&state==='en_camino'&&!funded&&!cashSelected&&!paymentPreferenceSelected/)
- assert.match(backend,/p\.estado='retenido'/)
- assert.match(backend,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
+test('provider can advance work without forcing an upfront payment method',async()=>{
+ const providerData=await read('src/mvp/provider/providerData.tsx')
+ const activeJob=await read('src/mvp/provider/ProviderActiveJob.tsx')
+ const sql=await read('supabase/migrations/20261111130000_service_lifecycle_independent_of_payment.sql')
+ assert.doesNotMatch(providerData,/state==='en_camino'&&!funded/)
+ assert.doesNotMatch(providerData,/effectivePaymentMethod==='pix'&&!funded/)
+ assert.doesNotMatch(providerData,/Falta que el cliente confirme la forma de pago antes de empezar/)
+ assert.match(activeJob,/const paymentReady=true/)
+ assert.match(sql,/v_servicio\.estado='asignado' and p_estado='en_camino'/)
+ assert.match(sql,/v_servicio\.estado='llegado' and p_estado='en_progreso'/)
+ assert.doesNotMatch(sql,/raise exception 'El cliente todavía no confirmó una forma de pago habilitada'/)
+ assert.match(sql,/Agregá al menos una foto inicial/)
+ assert.match(sql,/Agregá al menos una foto final/)
+ assert.match(sql,/v_dist_m>200/)
+ assert.match(sql,/Definí un importe aprobado por el cliente/)
 })
 
 test('cash completion is approved and paid by the client after provider marks work ready',async()=>{
