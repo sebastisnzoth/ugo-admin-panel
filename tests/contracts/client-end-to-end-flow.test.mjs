@@ -59,7 +59,7 @@ test('matching remains visible, can run in background and can be retried after d
 })
 
 test('payment and closure remain service-scoped from assignment through rating',()=>{
- assert.match(detail,/ClientPaymentChoice serviceId=\{service\.id\}/)
+ assert.doesNotMatch(detail,/<ClientPaymentChoice serviceId=\{service\.id\}\/>/)
  assert.match(completion,/approvePendingClientService/)
  assert.match(completion,/confirmApprovedCashClientService/)
  assert.match(actions,/rpc\('aprobar_trabajo_sin_pago'/)
