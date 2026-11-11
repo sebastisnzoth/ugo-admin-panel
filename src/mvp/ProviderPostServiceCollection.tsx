@@ -33,16 +33,17 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
     const{data:owned,error:ownershipError}=await sb.from('servicios').select('id,provedor_id:proveedor_id,tarifa,moneda').eq('id',serviceId).eq('proveedor_id',auth.user.id).maybeSingle()
     if(ownershipError||!owned)throw ownershipError||new Error('Service not authorized')
     const{data:payments,error:readError}=await sb.from('pagos')
-     .select('metodo,estado,monto_bruto,pix_copia_cola,pix_qr_code')
+     .select('metodo,estado,procesador,monto_bruto,pix_copia_cola,pix_qr_code,pix_expira_at')
      .eq('servicio_id',serviceId).in('metodo',['pix','pix_direto','openpix']).limit(2)
     if(readError)throw readError
     if((payments||[]).length===1){
      const row=payments![0]
      const validAmount=Math.abs(Number(row.monto_bruto)-amount)<0.009
-     const validStatus=row.estado==='pendiente'
+     const validStatus=row.estado==='pendiente'&&row.procesador==='asaas'
+     const notExpired=!row.pix_expira_at||(Number.isFinite(Date.parse(row.pix_expira_at))&&Date.parse(row.pix_expira_at)>Date.now())
      const code=String(row.pix_copia_cola||'')
      const image=String(row.pix_qr_code||'').replace(/^data:image\/png;base64,/, '')
-     if(validAmount&&validStatus&&code.length>35&&code.length<4096&&active){
+     if(validAmount&&validStatus&&notExpired&&code.length>35&&code.length<4096&&active){
       setPixCode(code)
       if(/^[A-Za-z0-9+/]+={0,2}$/.test(image)&&image.length<200000)setPixImage(image)
      }
