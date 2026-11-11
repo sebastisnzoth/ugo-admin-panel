@@ -57,6 +57,17 @@ export async function approvePendingClientService(supabase:SupabaseClient,userId
  if(row.estado!=='esperando_aprobacion')return false
  if(hasWorkApproval(row))return true
 
+ // Preserve the original settlement route for legacy services that were already funded.
+ // A new work-only approval never changes payment state or releases funds.
+ const{data:legacyPayment,error:legacyError}=await supabase.from('pagos')
+   .select('estado,mp_payment_id,pix_e2e_id,pago_externo_id')
+   .eq('servicio_id',row.id).order('created_at',{ascending:false}).limit(1).maybeSingle()
+ if(legacyError)throw legacyError
+ if(legacyPayment?.estado==='retenido'&&Boolean(legacyPayment.mp_payment_id||legacyPayment.pix_e2e_id||legacyPayment.pago_externo_id)){
+  const legacy=await supabase.rpc('aprobar_servicio',{p_servicio_id:row.id})
+  if(legacy.error)throw legacy.error
+  return true
+ }
  const result=await supabase.rpc('aprobar_trabajo_sin_pago',{p_servicio_id:row.id})
  if(!result.error)return true
 
