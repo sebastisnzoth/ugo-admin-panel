@@ -70,18 +70,19 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  const providerName=service.proveedor?.nombre||t('clientReview.providerDefault')
  const electronicReady=!isCash&&payment?.estado==='retenido'
  const deferredPixWaiting=deferredPix&&!completed&&!electronicReady
- const canApprove=!completed&&service.estado==='esperando_aprobacion'&&hasFinalEvidence&&Boolean(payment)&&(isCash?!workApproved:electronicReady)
+ const canApprove=!completed&&service.estado==='esperando_aprobacion'&&hasFinalEvidence&&
+  (deferredPix?!workApproved:Boolean(payment)&&(isCash?!workApproved:electronicReady))
  const canConfirmCash=!completed&&isCash&&workApproved&&!cashConfirmed&&service.estado==='esperando_aprobacion'
 
  async function approve(){
   if(!canApprove||!userId)return
   setBusy(true);setNotice('')
   try{
-   const ok=await approvePendingClientService(supabase,userId,service.id)
+   const ok=await approvePendingClientService(supabase,userId,service.id,{deferredPixPreview:deferredPix})
    if(!ok)throw new Error(t('clientReview.notReady'))
-   setNotice(isCash?t('clientReview.payAmount',{amount,provider:providerName}):t('clientReview.digitalApproveFirst'))
+   setNotice(deferredPix?(locale==='es'?'Trabajo aprobado. El proveedor ya puede generar el QR Pix. El pago sigue pendiente.':locale==='en'?'Work approved. The provider can now generate the Pix QR. Payment is still pending.':'Trabalho aprovado. O profissional já pode gerar o QR Pix. O pagamento continua pendente.'):isCash?t('clientReview.payAmount',{amount,provider:providerName}):t('clientReview.digitalApproveFirst'))
    await load()
-   if(!isCash)await onCompleted?.()
+   if(!isCash&&!deferredPix)await onCompleted?.()
   }catch(e){
    await load().catch(()=>{})
    setNotice(e instanceof Error?e.message:t('clientReview.approveFailed'))
@@ -127,7 +128,7 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
    {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>{t('screen.client_review.4')}</button>}
    {isCash&&workApproved
     ?<button type="button" onClick={confirmCashPaid} disabled={busy||!canConfirmCash}>{busy?t('clientReview.processing'):t('clientReview.paid',{amount})}</button>
-    :<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?t('clientReview.processing'):isCash?t('clientReview.confirmWork'):t('clientReview.releasePayment')}</button>}
+    :<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?t('clientReview.processing'):deferredPix||isCash?t('clientReview.confirmWork'):t('clientReview.releasePayment')}</button>}
   </div>}
  </section>
 }
