@@ -77,7 +77,7 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>{t('screen.active.27')}</Button>}
   </Card>
   {s.estado==='esperando_aprobacion'&&<Card className="provider-card provider-post-service-payment">
-   <ProviderPostServiceCollection serviceId={s.id} amount={Number(s.tarifa||0)}
+   <ProviderPostServiceCollection serviceId={s.id} amount={Number(s.tarifa||0)} currency={String(s.moneda||'BRL')}
     approvedAt={workApprovalStamp}
     selected={(s as{metadata?:Record<string,unknown>|null}).metadata?.cobro_metodo}
     onUpdated={d.reload}/>
