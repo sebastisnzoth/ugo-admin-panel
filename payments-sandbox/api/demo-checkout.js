@@ -12,11 +12,16 @@ import {sandboxChargeSpec,issuedChargeIdentityValid} from '../lib/providerPixIss
 import {pendingQrValid} from '../lib/providerPixProof.js'
 const{Client}=pg
 const BASE='https://api-sandbox.asaas.com/v3'
-const SERVICE='7f4bbad5-8965-4e3a-97b7-98913e8e7fe1'
 const CLIENT='9ab4192c-97fa-44ad-a2b5-54fd6d3cf7f9'
 const PROVIDER='6fcc686f-6d1d-461a-a348-3522433f9241'
 const AMOUNT=100
-const fixture={id:SERVICE,cliente_id:CLIENT,proveedor_id:PROVIDER,estado:'completado',tarifa:AMOUNT,moneda:'BRL'}
+// Each signed browser session owns one immutable synthetic service / one test intent.
+function sessionFixture(session){
+ const hex=createHmac('sha256',process.env.UGO_TEST_OPERATOR_TOKEN)
+  .update('ugo_pix_demo_session_service:'+session).digest('hex')
+ const id=hex.slice(0,8)+'-'+hex.slice(8,12)+'-4'+hex.slice(13,16)+'-8'+hex.slice(17,20)+'-'+hex.slice(20,32)
+ return {id,cliente_id:CLIENT,proveedor_id:PROVIDER,estado:'completado',tarifa:AMOUNT,moneda:'BRL'}
+}
 const json=(res,status,body)=>{
  res.statusCode=status
  res.setHeader('Cache-Control','private, no-store, max-age=0')
@@ -42,7 +47,7 @@ function authenticate(req,res){
   /^[a-f0-9]{32}$/.test(nonce||'')&&/^[a-f0-9]{64}$/.test(mac||'')
  if(valid){
   const a=Buffer.from(mac,'hex'),b=Buffer.from(sign(ts+'.'+nonce),'hex')
-  if(a.length===b.length&&timingSafeEqual(a,b))return true
+  if(a.length===b.length&&timingSafeEqual(a,b))return value
  }
  return false
 }
@@ -60,6 +65,7 @@ function issueSession(req,res){
  }catch{}
  const sameSite=embedded?'SameSite=None; Partitioned':'SameSite=Strict'
  res.setHeader('Set-Cookie','ugo_pix_demo_session='+cookie+'; Path=/api/demo-checkout; Max-Age=3600; Secure; HttpOnly; '+sameSite)
+ return cookie
 }
 function originOk(req){
  const origin=req.headers.origin
@@ -93,17 +99,17 @@ async function connect(write){
  }
  return db
 }
-async function intent(db){
+async function intent(db,fixture){
  const r=await db.query(
   "select status,asaas_payment_id,asaas_customer_id,external_reference,gross_cents,net_cents from ugo_payments_v2.payment_intents where ugo_service_id=$1 and environment='sandbox'",
-  [SERVICE])
+  [fixture.id])
  if(r.rows.length>1)throw Error('duplicate_intent_in_test')
  return r.rows[0]||null
 }
-async function readStatus(db){
- const row=await intent(db)
+async function readStatus(db,fixture){
+ const row=await intent(db,fixture)
  if(!row)return {stage:'not_issued',amountBRL:AMOUNT}
- const allowed=SERVICE.replace(/-/g,'')
+ const allowed=fixture.id.replace(/-/g,'')
  if(row.external_reference!=='ugo_pix_test_'+allowed||Number(row.gross_cents)!==10000)
   throw Error('sandbox_charge_identity_mismatch')
  if(!row.asaas_payment_id)return {stage:'requires_review',amountBRL:AMOUNT}
@@ -123,9 +129,11 @@ async function readStatus(db){
   qrImageBase64:qr.encodedImage,qrCopyPaste:qr.payload,
   expiresAt:qr.expirationDate||null}
 }
-async function createPayment(db){
- const old=await intent(db)
- if(old)return readStatus(db) // Never issue two charges to one fixture.
+async function createPayment(db,fixture){
+ const old=await intent(db,fixture)
+ if(old)return readStatus(db,fixture) // Never issue two charges to one fixture.
+ const quota=await db.query("select count(*)::int as n from ugo_payments_v2.payment_intents where environment='sandbox' and created_at > now() - interval '1 day' and external_reference like 'ugo_pix_test_%'")
+ if(Number(quota.rows[0]?.n)>30)throw Error('sandbox_daily_limit')
  const issued=await issueProviderPix({
   db,service:fixture,providerId:PROVIDER,
   issuerWalletId:process.env.UGO_ASAAS_ISSUER_WALLET_ID,
@@ -133,15 +141,15 @@ async function createPayment(db){
   asaasCreate:body=>processor('/payments','POST',body)
  })
  if(issued.created!==true)throw Error('sandbox_creation_requires_review')
- return readStatus(db)
+ return readStatus(db,fixture)
 }
-async function simulate(db){
+async function simulate(db,fixture){
  await db.query('BEGIN')
  let row
  try{
   const r=await db.query(
    "select id,status,asaas_payment_id,asaas_customer_id,external_reference,gross_cents from ugo_payments_v2.payment_intents where ugo_service_id=$1 and environment='sandbox' for update",
-   [SERVICE])
+   [fixture.id])
   row=r.rows[0]
   if(r.rows.length!==1||row.status!=='pending'||!row.asaas_payment_id)
    throw Error('sandbox_payment_not_pending')
@@ -175,16 +183,18 @@ export default async function handler(req,res){
  if(!process.env.UGO_NEON_TEST_READONLY_URL||!process.env.UGO_NEON_TEST_WRITE_URL||
     !process.env.UGO_ASAAS_ISSUER_WALLET_ID)
   return json(res,503,{error:'sandbox_not_configured'})
- if(req.method==='GET'&&!authenticate(req,res))issueSession(req,res)
- if(req.method==='POST'&&(!authenticate(req,res)||!originOk(req)))
+ let session=authenticate(req,res)
+ if(req.method==='GET'&&!session)session=issueSession(req,res)
+ if(req.method==='POST'&&(!session||!originOk(req)))
   return json(res,403,{error:'sandbox_session_required'})
+ const fixture=sessionFixture(session)
  const action=req.method==='POST'?req.body?.action:'status'
  if(!['status','create','simulate'].includes(action))return json(res,400,{error:'invalid_action'})
  let db
  try{
   db=await connect(action!=='status')
-  const result=action==='create'?await createPayment(db):
-    action==='simulate'?await simulate(db):await readStatus(db)
+  const result=action==='create'?await createPayment(db,fixture):
+    action==='simulate'?await simulate(db,fixture):await readStatus(db,fixture)
   return json(res,200,{environment:'sandbox',...result,realMoney:false,
    splitSettled:false,providerPaid:false})
  }catch(e){
@@ -193,7 +203,7 @@ export default async function handler(req,res){
    'sandbox_confirmation_requires_review','sandbox_confirmation_lock_failed',
    'sandbox_amount_requires_review','sandbox_charge_identity_mismatch',
    'sandbox_database_isolation_failed','sandbox_creation_requires_review',
-   'sandbox_processor_unavailable','sandbox_processor_result_requires_review',
+   'sandbox_processor_unavailable','sandbox_processor_result_requires_review','sandbox_daily_limit',
    'issuer_wallet_missing','issuer_wallet_not_verified','sandbox_payer_not_unique',
    'sandbox_payer_not_ready','existing_intent_requires_reconciliation',
    'remote_reference_requires_review','processor_rejected','processor_result_uncertain'])
