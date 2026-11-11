@@ -819,3 +819,11 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - Vercel TEST `ugo-pagamentos-v2-sandbox` criado e implantado em Preview `dpl_BNuF8WMXRipHSC43Exd37EU9Xbf4`, uso apenas de endpoints diagnósticos read-only. `/api/health` respondeu HTTP 200 com Neon TEST ready e financialWritesEnabled=false.
 - Projeto Neon TEST preservado, role exclusivo `ugo_asaas_wallet_audit_ro`, não-admin e sem escritas. Credencial da role e token de operador em env criptografado Preview, sem logar valores. Produção Arena e projeto principal Vercel não alterados.
 - Credenciais das contas Asaas Sandbox não foram importadas de Production. Sem elas, a verificação das wallets emisora e recebedora retorna bloqueio. Não permitir pagamento QR, simulação, webhooks públicos ou settlement até que wallets e secret TEST sejam configurados e verificados.
+
+
+### Continuidade 2026-11-10 · PR #623 — aprovação anterior ao Pix
+
+- Corrigida na branch isolada a UI Cliente Preview: a validação do trabalho agora pode ocorrer antes de existir pagamento, com evidência final, mantendo a confirmação do Pix exclusivamente no backend.
+- Adicionado contrato SQL REVIEW ONLY, isolado para Supabase TEST, que permite marcar `metadata.trabajo_aprobado_at` com controle de autenticidade/owner/demo/allowlist, sem alterar `pagos` ou concluir serviço.
+- Não houve escrita, migração, rollout, mudança de segredo, split ou pagamento no PROD e o recurso permanece desabilitado.
+- **Blockers reais:** servidor de serviço TEST segregado para aplicar/verificar RPC e regra de avanço, fluxo de escolha de método ao final, conciliação Asaas por webhook, E2E com serviço DEMO e CI final. Não marcar como pronto.
