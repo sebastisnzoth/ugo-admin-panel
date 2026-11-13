@@ -1,25 +1,26 @@
-import test from'node:test'
-import assert from'node:assert/strict'
-import{readFileSync}from'node:fs'
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import {readFileSync} from 'node:fs'
 const read=p=>readFileSync(new URL('../../'+p,import.meta.url),'utf8')
 
-test('UGO Provider Pix modal has real action to open isolated Sandbox QR demo',()=>{
+test('provider Pix modal renders authenticated service-specific Sandbox flow instead of fixed R$100 demo',()=>{
  const screen=read('src/mvp/ProviderPostServiceCollection.tsx')
- const styles=read('src/mvp/provider/provider-redesign-2026.css')
- assert.match(screen,/PIX_SANDBOX_DEMO_URL='https:\/\/ugo-pagamentos-v2-sandbox-[a-z0-9-]+\.vercel\.app\/demo\.html'/)
- assert.match(screen,/href=\{PIX_SANDBOX_DEMO_URL\}/)
- assert.match(screen,/target="_blank" rel="noopener noreferrer"/)
- assert.match(screen,/referrerPolicy="no-referrer"/)
- assert.match(screen,/sandboxAction:'Testar QR Pix Sandbox'/)
- assert.match(screen,/sandboxNote:'Abre um teste separado de R\$ 100,00/)
- assert.match(styles,/\.ugo-collection-sandbox-demo/)
- assert.match(styles,/min-height:50px/)
+ const job=read('src/mvp/provider/ProviderActiveJob.tsx')
+ const checkout=read('src/mvp/ProviderDeferredPixStatus.tsx')
+ assert.match(screen,/previewPix\?<ProviderDeferredPixStatus serviceId=\{serviceId\}/)
+ assert.match(screen,/amountBRL=\{amount\}/)
+ assert.match(job,/previewPix=\{deferredPixPreview\?/)
+ assert.match(checkout,/Authorization:'Bearer '\+accessToken/)
+ assert.match(checkout,/Math\.abs\(Number\(payload\.amountBRL\)-amountBRL\)>0\.009/)
+ assert.doesNotMatch(screen,/PIX_SANDBOX_DEMO_URL|demo\.html|href=\{PIX_SANDBOX_DEMO_URL\}/)
 })
 
-test('Pix Sandbox button does not submit live service or reuse real charge',()=>{
+test('provider Pix modal keeps real production issue disabled and never falsely confirms payment',()=>{
  const screen=read('src/mvp/ProviderPostServiceCollection.tsx')
- const fragment=screen.slice(screen.indexOf('ugo-collection-sandbox-demo'))
- assert.doesNotMatch(fragment,/serviceId\s*[)}&]|p_servicio_id|\/api\/pagos\/crear/)
+ const flags=read('src/lib/featureFlags.ts')
  assert.match(screen,/row\.procesador==='asaas'/)
  assert.match(screen,/row\.estado==='pendiente'/)
+ assert.match(flags,/env\.VITE_VERCEL_ENV==='preview'/)
+ assert.match(flags,/VITE_FLAG_PIX_PROVIDER_ISSUE_PREVIEW/)
+ assert.doesNotMatch(screen,/\/api\/pagos\/crear/)
 })
