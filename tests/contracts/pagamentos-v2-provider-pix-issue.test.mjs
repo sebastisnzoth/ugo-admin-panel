@@ -151,6 +151,9 @@ test('provider charge creation requires independent Preview-only flags, JWT and 
 test('provider only presents Sandbox Pix after client approval and explicit collection choice',()=>{
  const source=readFileSync(new URL('../../src/mvp/ProviderDeferredPixStatus.tsx',import.meta.url),'utf8')
  assert.match(source,/const readyForPix=finished&&workApproved/)
+ const collection=readFileSync(new URL('../../src/mvp/ProviderPostServiceCollection.tsx',import.meta.url),'utf8')
+ assert.match(collection,/previewPix\?<ProviderDeferredPixStatus/)
+ assert.doesNotMatch(collection,/PIX_SANDBOX_DEMO_URL|demo\.html/)
  assert.match(source,/collectionMethod==='pix'&&payment.stage==='not_issued'/)
  assert.match(source,/t\('providerPix.charge'\)/)
  assert.match(source,/t\('providerPix.cash'\)/)
