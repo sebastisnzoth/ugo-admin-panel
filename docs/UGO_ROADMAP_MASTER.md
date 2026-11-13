@@ -1273,3 +1273,10 @@ RUNTIME VALIDATED             pendiente
 - La demostración aislada ofrece un cobro ficticio fijo de R$100 con QR, copia y pega y simulación; se ejecuta en el proyecto separado `ugo-pagamentos-v2-sandbox`, Vercel Preview protegido y Neon TEST. No valida ni salda servicio alguno de UGO Arena.
 - Se mantiene deshabilitada la creación de Pix real desde la tarjeta; el piloto usa su propia idempotencia y sesión. **NO DDL, DML, secretos ni migraciones en Arena**.
 - Comprobar ruta HTTP 200 Sandbox antes de liberar, tests de integración UI y checks CI; no confundir prueba con pago real.
+
+
+## 2026-11-13 — Pix proveedor: popup vinculado a importe del servicio (PR #632, pendiente de CI)
+- Se elimina de la UI del proveedor el enlace de prueba fijo R$100 que confundía un servicio de R$120 con una simulación independiente ya recibida.
+- El modal existente «Cobrar com Pix» muestra el componente autenticado de cobro por `serviceId` y el importe del servicio **solo en Preview TEST explícitamente habilitado**. El backend valida propiedad, autorización, ambiente, evidencia y importe; el QR no se presenta sin un cargo vigente verificado.
+- Fuera de Preview TEST se conserva el bloqueo de emisión real; sin escrituras en Arena PROD/TEST, Neon ni cambios de variables o despliegues Vercel. Este código por sí solo **no demuestra QR R$120 E2E**.
+- Gates antes de main/despliegue: CI/build/contratos verdes mismo SHA, backend TEST y flags corroborados, confirmación de no deploy automático hasta autorización; luego prueba E2E con servicio DEMO autorizado y monto exacto.

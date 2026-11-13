@@ -1,15 +1,13 @@
 import React,{useEffect,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{useLocale}from'../i18n/locale'
+import{ProviderDeferredPixStatus}from'./ProviderDeferredPixStatus'
 
 type CollectionMethod='pix'|'efectivo'
 
-/** An isolated, immutable R$100 Asaas Sandbox demo. No real service ID is sent. */
-const PIX_SANDBOX_DEMO_URL='https://ugo-pagamentos-v2-sandbox-9htdvodx2-sebastisnzoths-projects.vercel.app/demo.html'
-
 /** Choosing a collection method never confirms that money was received. */
-export function ProviderPostServiceCollection({serviceId,amount,currency,commission,openDebtCount,approvedAt,selected,onUpdated,onOpenEarnings}:{
- serviceId:string;amount:number;currency:string;commission:number;openDebtCount:number;approvedAt:unknown;selected:unknown;onUpdated:()=>Promise<void>;onOpenEarnings:()=>void
+export function ProviderPostServiceCollection({serviceId,amount,currency,commission,openDebtCount,approvedAt,selected,onUpdated,onOpenEarnings,previewPix}:{
+ serviceId:string;amount:number;currency:string;commission:number;openDebtCount:number;approvedAt:unknown;selected:unknown;onUpdated:()=>Promise<void>;onOpenEarnings:()=>void;previewPix?:{serviceState:string;accessToken:string;workApproved:boolean}
 }){
  const{locale}=useLocale()
  const[busy,setBusy]=useState(false)
@@ -25,7 +23,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
  const[pixCopyStatus,setPixCopyStatus]=useState('')
  const chosen=optimistic||((selected==='pix'||selected==='efectivo')?selected:null)
  useEffect(()=>{
-  if(!pixDetailsOpen)return
+  if(!pixDetailsOpen||previewPix)return
   let active=true
   const fetchExisting=async()=>{
    setPixLoading(true);setPixCode('');setPixImage('');setPixCopyStatus('')
@@ -56,7 +54,7 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
   }
   void fetchExisting()
   return()=>{active=false}
- },[pixDetailsOpen,serviceId,amount])
+ },[pixDetailsOpen,serviceId,amount,previewPix])
 
  const copyExistingPix=async()=>{
   if(!pixCode)return
@@ -190,21 +188,14 @@ export function ProviderPostServiceCollection({serviceId,amount,currency,commiss
     <button type="button" className="ugo-collection-modal-close" aria-label={labels.pixClose} onClick={()=>setPixDetailsOpen(false)}>×</button>
     <div className="ugo-collection-modal-icon" aria-hidden="true">◆</div><h3>{labels.pixTitle}</h3>
     <div className="ugo-collection-modal-total">{money(amount)}</div>
-    {pixLoading?<p role="status">{labels.pixLoading}</p>:
+    {previewPix?<ProviderDeferredPixStatus serviceId={serviceId} serviceState={previewPix.serviceState} amountBRL={amount} accessToken={previewPix.accessToken} workApproved={previewPix.workApproved}/>:
+     pixLoading?<p role="status">{labels.pixLoading}</p>:
       pixCode?<div className="ugo-collection-modal-pay">
        {pixImage&&<img src={`data:image/png;base64,${pixImage}`} alt={labels.pix} width={210} height={210}/>}
        <textarea readOnly aria-label={labels.copyPix} value={pixCode} rows={3}/>
        <button type="button" className="ugo-collection-action" onClick={()=>void copyExistingPix()}>{labels.copyPix}</button>
        {pixCopyStatus&&<p role="status">{pixCopyStatus}</p>}
       </div>:<><p role="status">{labels.qrUnavailable}</p><p>{labels.pixHelp}</p></>}
-    <div className="ugo-collection-sandbox-demo">
-     <p className="ugo-collection-sandbox-explanation">{labels.sandboxNote}</p>
-     <a className="ugo-collection-action ugo-collection-sandbox-action"
-       href={PIX_SANDBOX_DEMO_URL} target="_blank" rel="noopener noreferrer"
-       referrerPolicy="no-referrer" aria-label={labels.sandboxAction}>
-       <span aria-hidden="true">◆</span> {labels.sandboxAction} <span aria-hidden="true">↗</span>
-     </a>
-    </div>
     <button type="button" className="ugo-collection-secondary-action" onClick={()=>setPixDetailsOpen(false)}>{labels.pixClose}</button>
    </div>
   </div>}

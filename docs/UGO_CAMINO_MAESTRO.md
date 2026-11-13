@@ -861,3 +861,9 @@ Se añadió en PR #597 el chat público de soporte: interfaz pt-BR/es/en y backe
 - La demostración aislada ofrece un cobro ficticio fijo de R$100 con QR, copia y pega y simulación; se ejecuta en el proyecto separado `ugo-pagamentos-v2-sandbox`, Vercel Preview protegido y Neon TEST. No valida ni salda servicio alguno de UGO Arena.
 - Se mantiene deshabilitada la creación de Pix real desde la tarjeta; el piloto usa su propia idempotencia y sesión. **NO DDL, DML, secretos ni migraciones en Arena**.
 - Comprobar ruta HTTP 200 Sandbox antes de liberar, tests de integración UI y checks CI; no confundir prueba con pago real.
+
+
+## 2026-11-13 — Continuidad Pix proveedor: mismo monto y modal, sin deploy prematuro
+- PR #632 sustituye el acceso engañoso a demo aislada R$100 por el componente autenticado `ProviderDeferredPixStatus` dentro del popup de cobro del servicio en Preview TEST. Conserva la validación `serviceId` / importe exacto del backend y el bloqueo fail-closed de producción.
+- Estado: **cambio propuesto, NO publicado, NO validado E2E**. Sin tocar BDs, entornos, claves ni despliegues. Probar primero con servicio DEMO autorizado de R$120 y constatar QR PENDING, copia/cola, una sola reserva y estado confirmado únicamente por Asaas.
+- No fusionar ni ejecutar Vercel sin CI verde del SHA final y garantía explícita de no crear despliegue automático no autorizado. Prioridad permanente: no romper UGO Arena.

@@ -9,7 +9,6 @@ import{ProviderEvidencePanel}from'./ProviderEvidencePanel'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import{Button,Card,EmptyState,SectionHeader}from'../../shared/ui'
 import{useDialog}from'../dialogs'
-import{ProviderDeferredPixStatus}from'../ProviderDeferredPixStatus'
 import{ProviderPostServiceCollection}from'../ProviderPostServiceCollection'
 import{isPixPayAfterServicePreviewEnabled}from'../../lib/featureFlags'
 import{deferredPixPilotEligible}from'../../lib/payments/deferredPixPilot'
@@ -81,11 +80,8 @@ const{confirm,prompt,alert,node:dialog}=useDialog()
     commission={Number(s.comision_ugo||0)} openDebtCount={d.pendingDebtCount} onOpenEarnings={flow.actions.openEarnings}
     approvedAt={workApprovalStamp}
     selected={(s as{metadata?:Record<string,unknown>|null}).metadata?.cobro_metodo}
-    onUpdated={d.reload}/>
-  </Card>}
-  {deferredPixPreview&&<Card className="provider-card provider-pix-post-service-pilot">
-   <ProviderDeferredPixStatus serviceId={s.id} serviceState={s.estado}
-    amountBRL={Number(s.tarifa||0)} accessToken={d.accessToken} workApproved={workApproved}/>
+    onUpdated={d.reload}
+    previewPix={deferredPixPreview?{serviceState:s.estado,accessToken:d.accessToken,workApproved}:undefined}/>
   </Card>}
   <ProviderCustomerCard clientId={s.cliente_id} serviceId={s.id}/>
   <Card className="provider-card provider-job-summary">
