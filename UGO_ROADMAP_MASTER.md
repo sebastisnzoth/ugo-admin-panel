@@ -357,3 +357,11 @@ UGO sólo puede promoverse cuando:
 No queda un P0 técnico automatizable conocido fuera de los bloqueos externos y la evidencia física pendiente.
 
 **Supabase PRODUCCIÓN `trfsjuseqjxlhrxuvdsm` NO FUE TOCADO.**
+
+## Checkpoint 2026-11-03 — Retell AI Voice Landing (PR #608)
+
+- Añadido el widget oficial de voz Retell para la landing (`UgoRetellVoiceWidget.tsx`). Solo aparece cuando `VITE_UGO_RETELL_VOICE_PUBLIC_KEY` y `VITE_UGO_RETELL_VOICE_AGENT_ID` están configurados.
+- Sin escritura ni modificación en Supabase Arena PROD; no cambia auth, matching, pagos ni rutas.
+- Pendiente: publicar el agente UGO Assistente, identificar su Agent ID real, crear la clave pública restringida por dominio, configurar Vercel Preview y comprobar web call + micrófono + pt-BR/es.
+- Estado: BLOCKED por configuración externa Retell. NO fusionar a main ni exponer botón sin credenciales verificadas y validación.
+- CI PR: Core CI con fallos de contratos admin realtime y perfil de proveedor no relacionados con el nuevo componente; comprobarlos antes de promover.
