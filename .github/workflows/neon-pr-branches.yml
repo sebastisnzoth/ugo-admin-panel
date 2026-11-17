@@ -1,0 +1,55 @@
+name: Neon PR database branches
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  create_neon_branch:
+    name: Create isolated Neon preview branch
+    if: >-
+      github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Neon integration
+        env:
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          test -n "$NEON_PROJECT_ID" || { echo "::error::NEON_PROJECT_ID is missing"; exit 1; }
+          test -n "$NEON_API_KEY" || { echo "::error::NEON_API_KEY is missing"; exit 1; }
+
+      - name: Set branch expiration (14 days)
+        run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+
+      - name: Create branch for this PR
+        uses: neondatabase/create-branch-action@v6
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch_name: preview/pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          expires_at: ${{ env.EXPIRES_AT }}
+      # Keep database URLs out of GitHub logs, artifacts, and PR comments.
+      # No migrations or app environment changes until explicitly validated.
+
+  delete_neon_branch:
+    name: Delete isolated Neon preview branch
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete this PR's preview branch only
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ github.event.pull_request.number }}
+          api_key: ${{ secrets.NEON_API_KEY }}
