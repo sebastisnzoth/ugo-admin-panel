@@ -123,6 +123,12 @@ export async function startPostgres({ database = 'hive' } = {}) {
     psql,
     psqlFile,
     parallel,
+    /** Reinicia el servidor: el escenario que provoca Neon al cambiar el compute. */
+    restart() {
+      const result = run('pg_ctl', ['-D', data, '-w', '-t', '30', '-l', join(dir, 'server.log'),
+        '-o', `-p ${port} -c listen_addresses=127.0.0.1 -c unix_socket_directories=${socketDir} -c fsync=off -c full_page_writes=off`, 'restart'])
+      return { ok: result.status === 0, stdout: result.stdout, stderr: result.stderr }
+    },
     async stop() {
       run('pg_ctl', ['-D', data, '-m', 'immediate', '-w', 'stop'])
       rmSync(dir, { recursive: true, force: true })

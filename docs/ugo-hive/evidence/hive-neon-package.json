@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-27T22:29:01.222Z",
+  "generated_at": "2026-11-27T23:37:38.960Z",
   "generator": "scripts/hive/neon-evidence.mjs",
   "package": {
-    "version": "2.1.0",
+    "version": "2.2.0",
     "migrations": [
       "00_destination_and_meta.sql",
       "01_roles.sql",
@@ -19,16 +19,20 @@
   },
   "database": {
     "server_version": "PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit",
-    "package_version": "2.1.0",
+    "package_version": "2.2.0",
     "destination_check": "full",
     "destination_owner": "postgres",
     "server_encoding": "UTF8",
-    "fingerprint_prefix": "a0eab7c51f190f4a",
+    "fingerprint_prefix": "81a566a6e59c8c44",
+    "fingerprint_algo": "v2-stable",
+    "status_domain": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'RUNNING'::text, 'DONE'::text, 'FAILED'::text])))",
     "departments": 13,
-    "agents_registered_in_catalog": 118,
+    "agents_total": 127,
+    "agents_legacy_preserved": 9,
+    "jobs_preexisting_preserved": 1,
     "agents_operative": 0,
-    "agents_disabled": 1,
-    "jobs_by_state": "(sin tareas)",
+    "agents_disabled": 3,
+    "jobs_by_state": "SUCCEEDED:1",
     "settings": {
       "daily_calls_per_provider": "20",
       "daily_tokens_per_provider": "20000",
@@ -38,7 +42,7 @@
       "max_operative_agents": "1"
     },
     "roles": "hive_migrator, hive_reader, hive_worker",
-    "hive_functions": 20,
+    "hive_functions": 21,
     "arena_tables_inside_hive": 0
   },
   "suites": [
@@ -85,8 +89,8 @@
     {
       "file": "tests/hive/neon-real-schema.test.mjs",
       "exit_code": 0,
-      "tests": 6,
-      "pass": 6,
+      "tests": 10,
+      "pass": 10,
       "fail": 0,
       "skipped": 0,
       "names": [
@@ -95,14 +99,18 @@
         "prompt is mandatory and agent_name stays linked to the real agents table",
         "reserve never hands work to a disabled or non-operative agent",
         "status and state stay coherent in both directions, keeping the original value",
-        "activation limit holds against repeated attempts on the real catalog"
+        "activation limit holds against repeated attempts on the real catalog",
+        "status stays inside Neon's real CHECK domain and projects state exactly",
+        "a cancelled task keeps its meaning in state and projects to DONE",
+        "a direct status update cannot revive a terminal task",
+        "an external RUNNING gets a recoverable lease instead of hanging forever"
       ]
     },
     {
       "file": "tests/hive/neon-concurrency.test.mjs",
       "exit_code": 0,
-      "tests": 12,
-      "pass": 12,
+      "tests": 13,
+      "pass": 13,
       "fail": 0,
       "skipped": 0,
       "names": [
@@ -117,7 +125,8 @@
         "ten sessions activating agents at once: exactly one becomes OPERATIVE",
         "a task addressed to a disabled agent is never leased by any session",
         "fail_job refuses an expired lease instead of stealing the retry",
-        "the pre-existing 9 agents and the finished task survive the whole run"
+        "the pre-existing 9 agents and the finished task survive the whole run",
+        "the destination fingerprint survives a compute restart (Neon changes the IP)"
       ]
     }
   ],

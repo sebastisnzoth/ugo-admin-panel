@@ -1,4 +1,4 @@
-# Paquete de integración UGO Hive · v2.1.0
+# Paquete de integración UGO Hive · v2.2.0
 
 Documento de entrega para que **otra sesión con acceso independiente** (ChatGPT, u otro
 operador) aplique y verifique el paquete de datos de Hive sin depender de esta sesión.
@@ -6,7 +6,7 @@ operador) aplique y verifique el paquete de datos de Hive sin depender de esta s
 - Repositorio: `sebastisnzoth/ugo-admin-panel`
 - Rama: `arena/6f95c7c3-ugo-admin-panel` (PR #633, **sin fusionar**)
 - Base: `d2fe61e9ecc85e491d3839cb6885d3802d9c06de` de `main`
-- Paquete: `hive/neon/` (versión `2.1.0`, registrada en `hive.meta.schema_version`)
+- Paquete: `hive/neon/` (versión `2.2.0`, registrada en `hive.meta.schema_version`)
 - Evidencia: `docs/ugo-hive/evidence/hive-neon-package.json`
 
 Este paquete **no está aplicado a Neon**: sigue sin haber credencial disponible en la
@@ -20,7 +20,7 @@ sesión que lo escribió. Aplicarlo es el primer paso que falta.
 |---|---|
 | 10 archivos SQL aditivos e idempotentes | contraseñas, tokens personales, `service_role` |
 | `apply.sh` (preflight · apply · verify) y rollback no destructivo | `DATABASE_URL` de Arena/Supabase |
-| 38 pruebas automáticas (13 cola · 7 compatibilidad · 6 réplica exacta · 12 concurrencia real) | permiso para fusionar a `main` |
+| 43 pruebas automáticas (13 cola · 7 compatibilidad · 10 réplica exacta · 4 destino · 13 concurrencia real) | permiso para fusionar a `main` |
 | evidencia JSON regenerable | instrucción de desplegar a producción |
 | contrato del worker y códigos de respuesta | autorización para crear otro proyecto Neon |
 
@@ -68,9 +68,12 @@ el destino no es Hive.
 
 ## 4. Aplicación
 
-> **v2.1.0 se adapta al esquema real que verificaste:** `agents(id,name UNIQUE,status,last_heartbeat)`
-> con 9 filas y `jobs(id,idempotency_key,agent_name,prompt NOT NULL,status,created_at)` con
-> 1 tarea `DONE`. Nada se borra y la tarea terminada **no** vuelve a la cola.
+> **v2.2.0 se adapta a lo que verificaste, incluida la restricción que faltaba:**
+> `agents(id,name UNIQUE,status,last_heartbeat)` con 9 filas,
+> `jobs(id,idempotency_key,agent_name,prompt NOT NULL,status,created_at)` con 1 tarea `DONE`
+> y `jobs_status_check CHECK (status IN ('PENDING','RUNNING','DONE','FAILED'))`.
+> `status` ya no recibe `lower(state)`: se proyecta sobre esos cuatro valores y la
+> restricción **se conserva tal cual**. La tarea terminada no vuelve a la cola.
 
 ```bash
 # primera vez en esta base (identidad no registrada todavía):
@@ -98,7 +101,7 @@ Si algo falla, la transacción revierte completa: no queda un esquema a medias.
 Esperado al terminar (con los datos reales de hoy):
 
 ```
-schema_version           | 2.1.0
+schema_version           | 2.2.0
 destination_fingerprint  | <primeros 16 hex>…
 departments              | 13
 agents_total             | 127      (9 existentes + 118 del canon)
@@ -109,8 +112,23 @@ jobs_finished            | 1        (la tarea DONE sigue terminada)
 jobs_queued              | 0
 ```
 
+Y en la tabla real: `select status, state from hive.jobs;` → **`DONE | SUCCEEDED`**.
+`status` sólo puede ser `PENDING/RUNNING/DONE/FAILED`; una tarea cancelada queda
+`DONE | CANCELLED` (el significado vive en `state`).
+
 Si `agents_total` no es 127 o `jobs_finished` no es 1, **detenerse**: algo no cuadra con el
 estado verificado y hay que revisar el preflight antes de seguir.
+
+Comprobaciones rápidas de la restricción y de la proyección:
+
+```sql
+select pg_get_constraintdef(oid) from pg_constraint
+ where conrelid = 'hive.jobs'::regclass and contype = 'c' and pg_get_constraintdef(oid) ilike '%status%';
+-- CHECK ((status = ANY (ARRAY['PENDING','RUNNING','DONE','FAILED'])))   ← intacta
+
+select count(*) from hive.jobs where status is distinct from hive.status_for_state(state);
+-- 0   ← status siempre proyecta su state
+```
 
 `agents_operative = 0` es **correcto**: catalogar no es operar. El mapeo es conservador a
 propósito: los 9 agentes reales están en `active/idle/paused/disabled` y ninguno se

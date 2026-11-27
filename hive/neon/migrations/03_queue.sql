@@ -5,6 +5,14 @@
 --             prompt text NOT NULL, status text, created_at timestamptz)
 --   con 1 tarea finalizada y 0 pendientes.
 --
+-- RESTRICCIÓN REAL (verificada por ChatGPT):
+--   jobs_status_check CHECK (status IN ('PENDING','RUNNING','DONE','FAILED'))
+-- `status` NO admite 'queued'/'succeeded' ni minúsculas: la v2.1.0 escribía lower(state)
+-- y habría violado la restricción. Aquí `state` es la verdad operativa y `status` es su
+-- PROYECCIÓN sobre los cuatro valores reales, sin eliminar la restricción jamás:
+--   QUEUED → PENDING · LEASED → RUNNING · SUCCEEDED → DONE · FAILED → FAILED
+--   CANCELLED → DONE (proyección terminal) y su significado exacto permanece en `state`.
+--
 -- La primera versión asumía `state` y `payload` como columnas propias y habría re-encolado
 -- la tarea finalizada. Aquí:
 --   · `status` es la columna real y se refleja en `state` (y al revés);
@@ -98,6 +106,48 @@ returns text language sql immutable set search_path = '' as $$
   end;
 $$;
 
+-- Proyección canónica de `state` sobre el dominio real de `status`.
+create or replace function hive.status_for_state(p_state text)
+returns text language sql immutable set search_path = '' as $$
+  select case upper(coalesce(p_state, ''))
+    when 'QUEUED'    then 'PENDING'
+    when 'LEASED'    then 'RUNNING'
+    when 'SUCCEEDED' then 'DONE'
+    when 'FAILED'    then 'FAILED'
+    when 'CANCELLED' then 'DONE'
+    else 'FAILED'
+  end;
+$$;
+
+-- El dominio real se lee de la base, no se supone. Si la restricción existente no admite
+-- los cuatro valores canónicos, se aborta: no se elimina la restricción ni se inventan
+-- valores para "que pase".
+do $$
+declare v_def text; v_allowed text[]; v_missing text;
+begin
+  select pg_get_constraintdef(c.oid) into v_def
+    from pg_constraint c
+    join pg_class t on t.oid = c.conrelid
+    join pg_namespace n on n.oid = t.relnamespace
+   where n.nspname = 'hive' and t.relname = 'jobs' and c.contype = 'c'
+     and pg_get_constraintdef(c.oid) ilike '%status%'
+   order by c.conname
+   limit 1;
+
+  if v_def is null then
+    raise notice 'HIVE_STATUS_DOMAIN: no hay CHECK sobre status; se usa la proyección canónica PENDING/RUNNING/DONE/FAILED';
+  else
+    select array_agg(m[1]) into v_allowed from regexp_matches(v_def, '''([A-Za-z_]+)''', 'g') m;
+    select string_agg(x, ', ') into v_missing
+      from unnest(array['PENDING','RUNNING','DONE','FAILED']) x
+     where not (x = any(coalesce(v_allowed, '{}')));
+    if v_missing is not null then
+      raise exception 'STATUS_DOMAIN_MISMATCH: la restricción real (%) no admite %. No se elimina ninguna restricción: revisar el mapeo antes de migrar.', v_def, v_missing;
+    end if;
+    raise notice 'HIVE_STATUS_DOMAIN: restricción real compatible (%), se conserva', v_def;
+  end if;
+end $$;
+
 -- Conservar el status original y derivar `state` una sola vez.
 update hive.jobs set legacy_status = coalesce(legacy_status, status)
  where legacy_status is null and status is not null;
@@ -129,8 +179,10 @@ update hive.jobs set max_attempts  = coalesce(max_attempts, hive.setting_int('de
 update hive.jobs set priority      = coalesce(priority, 5);
 update hive.jobs set payload       = coalesce(payload, '{}'::jsonb);
 update hive.jobs set lease_token   = coalesce(lease_token, 0);
-update hive.jobs set status        = lower(state)
- where status is null or status is distinct from lower(state);
+-- Proyección al dominio REAL (cuatro valores, mayúsculas). El valor original sigue en
+-- `legacy_status`; una tarea CANCELLED queda con status DONE y state CANCELLED.
+update hive.jobs set status = hive.status_for_state(state)
+ where status is distinct from hive.status_for_state(state);
 update hive.jobs set agent_key = hive.slug(a.name)
   from hive.agents a
  where hive.jobs.agent_key is null and hive.jobs.agent_name is not null and a.name = hive.jobs.agent_name;
@@ -173,13 +225,29 @@ create index if not exists hive_jobs_agent        on hive.jobs (agent_key);
 create index if not exists hive_jobs_lease        on hive.jobs (lease_expires_at) where state = 'LEASED';
 
 -- Coherencia status ⇄ state sin recursión.
+-- `state` manda; `status` es su proyección sobre el dominio real de Neon.
 create or replace function hive.sync_job_status()
 returns trigger language plpgsql set search_path = '' as $$
+declare v_mapped text;
 begin
   if tg_op = 'INSERT' then
-    if new.state is null then new.state := hive.state_from_job_status(new.status); end if;
+    -- `status` es la interfaz de la herramienta real: si viene escrito, manda.
+    -- (El default 'QUEUED' de `state` no debe tapar un status='RUNNING' explícito.)
+    if new.status is not null then
+      new.state := hive.state_from_job_status(new.status);
+    elsif new.state is null then
+      new.state := 'QUEUED';
+    end if;
+    if new.state in ('SUCCEEDED','FAILED','CANCELLED') and new.finished_at is null then
+      new.finished_at := coalesce(new.finished_at, new.created_at, now());
+    end if;
+    if new.state = 'LEASED' and new.lease_expires_at is null then
+      -- Un RUNNING escrito desde fuera recibe un lease: si el proceso muere, la
+      -- recuperación puede reencolarlo en vez de dejarlo colgado para siempre.
+      new.lease_expires_at := now() + make_interval(secs => hive.setting_int('lease_seconds', 120));
+    end if;
     new.legacy_status := coalesce(new.legacy_status, new.status);
-    new.status := lower(new.state);
+    new.status := hive.status_for_state(new.state);
     return new;
   end if;
 
@@ -188,13 +256,25 @@ begin
       raise exception 'TERMINAL_STATE_CANNOT_REQUEUE: la tarea % estaba en % y no vuelve a la cola', old.id, old.state;
     end if;
     new.legacy_status := coalesce(old.legacy_status, old.status);
-    new.status := lower(new.state);
+    new.status := hive.status_for_state(new.state);
     if new.state in ('SUCCEEDED','FAILED','CANCELLED') and new.finished_at is null then
       new.finished_at := now();
     end if;
   elsif new.status is distinct from old.status then
+    -- Escritura externa sobre `status`: se traduce a `state`, pero una tarea terminal
+    -- NO se reactiva por un UPDATE directo (PENDING/RUNNING sobre algo ya cerrado).
     new.legacy_status := coalesce(old.legacy_status, old.status);
-    new.state := hive.state_from_job_status(new.status);
+    v_mapped := hive.state_from_job_status(new.status);
+    if old.state in ('SUCCEEDED','FAILED','CANCELLED')
+       and v_mapped not in ('SUCCEEDED','FAILED','CANCELLED') then
+      raise exception 'TERMINAL_STATE_CANNOT_REQUEUE: la tarea % está en % y un UPDATE de status a % no la revive',
+        old.id, old.state, new.status;
+    end if;
+    if v_mapped = 'LEASED' and new.lease_expires_at is null then
+      new.lease_expires_at := now() + make_interval(secs => hive.setting_int('lease_seconds', 120));
+    end if;
+    new.state := v_mapped;
+    new.status := hive.status_for_state(new.state);
   end if;
   return new;
 end $$;

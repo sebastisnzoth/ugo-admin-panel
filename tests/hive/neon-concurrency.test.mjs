@@ -257,3 +257,20 @@ test('the pre-existing 9 agents and the finished task survive the whole run', { 
   assert.equal(db.psql(`select state from hive.jobs where legacy_status = 'DONE'`), 'SUCCEEDED')
   assert.equal(Number(db.psql(`select count(*) from hive.jobs where state='QUEUED' and legacy_status='DONE'`)), 0)
 })
+
+test('the destination fingerprint survives a compute restart (Neon changes the IP)', { skip: unavailable }, async () => {
+  const { db } = await database()
+  const before = db.psql(`select value from hive.meta where key='destination_fingerprint'`)
+  const restarted = db.restart()
+  assert.equal(restarted.ok, true, restarted.stderr)
+  const after = db.psql(`select value from hive.meta where key='destination_fingerprint'`)
+  assert.equal(after, before, 'a restart must not change the destination identity')
+  // Y el paquete vuelve a aceptar el destino: la puerta de identidad no se rompe al reiniciar.
+  const reapply = db.psqlFile('hive/neon/migrations/00_destination_and_meta.sql', { vars: {
+    'hive.target_project': 'dry-heart-24391962',
+    'hive.target_database': 'hive',
+    'hive.confirm_first_apply': 'APLICAR',
+  } })
+  assert.equal(reapply.ok, true, reapply.stderr)
+  assert.equal(db.psql(`select value from hive.meta where key='destination_check'`), 'full')
+})

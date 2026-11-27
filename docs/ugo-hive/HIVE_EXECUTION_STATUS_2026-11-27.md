@@ -402,3 +402,40 @@ evidencia. Sin esta prueba, `agent_key` habría salido corrupto en un destino no
 Consumo: USD 0. Cuotas mensuales: DESCONOCIDAS** (20 llamadas / 20 000 tokens por
 proveedor y día). Los 127 agentes están catalogados (9 reales + 118 del canon); catalogar
 no es operar.
+
+---
+
+## 14. Fase 5 — restricción real de `status` y huella del destino (v2.2.0)
+
+ChatGPT verificó una incompatibilidad más: `jobs_status_check CHECK (status IN
+('PENDING','RUNNING','DONE','FAILED'))`. La v2.1.0 escribía `status = lower(state)`
+(`'queued'`, `'succeeded'`), que la restricción **rechaza**. Corregido:
+
+| Requisito | Cómo quedó | Prueba |
+|---|---|---|
+| `status` compatible con los valores originales | proyección sobre el dominio real, leído de `pg_get_constraintdef`; si no encajara, `STATUS_DOMAIN_MISMATCH` y **no se borra la restricción** | 10/10 réplica + `HIVE_STATUS_DOMAIN` en el log de `apply.sh` |
+| `SUCCEEDED→DONE`, `QUEUED→PENDING`, `LEASED→RUNNING` | función `hive.status_for_state()` usada por el trigger y por la migración | ciclo real `PENDING → RUNNING → DONE` en PostgreSQL 16.2 |
+| `CANCELLED` sin perder significado | `state='CANCELLED'` (autoritativo), `status='DONE'` (proyección terminal), contado en `queue_metrics().cancelled` | prueba dedicada: `DONE / CANCELLED` y métrica = 1 |
+| Un `UPDATE` directo de `status` no reactiva una tarea terminal | el trigger lanza `TERMINAL_STATE_CANNOT_REQUEUE` | `update ... set status='PENDING'` sobre la tarea `DONE` → error, `state` intacto |
+| Restricciones reales en la réplica | `tests/hive/fixtures/neon_existing_schema.sql` incluye el `CHECK` literal | la restricción sigue existiendo tras migrar (consulta a `pg_constraint`) |
+| Huella sin IP interna | v2: `sha256(base, oid, dueño, encoding, collate, ctype)`; la dirección se registra sólo como dato informativo; huellas v1 exigen re-anclaje explícito y quedan auditadas | 4/4 destino + reinicio real del servidor y reaplicación de `00` sin error |
+| Concurrencia, idempotencia y preservación re-verificadas | 43/43 pruebas; ciclo `apply.sh` completo | ver abajo |
+
+### Ciclo completo re-verificado con la restricción real (PostgreSQL 16.2)
+
+```
+preflight   → 9 agentes · 1 tarea · status DONE:1
+apply       → HIVE_STATUS_DOMAIN: restricción real compatible, se conserva
+              13 dept · 127 agentes · 1 SUCCEEDED · 0 en cola · version 2.2.0
+ciclo real  → enqueue PENDING/QUEUED → reserve RUNNING/LEASED → complete DONE/SUCCEEDED
+UPDATE status='PENDING' sobre la tarea cerrada → TERMINAL_STATE_CANNOT_REQUEUE
+cancelación → status DONE / state CANCELLED · queue_metrics.cancelled = 1
+rollback    → 127 agentes y 3 tareas intactas, CHECK intacto
+reaplicar   → operativo de nuevo
+```
+
+### Veredicto (sin cambios)
+
+**0 agentes operativos · 0 departamentos funcionales · sin URL Hive TEST · USD 0 · sin
+deploy · sin merge · PROD intacta.** 127 agentes catalogados (9 reales + 118 del canon):
+catalogar no es operar.

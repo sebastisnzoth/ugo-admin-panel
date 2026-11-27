@@ -57,7 +57,9 @@ test('the migration applies on the real schema and loses no agent and no task', 
     // La tarea terminada sigue terminada.
     const job = (await one3(db, `select state, status, legacy_status, prompt, agent_name, finished_at from hive.jobs`))
     assert.equal(job.state, 'SUCCEEDED')
-    assert.equal(job.status, 'succeeded')
+    // `status` vive en el dominio REAL de Neon (PENDING/RUNNING/DONE/FAILED):
+    // SUCCEEDED se proyecta como DONE, y el valor original sigue en legacy_status.
+    assert.equal(job.status, 'DONE')
     assert.equal(job.legacy_status, 'DONE')
     assert.equal(job.prompt, 'Verificar saúde do sistema')
     assert.equal(job.agent_name, 'Hugo Orchestrator')
@@ -153,5 +155,81 @@ test('activation limit holds against repeated attempts on the real catalog', asy
     const census = (await one(db, `select hive.agent_census() as c`)).c
     assert.equal(census.total, 127)
     assert.equal(census.legacy_status_preserved, 9)
+  })
+})
+
+test('status stays inside Neon\'s real CHECK domain and projects state exactly', async () => {
+  await onReplica(async db => {
+    // La restricción real sigue existiendo: no se elimina ninguna restricción.
+    const constraint = await one(db, `select pg_get_constraintdef(c.oid) def
+                                         from pg_constraint c
+                                         join pg_class t on t.oid = c.conrelid
+                                        where t.relname = 'jobs' and c.contype = 'c'
+                                          and pg_get_constraintdef(c.oid) ilike '%status%'`)
+    assert.match(constraint.def, /PENDING/)
+    assert.match(constraint.def, /RUNNING/)
+    assert.match(constraint.def, /DONE/)
+    assert.match(constraint.def, /FAILED/)
+
+    // Operaciones reales del ciclo completo: encolar, reservar, cerrar.
+    await db.exec(`insert into hive.jobs (idempotency_key, prompt) values ('cycle-0001', 'x')`)
+    const queued = await one(db, `select status, state from hive.jobs where idempotency_key='cycle-0001'`)
+    assert.deepEqual(queued, { status: 'PENDING', state: 'QUEUED' })
+
+    await db.exec(`update hive.jobs set available_at = now() where idempotency_key='cycle-0001'`)
+    const lease = (await db.query(`select hive.reserve_job('w1', 60) as r`)).rows[0].r
+    assert.equal(lease.leased, true)
+    assert.deepEqual(await one(db, `select status, state from hive.jobs where idempotency_key='cycle-0001'`),
+      { status: 'RUNNING', state: 'LEASED' })
+
+    await db.exec(`select hive.complete_job('${lease.job.id}', 'w1', ${lease.lease_token}, '{}'::jsonb)`)
+    assert.deepEqual(await one(db, `select status, state from hive.jobs where idempotency_key='cycle-0001'`),
+      { status: 'DONE', state: 'SUCCEEDED' })
+
+    // Invariante global: status es la proyección exacta de state en TODAS las filas.
+    assert.equal((await one(db, `select count(*)::int n from hive.jobs
+                                  where status is distinct from hive.status_for_state(state)`)).n, 0)
+    assert.equal((await one(db, `select count(*)::int n from hive.jobs
+                                  where status not in ('PENDING','RUNNING','DONE','FAILED')`)).n, 0)
+  })
+})
+
+test('a cancelled task keeps its meaning in state and projects to DONE', async () => {
+  await onReplica(async db => {
+    await db.exec(`insert into hive.jobs (idempotency_key, prompt) values ('cancel-0001', 'x')`)
+    await db.exec(`update hive.jobs set state='CANCELLED' where idempotency_key='cancel-0001'`)
+    const row = await one(db, `select state, status, finished_at from hive.jobs where idempotency_key='cancel-0001'`)
+    // CANCELLED no existe en el CHECK real: se resuelve explícitamente, sin perderlo.
+    assert.equal(row.state, 'CANCELLED')
+    assert.equal(row.status, 'DONE')
+    assert.ok(row.finished_at)
+    assert.equal((await one(db, `select (hive.queue_metrics()->>'cancelled')::int n`)).n, 1)
+  })
+})
+
+test('a direct status update cannot revive a terminal task', async () => {
+  await onReplica(async db => {
+    const id = (await one(db, `select id from hive.jobs`)).id
+    assert.equal((await one(db, `select state from hive.jobs where id='${id}'`)).state, 'SUCCEEDED')
+    for (const status of ['PENDING', 'RUNNING']) {
+      await assert.rejects(db.exec(`update hive.jobs set status='${status}' where id='${id}'`),
+        /TERMINAL_STATE_CANNOT_REQUEUE/, `status=${status} must not revive a closed task`)
+    }
+    assert.equal((await one(db, `select state from hive.jobs where id='${id}'`)).state, 'SUCCEEDED')
+  })
+})
+
+test('an external RUNNING gets a recoverable lease instead of hanging forever', async () => {
+  await onReplica(async db => {
+    await db.exec(`insert into hive.jobs (idempotency_key, prompt, status) values ('ext-run-01', 'x', 'RUNNING')`)
+    const row = await one(db, `select state, status, lease_expires_at from hive.jobs where idempotency_key='ext-run-01'`)
+    assert.equal(row.state, 'LEASED')
+    assert.equal(row.status, 'RUNNING')
+    assert.ok(row.lease_expires_at, 'an external RUNNING must not leave an orphan lease')
+    // Al vencer, la recuperación lo devuelve a la cola en lugar de dejarlo colgado.
+    await db.exec(`update hive.jobs set lease_expires_at = now() - interval '1 second' where idempotency_key='ext-run-01'`)
+    assert.equal((await db.query(`select hive.recover_expired_leases(50) as r`)).rows[0].r.requeued, 1)
+    assert.deepEqual(await one(db, `select status, state from hive.jobs where idempotency_key='ext-run-01'`),
+      { status: 'PENDING', state: 'QUEUED' })
   })
 })

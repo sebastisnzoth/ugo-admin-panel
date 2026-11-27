@@ -22,6 +22,11 @@ create table hive.jobs (
   created_at      timestamptz default now()
 );
 
+-- Restricción REAL de Neon: status sólo admite estos cuatro valores, en mayúsculas.
+-- v2.1.0 escribía lower(state) y la habría violado.
+alter table hive.jobs
+  add constraint jobs_status_check check (status in ('PENDING', 'RUNNING', 'DONE', 'FAILED'));
+
 insert into hive.agents (name, status, last_heartbeat) values
   ('Hugo Orchestrator',        'active',    now() - interval '2 hours'),
   ('Agente de Precios',        'active',    now() - interval '5 hours'),

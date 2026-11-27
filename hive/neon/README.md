@@ -1,9 +1,14 @@
-# UGO Hive · capa de datos independiente (Neon TEST) — paquete v2.1.0
+# UGO Hive · capa de datos independiente (Neon TEST) — paquete v2.2.0
 
 **Estado: paquete versionado, probado contra el esquema REAL de Neon, y NO aplicado por
 esta sesión.** El esquema real lo verificó ChatGPT directamente en el proyecto
 `dry-heart-24391962`, base `hive`: **9 agentes y 1 tarea finalizada, 0 pendientes**.
-Esta versión corrige la anterior, que asumía una tabla vacía y habría re-encolado esa tarea.
+
+Correcciones acumuladas: la v2.0.0 asumía una tabla vacía (habría re-encolado la tarea
+`DONE`); la v2.1.0 escribía `status = lower(state)`, incompatible con la restricción real
+`jobs_status_check CHECK (status IN ('PENDING','RUNNING','DONE','FAILED'))`; la v2.2.0
+proyecta `status` sobre ese dominio exacto y ata la huella del destino a atributos
+estables, no a la IP interna que Neon cambia al reiniciar el compute.
 
 ## Esquema real (lo que hay, no lo que se supone)
 
@@ -11,6 +16,8 @@ Esta versión corrige la anterior, que asumía una tabla vacía y habría re-enc
 hive.agents(id uuid, name text UNIQUE, status text, last_heartbeat timestamptz)   -- 9 filas
 hive.jobs(id uuid, idempotency_key text, agent_name text,
           prompt text NOT NULL, status text, created_at timestamptz)              -- 1 DONE
+alter table hive.jobs add constraint jobs_status_check
+  check (status in ('PENDING','RUNNING','DONE','FAILED'));                        -- real
 ```
 
 La migración **añade** columnas y nunca borra filas:
@@ -38,14 +45,40 @@ En `agents`: `disabled/inactive/paused/off/stopped/suspended` → `DISABLED`;
 
 Un trigger `BEFORE INSERT OR UPDATE` mantiene `status` y `state` coherentes en ambos
 sentidos: si cambia `state`, se refleja en `status`; si la herramienta externa escribe
-`status`, se traduce a `state` sin promover a `OPERATIVE`. El valor original se conserva
-en `legacy_status` y nunca se pierde.
+`status`, se traduce a `state` sin promover nada. El valor original se conserva en
+`legacy_status` y nunca se pierde.
+
+### `state` → `status`: la proyección real (v2.2.0)
+
+`status` **no admite** `queued`, `succeeded` ni minúsculas: la restricción real sólo
+permite cuatro valores. `state` es la verdad operativa; `status` es su proyección.
+
+| `state` (autoritativo) | `status` (proyección real) | Nota |
+|---|---|---|
+| `QUEUED` | `PENDING` | |
+| `LEASED` | `RUNNING` | |
+| `SUCCEEDED` | `DONE` | |
+| `FAILED` | `FAILED` | |
+| `CANCELLED` | `DONE` | **resolución explícita**: `CANCELLED` no existe en el CHECK; su significado exacto vive en `state`, y `status='DONE'` sólo indica "cerrada, sin trabajo pendiente". Se contabiliza aparte en `queue_metrics().cancelled` |
+
+La restricción se **lee de la base** al migrar (`pg_get_constraintdef`): si el dominio real
+no admitiera los cuatro valores canónicos, la migración aborta con `STATUS_DOMAIN_MISMATCH`
+en lugar de eliminar la restricción o inventar valores. **Nunca** se borra una restricción.
+
+Reglas del trigger que no se pueden saltar:
+
+- una tarea terminal no vuelve a la cola: ni por `state`, ni por un `UPDATE` directo de
+  `status` a `PENDING`/`RUNNING` (error `TERMINAL_STATE_CANNOT_REQUEUE`);
+- un `RUNNING` escrito desde fuera recibe un lease: si el proceso muere, la recuperación lo
+  reencola en vez de dejarlo colgado;
+- `status` y `state` no pueden divergir: `08_verify` falla si algún `status` no proyecta su
+  `state`.
 
 ## Orden de aplicación (una sola transacción)
 
 | Archivo | Qué hace |
 |---|---|
-| `00_destination_and_meta.sql` | Identidad del destino: huella del **servidor** (base + oid + dueño + `inet_server_addr()` + puerto) guardada en `hive.meta`; primera aplicación exige `hive.confirm_first_apply=APLICAR`; cualquier aplicación posterior sobre otra base aborta. Rechaza bases con huella de Arena. |
+| `00_destination_and_meta.sql` | Identidad del destino: huella **estable** `sha256(base, oid, dueño, encoding, collate, ctype)` guardada en `hive.meta` — sin IP, porque Neon la cambia al reiniciar. Primera aplicación exige `hive.confirm_first_apply=APLICAR`; una huella v1 (con IP) exige `hive.confirm_fingerprint_reanchor=APLICAR` y queda auditada en `destination_fingerprint_v1`. Rechaza bases con huella de Arena. |
 | `01_roles.sql` | `hive_migrator` (único con DDL), `hive_worker`, `hive_reader`; `revoke all from public`. |
 | `02_catalog.sql` | 13 departamentos, `agent_key` único derivado de `name`, `state` conservador, trigger `status ⇄ state`, 118 agentes del canon, `activate_agent` con candado. |
 | `03_queue.sql` | Adaptación al esquema real de `jobs`, traducción de estados, prohibición de re-encolar tareas terminadas, índices y trigger. |
@@ -53,7 +86,7 @@ en `legacy_status` y nunca se pierde.
 | `05_provider_budget.sql` | Presupuesto USD 0, escalera 50/70/85/95 %, `monthly_quota: UNKNOWN`. |
 | `06_functions.sql` | `enqueue_job` (exige `prompt`), `reserve_job` (sólo agentes operativos), `heartbeat_job`, `complete_job`, `fail_job` (valida vencimiento), `recover_expired_leases`, `queue_metrics`, `lease_state`. |
 | `07_grants.sql` | Privilegios mínimos por rol; sin `EXECUTE` para `PUBLIC`. |
-| `08_verify.sql` | Lanza excepción si falta algo o si **una tarea terminada quedó encolada**, si hay tareas sin `prompt` o si `agent_key` está duplicado. |
+| `08_verify.sql` | Lanza excepción si falta algo, si **una tarea terminada quedó encolada**, si hay tareas sin `prompt`, si `agent_key` está duplicado, o si algún `status` sale del dominio real o no proyecta su `state`. |
 
 ## Uso
 
@@ -70,8 +103,10 @@ viajan en `PGOPTIONS`, nunca en `argv` ni en logs. Si se conoce la huella espera
 
 **Qué prueba la identidad del destino y qué no.** La variable `hive.target_project` la
 escribe el cliente: no demuestra nada. La identidad se ancla en la huella del servidor
-(`sha256` de base, oid, rol dueño, `inet_server_addr()` y puerto), que el cliente no puede
-falsificar con `SET`, y que hace abortar cualquier aplicación posterior sobre otra base.
+(`sha256` de base, oid, rol dueño, `encoding`, `collate` y `ctype`), que el cliente no puede
+falsificar con `SET` y que hace abortar cualquier aplicación posterior sobre otra base.
+La dirección observada se registra **sólo como dato informativo**: en v2.1.0 formaba parte
+de la huella y un reinicio del compute de Neon la habría invalidado sin cambiar de base.
 Lo que **no** demuestra: que el host sea de Neon — Postgres no expone el id de proyecto de
 Neon en SQL. Está declarado así en `hive.meta` y en `08_verify`.
 
@@ -87,14 +122,15 @@ Neon en SQL. Está declarado así en `hive.meta` y en `08_verify`.
    `skipped_unauthorized` y sigue en cola.
 5. `prompt` es obligatorio (`PROMPT_REQUIRED`): la tabla real lo exige `NOT NULL`.
 
-## Pruebas (38, todas en verde)
+## Pruebas (43, todas en verde)
 
 | Suite | Casos | Qué demuestra |
 |---|---|---|
 | `neon-queue.test.mjs` | 13 | cola, leases, reintentos acotados, cuotas, privilegios |
 | `neon-compat.test.mjs` | 7 | otro diseño previo de `agents`/`jobs`/`provider_circuits`: 0 filas perdidas, duplicados de idempotencia abortan sin borrar |
-| `neon-real-schema.test.mjs` | 6 | **réplica exacta** de Neon: 9 agentes y la tarea `DONE` intactos, `agent_key` único, `DONE` jamás vuelve a la cola, `prompt` obligatorio, agente deshabilitado no recibe trabajo |
-| `neon-concurrency.test.mjs` | 12 | PostgreSQL 16.2 real con un proceso `psql` por sesión, **sobre la réplica**: 20 sesiones por una plaza, fencing, doble `complete`, activación simultánea de 10 agentes (1 solo `OPERATIVE`), `fail_job` con lease vencido |
+| `neon-real-schema.test.mjs` | 10 | **réplica exacta** (con el `CHECK` real): 9 agentes y la tarea `DONE` intactos, proyección `PENDING/RUNNING/DONE`, `CANCELLED` conservado en `state`, un `UPDATE` directo no revive una tarea cerrada, `RUNNING` externo recuperable |
+| `neon-destination.test.mjs` | 4 | huella estable (sin IP), invariante ante cambio de dirección, re-anclaje v1→v2 con confirmación, primera aplicación sin confirmación no escribe nada |
+| `neon-concurrency.test.mjs` | 13 | PostgreSQL 16.2 real con un proceso `psql` por sesión, **sobre la réplica**: 20 sesiones por una plaza, fencing, doble `complete`, activación simultánea de 10 agentes (1 solo `OPERATIVE`), `fail_job` con lease vencido, huella intacta tras reiniciar el servidor |
 
 ```bash
 python3 -m venv /tmp/pgenv && /tmp/pgenv/bin/pip install pgserver

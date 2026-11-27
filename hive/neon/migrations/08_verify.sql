@@ -45,7 +45,7 @@ begin
   select string_agg(f.name, ', ') into v_missing
     from (values ('enqueue_job'), ('reserve_job'), ('heartbeat_job'), ('complete_job'),
                  ('fail_job'), ('recover_expired_leases'), ('queue_metrics'),
-                 ('activate_agent'), ('lease_state'), ('slug'),
+                 ('activate_agent'), ('lease_state'), ('slug'), ('status_for_state'),
                  ('state_from_status'), ('state_from_job_status')) as f(name)
    where not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
                       where n.nspname = 'hive' and p.proname = f.name);
@@ -77,6 +77,20 @@ begin
      and lower(coalesce(legacy_status, '')) in ('done','completed','succeeded','success','finished');
   if v_agents_expected > 0 then
     raise exception 'VERIFY_FAILED: % tarea(s) terminada(s) quedaron encoladas', v_agents_expected;
+  end if;
+
+  -- `status` vive en el dominio REAL de Neon y es exactamente la proyección de `state`.
+  -- Ambas cosas se comprueban aquí, incluida la tarea CANCELLED (status DONE).
+  select count(*) into v_agents_expected from hive.jobs
+   where status not in ('PENDING','RUNNING','DONE','FAILED');
+  if v_agents_expected > 0 then
+    raise exception 'VERIFY_FAILED: % tarea(s) con status fuera del dominio real (PENDING/RUNNING/DONE/FAILED)', v_agents_expected;
+  end if;
+
+  select count(*) into v_agents_expected from hive.jobs
+   where status is distinct from hive.status_for_state(state);
+  if v_agents_expected > 0 then
+    raise exception 'VERIFY_FAILED: % tarea(s) con status que no proyecta su state', v_agents_expected;
   end if;
 
   -- prompt NOT NULL y agent_key único son invariantes del esquema real.

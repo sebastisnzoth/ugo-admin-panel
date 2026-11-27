@@ -5,8 +5,12 @@
 -- declarada por el cliente. Una variable `SET` no demuestra nada: la pone quien conecta.
 --
 -- Qué se comprueba aquí, de más fuerte a más débil:
---   1. HUELLA DEL SERVIDOR (no falsificable desde el cliente): sha256 de
---      base + oid de la base + rol dueño + inet_server_addr() + inet_server_port().
+--   1. HUELLA ESTABLE DEL DESTINO (no falsificable desde el cliente, e inmune a
+--      reinicios del compute de Neon): sha256 de
+--      base + oid de la base + rol dueño + encoding + collate + ctype.
+--      La v2.1.0 incluía inet_server_addr()/inet_server_port(); Neon cambia esa IP
+--      interna al reiniciar el compute y la huella habría "cambiado" sin cambiar de base.
+--      La dirección observada se sigue registrando, pero SÓLO como dato informativo.
 --      Se guarda en hive.meta.destination_fingerprint. Cualquier aplicación posterior
 --      sobre OTRA base/host/puerto aborta con DESTINATION_FINGERPRINT_MISMATCH.
 --      Eso sí demuestra "es la misma base que se aprobó", y no se puede escribir con SET.
@@ -28,8 +32,13 @@ declare
   v_expected text := nullif(current_setting('hive.expected_fingerprint', true), '');
   v_owner    text;
   v_oid      oid;
+  v_encoding text;
+  v_collate  text;
+  v_ctype    text;
   v_fingerprint text;
   v_recorded text;
+  v_algo     text;
+  v_reanchor text := coalesce(current_setting('hive.confirm_fingerprint_reanchor', true), '');
   v_arena    text;
 begin
   -- 4. Afirmación del cliente: obligatoria y coherente.
@@ -55,11 +64,13 @@ begin
     raise exception 'DESTINATION_REJECTED: el destino parece un proyecto de UGO Arena';
   end if;
 
-  -- 1. Huella del servidor.
-  select pg_get_userbyid(datdba), oid into v_owner, v_oid from pg_database where datname = current_database();
+  -- 1. Huella ESTABLE del destino (sin dirección IP: Neon la cambia al reiniciar).
+  select pg_get_userbyid(datdba), oid, pg_encoding_to_char(encoding), datcollate, datctype
+    into v_owner, v_oid, v_encoding, v_collate, v_ctype
+    from pg_database where datname = current_database();
   v_fingerprint := encode(sha256(convert_to(
       current_database() || '|' || v_oid::text || '|' || coalesce(v_owner,'?') || '|' ||
-      coalesce(inet_server_addr()::text, 'socket') || '|' || coalesce(inet_server_port()::text, '0'), 'UTF8')), 'hex');
+      coalesce(v_encoding,'?') || '|' || coalesce(v_collate,'?') || '|' || coalesce(v_ctype,'?'), 'UTF8')), 'hex');
 
   create schema if not exists hive;
   create table if not exists hive.meta (
@@ -71,6 +82,23 @@ begin
   alter table hive.meta add column if not exists note text;
 
   select value into v_recorded from hive.meta where key = 'destination_fingerprint';
+  select value into v_algo from hive.meta where key = 'destination_fingerprint_algo';
+
+  -- Huella antigua (v1, atada a la IP interna): se re-ancla UNA vez, con confirmación
+  -- explícita y conservando la anterior para auditoría. Nunca en silencio.
+  if v_recorded is not null and v_algo is distinct from 'v2-stable' then
+    if v_reanchor <> 'APLICAR' then
+      raise exception 'DESTINATION_FINGERPRINT_REANCHOR_REQUIRED: la huella registrada usa el algoritmo antiguo (incluía la IP interna, que Neon cambia al reiniciar). Repetir con hive.confirm_fingerprint_reanchor=APLICAR para re-anclarla una sola vez; la anterior queda guardada en hive.meta.destination_fingerprint_v1.';
+    end if;
+    insert into hive.meta (key, value, note) values
+      ('destination_fingerprint_v1', v_recorded, 'huella v1 (incluía inet_server_addr); conservada sólo para auditoría')
+      on conflict (key) do nothing;
+    insert into hive.meta (key, value, note) values
+      ('fingerprint_reanchored_at', now()::text, 're-anclaje único de huella v1 → v2')
+      on conflict (key) do update set value = excluded.value, updated_at = now();
+    delete from hive.meta where key = 'destination_fingerprint';
+    v_recorded := null;
+  end if;
 
   if v_recorded is null then
     if v_confirm <> 'APLICAR' then
@@ -80,9 +108,10 @@ begin
       raise exception 'DESTINATION_FINGERPRINT_MISMATCH: esperada % · real %', v_expected, v_fingerprint;
     end if;
     insert into hive.meta (key, value, note) values
-      ('destination_fingerprint', v_fingerprint, 'sha256(base|oid|dueño|inet_server_addr|puerto): identidad del servidor, no del cliente'),
+      ('destination_fingerprint', v_fingerprint, 'sha256(base|oid|dueño|encoding|collate|ctype): estable ante reinicios, no falsificable desde el cliente'),
+      ('destination_fingerprint_algo', 'v2-stable', 'sin dirección IP: Neon la cambia al reiniciar el compute'),
       ('destination_owner',       v_owner,        'rol dueño de la base según el servidor'),
-      ('destination_server_addr', coalesce(inet_server_addr()::text, 'socket'), 'inet_server_addr() según el servidor'),
+      ('destination_server_addr', coalesce(inet_server_addr()::text, 'socket'), 'informativo: NO forma parte de la huella'),
       ('destination_server_port', coalesce(inet_server_port()::text, '0'),      'inet_server_port() según el servidor'),
       ('destination_first_approved_at', now()::text, 'momento de la confirmación de primera aplicación'),
       ('server_encoding', current_setting('server_encoding'), 'Neon crea las bases en UTF8; otro valor altera el plegado de acentos'),
@@ -93,6 +122,8 @@ begin
   else
     insert into hive.meta (key, value) values ('destination_check', 'full')
       on conflict (key) do update set value = 'full', updated_at = now();
+    insert into hive.meta (key, value) values ('destination_fingerprint_algo', 'v2-stable')
+      on conflict (key) do update set value = 'v2-stable', updated_at = now();
   end if;
 
   -- Si la base ya declara pertenecer a otro proyecto, no se toca.
@@ -102,7 +133,7 @@ begin
   end if;
   insert into hive.meta (key, value) values ('neon_project_id', v_project) on conflict (key) do nothing;
 
-  insert into hive.meta (key, value) values ('schema_version', '2.1.0')
+  insert into hive.meta (key, value) values ('schema_version', '2.2.0')
     on conflict (key) do update set value = excluded.value, updated_at = now();
   insert into hive.meta (key, value) values ('applied_at', now()::text)
     on conflict (key) do update set value = excluded.value, updated_at = now();

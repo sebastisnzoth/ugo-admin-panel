@@ -34,6 +34,10 @@ let server = null
 let database = null
 if (postgresAvailable()) {
   server = await startPostgres()
+  // La evidencia se genera sobre la RÉPLICA del esquema real (9 agentes, 1 tarea DONE y
+  // el CHECK jobs_status_check), no sobre una base vacía.
+  const replica = server.psqlFile('tests/hive/fixtures/neon_existing_schema.sql')
+  if (!replica.ok) throw new Error(`REPLICA_FAILED: ${replica.stderr}`)
   for (const file of migrationFiles(ROOT)) {
     const result = server.psqlFile(file, { vars: { 'hive.target_project': 'dry-heart-24391962', 'hive.target_database': 'hive', 'hive.confirm_first_apply': 'APLICAR' } })
     if (!result.ok) throw new Error(`MIGRATION_FAILED ${file}: ${result.stderr}`)
@@ -46,8 +50,15 @@ if (postgresAvailable()) {
     destination_owner: q(`select value from hive.meta where key='destination_owner'`),
     server_encoding: q(`select value from hive.meta where key='server_encoding'`),
     fingerprint_prefix: q(`select left(value, 16) from hive.meta where key='destination_fingerprint'`),
+    fingerprint_algo: q(`select value from hive.meta where key='destination_fingerprint_algo'`),
+    status_domain: q(`select coalesce(pg_get_constraintdef(c.oid), '(sin CHECK sobre status)')
+                        from pg_constraint c join pg_class t on t.oid = c.conrelid
+                       where t.relname = 'jobs' and c.contype = 'c'
+                         and pg_get_constraintdef(c.oid) ilike '%status%' limit 1`),
     departments: Number(q('select count(*) from hive.departments')),
-    agents_registered_in_catalog: Number(q('select count(*) from hive.agents')),
+    agents_total: Number(q('select count(*) from hive.agents')),
+    agents_legacy_preserved: Number(q('select count(*) from hive.agents where legacy_status is not null')),
+    jobs_preexisting_preserved: Number(q(`select count(*) from hive.jobs where legacy_status = 'DONE' and state = 'SUCCEEDED'`)),
     agents_operative: Number(q(`select count(*) from hive.agents where state='OPERATIVE'`)),
     agents_disabled: Number(q(`select count(*) from hive.agents where state='DISABLED'`)),
     jobs_by_state: q(`select coalesce(string_agg(state || ':' || c, ', ' order by state), '(sin tareas)')
