@@ -244,3 +244,17 @@ Mientras exista una tarea autorizada, segura y técnicamente ejecutable, **conti
 - Además aprobaron 11 workflows del mismo SHA, incluidos Matching E2E, Auth Isolation, Core CI, Provider Operating Zone y Cross Performance.
 - **La suite global todavía NO es 13/13**: Admin Realtime Runtime TEST [`39499161595`](https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/39499161595) tiene `conclusion=failure`.
 - Se registra la aprobación de Cross-role UI como VERIFICADA sólo para la revisión/entorno indicados. El cambio de modo de Empresa Autónoma pudo quedar SKIPPED si TEST no estaba en OFF; no extrapolar a un control de transición validado. No se fusionó ni desplegó producción.
+
+
+## 2026-11-27 — Gate de aislamiento ejecutable + consola con los 13 departamentos canónicos
+
+- Rama `arena/6f95c7c3-ugo-admin-panel` (base `d2fe61e9ecc85e491d3839cb6885d3802d9c06de`). Entorno TEST, USD 0, sin despliegues ni migraciones.
+- **Accesos verificados, no supuestos:** `ugo-hive` responde `403 Resource not accessible by integration` (repo y PR #1 inaccesibles); el conector Supabase devuelve `list_projects: []`; no existe conector de Neon; PR #571 está **cerrado**; la rama `fix/hive-isolated-health-20261127` **no existe** en este repositorio (0 de 682 ramas); los seis `hive-*.yml` de la Etapa 5 **no existen aquí** (solo `ugo-hive-pr518-preview.yml`).
+- **HECHO:** gate `scripts/hive/isolation-audit.mjs` (6 reglas, 8 pruebas propias) con veredicto **PASS** sobre el árbol real: 333 archivos, 2 archivos referencian Hive, ambos de la allowlist revisada, 0 hallazgos. Evidencia en `docs/ugo-hive/evidence/isolation-audit.json`. CI: `.github/workflows/hive-independence-guard.yml` (sin secretos).
+- **HECHO:** defecto corregido en `HiveConsole`: la llamada a `ugo-hive-status` no tenía cota; ahora `AbortController` de 8 s + abort al desmontar + limpieza de temporizador, una petición por montaje y reintento manual. Sin `setInterval`.
+- **HECHO:** catálogo canónico de los 13 departamentos (D1–D12 + D14; el canon no tiene D13) y 118 agentes desde `src/mvp/hiveCatalog.ts` con procedencia declarada; cada departamento marcado `EJECUCIÓN NO VERIFICADA`. Escalera de cuotas 50/70/85/95 mostrada como política con `consumo real: DESCONOCIDO`.
+- **Pruebas ejecutadas (SAME-TREE):** `31/31` en `tests/hive/*` + contratos Hive + model-router; `npx tsc -b` limpio; `verify:test-env` OK (331 archivos, TEST); `npm run build` correcto; `eslint` limpio en los archivos tocados. Línea base previa al cambio: `21/21` en verde.
+- **Hallazgo no corregido a ciegas:** `ugo-hive-status` usa `SUPABASE_SERVICE_ROLE_KEY` (viola "no service_role"); corregirlo requiere conocer las RLS de `hive_backup_versions`, tabla que **no se crea en las migraciones de este repositorio**. Documentado en `docs/ugo-hive/HIVE_EXECUTION_STATUS_2026-11-27.md` §4.
+- **PENDIENTE:** chaos test de caída total de Hive en TEST; verificación de RLS; enlace real con el backend de Render.
+- **BLOQUEADO (humano):** permiso de la integración GitHub sobre `ugo-hive`; credenciales de Neon `dry-heart-24391962`; reconexión del conector Supabase con proyectos visibles. Etapa 8 no puede iniciarse sin 2 y 4: no hay runtime que observar.
+- **Siguiente acción:** revisar el PR de esta rama; al desbloquear `ugo-hive`, corregir los seis workflows de la Etapa 5 y ejecutar el chaos test.

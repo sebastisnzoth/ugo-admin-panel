@@ -1,0 +1,27 @@
+{
+  "check": "HIVE_ARENA_ISOLATION_STATIC",
+  "scope": "static source scan of Arena runtime (src, api); no network, no database",
+  "limitations": [
+    "does not execute Arena at runtime; the Hive-down chaos test remains a separate gate",
+    "cannot see Hive connectivity failures caused by DNS, TLS or platform quotas",
+    "detects the credential names listed in SECRET_TOKENS only"
+  ],
+  "generated_at": "2026-11-27T20:52:42.111Z",
+  "repo_sha": "d2fe61e9ecc85e491d3839cb6885d3802d9c06de",
+  "scanned_files": 333,
+  "hive_referencing_files": [
+    "src/mvp/HiveConsole.tsx",
+    "src/mvp/hiveCatalog.ts"
+  ],
+  "boot_files_scanned": [
+    "index.html",
+    "src/main.tsx",
+    "src/App.tsx"
+  ],
+  "reviewed_modules": [
+    "src/mvp/HiveConsole.tsx",
+    "src/mvp/hiveCatalog.ts"
+  ],
+  "findings": [],
+  "verdict": "PASS"
+}
