@@ -5,6 +5,11 @@
 #   HIVE_TEST_DATABASE_URL='postgresql://…' hive/neon/apply.sh verify
 #   HIVE_TEST_DATABASE_URL='postgresql://…' hive/neon/apply.sh apply
 #
+# Primera aplicación a una base no registrada exige confirmación explícita, porque la
+# identidad del destino NO puede deducirse de una variable:
+#   HIVE_CONFIRM_FIRST_APPLY=APLICAR hive/neon/apply.sh apply
+# Opcional, si ya se conoce la huella del servidor:  HIVE_EXPECTED_FINGERPRINT=<sha256>
+#
 # Reglas:
 #   · la URL nunca se imprime ni se escribe en disco;
 #   · todas las migraciones corren en UNA transacción (si algo falla, no queda a medias);
@@ -32,7 +37,14 @@ esac
 command -v psql >/dev/null || { echo "ERROR: falta psql (postgresql-client)." >&2; exit 1; }
 
 # PGOPTIONS transporta los parámetros de la puerta de destino; nunca viajan por argv.
-export PGOPTIONS="-c hive.target_project=${PROJECT_ID} -c hive.target_database=${DATABASE_NAME}"
+SETTINGS="-c hive.target_project=${PROJECT_ID} -c hive.target_database=${DATABASE_NAME}"
+if [ "${HIVE_CONFIRM_FIRST_APPLY:-}" = "APLICAR" ]; then
+  SETTINGS="$SETTINGS -c hive.confirm_first_apply=APLICAR"
+fi
+if [ -n "${HIVE_EXPECTED_FINGERPRINT:-}" ]; then
+  SETTINGS="$SETTINGS -c hive.expected_fingerprint=${HIVE_EXPECTED_FINGERPRINT}"
+fi
+export PGOPTIONS="$SETTINGS"
 PSQL=(psql "$HIVE_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -X -q)
 
 case "$ACTION" in
@@ -60,10 +72,14 @@ case "$ACTION" in
     echo "== estado final =="
     "${PSQL[@]}" -At -F' | ' \
       -c "select 'schema_version', value from hive.meta where key='schema_version'" \
+      -c "select 'destination_fingerprint', left(value, 16) || '…' from hive.meta where key='destination_fingerprint'" \
       -c "select 'departments', count(*) from hive.departments" \
       -c "select 'agents_total', count(*) from hive.agents" \
+      -c "select 'agents_legacy_preserved', count(*) from hive.agents where legacy_status is not null" \
       -c "select 'agents_operative', count(*) from hive.agents where state='OPERATIVE'" \
       -c "select 'jobs', count(*) from hive.jobs" \
+      -c "select 'jobs_finished', count(*) from hive.jobs where state in ('SUCCEEDED','FAILED','CANCELLED')" \
+      -c "select 'jobs_queued', count(*) from hive.jobs where state='QUEUED'" \
       -c "select 'queue', hive.queue_metrics()::text"
     ;;
   *)

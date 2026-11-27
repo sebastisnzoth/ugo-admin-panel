@@ -22,7 +22,10 @@ drop function if exists hive.heartbeat_job(uuid, text, bigint, integer);
 drop function if exists hive.heartbeat_job(uuid, text, integer);
 drop function if exists hive.recover_expired_leases(integer, integer);
 drop function if exists hive.revoke_leases_all();
+drop function if exists hive.reserve_job(text, integer, text);
 drop function if exists hive.reserve_job(text, integer);
+drop function if exists hive.lease_state(uuid, text, bigint);
+drop function if exists hive.enqueue_job(text, integer, text, smallint, jsonb, timestamptz, integer, text);
 drop function if exists hive.enqueue_job(text, integer, text, smallint, jsonb, timestamptz, integer);
 drop function if exists hive.activate_agent(text, boolean);
 drop function if exists hive.deactivate_agent(text);
@@ -34,6 +37,8 @@ drop function if exists hive.quota_state(text, date);
 drop function if exists hive.setting_int(text, integer);
 
 -- 3. Los leases abiertos quedan liberados para que ningún worker crea que sigue vivo.
+--    Las tareas terminadas (SUCCEEDED/FAILED/CANCELLED) no se tocan jamás: el trigger
+--    de 03 impide además devolverlas a la cola.
 update hive.jobs
    set state = 'QUEUED', lease_owner = null, lease_expires_at = null, heartbeat_at = null,
        last_error = 'ROLLBACK_NON_DESTRUCTIVE', updated_at = now()

@@ -1,90 +1,215 @@
--- UGO Hive · 03 · Cola persistente con fencing tokens.
+-- UGO Hive · 03 · Cola de trabajos sobre el esquema REAL.
 --
--- NO ASUME BASE VACÍA: crea la tabla si no existe y, si `hive.jobs` ya existe con otro
--- diseño, **añade** las columnas que falten sin borrar ni reescribir nada. Nunca se
--- elimina una columna, una fila ni un índice ajeno.
+-- ESQUEMA REAL (verificado por ChatGPT en Neon, base `hive`):
+--   hive.jobs(id uuid, idempotency_key text, agent_name text,
+--             prompt text NOT NULL, status text, created_at timestamptz)
+--   con 1 tarea finalizada y 0 pendientes.
 --
--- `lease_token` es el fencing token: se incrementa en cada concesión de lease y toda
--- transición (heartbeat/complete/fail) exige el token vigente. Un worker con un token
--- obsoleto no puede cerrar un trabajo que ya pertenece a otro: evita la doble
--- finalización sin prometer ejecución exactamente una vez (ver 04_job_effects).
+-- La primera versión asumía `state` y `payload` como columnas propias y habría re-encolado
+-- la tarea finalizada. Aquí:
+--   · `status` es la columna real y se refleja en `state` (y al revés);
+--   · el valor original se conserva SIEMPRE en `legacy_status`;
+--   · una tarea terminada (DONE/COMPLETED/FAILED/CANCELLED…) queda en estado terminal
+--     y **jamás** se convierte en QUEUED;
+--   · una tarea "en vuelo" de la que no consta dueño no se re-ejecuta a ciegas: queda
+--     FAILED con last_error LEGACY_IN_FLIGHT_NEEDS_REVIEW para que decida un humano;
+--   · `prompt` se respeta como NOT NULL y `agent_name` se mantiene enlazado a `agents.name`.
 
 create table if not exists hive.jobs (
-  id               uuid primary key default gen_random_uuid(),
-  idempotency_key  text not null,
-  department_id    integer not null,
-  agent_key        text,
-  state            text not null default 'QUEUED',
-  priority         smallint not null default 100,
-  attempts         integer not null default 0,
-  max_attempts     integer not null default 3,
-  available_at     timestamptz not null default now(),
-  lease_owner      text,
-  lease_token      bigint not null default 0,
-  lease_expires_at timestamptz,
-  heartbeat_at     timestamptz,
-  payload          jsonb not null default '{}'::jsonb,
-  result           jsonb,
-  last_error       text,
-  created_at       timestamptz not null default now(),
-  updated_at       timestamptz not null default now()
+  id              uuid primary key default gen_random_uuid(),
+  idempotency_key text,
+  agent_name      text,
+  prompt          text not null,
+  status          text,
+  created_at      timestamptz not null default now()
 );
 
-alter table hive.jobs add column if not exists idempotency_key  text;
-alter table hive.jobs add column if not exists department_id    integer;
-alter table hive.jobs add column if not exists agent_key        text;
-alter table hive.jobs add column if not exists state            text not null default 'QUEUED';
-alter table hive.jobs add column if not exists priority         smallint not null default 100;
-alter table hive.jobs add column if not exists attempts         integer not null default 0;
-alter table hive.jobs add column if not exists max_attempts     integer not null default 3;
-alter table hive.jobs add column if not exists available_at     timestamptz not null default now();
-alter table hive.jobs add column if not exists lease_owner      text;
-alter table hive.jobs add column if not exists lease_token      bigint not null default 0;
+-- Columnas nuevas (sólo se añaden; la tabla real no pierde nada).
+-- `agent_name` y `created_at` forman parte del esquema real; en tablas de otro diseño
+-- pueden faltar y se añaden (sin datos se quedan NULL, no se inventa nada).
+alter table hive.jobs add column if not exists agent_name      text;
+alter table hive.jobs add column if not exists created_at      timestamptz default now();
+alter table hive.jobs add column if not exists state           text;
+alter table hive.jobs add column if not exists agent_key       text;
+alter table hive.jobs add column if not exists department_id   integer;
+alter table hive.jobs add column if not exists priority        smallint default 5;
+alter table hive.jobs add column if not exists payload         jsonb default '{}'::jsonb;
+alter table hive.jobs add column if not exists result          jsonb;
+alter table hive.jobs add column if not exists available_at    timestamptz;
+alter table hive.jobs add column if not exists attempts        integer default 0;
+alter table hive.jobs add column if not exists max_attempts    integer;
+alter table hive.jobs add column if not exists lease_owner     text;
+alter table hive.jobs add column if not exists lease_token     bigint default 0;
 alter table hive.jobs add column if not exists lease_expires_at timestamptz;
-alter table hive.jobs add column if not exists heartbeat_at     timestamptz;
-alter table hive.jobs add column if not exists payload          jsonb not null default '{}'::jsonb;
-alter table hive.jobs add column if not exists result           jsonb;
-alter table hive.jobs add column if not exists last_error       text;
-alter table hive.jobs add column if not exists created_at       timestamptz not null default now();
-alter table hive.jobs add column if not exists updated_at       timestamptz not null default now();
+alter table hive.jobs add column if not exists heartbeat_at    timestamptz;
+alter table hive.jobs add column if not exists last_error      text;
+alter table hive.jobs add column if not exists legacy_status   text;
+alter table hive.jobs add column if not exists effect_key      text;
+alter table hive.jobs add column if not exists finished_at     timestamptz;
+alter table hive.jobs add column if not exists updated_at      timestamptz default now();
 
--- La idempotencia exige clave única. Si ya hay duplicados, se aborta informando:
--- decidir qué hacer con esos registros es del operador, nunca del script.
+-- `prompt` es NOT NULL en la tabla real. Hay dos casos distintos y se tratan distinto:
+--   · la columna no existe (tabla de otro diseño): se añade y las filas heredadas quedan
+--     marcadas como `payload.legacy_no_prompt = true` — no se inventa contenido;
+--   · la columna existe con nulos (la tabla real lo prohíbe): se aborta, hay corrupción.
 do $$
-declare v_dups integer; v_nulls integer;
+declare v_had boolean;
 begin
-  if not exists (select 1 from pg_indexes where schemaname = 'hive' and indexname = 'hive_jobs_idempotency_key_uidx') then
-    select count(*) into v_dups from (
-      select idempotency_key from hive.jobs where idempotency_key is not null
-       group by idempotency_key having count(*) > 1) d;
-    if v_dups > 0 then
-      raise exception 'IDEMPOTENCY_KEYS_DUPLICATED: % claves repetidas en hive.jobs; resolver manualmente (no se borra nada)', v_dups;
-    end if;
-    begin
-      create unique index hive_jobs_idempotency_key_uidx on hive.jobs (idempotency_key);
-    exception when others then
-      raise exception 'IDEMPOTENCY_INDEX_FAILED: %', sqlerrm;
-    end;
+  select exists (select 1 from information_schema.columns
+                  where table_schema = 'hive' and table_name = 'jobs' and column_name = 'prompt')
+    into v_had;
+  if not v_had then
+    alter table hive.jobs add column prompt text;
+    update hive.jobs set prompt = '[legacy] sin prompt registrado' where prompt is null;
+    update hive.jobs set payload = coalesce(payload, '{}'::jsonb) || '{"legacy_no_prompt": true}'::jsonb
+     where prompt = '[legacy] sin prompt registrado';
+    raise notice 'HIVE_LEGACY: la tabla jobs no tenía prompt; % fila(s) marcadas como legacy_no_prompt',
+      (select count(*) from hive.jobs where prompt = '[legacy] sin prompt registrado');
   end if;
-  select count(*) into v_nulls from hive.jobs where idempotency_key is null;
-  if v_nulls > 0 then
-    raise warning 'hive.jobs tiene % filas sin idempotency_key; se conservan y quedan excluidas de la reserva', v_nulls;
+  if exists (select 1 from hive.jobs where prompt is null) then
+    raise exception 'PROMPT_NULLS_PRESENT: hay tareas con prompt nulo en una tabla que lo exige NOT NULL. Revisar antes de migrar, no se rellena solo';
   end if;
 end $$;
 
-create index if not exists hive_jobs_runnable
-  on hive.jobs (priority, available_at, created_at) where state = 'QUEUED';
-create index if not exists hive_jobs_live_leases
-  on hive.jobs (lease_expires_at) where state = 'LEASED';
-create index if not exists hive_jobs_agent_state
-  on hive.jobs (agent_key, state);
+-- Traducción de estado, con los valores terminados primero.
+create or replace function hive.state_from_job_status(p_status text)
+returns text language sql immutable set search_path = '' as $$
+  select case lower(coalesce(p_status, ''))
+    when 'done'       then 'SUCCEEDED'
+    when 'completed'  then 'SUCCEEDED'
+    when 'succeeded'  then 'SUCCEEDED'
+    when 'success'    then 'SUCCEEDED'
+    when 'finished'   then 'SUCCEEDED'
+    when 'failed'     then 'FAILED'
+    when 'error'      then 'FAILED'
+    when 'errored'    then 'FAILED'
+    when 'cancelled'  then 'CANCELLED'
+    when 'canceled'   then 'CANCELLED'
+    when 'aborted'    then 'CANCELLED'
+    when 'pending'    then 'QUEUED'
+    when 'queued'     then 'QUEUED'
+    when 'new'        then 'QUEUED'
+    when 'todo'       then 'QUEUED'
+    when 'leased'     then 'LEASED'
+    when 'running'    then 'LEASED'
+    when 'in_progress' then 'LEASED'
+    when 'processing' then 'LEASED'
+    else 'FAILED'
+  end;
+$$;
+
+-- Conservar el status original y derivar `state` una sola vez.
+update hive.jobs set legacy_status = coalesce(legacy_status, status)
+ where legacy_status is null and status is not null;
+
+update hive.jobs
+   set state = case
+         when state is not null then state
+         when hive.state_from_job_status(status) = 'LEASED' then 'FAILED'
+         else hive.state_from_job_status(status)
+       end,
+       last_error = case
+         when state is null and hive.state_from_job_status(status) = 'LEASED'
+              then 'LEGACY_IN_FLIGHT_NEEDS_REVIEW'
+         when state is null and hive.state_from_job_status(status) = 'FAILED'
+              and lower(coalesce(status,'')) not in ('failed','error','errored')
+              then 'LEGACY_STATUS_UNMAPPED:' || coalesce(status, 'null')
+         else last_error
+       end
+ where state is null;
+
+-- Una tarea terminada nunca vuelve a la cola; coherencia explícita y comprobada.
+update hive.jobs set finished_at = coalesce(finished_at, created_at, now())
+ where state in ('SUCCEEDED', 'FAILED', 'CANCELLED') and finished_at is null;
+
+update hive.jobs set available_at = coalesce(available_at, created_at, now())
+ where available_at is null;
+update hive.jobs set attempts      = coalesce(attempts, case when state = 'QUEUED' then 0 else 1 end);
+update hive.jobs set max_attempts  = coalesce(max_attempts, hive.setting_int('default_max_attempts', 3));
+update hive.jobs set priority      = coalesce(priority, 5);
+update hive.jobs set payload       = coalesce(payload, '{}'::jsonb);
+update hive.jobs set lease_token   = coalesce(lease_token, 0);
+update hive.jobs set status        = lower(state)
+ where status is null or status is distinct from lower(state);
+update hive.jobs set agent_key = hive.slug(a.name)
+  from hive.agents a
+ where hive.jobs.agent_key is null and hive.jobs.agent_name is not null and a.name = hive.jobs.agent_name;
+
+-- Valores por defecto para que la herramienta real pueda seguir insertando filas
+-- (idempotency_key, agent_name, prompt, status) sin conocer las columnas nuevas.
+alter table hive.jobs alter column state        set default 'QUEUED';
+alter table hive.jobs alter column available_at set default now();
+alter table hive.jobs alter column attempts     set default 0;
+alter table hive.jobs alter column max_attempts set default 3;
+alter table hive.jobs alter column lease_token  set default 0;
+alter table hive.jobs alter column payload      set default '{}'::jsonb;
+alter table hive.jobs alter column priority     set default 5;
+alter table hive.jobs alter column updated_at   set default now();
+alter table hive.jobs alter column state        set not null;
+alter table hive.jobs alter column available_at set not null;
+alter table hive.jobs alter column attempts     set not null;
+alter table hive.jobs alter column max_attempts set not null;
+alter table hive.jobs alter column lease_token  set not null;
+
+-- Duplicados de idempotencia: se aborta, no se borra.
+do $$
+declare v_dup text;
+begin
+  select string_agg(idempotency_key, ', ') into v_dup
+    from (select idempotency_key from hive.jobs
+           where idempotency_key is not null
+           group by idempotency_key having count(*) > 1) d;
+  if v_dup is not null then
+    raise exception 'IDEMPOTENCY_KEYS_DUPLICATED: %; resolver a mano, no se borra nada', v_dup;
+  end if;
+end $$;
+-- Un índice único normal ya permite varios NULL; así ON CONFLICT (idempotency_key)
+-- puede inferirlo sin ambigüedad.
+create unique index if not exists hive_jobs_idempotency_key on hive.jobs (idempotency_key);
+create index if not exists hive_jobs_queue_order on hive.jobs (priority, available_at, created_at)
+  where state = 'QUEUED';
+create index if not exists hive_jobs_state        on hive.jobs (state);
+create index if not exists hive_jobs_agent        on hive.jobs (agent_key);
+create index if not exists hive_jobs_lease        on hive.jobs (lease_expires_at) where state = 'LEASED';
+
+-- Coherencia status ⇄ state sin recursión.
+create or replace function hive.sync_job_status()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if tg_op = 'INSERT' then
+    if new.state is null then new.state := hive.state_from_job_status(new.status); end if;
+    new.legacy_status := coalesce(new.legacy_status, new.status);
+    new.status := lower(new.state);
+    return new;
+  end if;
+
+  if new.state is distinct from old.state then
+    if old.state in ('SUCCEEDED','FAILED','CANCELLED') and new.state = 'QUEUED' then
+      raise exception 'TERMINAL_STATE_CANNOT_REQUEUE: la tarea % estaba en % y no vuelve a la cola', old.id, old.state;
+    end if;
+    new.legacy_status := coalesce(old.legacy_status, old.status);
+    new.status := lower(new.state);
+    if new.state in ('SUCCEEDED','FAILED','CANCELLED') and new.finished_at is null then
+      new.finished_at := now();
+    end if;
+  elsif new.status is distinct from old.status then
+    new.legacy_status := coalesce(old.legacy_status, old.status);
+    new.state := hive.state_from_job_status(new.status);
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists hive_jobs_sync_status on hive.jobs;
+create trigger hive_jobs_sync_status
+  before insert or update on hive.jobs
+  for each row execute function hive.sync_job_status();
 
 create table if not exists hive.job_events (
   id         bigserial primary key,
-  job_id     uuid not null,
+  job_id     uuid not null references hive.jobs (id) on delete restrict,
   event      text not null,
   actor      text,
-  detail     jsonb not null default '{}'::jsonb,
+  detail     jsonb,
   created_at timestamptz not null default now()
 );
-create index if not exists hive_job_events_job on hive.job_events (job_id, id);
+create index if not exists hive_job_events_job on hive.job_events (job_id, created_at);

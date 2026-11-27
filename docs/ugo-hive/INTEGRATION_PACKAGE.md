@@ -1,4 +1,4 @@
-# Paquete de integración UGO Hive · v2.0.0
+# Paquete de integración UGO Hive · v2.1.0
 
 Documento de entrega para que **otra sesión con acceso independiente** (ChatGPT, u otro
 operador) aplique y verifique el paquete de datos de Hive sin depender de esta sesión.
@@ -6,7 +6,7 @@ operador) aplique y verifique el paquete de datos de Hive sin depender de esta s
 - Repositorio: `sebastisnzoth/ugo-admin-panel`
 - Rama: `arena/6f95c7c3-ugo-admin-panel` (PR #633, **sin fusionar**)
 - Base: `d2fe61e9ecc85e491d3839cb6885d3802d9c06de` de `main`
-- Paquete: `hive/neon/` (versión `2.0.0`, registrada en `hive.meta.schema_version`)
+- Paquete: `hive/neon/` (versión `2.1.0`, registrada en `hive.meta.schema_version`)
 - Evidencia: `docs/ugo-hive/evidence/hive-neon-package.json`
 
 Este paquete **no está aplicado a Neon**: sigue sin haber credencial disponible en la
@@ -20,7 +20,7 @@ sesión que lo escribió. Aplicarlo es el primer paso que falta.
 |---|---|
 | 10 archivos SQL aditivos e idempotentes | contraseñas, tokens personales, `service_role` |
 | `apply.sh` (preflight · apply · verify) y rollback no destructivo | `DATABASE_URL` de Arena/Supabase |
-| 28 pruebas automáticas (13 PGlite · 7 compatibilidad · 8 concurrencia real) | permiso para fusionar a `main` |
+| 38 pruebas automáticas (13 cola · 7 compatibilidad · 6 réplica exacta · 12 concurrencia real) | permiso para fusionar a `main` |
 | evidencia JSON regenerable | instrucción de desplegar a producción |
 | contrato del worker y códigos de respuesta | autorización para crear otro proyecto Neon |
 
@@ -68,9 +68,23 @@ el destino no es Hive.
 
 ## 4. Aplicación
 
+> **v2.1.0 se adapta al esquema real que verificaste:** `agents(id,name UNIQUE,status,last_heartbeat)`
+> con 9 filas y `jobs(id,idempotency_key,agent_name,prompt NOT NULL,status,created_at)` con
+> 1 tarea `DONE`. Nada se borra y la tarea terminada **no** vuelve a la cola.
+
 ```bash
+# primera vez en esta base (identidad no registrada todavía):
+HIVE_CONFIRM_FIRST_APPLY=APLICAR hive/neon/apply.sh apply
+
+# posteriores (idempotente, sin confirmación):
 hive/neon/apply.sh apply
 ```
+
+La primera aplicación registra en `hive.meta` la **huella del servidor**
+(`sha256` de base + oid + rol dueño + `inet_server_addr()` + puerto). No es una variable del
+cliente: si más adelante alguien apunta a otra base, la migración aborta con
+`DESTINATION_FINGERPRINT_MISMATCH`. Si ya conocés la huella, pasala con
+`HIVE_EXPECTED_FINGERPRINT=<sha256>` para atar la primera aplicación también.
 
 `apply.sh` hace, en este orden y sin intervención:
 
@@ -81,16 +95,26 @@ hive/neon/apply.sh apply
    `queue_metrics()`.
 
 Si algo falla, la transacción revierte completa: no queda un esquema a medias.
-Esperado al terminar:
+Esperado al terminar (con los datos reales de hoy):
 
 ```
-schema_version | 2.0.0
-departments    | 13
-agents_total   | 118          (o más, si el operador ya tenía agentes propios)
-agents_operative | 0
+schema_version           | 2.1.0
+destination_fingerprint  | <primeros 16 hex>…
+departments              | 13
+agents_total             | 127      (9 existentes + 118 del canon)
+agents_legacy_preserved  | 9        (status original guardado en legacy_status)
+agents_operative         | 0
+jobs                     | 1
+jobs_finished            | 1        (la tarea DONE sigue terminada)
+jobs_queued              | 0
 ```
 
-`agents_operative = 0` es **correcto**: catalogar no es operar.
+Si `agents_total` no es 127 o `jobs_finished` no es 1, **detenerse**: algo no cuadra con el
+estado verificado y hay que revisar el preflight antes de seguir.
+
+`agents_operative = 0` es **correcto**: catalogar no es operar. El mapeo es conservador a
+propósito: los 9 agentes reales están en `active/idle/paused/disabled` y ninguno se
+promueve a `OPERATIVE` automáticamente (9 operativos habrían roto el límite de 1).
 
 ### Rol de ejecución separado (opcional, recomendado)
 
@@ -119,6 +143,8 @@ Comprobaciones manuales de cierre:
 
 ```sql
 select count(*) from hive.agents where state = 'OPERATIVE';   -- 0 hasta que se active uno
+select name, status, state, legacy_status from hive.agents where legacy_status is not null;  -- los 9 reales
+select state, status, legacy_status, prompt from hive.jobs;  -- SUCCEEDED / succeeded / DONE
 select hive.queue_metrics();                                  -- conteos reales
 select key, value from hive.settings order by key;             -- límites conservadores
 select count(*) from information_schema.tables
@@ -131,11 +157,15 @@ select count(*) from information_schema.tables
 ## 6. Activar **un** agente (no 118)
 
 ```sql
-select hive.activate_agent('<agent_key>', true);   -- OPERATIVE: uno solo por defecto
-select hive.activate_agent('<otro>', true);        -- falla: OPERATIVE_LIMIT_REACHED
-select hive.activate_agent('<otro>', false);       -- CONNECTED: permitido
+select hive.activate_agent('<agent_key o name>', true);   -- OPERATIVE: uno solo por defecto
+select hive.activate_agent('<otro>', true);               -- falla: OPERATIVE_LIMIT_REACHED
+select hive.activate_agent('<otro>', false);              -- CONNECTED: permitido
 select hive.deactivate_agent('<agent_key>');
 ```
+
+La activación es segura en concurrencia: dos sesiones simultáneas no pueden superar el
+límite (una recibe `ACTIVATE_BUSY`, la otra activa). Está probado con 10 sesiones reales
+sobre PostgreSQL 16.2: exactamente 1 queda `OPERATIVE`.
 
 `max_operative_agents = 1` es un ajuste, no una sugerencia. Subirlo exige decisión
 explícita del operador y medición previa de consumo.

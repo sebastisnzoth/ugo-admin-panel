@@ -23,7 +23,16 @@ async function fresh() {
   }
 }
 
-const call = async (db, fn, params = []) => (await db.query(`select hive.${fn}(${params.map((_, i) => `$${i + 1}`).join(',')}) as r`, params)).rows[0].r
+const call = async (db, fn, params = []) => {
+  // Enqueue follows the real table: `prompt` is NOT NULL, so every test task carries one.
+  let args = params
+  if (fn === 'enqueue_job' && params.length < 8) {
+    args = [...params]
+    while (args.length < 8) args.push(null)
+    if (args[7] == null) args[7] = `tarea ${args[0] ?? ''}`
+  }
+  return (await db.query(`select hive.${fn}(${args.map((_, i) => `$${i + 1}`).join(',')}) as r`, args)).rows[0].r
+}
 
 test('the schema is idempotent and its catalog is the canonical 13 departments', async () => {
   const { db, close } = await fresh()
@@ -91,7 +100,10 @@ test('a lease can only be used by its owner and only while it is valid', async (
     assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-b', lease.lease_token, {}])).code, 'LEASE_LOST')
     assert.equal((await call(db, 'heartbeat_job', [lease.job.id, 'worker-b', lease.lease_token, 60])).code, 'LEASE_LOST')
     await db.exec(`update hive.jobs set lease_expires_at = now() - interval '1 second' where id = '${lease.job.id}'`)
-    assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-a', lease.lease_token, {}])).code, 'LEASE_LOST')
+    // Un lease vencido ya no se confunde con uno ajeno: el dueño correcto recibe
+    // LEASE_EXPIRED (y fail_job lo valida igual, no sólo complete/heartbeat).
+    assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-a', lease.lease_token, {}])).code, 'LEASE_EXPIRED')
+    assert.equal((await call(db, 'fail_job', [lease.job.id, 'worker-a', lease.lease_token, 'late', 30])).code, 'LEASE_EXPIRED')
   } finally {
     await close()
   }
@@ -247,7 +259,7 @@ test('least privilege: workers cannot write tables directly and reader cannot ex
     await assert.rejects(db.query(`insert into hive.jobs (idempotency_key, department_id) values ('mission-081-j1', 2)`), /permission denied/i)
     await assert.rejects(db.query(`update hive.jobs set state = 'SUCCEEDED'`), /permission denied/i)
     await assert.rejects(db.query('drop table hive.jobs'), /permission denied|must be owner/i)
-    const enqueued = (await db.query(`select hive.enqueue_job('mission-082-j1', 2) as r`)).rows[0].r
+    const enqueued = (await db.query(`select hive.enqueue_job('mission-082-j1', 2, p_prompt => 'tarea 82') as r`)).rows[0].r
     assert.equal(enqueued.accepted, true)
     const leased = (await db.query(`select hive.reserve_job('worker-a', 60) as r`)).rows[0].r
     assert.equal(leased.leased, true)

@@ -63,19 +63,32 @@ test('the package applies on top of a pre-existing hive schema without losing a 
     await applyMigrations(db) // includes 08_verify: it fails loudly if anything is wrong
 
     // Legacy rows survive, untouched, and the new columns are simply added.
-    const legacyAgents = await db.query(`select agent_key, status, enabled, state from hive.agents where agent_key like 'legacy-agent-%' order by agent_key`)
-    assert.deepEqual(legacyAgents.rows.map(r => [r.agent_key, r.status, r.enabled, r.state]), [
-      ['legacy-agent-a', 'idle', true, 'REGISTERED'],
-      ['legacy-agent-b', 'paused', false, 'REGISTERED'],
+    // `status` y `state` quedan coherentes y el valor original se conserva en
+    // `legacy_status`: 'idle' → REGISTERED, 'paused' → DISABLED (conservador, nunca OPERATIVE).
+    const legacyAgents = await db.query(`select agent_key, status, enabled, state, legacy_status
+                                           from hive.agents where agent_key like 'legacy-agent-%' order by agent_key`)
+    assert.deepEqual(legacyAgents.rows.map(r => [r.agent_key, r.status, r.enabled, r.state, r.legacy_status]), [
+      ['legacy-agent-a', 'registered', true, 'REGISTERED', 'idle'],
+      ['legacy-agent-b', 'disabled', false, 'DISABLED', 'paused'],
     ])
-    const legacyJobs = await db.query(`select idempotency_key, status, state, lease_token from hive.jobs where status is not null order by idempotency_key nulls last`)
+    const legacyJobs = await db.query(`select idempotency_key, status, state, legacy_status, lease_token
+                                         from hive.jobs order by idempotency_key nulls last`)
     assert.equal(legacyJobs.rows.length, 3, 'no legacy job may be deleted')
-    assert.ok(legacyJobs.rows.every(row => row.state === 'QUEUED' && row.lease_token === 0))
+    // 'done' → SUCCEEDED y 'failed' → FAILED: ninguna tarea terminada vuelve a la cola.
+    const byKey = Object.fromEntries(legacyJobs.rows.map(row => [row.idempotency_key, row]))
+    assert.equal(byKey['legacy-job-0001'].state, 'SUCCEEDED')
+    assert.equal(byKey['legacy-job-0002'].state, 'FAILED')
+    assert.equal(byKey['legacy-job-0001'].legacy_status, 'done')
+    // La fila sin estado conocido no se adivina: queda FAILED con motivo auditable.
+    const orphan = legacyJobs.rows.find(row => row.idempotency_key === null)
+    assert.equal(orphan.state, 'FAILED')
+    assert.ok(legacyJobs.rows.every(row => row.state !== 'QUEUED'), 'no finished legacy job may be queued')
     assert.equal((await db.query(`select failures from hive.provider_circuits where provider='openrouter'`)).rows[0].failures, 2)
 
     // The canonical 118 agents are added around the two legacy ones.
     assert.equal((await db.query('select count(*)::int n from hive.agents')).rows[0].n, 120)
-    assert.equal((await db.query(`select count(*)::int n from hive.agents where state='DISABLED'`)).rows[0].n, 1)
+    // Dos deshabilitados: el heredado ('paused') y el único DISABLED del canon.
+    assert.equal((await db.query(`select count(*)::int n from hive.agents where state='DISABLED'`)).rows[0].n, 2)
   })
 })
 

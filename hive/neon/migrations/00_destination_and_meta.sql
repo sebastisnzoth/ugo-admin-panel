@@ -1,61 +1,108 @@
--- UGO Hive · 00 · Puerta de destino y metadatos.
+-- UGO Hive · 00 · Identidad del destino y metadatos.
 --
--- Esta migración ABORTA si el destino no es exactamente la base autorizada de Hive
--- TEST. No se apoya en el nombre del host (frágil) sino en hechos verificables en SQL:
---   1) el proyecto declarado debe ser el autorizado (dry-heart-24391962);
---   2) la base declarada y la conectada deben llamarse `hive`;
---   3) la base NO debe parecer UGO Arena (presencia de tablas de Arena en `public`);
---   4) si la base ya está marcada con otro proyecto, se rechaza.
+-- PROBLEMA REAL: en la primera aplicación a Neon el paquete aceptó una base que ya
+-- tenía datos (9 agentes, 1 tarea) porque la única prueba de identidad era una variable
+-- declarada por el cliente. Una variable `SET` no demuestra nada: la pone quien conecta.
 --
--- Parámetros (los inyecta apply.sh por PGOPTIONS, nunca en el repositorio):
---   hive.target_project   = dry-heart-24391962
---   hive.target_database  = hive
--- y sólo para motores embebidos de prueba:
---   hive.skip_database_name_check = 1   (queda auditado en hive.meta)
+-- Qué se comprueba aquí, de más fuerte a más débil:
+--   1. HUELLA DEL SERVIDOR (no falsificable desde el cliente): sha256 de
+--      base + oid de la base + rol dueño + inet_server_addr() + inet_server_port().
+--      Se guarda en hive.meta.destination_fingerprint. Cualquier aplicación posterior
+--      sobre OTRA base/host/puerto aborta con DESTINATION_FINGERPRINT_MISMATCH.
+--      Eso sí demuestra "es la misma base que se aprobó", y no se puede escribir con SET.
+--   2. Primera aplicación: exige confirmación explícita (hive.confirm_first_apply=APLICAR)
+--      y registra TODOS los hechos del servidor en hive.meta, para auditoría.
+--   3. Huella de Arena: si `public` contiene tablas de UGO Arena, aborta siempre.
+--   4. Afirmación del cliente (débil, pero si contradice se aborta): proyecto y base.
+--
+-- Lo que esto NO demuestra (declarado, no disimulado): que el host sea de Neon. Postgres
+-- no expone el id de proyecto de Neon en SQL. La identidad se ancla en la huella estable
+-- y en la confirmación de la primera aplicación, no en una variable.
 
 do $$
 declare
-  v_project  text := nullif(current_setting('hive.target_project', true), '');
-  v_expected text := nullif(current_setting('hive.target_database', true), '');
-  v_current  text := current_database();
-  v_bypass   text := nullif(current_setting('hive.skip_database_name_check', true), '');
-  v_marker   text;
-  v_arena    integer;
+  v_project  text := coalesce(current_setting('hive.target_project', true), '');
+  v_database text := coalesce(current_setting('hive.target_database', true), '');
+  v_confirm  text := coalesce(current_setting('hive.confirm_first_apply', true), '');
+  v_skip_name text := coalesce(current_setting('hive.skip_database_name_check', true), '');
+  v_expected text := nullif(current_setting('hive.expected_fingerprint', true), '');
+  v_owner    text;
+  v_oid      oid;
+  v_fingerprint text;
+  v_recorded text;
+  v_arena    text;
 begin
-  if v_project is distinct from 'dry-heart-24391962' then
-    raise exception 'DESTINATION_REJECTED: proyecto declarado %, autorizado dry-heart-24391962', coalesce(v_project, '(ninguno)');
+  -- 4. Afirmación del cliente: obligatoria y coherente.
+  if v_project <> 'dry-heart-24391962' then
+    raise exception 'DESTINATION_REJECTED: hive.target_project debe ser dry-heart-24391962 (recibido: %)', coalesce(nullif(v_project,''), 'vacío');
   end if;
-  if v_expected is distinct from 'hive' then
-    raise exception 'DESTINATION_REJECTED: base declarada %, autorizada hive', coalesce(v_expected, '(ninguna)');
+  if v_database <> 'hive' then
+    raise exception 'DESTINATION_REJECTED: hive.target_database debe ser hive (recibido: %)', coalesce(nullif(v_database,''), 'vacío');
   end if;
-  if coalesce(v_bypass, '') <> '1' and v_current <> v_expected then
-    raise exception 'DESTINATION_REJECTED: conectado a %, esperado %', v_current, v_expected;
+  if v_skip_name <> '1' and current_database() <> 'hive' then
+    raise exception 'DESTINATION_REJECTED: nombre de base inesperado (%)', current_database();
   end if;
 
-  select count(*) into v_arena
+  -- 3. Huella de Arena: jamás se migra una base de Arena.
+  select string_agg(table_name, ', ') into v_arena
     from information_schema.tables
    where table_schema = 'public'
      and table_name in ('usuarios', 'autonomous_jobs', 'autonomous_agents', 'servicos', 'solicitudes');
-  if v_arena > 0 then
-    raise exception 'DESTINATION_REJECTED: el destino contiene % tablas de UGO Arena; Hive no comparte base con Arena', v_arena;
+  if v_arena is not null then
+    raise exception 'DESTINATION_REJECTED: el destino contiene tablas de UGO Arena (%)', v_arena;
   end if;
+  if to_regclass('public.empresas') is not null and to_regclass('public.storage_objects') is not null then
+    raise exception 'DESTINATION_REJECTED: el destino parece un proyecto de UGO Arena';
+  end if;
+
+  -- 1. Huella del servidor.
+  select pg_get_userbyid(datdba), oid into v_owner, v_oid from pg_database where datname = current_database();
+  v_fingerprint := encode(sha256(convert_to(
+      current_database() || '|' || v_oid::text || '|' || coalesce(v_owner,'?') || '|' ||
+      coalesce(inet_server_addr()::text, 'socket') || '|' || coalesce(inet_server_port()::text, '0'), 'UTF8')), 'hex');
 
   create schema if not exists hive;
   create table if not exists hive.meta (
     key        text primary key,
     value      text not null,
+    note       text,
     updated_at timestamptz not null default now()
   );
+  alter table hive.meta add column if not exists note text;
 
-  select value into v_marker from hive.meta where key = 'neon_project_id';
-  if v_marker is not null and v_marker <> v_project then
-    raise exception 'DESTINATION_REJECTED: esta base pertenece al proyecto %, no a %', v_marker, v_project;
+  select value into v_recorded from hive.meta where key = 'destination_fingerprint';
+
+  if v_recorded is null then
+    if v_confirm <> 'APLICAR' then
+      raise exception 'DESTINATION_FIRST_APPLY_REQUIRED: esta base no está registrada. Repetir con hive.confirm_first_apply=APLICAR tras revisar el inventario (preflight.sql).';
+    end if;
+    if v_expected is not null and v_expected <> v_fingerprint then
+      raise exception 'DESTINATION_FINGERPRINT_MISMATCH: esperada % · real %', v_expected, v_fingerprint;
+    end if;
+    insert into hive.meta (key, value, note) values
+      ('destination_fingerprint', v_fingerprint, 'sha256(base|oid|dueño|inet_server_addr|puerto): identidad del servidor, no del cliente'),
+      ('destination_owner',       v_owner,        'rol dueño de la base según el servidor'),
+      ('destination_server_addr', coalesce(inet_server_addr()::text, 'socket'), 'inet_server_addr() según el servidor'),
+      ('destination_server_port', coalesce(inet_server_port()::text, '0'),      'inet_server_port() según el servidor'),
+      ('destination_first_approved_at', now()::text, 'momento de la confirmación de primera aplicación'),
+      ('server_encoding', current_setting('server_encoding'), 'Neon crea las bases en UTF8; otro valor altera el plegado de acentos'),
+      ('destination_check', 'full', 'first-apply confirmado y huella registrada')
+    on conflict (key) do nothing;
+  elsif v_recorded <> v_fingerprint then
+    raise exception 'DESTINATION_FINGERPRINT_MISMATCH: la base no es la registrada. Registrada % · actual %. Migrar otra base exige una aprobación nueva y explícita, nunca un SET.', v_recorded, v_fingerprint;
+  else
+    insert into hive.meta (key, value) values ('destination_check', 'full')
+      on conflict (key) do update set value = 'full', updated_at = now();
   end if;
 
+  -- Si la base ya declara pertenecer a otro proyecto, no se toca.
+  if exists (select 1 from hive.meta where key = 'neon_project_id' and value <> v_project) then
+    raise exception 'DESTINATION_REJECTED: esta base pertenece al proyecto %',
+      (select value from hive.meta where key = 'neon_project_id');
+  end if;
   insert into hive.meta (key, value) values ('neon_project_id', v_project) on conflict (key) do nothing;
-  insert into hive.meta (key, value) values ('schema_version', '2.0.0')
-    on conflict (key) do update set value = excluded.value, updated_at = now();
-  insert into hive.meta (key, value) values ('destination_check', case when coalesce(v_bypass,'') = '1' then 'test-bypass' else 'full' end)
+
+  insert into hive.meta (key, value) values ('schema_version', '2.1.0')
     on conflict (key) do update set value = excluded.value, updated_at = now();
   insert into hive.meta (key, value) values ('applied_at', now()::text)
     on conflict (key) do update set value = excluded.value, updated_at = now();

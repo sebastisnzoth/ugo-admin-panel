@@ -67,7 +67,11 @@ export async function startPostgres({ database = 'hive' } = {}) {
   const run = (cmd, args, options = {}) =>
     spawnSync(join(bin, cmd), args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...options })
 
-  const init = run('initdb', ['-D', data, '-U', 'postgres', '-A', 'trust'])
+  // Neon crea las bases en UTF8. Un initdb sin --encoding produce SQL_ASCII, donde
+  // lower()/translate() trabajan byte a byte y los acentos se corrompen: la réplica
+  // dejaría de ser una réplica.
+  const init = run('initdb', ['-D', data, '-U', 'postgres', '-A', 'trust',
+    '--encoding=UTF8', '--locale=C.UTF-8'])
   if (init.status !== 0) throw new Error(`INITDB_FAILED: ${init.stderr}`)
 
   const start = run('pg_ctl', ['-D', data, '-w', '-t', '30', '-l', join(dir, 'server.log'),

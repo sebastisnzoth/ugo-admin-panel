@@ -346,3 +346,59 @@ Desbloqueo exacto: reconectar el conector Supabase en Arena autorizando el proye
 Consumo: USD 0 (cero llamadas). Cuotas mensuales: DESCONOCIDAS, límites conservadores
 (20 llamadas / 20 000 tokens por proveedor y día).** Los 118 agentes están *catalogados*;
 catalogar no es operar y ninguna prueba de este documento afirma lo contrario.
+
+---
+
+## 13. Fase 4 — correcciones P0 contra el esquema REAL de Neon
+
+ChatGPT verificó directamente el proyecto `dry-heart-24391962`, base `hive`:
+**9 agentes, 1 tarea finalizada, 0 pendientes**, con estas tablas:
+
+```sql
+hive.agents(id uuid, name text UNIQUE, status text, last_heartbeat timestamptz)
+hive.jobs(id uuid, idempotency_key text, agent_name text, prompt text NOT NULL,
+          status text, created_at timestamptz)
+```
+
+La versión 2.0.0 del paquete se había escrito contra un esquema supuesto. No se aplicó a
+Neon, pero **habría fallado o re-encolado la tarea terminada**. Las doce correcciones:
+
+| # | Corrección | Cómo quedó verificado |
+|---|---|---|
+| 1 | `02_catalog.sql` sobre `agents` real: `agent_key` se **añade** y se rellena con slug único de `name` (acentos plegados, duplicados por orden de `id`) y sólo **después** se crea el índice único; aborta si hay conflicto | 9 agentes reales conservan `name`; `agent_key` único; prueba de la réplica |
+| 2 | `03_queue.sql` y `06_functions.sql` sobre `jobs` real (`idempotency_key`, `agent_name`, `prompt NOT NULL`, `status`, `created_at`) | `enqueue_job` exige `prompt` (`PROMPT_REQUIRED`); `agent_name` enlazado a `agents.name` |
+| 3 | Tareas terminadas preservadas: `DONE→SUCCEEDED`, y el trigger **prohíbe** volver a `QUEUED` (`TERMINAL_STATE_CANNOT_REQUEUE`) | la tarea real sigue `SUCCEEDED` tras reaplicar, re-encolar y `UPDATE` directo |
+| 4 | Compatibilidad `status ⇄ state` sin pérdida: trigger bidireccional + `legacy_status` con el valor original | `status='connected'` → `state=CONNECTED`; `state=CONNECTED` → `status='connected'`; `legacy_status='active'` intacto |
+| 5 | `activate_agent` segura en concurrencia (`pg_try_advisory_xact_lock` + recuento + UPDATE en la misma transacción) | 10 sesiones reales simultáneas → **exactamente 1** `OPERATIVE`; el resto `ACTIVATE_BUSY`/`OPERATIVE_LIMIT_REACHED` |
+| 6 | `reserve_job` no entrega trabajo a agentes deshabilitados/no autorizados (`skipped_unauthorized`), y ejecutar en nombre de un agente no operativo da `AGENT_NOT_AUTHORIZED` | prueba en PGlite y en PostgreSQL real con sesiones paralelas |
+| 7 | `fail_job` valida el vencimiento del lease, igual que `complete`/`heartbeat`, con diagnóstico fino (`LEASE_EXPIRED` ≠ `LEASE_LOST` ≠ `TERMINAL`) | prueba dedicada en ambos motores |
+| 8 | Identidad del destino anclada en el **servidor**: huella `sha256(base, oid, dueño, inet_server_addr, puerto)` persistida; primera aplicación con confirmación explícita; deriva → aborta | `DESTINATION_FIRST_APPLY_REQUIRED` sin confirmación; reaplicación posterior sin ella; huella `f9c5f898…` registrada |
+| 9 | Pruebas contra **réplica exacta** del esquema informado | `tests/hive/fixtures/neon_existing_schema.sql` + `neon-real-schema.test.mjs` (6/6) |
+| 10 | Todas las suites re-ejecutadas | **38/38**: cola 13 · compatibilidad 7 · réplica 6 · concurrencia real 12 |
+| 11 | Publicado en el mismo PR #633 | commits de esta fase en `arena/6f95c7c3-ugo-admin-panel` |
+| 12 | SHA final para que ChatGPT aplique y verifique | ver el mensaje de entrega y el comentario del PR |
+
+### Ciclo completo verificado con `apply.sh` sobre PostgreSQL 16.2 real
+
+```
+preflight  → 9 agentes (active, disabled, idle, paused), 1 tarea, status DONE:1
+apply sin confirmación → DESTINATION_FIRST_APPLY_REQUIRED (no escribe nada)
+apply con confirmación → 13 departamentos · 127 agentes (9+118) · 1 tarea SUCCEEDED · 0 en cola
+re-aplicar             → idempotente, mismos números
+rollback no destructivo→ 127 agentes y la tarea SUCCEEDED siguen ahí
+re-aplicar tras rollback → vuelve a operativo
+```
+
+### Defecto adicional encontrado probando (no leyendo)
+
+El arnés creaba las bases en `SQL_ASCII` (initdb sin `--encoding`). Ahí `lower()` y
+`translate()` trabajan byte a byte y `'QA – Regressão'` producía `qa-regressaeo`. Se
+corrigió el arnés a UTF8 —como Neon— y se añadió `server_encoding` a `hive.meta` como
+evidencia. Sin esta prueba, `agent_key` habría salido corrupto en un destino no-UTF8.
+
+### Veredicto (sin cambios, ahora con el esquema real)
+
+**Agentes operativos: 0. Departamentos funcionales: 0. URL Hive TEST: ninguna.
+Consumo: USD 0. Cuotas mensuales: DESCONOCIDAS** (20 llamadas / 20 000 tokens por
+proveedor y día). Los 127 agentes están catalogados (9 reales + 118 del canon); catalogar
+no es operar.

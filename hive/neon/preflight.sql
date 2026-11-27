@@ -8,13 +8,19 @@
 -- No modifica nada: sólo SELECT sobre catálogos del sistema.
 
 \echo '== destino =='
-select current_database() as database, current_user as role,
-       (select value from hive.meta where key = 'neon_project_id') as marcador_proyecto
-  from (select 1) x
- where to_regclass('hive.meta') is not null
-union all
-select current_database(), current_user, '(hive.meta no existe todavía)'
- where to_regclass('hive.meta') is null;
+do $$
+declare v text;
+begin
+  raise notice 'base=% · rol=% · encoding=% · addr=%',
+    current_database(), current_user, current_setting('server_encoding'),
+    coalesce(inet_server_addr()::text, 'socket');
+  if to_regclass('hive.meta') is not null then
+    execute 'select value from hive.meta where key = ''neon_project_id''' into v;
+    raise notice 'proyecto registrado=%', coalesce(v, '(sin marcador)');
+  else
+    raise notice 'proyecto registrado=(hive.meta no existe todavía)';
+  end if;
+end $$;
 
 \echo '== esquemas presentes =='
 select nspname as esquema from pg_namespace
@@ -52,6 +58,49 @@ end $$;
 
 \echo '== índices existentes en hive =='
 select tablename, indexname, indexdef from pg_indexes where schemaname = 'hive' order by 1, 2;
+
+\echo '== agentes y tareas existentes (lo que hay, no lo que se supone) =='
+do $$
+declare n bigint;
+begin
+  if to_regclass('hive.agents') is not null then
+    execute 'select count(*) from hive.agents' into n;
+    raise notice 'agentes existentes = %', n;
+    if exists (select 1 from information_schema.columns
+                where table_schema='hive' and table_name='agents' and column_name='status') then
+      raise notice 'status distintos = %', (select string_agg(distinct status, ', ') from hive.agents);
+    end if;
+    if exists (select 1 from information_schema.columns
+                where table_schema='hive' and table_name='agents' and column_name='agent_key') then
+      raise notice 'sin agent_key = %', (select count(*) from hive.agents where agent_key is null);
+    end if;
+  end if;
+  if to_regclass('hive.jobs') is not null then
+    execute 'select count(*) from hive.jobs' into n;
+    raise notice 'tareas existentes = %', n;
+    if exists (select 1 from information_schema.columns
+                where table_schema='hive' and table_name='jobs' and column_name='status') then
+      raise notice 'status de tareas = %', (select string_agg(status || ':' || c, ', ')
+        from (select status, count(*) c from hive.jobs group by status) s);
+    end if;
+  end if;
+end $$;
+
+\echo '== huella del destino ya registrada (si existe) =='
+do $$
+declare r record;
+begin
+  if to_regclass('hive.meta') is null then
+    raise notice 'sin hive.meta: primera aplicación, hará falta HIVE_CONFIRM_FIRST_APPLY=APLICAR';
+    return;
+  end if;
+  for r in execute $q$select key, value from hive.meta
+                    where key in ('destination_fingerprint','destination_owner','server_encoding','schema_version')
+                    order by key$q$ loop
+    raise notice '% = %', r.key,
+      case when r.key = 'destination_fingerprint' then left(r.value, 16) || '…' else r.value end;
+  end loop;
+end $$;
 
 \echo '== roles de Hive presentes =='
 select rolname, rolcanlogin from pg_roles where rolname like 'hive\_%' order by 1;

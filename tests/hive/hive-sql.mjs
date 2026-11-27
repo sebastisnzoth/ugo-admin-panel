@@ -18,6 +18,9 @@ export const migrationSql = () => migrationFiles().map(file => readFileSync(file
 export async function applyMigrations(db, { skipDatabaseNameCheck = true } = {}) {
   await db.exec(`select set_config('hive.target_project', '${PROJECT_ID}', false)`)
   await db.exec(`select set_config('hive.target_database', 'hive', false)`)
+  // Primera aplicación: el paquete exige una confirmación explícita (00) porque la
+  // identidad del destino no puede deducirse de una variable; aquí es un motor desechable.
+  await db.exec(`select set_config('hive.confirm_first_apply', 'APLICAR', false)`)
   if (skipDatabaseNameCheck) await db.exec(`select set_config('hive.skip_database_name_check', '1', false)`)
   for (const file of migrationFiles()) await db.exec(readFileSync(file, 'utf8'))
 }

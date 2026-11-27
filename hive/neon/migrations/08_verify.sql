@@ -24,11 +24,15 @@ begin
     raise exception 'VERIFY_FAILED: marcador de proyecto ausente o distinto (%)', coalesce(v_marker, 'null');
   end if;
 
-  -- Columnas críticas presentes (compatibilidad con tablas preexistentes).
-  select string_agg(need.col, ', ') into v_missing
+  -- Columnas críticas presentes, incluidas las del esquema REAL de Neon.
+  select string_agg(need.sch || '.' || need.tbl || '.' || need.col, ', ') into v_missing
     from (values ('hive','jobs','lease_token'), ('hive','jobs','idempotency_key'),
                  ('hive','jobs','state'), ('hive','jobs','available_at'),
-                 ('hive','agents','state'), ('hive','agents','department_id'),
+                 ('hive','jobs','prompt'), ('hive','jobs','agent_name'), ('hive','jobs','status'),
+                 ('hive','jobs','legacy_status'),
+                 ('hive','agents','state'), ('hive','agents','agent_key'),
+                 ('hive','agents','name'), ('hive','agents','status'),
+                 ('hive','agents','last_heartbeat'), ('hive','agents','legacy_status'),
                  ('hive','provider_circuits','blocked_until'),
                  ('hive','job_effects','effect_key')) as need(sch, tbl, col)
    where not exists (select 1 from information_schema.columns c
@@ -41,7 +45,8 @@ begin
   select string_agg(f.name, ', ') into v_missing
     from (values ('enqueue_job'), ('reserve_job'), ('heartbeat_job'), ('complete_job'),
                  ('fail_job'), ('recover_expired_leases'), ('queue_metrics'),
-                 ('activate_agent')) as f(name)
+                 ('activate_agent'), ('lease_state'), ('slug'),
+                 ('state_from_status'), ('state_from_job_status')) as f(name)
    where not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
                       where n.nspname = 'hive' and p.proname = f.name);
   if v_missing is not null then
@@ -65,8 +70,27 @@ begin
     raise exception 'VERIFY_FAILED: el esquema hive contiene tablas de Arena: %', v_missing;
   end if;
 
+  -- Ninguna tarea terminada puede estar en cola: la regla que se rompió en la primera
+  -- aplicación a Neon se comprueba aquí, no se confía en ella.
+  select count(*) into v_agents_expected from hive.jobs
+   where state = 'QUEUED'
+     and lower(coalesce(legacy_status, '')) in ('done','completed','succeeded','success','finished');
+  if v_agents_expected > 0 then
+    raise exception 'VERIFY_FAILED: % tarea(s) terminada(s) quedaron encoladas', v_agents_expected;
+  end if;
+
+  -- prompt NOT NULL y agent_key único son invariantes del esquema real.
+  if exists (select 1 from hive.jobs where prompt is null) then
+    raise exception 'VERIFY_FAILED: hay tareas sin prompt';
+  end if;
+  if exists (select 1 from (select agent_key from hive.agents group by agent_key having count(*) > 1) d) then
+    raise exception 'VERIFY_FAILED: agent_key duplicado';
+  end if;
+
   select count(*) into v_agents_expected from hive.agents where state = 'OPERATIVE';
-  raise notice 'HIVE_VERIFY_OK departamentos=% agentes=% operativos=% version=%',
+  raise notice 'HIVE_VERIFY_OK departamentos=% agentes=% operativos=% tareas_terminadas=% version=% huella=%',
     v_departments, v_agents, v_agents_expected,
-    (select value from hive.meta where key = 'schema_version');
+    (select count(*) from hive.jobs where state in ('SUCCEEDED','FAILED','CANCELLED')),
+    (select value from hive.meta where key = 'schema_version'),
+    left((select value from hive.meta where key = 'destination_fingerprint'), 12);
 end $$;

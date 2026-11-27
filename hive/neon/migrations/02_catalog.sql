@@ -1,12 +1,19 @@
--- UGO Hive · 02 · Catálogo canónico: 13 departamentos, 118 agentes y censo de activación.
+-- UGO Hive · 02 · Catálogo: 13 departamentos, agentes y censo de activación.
 --
--- Los 118 agent_key se generan desde el inventario documentado
--- (docs/UGO_HIVE_MASTER_DISENO_2026-10-18.md §5) y se insertan como REGISTERED:
--- estar registrado NO significa conectado ni operativo. Sólo `corporate-audit-agent`
--- entra como DISABLED porque así consta en el canon (§4: 117 IDLE + 1 DISABLED).
+-- ESQUEMA REAL (verificado por ChatGPT en Neon `dry-heart-24391962`, base `hive`):
+--   hive.agents(id uuid, name text UNIQUE, status text, last_heartbeat timestamptz)
+--   con 9 filas ya existentes.
+-- La primera versión asumía `agent_key` como clave y fallaba contra esa tabla.
 --
--- NO DESTRUCTIVO: el seed usa ON CONFLICT DO NOTHING sobre `agent_key`, de modo que
--- ningún estado, contador ni dato previo del operador se sobrescribe al reaplicar.
+-- Lo que hace esta migración, en orden y sin borrar nada:
+--   1. conserva el `status` original en `legacy_status` (ningún dato se pierde);
+--   2. rellena `agent_key` con un slug único de `name` (deduplicado por id);
+--   3. sólo después crea el índice único de `agent_key`, y aborta si hubiera conflicto;
+--   4. deriva `state` del `status` de forma conservadora: NUNCA promueve a OPERATIVE
+--      por sí sola (9 agentes "active" no pueden saltarse max_operative_agents = 1);
+--   5. siembra el canon con ON CONFLICT DO NOTHING (sin objetivo: tolera conflictos
+--      tanto de `agent_key` como del UNIQUE de `name` ya existente);
+--   6. instala un trigger que mantiene `status` y `state` coherentes en ambos sentidos.
 
 create table if not exists hive.departments (
   id    integer primary key,
@@ -57,25 +64,97 @@ returns integer language sql stable set search_path = '' as $$
   select coalesce((select (value #>> '{}')::integer from hive.settings where key = p_key), p_default);
 $$;
 
+-- Forma REAL de la tabla, tal como existe en Neon. En una base nueva se crea igual.
 create table if not exists hive.agents (
-  agent_key       text primary key,
-  department_id   integer not null,
-  name            text not null,
-  state           text not null default 'REGISTERED',
-  max_concurrency integer not null default 1,
-  source          text,
-  last_seen_at    timestamptz,
-  updated_at      timestamptz not null default now()
+  id             uuid primary key default gen_random_uuid(),
+  name           text unique,
+  status         text,
+  last_heartbeat timestamptz
 );
--- Compatibilidad con una tabla preexistente: se añade lo que falte, nunca se borra nada.
+-- Columnas que el paquete necesita y que la tabla real no tiene. Sólo se añaden.
+alter table hive.agents add column if not exists id              uuid default gen_random_uuid();
+alter table hive.agents add column if not exists agent_key       text;
 alter table hive.agents add column if not exists department_id   integer;
-alter table hive.agents add column if not exists name            text;
-alter table hive.agents add column if not exists state           text default 'REGISTERED';
+alter table hive.agents add column if not exists state           text;
+alter table hive.agents add column if not exists legacy_status   text;
 alter table hive.agents add column if not exists max_concurrency integer default 1;
 alter table hive.agents add column if not exists source          text;
+alter table hive.agents add column if not exists last_heartbeat timestamptz;
 alter table hive.agents add column if not exists last_seen_at    timestamptz;
 alter table hive.agents add column if not exists updated_at      timestamptz default now();
 
+-- Slug estable y seguro para usar como clave.
+-- Sin `unaccent` (no siempre está disponible): se pliegan los acentos latinos con
+-- translate(), para que 'QA – Regressão' dé 'qa-regressao' y no 'qa-regress-o'.
+create or replace function hive.slug(p_text text)
+returns text language sql immutable set search_path = '' as $$
+  -- translate() exige listas de igual longitud: 25 acentos → 25 letras base.
+  select coalesce(nullif(trim(both '-' from regexp_replace(
+           translate(lower(coalesce(p_text, '')),
+             'áàâãäåéèêëíìîïóòôõöúùûüçñýÿ',
+             'aaaaaaeeeeiiiiooooouuuucnyy'),
+           '[^a-z0-9]+', '-', 'g')), ''), '');
+$$;
+
+-- `id` es la clave real de la tabla; en una tabla de otro diseño puede faltar.
+update hive.agents set id = gen_random_uuid() where id is null;
+create unique index if not exists hive_agents_id_key on hive.agents (id);
+
+-- 1 · Conservar el status original antes de tocar nada.
+update hive.agents set legacy_status = status
+ where legacy_status is null and status is not null;
+update hive.agents set last_seen_at = coalesce(last_seen_at, last_heartbeat)
+ where last_seen_at is null and last_heartbeat is not null;
+update hive.agents set name = 'agente-' || left(id::text, 8)
+ where name is null;
+
+-- 2 · agent_key único derivado de `name`: duplicados resueltos por orden de `id`.
+with base as (
+  select id,
+         coalesce(nullif(hive.slug(name), ''), 'agent') as slug,
+         row_number() over (
+           partition by coalesce(nullif(hive.slug(name), ''), 'agent')
+           order by id
+         ) as rn
+    from hive.agents
+   where agent_key is null
+), candidate as (
+  select id, case when rn = 1 then slug else slug || '-' || rn end as key from base
+)
+update hive.agents a set agent_key = c.key from candidate c where a.id = c.id;
+
+-- 3 · Nunca se "resuelve" un conflicto borrando: se aborta y decide el operador.
+do $$
+declare v_dup text;
+begin
+  select string_agg(agent_key, ', ') into v_dup
+    from (select agent_key from hive.agents where agent_key is not null
+           group by agent_key having count(*) > 1) d;
+  if v_dup is not null then
+    raise exception 'AGENT_KEY_CONFLICT: claves duplicadas (%); resolver a mano, no se borra nada', v_dup;
+  end if;
+  if exists (select 1 from hive.agents where agent_key is null) then
+    raise exception 'AGENT_KEY_UNRESOLVED: quedaron agentes sin agent_key';
+  end if;
+end $$;
+
+alter table hive.agents alter column agent_key set not null;
+create unique index if not exists hive_agents_agent_key_key on hive.agents (agent_key);
+
+-- 4 · `state` se deriva del `status` real, de forma conservadora.
+create or replace function hive.state_from_status(p_status text)
+returns text language sql immutable set search_path = '' as $$
+  select case
+    when lower(coalesce(p_status, '')) in ('disabled','inactive','paused','off','stopped','suspended') then 'DISABLED'
+    when lower(coalesce(p_status, '')) in ('connected','online','ready','healthy')                    then 'CONNECTED'
+    when lower(p_status) = 'operative'                                                               then 'OPERATIVE'
+    else 'REGISTERED'
+  end;
+$$;
+update hive.agents set state = hive.state_from_status(status) where state is null;
+
+-- 5 · Canon: 118 agentes. `on conflict do nothing` sin objetivo tolera el UNIQUE(name)
+--     de la tabla real además del UNIQUE(agent_key): ningún nombre existente se duplica.
 insert into hive.agents (agent_key, department_id, name, state, source)
 select v.agent_key, v.department_id, initcap(replace(v.agent_key, '-', ' ')), v.state,
        'docs/UGO_HIVE_MASTER_DISENO_2026-10-18.md §5'
@@ -199,10 +278,46 @@ select v.agent_key, v.department_id, initcap(replace(v.agent_key, '-', ' ')), v.
   ('internal-auditor', 14, 'REGISTERED'),
   ('internal-control-inspector', 14, 'REGISTERED')
        ) as v(agent_key, department_id, state)
-on conflict (agent_key) do nothing;
+on conflict do nothing;
 
 create index if not exists hive_agents_department on hive.agents (department_id);
 create index if not exists hive_agents_state      on hive.agents (state);
+
+-- Los agentes del canon entran como REGISTERED. `status` se mantiene coherente con
+-- `state` para que cualquier lector de la tabla real siga viendo algo consistente.
+update hive.agents set status = lower(state)
+ where agent_key is not null and (status is null or status is distinct from lower(state));
+
+-- 6 · Sincronización bidireccional status ⇄ state, sin recursión (trigger BEFORE).
+create or replace function hive.sync_agent_status()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if tg_op = 'INSERT' then
+    new.agent_key := coalesce(new.agent_key, nullif(hive.slug(new.name), ''));
+    new.legacy_status := coalesce(new.legacy_status, new.status);
+    if new.state is null then new.state := hive.state_from_status(new.status); end if;
+    new.status := lower(new.state);
+    new.updated_at := coalesce(new.updated_at, now());
+    return new;
+  end if;
+
+  if new.state is distinct from old.state then
+    -- La fuente es `state`: se refleja en `status` y se conserva el valor previo.
+    new.legacy_status := coalesce(old.legacy_status, old.status);
+    new.status := lower(new.state);
+  elsif new.status is distinct from old.status then
+    -- Escritura externa sobre `status`: se traduce a `state` sin promover a OPERATIVE.
+    new.legacy_status := coalesce(old.legacy_status, old.status);
+    new.state := hive.state_from_status(new.status);
+  end if;
+  if new.agent_key is null then new.agent_key := nullif(hive.slug(new.name), ''); end if;
+  return new;
+end $$;
+
+drop trigger if exists hive_agents_sync_status on hive.agents;
+create trigger hive_agents_sync_status
+  before insert or update on hive.agents
+  for each row execute function hive.sync_agent_status();
 
 -- Censo y activación controlada. Impide encender los 118 agentes a la vez.
 create or replace function hive.agent_census()
@@ -213,30 +328,50 @@ returns jsonb language sql stable set search_path = '' as $$
     'operative',  (select count(*) from hive.agents where state = 'OPERATIVE'),
     'disabled',   (select count(*) from hive.agents where state = 'DISABLED'),
     'total',      (select count(*) from hive.agents),
+    'legacy_status_preserved', (select count(*) from hive.agents where legacy_status is not null),
     'max_operative_agents', hive.setting_int('max_operative_agents', 1));
 $$;
 
-create or replace function hive.activate_agent(p_agent_key text, p_operative boolean default false)
+-- Activación controlada y SEGURA EN CONCURENCIA.
+-- La versión anterior contaba los operativos y luego actualizaba: dos sesiones
+-- simultáneas podían leer "0 operativos" y activar dos. Ahora el recuento y el UPDATE
+-- van bajo un candado de transacción no bloqueante: la segunda sesión recibe
+-- ACTIVATE_BUSY en lugar de superar el límite.
+create or replace function hive.activate_agent(p_agent text, p_operative boolean default false)
 returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
-  v_state text;
+  v_lock constant bigint := hashtext('ugo_hive_activate_agent');
+  v_id uuid; v_key text; v_state text;
   v_limit integer := hive.setting_int('max_operative_agents', 1);
   v_operative integer;
   v_target text := case when p_operative then 'OPERATIVE' else 'CONNECTED' end;
 begin
-  select state into v_state from hive.agents where agent_key = p_agent_key;
-  if v_state is null then raise exception 'AGENT_NOT_REGISTERED: %', p_agent_key; end if;
-  if v_state = 'DISABLED' then raise exception 'AGENT_DISABLED: %', p_agent_key; end if;
+  if p_agent is null or length(trim(p_agent)) = 0 then
+    raise exception 'AGENT_NOT_REGISTERED: clave vacía';
+  end if;
+  if not pg_try_advisory_xact_lock(v_lock) then
+    return jsonb_build_object('ok', false, 'code', 'ACTIVATE_BUSY',
+                              'detail', 'otra activación en curso; reintentar con backoff acotado');
+  end if;
+
+  select id, agent_key, state into v_id, v_key, v_state
+    from hive.agents where agent_key = p_agent or name = p_agent;
+  if v_id is null then raise exception 'AGENT_NOT_REGISTERED: %', p_agent; end if;
+  if v_state = 'DISABLED' then raise exception 'AGENT_DISABLED: %', v_key; end if;
+
   if p_operative then
-    select count(*) into v_operative from hive.agents where state = 'OPERATIVE' and agent_key <> p_agent_key;
+    select count(*) into v_operative from hive.agents
+     where state = 'OPERATIVE' and id <> v_id;
     if v_operative >= v_limit then
       raise exception 'OPERATIVE_LIMIT_REACHED: % de % agentes operativos; subir max_operative_agents sólo tras medir consumo', v_operative, v_limit;
     end if;
   end if;
+
   update hive.agents set state = v_target, last_seen_at = now(), updated_at = now()
-   where agent_key = p_agent_key;
-  return jsonb_build_object('ok', true, 'agent_key', p_agent_key, 'state', v_target,
-                            'max_operative_agents', v_limit);
+   where id = v_id;
+  return jsonb_build_object('ok', true, 'agent_key', v_key, 'state', v_target,
+                            'max_operative_agents', v_limit,
+                            'legacy_status_kept', (select legacy_status from hive.agents where id = v_id));
 end $$;
 
 create or replace function hive.deactivate_agent(p_agent_key text)

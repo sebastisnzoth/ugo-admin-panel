@@ -25,8 +25,9 @@ grant select on hive.departments, hive.agents, hive.settings, hive.meta,
                 hive.jobs, hive.job_events, hive.job_effects,
                 hive.provider_daily_usage, hive.provider_circuits
   to hive_worker;
-grant execute on function hive.enqueue_job(text, integer, text, smallint, jsonb, timestamptz, integer) to hive_worker;
-grant execute on function hive.reserve_job(text, integer)                to hive_worker;
+grant execute on function hive.enqueue_job(text, integer, text, smallint, jsonb, timestamptz, integer, text) to hive_worker;
+grant execute on function hive.reserve_job(text, integer, text)          to hive_worker;
+grant execute on function hive.lease_state(uuid, text, bigint)           to hive_worker;
 grant execute on function hive.heartbeat_job(uuid, text, bigint, integer) to hive_worker;
 grant execute on function hive.complete_job(uuid, text, bigint, jsonb, text) to hive_worker;
 grant execute on function hive.fail_job(uuid, text, bigint, text, integer)   to hive_worker;
@@ -50,6 +51,7 @@ grant execute on function hive.agent_census()            to hive_reader;
 grant execute on function hive.queue_metrics()           to hive_reader;
 grant execute on function hive.effect_already_applied(text) to hive_reader;
 grant execute on function hive.setting_int(text, integer)   to hive_reader;
+grant execute on function hive.lease_state(uuid, text, bigint) to hive_reader;
 
 -- Cualquier escritura, DDL o secuencia queda fuera del alcance del worker y del reader.
 revoke create on schema hive from hive_worker, hive_reader;

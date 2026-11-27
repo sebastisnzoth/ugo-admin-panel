@@ -6,7 +6,8 @@ import { join } from 'node:path'
 import { startPostgres, postgresAvailable, migrationFiles } from './pg-harness.mjs'
 
 const ROOT = process.cwd()
-const SUITES = ['tests/hive/neon-queue.test.mjs', 'tests/hive/neon-compat.test.mjs', 'tests/hive/neon-concurrency.test.mjs']
+const SUITES = ['tests/hive/neon-queue.test.mjs', 'tests/hive/neon-compat.test.mjs',
+                'tests/hive/neon-real-schema.test.mjs', 'tests/hive/neon-concurrency.test.mjs']
 
 function runSuite(file) {
   const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', file], {
@@ -34,7 +35,7 @@ let database = null
 if (postgresAvailable()) {
   server = await startPostgres()
   for (const file of migrationFiles(ROOT)) {
-    const result = server.psqlFile(file, { vars: { 'hive.target_project': 'dry-heart-24391962', 'hive.target_database': 'hive' } })
+    const result = server.psqlFile(file, { vars: { 'hive.target_project': 'dry-heart-24391962', 'hive.target_database': 'hive', 'hive.confirm_first_apply': 'APLICAR' } })
     if (!result.ok) throw new Error(`MIGRATION_FAILED ${file}: ${result.stderr}`)
   }
   const q = sql => server.psql(sql)
@@ -42,9 +43,15 @@ if (postgresAvailable()) {
     server_version: q('select version()'),
     package_version: q(`select value from hive.meta where key='schema_version'`),
     destination_check: q(`select value from hive.meta where key='destination_check'`),
+    destination_owner: q(`select value from hive.meta where key='destination_owner'`),
+    server_encoding: q(`select value from hive.meta where key='server_encoding'`),
+    fingerprint_prefix: q(`select left(value, 16) from hive.meta where key='destination_fingerprint'`),
     departments: Number(q('select count(*) from hive.departments')),
     agents_registered_in_catalog: Number(q('select count(*) from hive.agents')),
     agents_operative: Number(q(`select count(*) from hive.agents where state='OPERATIVE'`)),
+    agents_disabled: Number(q(`select count(*) from hive.agents where state='DISABLED'`)),
+    jobs_by_state: q(`select coalesce(string_agg(state || ':' || c, ', ' order by state), '(sin tareas)')
+                       from (select state, count(*) c from hive.jobs group by state) s`),
     settings: Object.fromEntries(q(`select key || '=' || value::text from hive.settings order by key`).split('\n').map(line => line.split('='))),
     roles: q(`select string_agg(rolname, ', ' order by rolname) from pg_roles where rolname like 'hive\\_%'`),
     hive_functions: Number(q(`select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='hive'`)),

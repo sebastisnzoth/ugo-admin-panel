@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-27T21:49:07.311Z",
+  "generated_at": "2026-11-27T22:29:01.222Z",
   "generator": "scripts/hive/neon-evidence.mjs",
   "package": {
-    "version": "2.0.0",
+    "version": "2.1.0",
     "migrations": [
       "00_destination_and_meta.sql",
       "01_roles.sql",
@@ -19,11 +19,16 @@
   },
   "database": {
     "server_version": "PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit",
-    "package_version": "2.0.0",
+    "package_version": "2.1.0",
     "destination_check": "full",
+    "destination_owner": "postgres",
+    "server_encoding": "UTF8",
+    "fingerprint_prefix": "a0eab7c51f190f4a",
     "departments": 13,
     "agents_registered_in_catalog": 118,
     "agents_operative": 0,
+    "agents_disabled": 1,
+    "jobs_by_state": "(sin tareas)",
     "settings": {
       "daily_calls_per_provider": "20",
       "daily_tokens_per_provider": "20000",
@@ -33,7 +38,7 @@
       "max_operative_agents": "1"
     },
     "roles": "hive_migrator, hive_reader, hive_worker",
-    "hive_functions": 14,
+    "hive_functions": 20,
     "arena_tables_inside_hive": 0
   },
   "suites": [
@@ -78,10 +83,26 @@
       ]
     },
     {
+      "file": "tests/hive/neon-real-schema.test.mjs",
+      "exit_code": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "names": [
+        "the migration applies on the real schema and loses no agent and no task",
+        "a finished task can never return to the queue",
+        "prompt is mandatory and agent_name stays linked to the real agents table",
+        "reserve never hands work to a disabled or non-operative agent",
+        "status and state stay coherent in both directions, keeping the original value",
+        "activation limit holds against repeated attempts on the real catalog"
+      ]
+    },
+    {
       "file": "tests/hive/neon-concurrency.test.mjs",
       "exit_code": 0,
-      "tests": 8,
-      "pass": 8,
+      "tests": 12,
+      "pass": 12,
       "fail": 0,
       "skipped": 0,
       "names": [
@@ -92,7 +113,11 @@
         "two sessions completing the same job with the same token: exactly one wins",
         "external effects are idempotent by effect_key even when the job runs twice",
         "concurrent recovery by two sessions requeues each expired lease exactly once",
-        "ten sessions enqueueing the same idempotency key create a single job"
+        "ten sessions enqueueing the same idempotency key create a single job",
+        "ten sessions activating agents at once: exactly one becomes OPERATIVE",
+        "a task addressed to a disabled agent is never leased by any session",
+        "fail_job refuses an expired lease instead of stealing the retry",
+        "the pre-existing 9 agents and the finished task survive the whole run"
       ]
     }
   ],
