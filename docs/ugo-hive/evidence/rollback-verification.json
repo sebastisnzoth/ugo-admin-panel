@@ -1,13 +1,13 @@
 {
   "check": "HIVE_PR_ROLLBACK_VERIFIED",
   "base": "d2fe61e9ecc85e491d3839cb6885d3802d9c06de",
-  "head": "HEAD",
+  "head": "d294b3a",
   "base_tree": "2c06f6da6fc5afba3684fd87ea4fb4aa1dd1ebf1",
   "commits": [
     "67299aa7ed61dced17e4a0193f8cf53206fc7c2c",
     "b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd",
     "0af0912060c6ec03b963c9d0a351639050cbc8ab",
-    "39a8ce54d08105b18836ce372a1f8926782b4687"
+    "d294b3afa24f2183b5f73c16b6a8f565aaf7ccae"
   ],
   "merge_commits": [],
   "changed_files": [
@@ -84,10 +84,11 @@
       "path": "tests/hive/neon-queue.test.mjs"
     }
   ],
-  "revert_commit": "05d7b4a9c5329afe9b458caea5d71a516e77a441",
+  "revert_commit": "457d908bb244b1b03aae1d0732988f110399180d",
   "tree_restored": true,
   "conflict": null,
-  "procedure": "git revert 39a8ce54d08105b18836ce372a1f8926782b4687 0af0912060c6ec03b963c9d0a351639050cbc8ab b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd 67299aa7ed61dced17e4a0193f8cf53206fc7c2c",
+  "procedure": "git revert d294b3afa24f2183b5f73c16b6a8f565aaf7ccae 0af0912060c6ec03b963c9d0a351639050cbc8ab b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd 67299aa7ed61dced17e4a0193f8cf53206fc7c2c",
   "destructive_commands_used": false,
+  "note": "rango verificado en el momento de generar la evidencia; volver a ejecutar antes de revertir",
   "verdict": "PASS"
 }

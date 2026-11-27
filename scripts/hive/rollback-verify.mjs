@@ -85,6 +85,10 @@ export function verifyRollback(root, base, head) {
       ? `git revert -m 1 <merge-sha>  # or: git revert ${commits.slice().reverse().join(' ')}`
       : `git revert ${commits.slice().reverse().join(' ')}`,
     destructive_commands_used: false,
+    // A commit cannot contain the hash of itself, so the commit that only adds this
+    // evidence file is by construction excluded from `commits`. It carries no code
+    // and must still be part of the real revert: re-run this verifier at rollback time.
+    note: 'rango verificado en el momento de generar la evidencia; volver a ejecutar antes de revertir',
     verdict: treeRestored && conflictsFree(conflict) ? 'PASS' : 'FAIL',
   }
 }
