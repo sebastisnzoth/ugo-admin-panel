@@ -306,7 +306,41 @@ Defectos reales encontrados por las pruebas en esta fase:
 - Rol de login del worker (`hive_worker` es grupo NOLOGIN): lo crea el operador.
 - Un job real contra un proveedor: exige credencial de proveedor y consume presupuesto.
 
-### 12.3 Veredicto vigente (sin cambios en lo esencial)
+### 12.3 P5 · caída total de Hive: hasta dónde se puede demostrar hoy
+
+Lo demostrado (**HECHO**):
+
+- La auditoría de independencia recorre **333 archivos de runtime** y exige 0 referencias
+  a Hive fuera de la consola Super Admin (`verdict: PASS`, `scripts/hive/isolation-audit.mjs`).
+- Los **boot files** de Arena no pueden referenciar Hive (prueba que falla si se añade).
+- La única llamada de red a Hive está acotada a **8 s**, con `AbortController`, sin
+  `setInterval`, sin reintentos, y el chat/la inferencia están **desactivados** en la UI.
+  Con Hive caído, la consola muestra `OFFLINE` / `SIN RESPUESTA EN 8 S` y Arena no
+  cambia su arranque: no hay import de Hive en el camino de boot ni en las Edge Functions
+  de Arena.
+
+Lo **NO** demostrado, y por qué (**PENDIENTE/BLOQUEADO**, sin adornos):
+
+- Una prueba E2E en navegador (caída simulada de Hive con la app abierta) exige un
+  despliegue TEST. No existe: la instrucción vigente es **un único despliegue TEST final
+  cuando todo esté aprobado**, y además no hay navegador headless disponible en este
+  entorno (la descarga de binarios está fuera de la red permitida).
+- Por eso P5 se declara **verificado a nivel de unidad + auditoría estática**, nunca
+  "E2E demostrado". Inventar esa prueba sería exactamente lo que no se hace.
+
+### 12.4 Inventario de tablas `hive.*` preexistentes vía conector Supabase
+
+El conector Supabase está activado, y `list_projects` devuelve **`{"items":[]}`**: la
+autorización concedida no expone ningún proyecto, así que **no se puede inspeccionar** si
+`hive.agents` / `hive.jobs` / `hive.provider_circuits` existen en la base de Arena.
+
+Consecuencia asumida: el paquete **no depende** de saberlo. Se comporta igual con base
+vacía o con tablas legacy, y eso está probado (`tests/hive/neon-compat.test.mjs`, 7/7,
+con `agents`/`jobs`/`provider_circuits` de otro diseño y 6 filas que sobreviven intactas).
+Desbloqueo exacto: reconectar el conector Supabase en Arena autorizando el proyecto
+`trfsjuseqjxlhrxuvdsm` (sólo lectura), o aportar el secreto `HIVE_TEST_DATABASE_URL` de Neon.
+
+### 12.5 Veredicto vigente (sin cambios en lo esencial)
 
 **Agentes operativos: 0. Departamentos funcionales: 0. URL Hive TEST: ninguna.
 Consumo: USD 0 (cero llamadas). Cuotas mensuales: DESCONOCIDAS, límites conservadores
