@@ -42,15 +42,19 @@ jobs:
         run: node scripts/assert-test-environment.mjs
       - name: Hive ⇄ Arena isolation audit
         run: node scripts/hive/isolation-audit.mjs --out artifacts/hive-isolation-audit.json
-      - name: Real PostgreSQL for genuine concurrency evidence
+      - name: Real PostgreSQL engine for genuine concurrency evidence
         run: |
-          python3 -m venv /tmp/pgenv
-          /tmp/pgenv/bin/pip install --quiet --disable-pip-version-check pgserver
-          /tmp/pgenv/bin/python -c "import pgserver, pathlib; print('pgserver ready:', pathlib.Path(pgserver.__file__).parent)"
+          set -uo pipefail
+          # The runner image ships PostgreSQL; install it only if it is really absent.
+          if ! node scripts/hive/ensure-postgres.mjs; then
+            echo "Instalando PostgreSQL del sistema..."
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql
+          fi
+          node scripts/hive/ensure-postgres.mjs
 
       - name: Hive contracts, quota engine and isolation rules
         env:
-          PG_VENV: /tmp/pgenv
           # In CI a missing PostgreSQL is a failure, never a silent skip.
           HIVE_REQUIRE_REAL_POSTGRES: '1'
         run: |
