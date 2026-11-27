@@ -6,8 +6,8 @@
     "cannot see Hive connectivity failures caused by DNS, TLS or platform quotas",
     "detects the credential names listed in SECRET_TOKENS only"
   ],
-  "generated_at": "2026-11-27T20:52:42.111Z",
-  "repo_sha": "d2fe61e9ecc85e491d3839cb6885d3802d9c06de",
+  "generated_at": "2026-11-27T21:07:03.294Z",
+  "repo_sha": "b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd",
   "scanned_files": 333,
   "hive_referencing_files": [
     "src/mvp/HiveConsole.tsx",
