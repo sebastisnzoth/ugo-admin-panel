@@ -4,14 +4,15 @@ import { PGlite } from '@electric-sql/pglite'
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { applyMigrations, migrationSql } from './hive-sql.mjs'
 
-const sql = readFileSync('hive/neon/001_hive_core.sql', 'utf8')
+const sql = migrationSql()
 
 async function fresh() {
   const dir = mkdtempSync(join(tmpdir(), 'ugo-hive-neon-'))
   const db = new PGlite(dir)
   await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;`)
-  await db.exec(sql)
+  await applyMigrations(db)
   return {
     dir,
     db,
@@ -27,11 +28,15 @@ const call = async (db, fn, params = []) => (await db.query(`select hive.${fn}($
 test('the schema is idempotent and its catalog is the canonical 13 departments', async () => {
   const { db, close } = await fresh()
   try {
-    await db.exec(sql) // second application must be a no-op, not an error
+    await applyMigrations(db) // second application must be a no-op, not an error
     const departments = await db.query('select id, name from hive.departments order by id')
     assert.deepEqual(departments.rows.map(row => row.id), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14])
     const settings = await db.query(`select count(*)::int as n from hive.settings`)
-    assert.equal(settings.rows[0].n, 5)
+    assert.equal(settings.rows[0].n, 6)
+    // The destination gate records which project this database belongs to.
+    assert.equal((await db.query(`select value from hive.meta where key='neon_project_id'`)).rows[0].value, 'dry-heart-24391962')
+    // A non-empty base is never assumed: applying twice must not multiply the census.
+    assert.equal((await db.query(`select count(*)::int as n from hive.agents`)).rows[0].n, 118)
     // Defaults must be conservative: one job at a time, bounded retries.
     assert.equal((await db.query(`select hive.setting_int('max_concurrent_jobs', 99) as v`)).rows[0].v, 1)
     assert.equal((await db.query(`select hive.setting_int('default_max_attempts', 99) as v`)).rows[0].v, 3)
@@ -68,7 +73,7 @@ test('reservation holds one job at a time and releases the slot on completion', 
     const second = await call(db, 'reserve_job', ['worker-b', 120])
     assert.equal(second.leased, false)
     assert.equal(second.code, 'CONCURRENCY_LIMIT')
-    const done = await call(db, 'complete_job', [first.job.id, 'worker-a', { ok: true }])
+    const done = await call(db, 'complete_job', [first.job.id, 'worker-a', first.lease_token, { ok: true }])
     assert.equal(done.code, 'SUCCEEDED')
     const third = await call(db, 'reserve_job', ['worker-b', 120])
     assert.equal(third.leased, true)
@@ -83,10 +88,10 @@ test('a lease can only be used by its owner and only while it is valid', async (
   try {
     await call(db, 'enqueue_job', ['mission-020-j1', 8])
     const lease = await call(db, 'reserve_job', ['worker-a', 60])
-    assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-b', {}])).code, 'LEASE_LOST')
-    assert.equal((await call(db, 'heartbeat_job', [lease.job.id, 'worker-b', 60])).code, 'LEASE_LOST')
+    assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-b', lease.lease_token, {}])).code, 'LEASE_LOST')
+    assert.equal((await call(db, 'heartbeat_job', [lease.job.id, 'worker-b', lease.lease_token, 60])).code, 'LEASE_LOST')
     await db.exec(`update hive.jobs set lease_expires_at = now() - interval '1 second' where id = '${lease.job.id}'`)
-    assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-a', {}])).code, 'LEASE_LOST')
+    assert.equal((await call(db, 'complete_job', [lease.job.id, 'worker-a', lease.lease_token, {}])).code, 'LEASE_LOST')
   } finally {
     await close()
   }
@@ -118,7 +123,7 @@ test('a healthy heartbeat protects a running job from recovery', async () => {
   try {
     await call(db, 'enqueue_job', ['mission-040-j1', 8])
     const lease = await call(db, 'reserve_job', ['worker-a', 60])
-    const beat = await call(db, 'heartbeat_job', [lease.job.id, 'worker-a', 60])
+    const beat = await call(db, 'heartbeat_job', [lease.job.id, 'worker-a', lease.lease_token, 60])
     assert.equal(beat.code, 'HEARTBEAT')
     assert.equal((await call(db, 'recover_expired_leases', [50])).requeued, 0)
     assert.equal((await db.query(`select state from hive.jobs where id = '${lease.job.id}'`)).rows[0].state, 'LEASED')
@@ -132,7 +137,7 @@ test('retries are bounded, back off and end in FAILED without an infinite loop',
   try {
     await call(db, 'enqueue_job', ['mission-050-j1', 9, null, 100, {}, null, 2])
     const first = await call(db, 'reserve_job', ['worker-a', 60])
-    const retry = await call(db, 'fail_job', [first.job.id, 'worker-a', 'boom', 30])
+    const retry = await call(db, 'fail_job', [first.job.id, 'worker-a', first.lease_token, 'boom', 30])
     assert.equal(retry.code, 'RETRY_SCHEDULED')
     assert.ok(retry.delay_seconds >= 15, 'backoff must be positive')
     // Not runnable until the backoff elapses.
@@ -140,7 +145,7 @@ test('retries are bounded, back off and end in FAILED without an infinite loop',
     await db.exec(`update hive.jobs set available_at = now() - interval '1 second' where id = '${first.job.id}'`)
     const second = await call(db, 'reserve_job', ['worker-a', 60])
     assert.equal(second.job.attempt, 2)
-    const final = await call(db, 'fail_job', [second.job.id, 'worker-a', 'boom again', 30])
+    const final = await call(db, 'fail_job', [second.job.id, 'worker-a', second.lease_token, 'boom again', 30])
     assert.equal(final.code, 'FAILED_FINAL')
     assert.equal((await call(db, 'reserve_job', ['worker-a', 60])).code, 'QUEUE_EMPTY')
     const attempts = (await db.query(`select attempts, max_attempts, state from hive.jobs where id = '${first.job.id}'`)).rows[0]
@@ -208,22 +213,22 @@ test('recording a provider call opens the circuit once the quota is exhausted', 
 test('queue metrics are real counts and separate registered / connected / operative agents', async () => {
   const { db, close } = await fresh()
   try {
+    // Operator action over the seeded census: states change, rows are never duplicated.
     await db.exec(`
-      insert into hive.agents (agent_key, department_id, name, state) values
-        ('qa-director', 9, 'QA Director', 'OPERATIVE'),
-        ('judge', 9, 'Deterministic Judge', 'CONNECTED'),
-        ('sentinel', 1, 'Sentinel', 'REGISTERED'),
-        ('corporate-audit-agent', 14, 'Corporate Audit', 'DISABLED');`)
+      update hive.agents set state='OPERATIVE' where agent_key='qa-director';
+      update hive.agents set state='CONNECTED' where agent_key='deterministic-judge';
+      update hive.agents set state='CONNECTED' where agent_key='meta-qa-agent';`)
     await call(db, 'enqueue_job', ['mission-070-j1', 9])
     const lease = await call(db, 'reserve_job', ['worker-a', 60])
-    await call(db, 'complete_job', [lease.job.id, 'worker-a', { ok: true }])
+    await call(db, 'complete_job', [lease.job.id, 'worker-a', lease.lease_token, { ok: true }])
     const metrics = await call(db, 'queue_metrics', [])
     assert.deepEqual(
       { succeeded: metrics.succeeded, queued: metrics.queued, leased: metrics.leased },
       { succeeded: 1, queued: 0, leased: 0 })
-    assert.deepEqual(
-      { registered: metrics.agents_registered, connected: metrics.agents_connected, operative: metrics.agents_operative, disabled: metrics.agents_disabled },
-      { registered: 4, connected: 1, operative: 1, disabled: 1 })
+    assert.equal(metrics.agents_operative, 1)
+    assert.equal(metrics.agents_connected, 2)
+    assert.equal(metrics.agents_disabled, 1)
+    assert.equal(metrics.agents_registered + metrics.agents_connected + metrics.agents_operative + metrics.agents_disabled, 118)
   } finally {
     await close()
   }

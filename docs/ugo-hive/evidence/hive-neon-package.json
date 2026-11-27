@@ -1,0 +1,107 @@
+{
+  "generated_at": "2026-11-27T21:49:07.311Z",
+  "generator": "scripts/hive/neon-evidence.mjs",
+  "package": {
+    "version": "2.0.0",
+    "migrations": [
+      "00_destination_and_meta.sql",
+      "01_roles.sql",
+      "02_catalog.sql",
+      "03_queue.sql",
+      "04_job_effects.sql",
+      "05_provider_budget.sql",
+      "06_functions.sql",
+      "07_grants.sql",
+      "08_verify.sql"
+    ],
+    "destructive_statements": [],
+    "non_destructive": true
+  },
+  "database": {
+    "server_version": "PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit",
+    "package_version": "2.0.0",
+    "destination_check": "full",
+    "departments": 13,
+    "agents_registered_in_catalog": 118,
+    "agents_operative": 0,
+    "settings": {
+      "daily_calls_per_provider": "20",
+      "daily_tokens_per_provider": "20000",
+      "default_max_attempts": "3",
+      "lease_seconds": "120",
+      "max_concurrent_jobs": "1",
+      "max_operative_agents": "1"
+    },
+    "roles": "hive_migrator, hive_reader, hive_worker",
+    "hive_functions": 14,
+    "arena_tables_inside_hive": 0
+  },
+  "suites": [
+    {
+      "file": "tests/hive/neon-queue.test.mjs",
+      "exit_code": 0,
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "skipped": 0,
+      "names": [
+        "the schema is idempotent and its catalog is the canonical 13 departments",
+        "enqueue is idempotent: the same key never creates a second job",
+        "reservation holds one job at a time and releases the slot on completion",
+        "a lease can only be used by its owner and only while it is valid",
+        "interrupted work is recovered exactly once and never duplicated",
+        "a healthy heartbeat protects a running job from recovery",
+        "retries are bounded, back off and end in FAILED without an infinite loop",
+        "expired leases that exhausted their attempts fail instead of looping forever",
+        "the quota ladder stops work at 50 / 70 / 85 / 95 percent and declares monthly quota unknown",
+        "recording a provider call opens the circuit once the quota is exhausted",
+        "queue metrics are real counts and separate registered / connected / operative agents",
+        "least privilege: workers cannot write tables directly and reader cannot execute queue operations",
+        "the schema contains no statement about Arena tables or privileged roles"
+      ]
+    },
+    {
+      "file": "tests/hive/neon-compat.test.mjs",
+      "exit_code": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "names": [
+        "the package applies on top of a pre-existing hive schema without losing a single row",
+        "re-applying is a no-op and never duplicates the census or the catalog",
+        "duplicated idempotency keys abort the migration instead of deleting data",
+        "the destination gate rejects any target that is not the authorised Hive TEST project",
+        "the destination gate rejects a database that looks like UGO Arena",
+        "the destination gate rejects a database already marked with another project",
+        "agents activate one at a time: the census guard blocks a mass deployment of 118"
+      ]
+    },
+    {
+      "file": "tests/hive/neon-concurrency.test.mjs",
+      "exit_code": 0,
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0,
+      "names": [
+        "real PostgreSQL is available for concurrency evidence",
+        "20 independent sessions compete for one slot: exactly one lease is granted",
+        "raising max_concurrent_jobs to 3 grants exactly 3 distinct leases under contention",
+        "fencing token: a worker whose lease expired cannot complete the job",
+        "two sessions completing the same job with the same token: exactly one wins",
+        "external effects are idempotent by effect_key even when the job runs twice",
+        "concurrent recovery by two sessions requeues each expired lease exactly once",
+        "ten sessions enqueueing the same idempotency key create a single job"
+      ]
+    }
+  ],
+  "verdict": {
+    "suites_green": true,
+    "failed_suites": [],
+    "operative_agents": 0,
+    "agents_operational": false,
+    "departments_functional": false,
+    "note": "Los 118 agentes están CATALOGADOS. Ninguno se declara operativo: no se ha ejecutado un job real contra ningún proveedor."
+  }
+}

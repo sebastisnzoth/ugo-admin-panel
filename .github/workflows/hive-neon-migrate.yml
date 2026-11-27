@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   migrate:
-    name: Apply hive/neon/001_hive_core.sql
+    name: Apply hive/neon/migrations (versioned package, one transaction)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -55,14 +55,24 @@ jobs:
       - name: Install psql
         run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
 
-      - name: Apply schema (idempotent)
+      - name: Preflight inventory (read-only, never writes)
         env:
           HIVE_TEST_DATABASE_URL: ${{ secrets.HIVE_TEST_DATABASE_URL }}
+        run: hive/neon/apply.sh preflight
+
+      - name: Apply the package in one transaction and verify invariants
+        env:
+          HIVE_TEST_DATABASE_URL: ${{ secrets.HIVE_TEST_DATABASE_URL }}
+          HIVE_PROJECT_ID: dry-heart-24391962
+          HIVE_DATABASE_NAME: hive
         run: |
           set -euo pipefail
-          psql "$HIVE_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -q -f hive/neon/001_hive_core.sql
-          # Second application proves idempotency on the real engine.
-          psql "$HIVE_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -q -f hive/neon/001_hive_core.sql
+          # Non-destructive by construction: no drop table / drop schema exists in the package.
+          if grep -rniE 'drop\s+(table|schema)' hive/neon/migrations/ ; then
+            echo "::error::El paquete contiene una sentencia destructiva. Abortado."
+            exit 1
+          fi
+          hive/neon/apply.sh apply
 
       - name: Verify the schema and record non-sensitive evidence
         env:

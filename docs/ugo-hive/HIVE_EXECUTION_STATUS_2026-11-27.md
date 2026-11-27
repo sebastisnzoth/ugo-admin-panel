@@ -215,7 +215,12 @@ borrado de datos; si el PR se fusionara, el verificador detecta el merge y emite
 
 ### 9.2 Capa de datos independiente de Hive, preparada y probada (P1)
 
-`hive/neon/001_hive_core.sql` — esquema `hive` para la base independiente, **idempotente**:
+> **Actualizado en la fase 3 (§12):** el monolito `hive/neon/001_hive_core.sql` fue
+> **retirado** y sustituido por el paquete versionado `hive/neon/migrations/00…08` con
+> `apply.sh` y rollback no destructivo. Lo que sigue describe ese trabajo original; los
+> números vigentes están en §12.
+
+Esquema `hive` para la base independiente, **idempotente**:
 
 - cola persistente con `idempotency_key` única, lease, heartbeat y `max_attempts`;
 - reserva atómica (`FOR UPDATE SKIP LOCKED` + candado consultivo) con **un solo job simultáneo**
@@ -261,3 +266,49 @@ rollback verify .................... PASS · árbol base restaurado
 una casilla de la instalación de GitHub (`158671462`), un secreto de Actions
 (`HIVE_TEST_DATABASE_URL`) y una reconexión del conector Supabase. Con esos tres elementos
 el trabajo preparado se aplica sin reescribir nada.
+
+---
+
+## 12. Fase 3 — paquete versionado, concurrencia real y base preexistente
+
+### 12.1 HECHO (verificado ejecutándolo, no razonado)
+
+| Elemento | Verificación | Resultado |
+|---|---|---|
+| Paquete `hive/neon/migrations/00…08` + `apply.sh` | `hive/neon/apply.sh apply` contra PostgreSQL **16.2** real | aplica en una transacción, `08_verify` pasa |
+| Migración idempotente y aditiva | 13 pruebas PGlite | **13/13** |
+| Base **preexistente** (`agents`/`jobs`/`provider_circuits` con otro diseño) | 7 pruebas con esquema legacy | **7/7** · 0 filas perdidas |
+| **Concurrencia real** (procesos `psql` separados, PostgreSQL 16.2) | 8 pruebas | **8/8** |
+| Puerta de destino | 5 escenarios de rechazo | rechaza proyecto/base/arena/marcador ajenos |
+| Activación de agentes | prueba dedicada | 1 operativo, el 2.º da `OPERATIVE_LIMIT_REACHED` |
+| Rollback | `rollback_non_destructive.sql` | conserva tablas y filas; 0 `drop` en el paquete |
+
+Evidencia regenerable: `docs/ugo-hive/evidence/hive-neon-package.json`
+(`node scripts/hive/neon-evidence.mjs`; ningún número escrito a mano).
+
+Defectos reales encontrados por las pruebas en esta fase:
+
+1. **Candado de sesión con vida propia** → la comprobación de concurrencia leía estado no
+   confirmado y concedía **20 leases de 20** con `max_concurrent_jobs = 1`.
+2. **Candado de transacción bloqueante** → un worker que mantenía su transacción abierta
+   serializaba todas las reservas ajenas (5,04 s por 20 sesiones).
+3. Corrección final: `pg_try_advisory_xact_lock` → respuesta inmediata `RESERVE_BUSY`,
+   nunca bloqueo, y contrato de reintento acotado con backoff + jitter.
+4. El candado `drop schema hive cascade` del procedimiento anterior, **eliminado**: el
+   paquete no contiene ni una sola sentencia destructiva, y un workflow lo comprueba
+   antes de aplicar.
+
+### 12.2 PENDIENTE (bloqueado por acceso, no por trabajo)
+
+- Aplicar el paquete a Neon: exige `HIVE_TEST_DATABASE_URL` (secreto de Actions) y el
+  proyecto `dry-heart-24391962`. Instrucciones exactas, sin secretos, en
+  `docs/ugo-hive/INTEGRATION_PACKAGE.md`.
+- Rol de login del worker (`hive_worker` es grupo NOLOGIN): lo crea el operador.
+- Un job real contra un proveedor: exige credencial de proveedor y consume presupuesto.
+
+### 12.3 Veredicto vigente (sin cambios en lo esencial)
+
+**Agentes operativos: 0. Departamentos funcionales: 0. URL Hive TEST: ninguna.
+Consumo: USD 0 (cero llamadas). Cuotas mensuales: DESCONOCIDAS, límites conservadores
+(20 llamadas / 20 000 tokens por proveedor y día).** Los 118 agentes están *catalogados*;
+catalogar no es operar y ninguna prueba de este documento afirma lo contrario.

@@ -42,7 +42,17 @@ jobs:
         run: node scripts/assert-test-environment.mjs
       - name: Hive ⇄ Arena isolation audit
         run: node scripts/hive/isolation-audit.mjs --out artifacts/hive-isolation-audit.json
+      - name: Real PostgreSQL for genuine concurrency evidence
+        run: |
+          python3 -m venv /tmp/pgenv
+          /tmp/pgenv/bin/pip install --quiet --disable-pip-version-check pgserver
+          /tmp/pgenv/bin/python -c "import pgserver, pathlib; print('pgserver ready:', pathlib.Path(pgserver.__file__).parent)"
+
       - name: Hive contracts, quota engine and isolation rules
+        env:
+          PG_VENV: /tmp/pgenv
+          # In CI a missing PostgreSQL is a failure, never a silent skip.
+          HIVE_REQUIRE_REAL_POSTGRES: '1'
         run: |
           node --test --test-concurrency=1 \
             tests/hive/*.test.mjs \
