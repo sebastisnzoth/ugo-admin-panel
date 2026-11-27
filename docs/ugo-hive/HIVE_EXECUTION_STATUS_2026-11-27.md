@@ -172,3 +172,92 @@ de los 13 departamentos y 118 agentes, aislamiento de Arena **demostrado y con g
 un defecto de conexión corregido, una consola honesta y una lista exacta de bloqueos con su
 condición de desbloqueo. Las etapas 2, 4, 5, 6 (datos reales) y 8 requieren los accesos del §3;
 declararlas terminadas sin ellos sería exactamente lo que las reglas 10, 11 y 12 prohíben.
+
+---
+
+# Fase 2 — continuación sobre el PR #633 (mismo día)
+
+## 8. Reintento de desbloqueo: resultado exacto
+
+| Recurso | Reintento | Diagnóstico preciso |
+|---|---|---|
+| `ugo-hive` | **sigue 403** | `gh api /user/installations` responde: app **`arena-ai-coding-agent`**, installation **`158671462`**, `repository_selection: "all"`. Aun así `ugo-hive` (privado) no es accesible, mientras los repos **públicos** sí: la instalación no cubre repositorios privados de la cuenta. **No es un problema de permisos del token, sino del alcance de la instalación.** |
+| Neon | **sin vía** | `list_connector_tools("neon")` → `unsupported`: Arena no ofrece conector de Neon. Ningún ajuste de mi lado lo habilita. |
+| Supabase | **sigue vacío** | `list_projects` → `{"items":[]}` con organización visible. El conector está autenticado pero sin proyectos: hay que reconectarlo eligiendo la organización de UGO. |
+
+### Qué autorización falta, exactamente, y dónde se habilita
+
+1. **GitHub privado:** <https://github.com/settings/installations/158671462> →
+   *Repository access* → **All repositories** (o *Only select repositories* + `ugo-hive`) → Save.
+   Si el repositorio vive en una organización:
+   `https://github.com/organizations/<org>/settings/installations/158671462`.
+   Para que yo pueda escribir (ramas/PR en `ugo-hive`) el permiso **Contents** debe ser
+   *Read and write*. No hace falta hacer público el repositorio ni facilitar tokens.
+2. **Neon:** crear el secreto de repositorio **`HIVE_TEST_DATABASE_URL`**
+   (GitHub → repo `ugo-admin-panel` → Settings → Secrets and variables → Actions → New
+   repository secret). No se pide por chat, no se imprime y el workflow lo valida.
+3. **Supabase:** reconectar el conector de Supabase en Arena seleccionando la organización
+   de UGO, para que `list_projects` devuelva `trfsjuseqjxlhrxuvdsm` / `tmossnqfwfwjrtzwcbmm`.
+
+## 9. HECHO en esta fase
+
+### 9.1 Rollback corregido y **verificado ejecutándolo** (era incorrecto)
+
+El procedimiento anterior (`git revert 0af0912`) no deshacía el PR: son **tres** commits.
+Nuevo `scripts/hive/rollback-verify.mjs` hace el revert completo en un *worktree* desechable
+y comprueba que el árbol vuelve a ser idéntico al base.
+
+Resultado real: **PASS · 3 commits · 12 archivos · árbol base restaurado byte a byte**.
+Procedimiento exacto en `docs/ugo-hive/HIVE_ISOLATION.md` §5 y en
+`docs/ugo-hive/evidence/rollback-verification.json`. Sin `reset`, sin `force push`, sin
+borrado de datos; si el PR se fusionara, el verificador detecta el merge y emite
+`git revert -m 1 <merge-sha>`.
+
+### 9.2 Capa de datos independiente de Hive, preparada y probada (P1)
+
+`hive/neon/001_hive_core.sql` — esquema `hive` para la base independiente, **idempotente**:
+
+- cola persistente con `idempotency_key` única, lease, heartbeat y `max_attempts`;
+- reserva atómica (`FOR UPDATE SKIP LOCKED` + candado consultivo) con **un solo job simultáneo**
+  por defecto: escalar exige cambiar `hive.settings`, no un despliegue;
+- recuperación de trabajos interrumpidos que reencola **exactamente una vez** o cierra como
+  `FAILED` si se agotaron los intentos (sin bucles);
+- backoff exponencial acotado a 1 h con jitter determinista; reintentos acotados;
+- escalera de cuotas 50/70/85/95 % con `monthly_quota: UNKNOWN` declarado y circuit breaker;
+- separación explícita **registrado / conectado / operativo / deshabilitado**;
+- privilegios mínimos: roles `hive_worker` y `hive_reader`, funciones `SECURITY DEFINER` con
+  `search_path = ''`, sin escritura directa de tablas, sin DDL, sin `EXECUTE` heredado por `PUBLIC`.
+
+**13 pruebas reales contra Postgres embebido** (`tests/hive/neon-queue.test.mjs`) — todas en
+verde. Las pruebas **encontraron tres defectos reales en mi primera versión del SQL**:
+`available_at` nulo cuando el llamador pasa `NULL` explícito, funciones `SECURITY INVOKER`
+sin permisos de tabla y `EXECUTE` concedido a `PUBLIC` por defecto. Corregidos y re-verificados.
+
+**No aplicado a Neon** (no hay credencial). Aplicación en un solo comando cuando exista el
+secreto: `gh workflow run hive-neon-migrate.yml` — manual, valida que el destino sea Neon y
+**no** Arena/Supabase, aplica dos veces (prueba de idempotencia real) y sube evidencia sin
+credenciales.
+
+### 9.3 Consola: distinción registrada / conectada / operativa (P3)
+
+Se añadió a la pestaña de departamentos la leyenda de estados con la verdad incómoda:
+*sólo la API de Hive declara cuál aplica*. Ningún contador se inventa mientras no exista API.
+
+## 10. Pruebas ejecutadas en esta fase
+
+```
+neon queue (PGlite) ................ 13/13 PASS
+suites Hive + contratos + i18n ..... 42/42 PASS
+audit-i18n ......................... actionableVisibleLiterals: 0
+tsc -b ............................. limpio
+isolation audit .................... PASS · 333 archivos · 0 hallazgos
+rollback verify .................... PASS · árbol base restaurado
+```
+
+## 11. Veredicto de fase 2
+
+**Agentes realmente operativos: 0. Departamentos funcionales: 0. URL de Hive TEST: ninguna
+(no existe despliegue accesible).** El bloqueo ya está localizado con precisión quirúrgica:
+una casilla de la instalación de GitHub (`158671462`), un secreto de Actions
+(`HIVE_TEST_DATABASE_URL`) y una reconexión del conector Supabase. Con esos tres elementos
+el trabajo preparado se aplica sin reescribir nada.

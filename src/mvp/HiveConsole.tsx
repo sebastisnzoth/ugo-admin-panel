@@ -16,7 +16,7 @@ const translations={
  docs:'Consultar documentação técnica ↗',conversation:'Conversa com Hugo',gateway:'Gateway de inferência indisponível até verificação e autorização.',
  offline:'OFFLINE',slow:'RESPOSTA LENTA',remoteError:'ERRO DE CONEXÃO',nochat:'Chat não conectado',nochatInfo:'Não existem respostas simuladas. Histórico e streaming dependem de backend seguro.',
  message:'Mensagem',placeholder:'Indisponível enquanto a inferência está desativada',send:'Enviar · indisponível',
- departmentTitle:'Departamentos canônicos',departmentInfo:'Catálogo documentado; nenhum agente é declarado operacional.',agentsLabel:'agentes',disabledAgents:'desativado',executionUnverified:'EXECUÇÃO NÃO VERIFICADA',sourceLabel:'Fonte',snapshotLabel:'Snapshot',
+ departmentTitle:'Departamentos canônicos',departmentInfo:'Catálogo documentado; nenhum agente é declarado operacional.',agentsLabel:'agentes',disabledAgents:'desativado',executionUnverified:'EXECUÇÃO NÃO VERIFICADA',agentStates:'Estados de agente: registrado · conectado · operativo · desabilitado. Só a API de Hive declara qual se aplica.',sourceLabel:'Fonte',snapshotLabel:'Snapshot',
  quotaTitle:'Política de cotas',quotaUnknown:'Consumo real: DESCONHECIDO · aplicam-se limites conservadores',quotaNotUsed:'A escada abaixo é política declarada. Não é consumo medido.'
  },
  'es':{
@@ -29,7 +29,7 @@ const translations={
  docs:'Consultar documentación técnica ↗',conversation:'Conversación con Hugo',gateway:'Gateway de inferencia no disponible hasta su verificación y autorización.',
  offline:'SIN CONEXIÓN',slow:'RESPUESTA LENTA',remoteError:'ERROR DE CONEXIÓN',nochat:'Chat no conectado',nochatInfo:'No hay respuestas simuladas. El historial y streaming requieren un backend seguro.',
  message:'Mensaje',placeholder:'No disponible mientras la inferencia esté desactivada',send:'Enviar · no disponible',
- departmentTitle:'Departamentos canónicos',departmentInfo:'Catálogo documentado; ningún agente está declarado operativo.',agentsLabel:'agentes',disabledAgents:'desactivado',executionUnverified:'EJECUCIÓN NO VERIFICADA',sourceLabel:'Fuente',snapshotLabel:'Snapshot',
+ departmentTitle:'Departamentos canónicos',departmentInfo:'Catálogo documentado; ningún agente está declarado operativo.',agentsLabel:'agentes',disabledAgents:'desactivado',executionUnverified:'EJECUCIÓN NO VERIFICADA',agentStates:'Estados de agente: registrado · conectado · operativo · deshabilitado. Sólo la API de Hive declara cuál aplica.',sourceLabel:'Fuente',snapshotLabel:'Snapshot',
  quotaTitle:'Política de cuotas',quotaUnknown:'Consumo real: DESCONOCIDO · se aplican límites conservadores',quotaNotUsed:'La escalera siguiente es política declarada. No es consumo medido.'
  },
  'en':{
@@ -42,7 +42,7 @@ const translations={
  docs:'Technical documentation ↗',conversation:'Chat with Hugo',gateway:'Inference gateway unavailable until verified and authorized.',
  offline:'OFFLINE',slow:'SLOW RESPONSE',remoteError:'CONNECTION ERROR',nochat:'Chat not connected',nochatInfo:'No simulated answers. History and streaming require a secure backend.',
  message:'Message',placeholder:'Unavailable while inference is disabled',send:'Send · unavailable',
- departmentTitle:'Canonical departments',departmentInfo:'Documented catalog; no agent is claimed operational.',agentsLabel:'agents',disabledAgents:'disabled',executionUnverified:'EXECUTION UNVERIFIED',sourceLabel:'Source',snapshotLabel:'Snapshot',
+ departmentTitle:'Canonical departments',departmentInfo:'Documented catalog; no agent is claimed operational.',agentsLabel:'agents',disabledAgents:'disabled',executionUnverified:'EXECUTION UNVERIFIED',agentStates:'Agent states: registered · connected · operative · disabled. Only the Hive API declares which applies.',sourceLabel:'Source',snapshotLabel:'Snapshot',
  quotaTitle:'Quota policy',quotaUnknown:'Real consumption: UNKNOWN · conservative limits applied',quotaNotUsed:'The ladder below is declared policy. It is not measured consumption.'
  }
 } as const
@@ -95,6 +95,7 @@ export function HiveConsole(){
   </section>}
   {tab==='departments'&&<section className="ugo-hive-panel"><h2>{tr.departmentTitle}</h2>
    <p>{tr.departmentInfo} <strong>{tr.executionUnverified}</strong></p>
+   <p><small>{tr.agentStates}</small></p>
    <p><small>{tr.sourceLabel}: {HIVE_CATALOG.source} · {tr.snapshotLabel}: {HIVE_CATALOG.capturedAt} · {HIVE_CATALOG.environment} · {HIVE_CATALOG.departments.length} · {HIVE_CATALOG.totalAgents} {tr.agentsLabel} · {HIVE_CATALOG.disabledAgents} {tr.disabledAgents}</small></p>
    <div className="ugo-hive-agents">{HIVE_CATALOG.departments.map(department=><article key={department.id}>
     <strong>D{department.id} · {department.name}</strong>

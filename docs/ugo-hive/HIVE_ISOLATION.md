@@ -56,14 +56,37 @@ Módulos autorizados (allowlist explícita en `scripts/hive/isolation-audit.mjs`
 
 Ninguno de estos límites se resuelve declarando el gate como "E2E".
 
-## 5. Rollback
+## 5. Rollback (procedimiento verificado, no narrado)
 
-Todos los cambios son aditivos y locales a TEST:
+**Corrección:** el procedimiento anterior —«`git revert <sha>`»— era incorrecto. El PR #633
+tiene **tres** commits; revertir sólo `0af0912` deja el árbol a medias.
 
-- `scripts/hive/isolation-audit.mjs` (nuevo, sin consumidores en runtime).
-- `tests/hive/isolation-audit.test.mjs` (nuevo).
-- `.github/workflows/hive-independence-guard.yml` (nuevo; se desactiva borrándolo).
-- `src/mvp/hiveCatalog.ts` + `src/mvp/HiveConsole.tsx` (UI Hive: abort acotado y catálogo).
+Procedimiento correcto y **verificado ejecutándolo**:
 
-Revertir: `git revert <sha>` sobre la rama, sin `reset` ni `force push`. No hay migraciones
-aplicadas, ni secretos, ni datos modificados: el rollback no puede perder datos.
+```bash
+# 1. Confirmar el conjunto real de cambios y que el revert restaura el árbol base:
+node scripts/hive/rollback-verify.mjs \
+  --base d2fe61e9ecc85e491d3839cb6885d3802d9c06de \
+  --head arena/6f95c7c3-ugo-admin-panel \
+  --out docs/ugo-hive/evidence/rollback-verification.json
+
+# 2. Revertir los tres commits (orden inversO, uno por commit):
+git revert 0af0912060c6ec03b963c9d0a351639050cbc8ab \
+           b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd \
+           67299aa7ed61dced17e4a0193f8cf53206fc7c2c
+```
+
+`rollback-verify.mjs` hace el revert completo en un *worktree* desechable y comprueba que
+el árbol resultante es idéntico al commit base (`tree_restored: true`). Resultado actual:
+**PASS · 3 commits · 12 archivos · árbol base restaurado**. Evidencia en
+`docs/ugo-hive/evidence/rollback-verification.json`.
+
+Si el PR llegara a fusionarse, el revert es sobre el commit de merge:
+`git revert -m 1 <merge-sha>` (el verificador detecta merges y cambia el procedimiento).
+
+Prohibido en cualquier caso: `reset --hard`, `force push`, borrado de datos.
+
+Alcance del rollback: `scripts/hive/` (auditoría y verificación de rollback), `tests/hive/`,
+`.github/workflows/hive-independence-guard.yml`, `hive/neon/` (preparación, **no aplicada**),
+`src/mvp/hiveCatalog.ts` y `src/mvp/HiveConsole.tsx`. No hay migraciones aplicadas, ni
+secretos, ni datos modificados: el rollback no puede perder datos de nadie.
