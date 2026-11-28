@@ -23,18 +23,22 @@ APP_TIMEZONE=America/Sao_Paulo
 # -------------------------------------------------------------
 # SEGURIDAD, JWT & CRIPTOGRAFÍA
 # -------------------------------------------------------------
-JWT_SECRET=sec_live_jwt_ugo_994a28f731c2e408a1
+# IMPORTANTE: este documento es un EJEMPLO de diseño. Los valores de credenciales se
+# sustituyeron por marcadores el 2026-11-28 y no deben rellenarse aquí nunca.
+# IMPORTANTE: documento de EJEMPLO. Las credenciales se sustituyeron por marcadores el
+# 2026-11-28; no rellenar valores reales en el repositorio.
+JWT_SECRET=<valor-secreto>
 JWT_EXPIRATION=7d
 JWT_REFRESH_EXPIRATION=30d
-AES_ENCRYPTION_KEY_256=a8f4c1e09d832a11b65e90d23c5e81f7  # Para CPF y llaves PIX en BD
-OTP_HMAC_SALT=salt_live_ugo_otp_verification_2024
+AES_ENCRYPTION_KEY_256=<valor-secreto>  # Para CPF y llaves PIX en BD
+OTP_HMAC_SALT=<valor-secreto>
 
 # -------------------------------------------------------------
 # BASES DE DATOS & CACHÉ
 # -------------------------------------------------------------
-DATABASE_URL=postgresql://ugo_prod_admin:SecurePass2024%21@db-cluster-prod.internal:5432/ugo_production?sslmode=require&pool_max=50
+DATABASE_URL=postgresql://<usuario>:<clave>@<host>:5432/<base>?sslmode=require&pool_max=50
 DATABASE_SSL=true
-REDIS_URL=rediss://:RedisAuthProdToken2024@redis-cluster-prod.internal:6379/0
+REDIS_URL=rediss://:<clave>@<host>:6379/0
 REDIS_CLUSTER_MODE=true
 
 # -------------------------------------------------------------

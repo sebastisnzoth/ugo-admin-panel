@@ -1,7 +1,7 @@
 import test, { after } from 'node:test'
 import assert from 'node:assert/strict'
 import { loadConfig, redact, describeConfig, jitter } from '../../hive/worker/config.mjs'
-import { approvedOpenRouterRoute, resolveProvider, ProviderError, classifyCost, localFetchGuard, classifyUpstream } from '../../hive/worker/providers.mjs'
+import { approvedOpenRouterRoute, resolveProvider, ProviderError, classifyCost, localFetchGuard, classifyUpstream, LOCAL_SHAPES } from '../../hive/worker/providers.mjs'
 import { inspect } from '../../hive/worker/sentinel.mjs'
 import { verdict } from '../../hive/worker/judge.mjs'
 import { startMockProvider } from './fixtures/mock-provider.mjs'
@@ -145,6 +145,49 @@ test('local: habla el contrato /api/complete y exige coste declarado', async () 
   } finally {
     await localServer.close()
   }
+})
+
+test('local (forma openai): habla /v1/chat/completions y conserva las guardas', async () => {
+  const server = await startMockProvider({
+    path: '/v1/chat/completions',
+    extra: { choices: [{ message: { role: 'assistant', content: 'respuesta del backend local' } }] },
+  })
+  try {
+    const config = baseConfig({ provider: 'local', localProviderApproved: 'APROBADO',
+      localProviderUrl: server.url, localProviderShape: 'openai', localProviderModel: 'local/free' })
+    const result = await resolveProvider('local').complete({ config, prompt: 'hola' })
+    assert.equal(result.shape, 'openai')
+    assert.equal(result.text, 'respuesta del backend local')
+    assert.equal(result.cost.state, 'VERIFIED_ZERO')
+    assert.equal(result.egress_blocked, 0)
+    // Se envió el cuerpo OpenAI, no el nuestro.
+    assert.equal(server.requests.length, 1)
+    assert.ok(Array.isArray(server.requests[0].body.messages))
+    assert.equal(server.requests[0].body.messages[0].role, 'user')
+    assert.equal(server.requests[0].body.stream, false)
+  } finally {
+    await server.close()
+  }
+})
+
+test('local (forma openai): una respuesta vacía es un fallo, no un texto inventado', async () => {
+  const server = await startMockProvider({ path: '/v1/chat/completions', mode: 'empty' })
+  try {
+    const config = baseConfig({ provider: 'local', localProviderApproved: 'APROBADO',
+      localProviderUrl: server.url, localProviderShape: 'openai' })
+    await assert.rejects(resolveProvider('local').complete({ config, prompt: 'hola' }),
+      error => error.code === 'LOCAL_PROVIDER_EMPTY_COMPLETION')
+  } finally {
+    await server.close()
+  }
+})
+
+test('local: una forma desconocida se rechaza antes de llamar al backend', async () => {
+  const config = baseConfig({ provider: 'local', localProviderApproved: 'APROBADO',
+    localProviderUrl: 'http://127.0.0.1:8123', localProviderShape: 'grpc-magico' })
+  await assert.rejects(resolveProvider('local').complete({ config, prompt: 'hola' }),
+    error => error.code === 'LOCAL_PROVIDER_SHAPE_UNSUPPORTED')
+  assert.deepEqual(LOCAL_SHAPES, ['hive', 'openai'])
 })
 
 test('local: http://localhost:8123 y [::1] son válidos; http://10.0.0.5 no', async () => {

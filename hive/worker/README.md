@@ -97,7 +97,7 @@ sólo `workflow_dispatch`, exige `confirm=EJECUTAR` y el secreto `HIVE_WORKER_DA
 | Ruta | Estado | Motivo |
 | --- | --- | --- |
 | `mock` | ✅ pruebas | servidor HTTP local determinista; `cost 0` declarado, sin red externa |
-| `local` | ✅ loopback | FreeLLMAPI/OpenClaw **en la propia máquina**; exige `HIVE_LOCAL_PROVIDER_APPROVED=APROBADO` y URL `127.0.0.1`/`localhost`/`[::1]`. Además `localFetchGuard` bloquea cualquier salida que no sea loopback (`EGRESS_BLOCKED`) y `classifyUpstream` convierte un `upstream` remoto no declarado en `LOCAL_PROVIDER_UPSTREAM_UNVERIFIED` (error). Comprobación: `npm run hive:local-check` |
+| `local` | ✅ loopback | FreeLLMAPI/OpenClaw **en la propia máquina**; exige `HIVE_LOCAL_PROVIDER_APPROVED=APROBADO` y URL `127.0.0.1`/`localhost`/`[::1]`. Además `localFetchGuard` bloquea cualquier salida que no sea loopback (`EGRESS_BLOCKED`) y `classifyUpstream` convierte un `upstream` remoto no declarado en `LOCAL_PROVIDER_UPSTREAM_UNVERIFIED` (error). Comprobación: `npm run hive:local-check`. Habla dos formas: `HIVE_LOCAL_PROVIDER_SHAPE=hive` (`POST /api/complete` → `{text, cost}`) u `openai` (`POST /v1/chat/completions`; el backend **debe** añadir `cost: 0`, si no la tarea se rechaza) |
 | `openrouter` | ⛔ cerrado | exige modelo `:free`, precios en cero, evidencia de facturación y aprobación < 1 h (`policy.mjs`) |
 | `openclaw` | ⛔ cerrado | sin endpoint aprobado (`HIVE_OPENCLAW_APPROVED=APROBADO` no existe todavía) |
 | `freellmapi` | ⛔ cerrado | su pinning de proveedor no es verificable |

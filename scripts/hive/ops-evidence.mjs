@@ -37,6 +37,15 @@ const record = {
   generated_at: new Date().toISOString(),
   package_version: '2.2.0',
   environment: { engine: server.psql('select version()').split(',')[0], touches_neon: false, cost_usd: 0, external_inference: false },
+  // Declaración de procedencia: esta evidencia es un ENSAYO DE CONTRATO sobre PostgreSQL
+  // local + backend local de pruebas. No es operación real en Neon y no se presenta como tal.
+  disclosure: {
+    kind: 'CONTRACT_TEST',
+    real_operation: false,
+    database: 'réplica local del esquema de Neon TEST',
+    provider: 'servidor local de pruebas (mock determinista)',
+    cost_usd: 0,
+  },
   steps: [],
 }
 const note = (step, detail = {}) => { record.steps.push({ at: new Date().toISOString(), step, ...detail }) }

@@ -1,0 +1,43 @@
+# UGO Hive · endpoint de la consola Super Admin — despliegue TEST en Render Free.
+#
+# QUÉ HACE ESTE ARCHIVO: declara UN servicio (no lo crea). Nada se ejecuta hasta que una
+# persona lo autorice desde Render. No hay plan de pago, no hay disco, no hay worker aquí.
+# El worker corre en la máquina del fundador (proveedor local), no en Render.
+#
+# Requisitos previos y checklist completo: docs/ugo-hive/RENDER_DEPLOY.md
+# Evaluación del host y por qué no Vercel: docs/ugo-hive/TEST_HOST_EVALUATION.md
+
+services:
+  - type: web
+    name: ugo-hive-console-api
+    runtime: docker
+    plan: free                 # explícito: 750 h/mes, se duerme a los 15 min sin tráfico
+    region: oregon
+    dockerfilePath: ./hive/console-api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeploy: false          # el despliegue se dispara a mano, nunca al empujar
+    numInstances: 1
+    envVars:
+      # ── obligatorias ──────────────────────────────────────────────────────────
+      - key: HIVE_READER_DATABASE_URL     # login de hive_console_ro (sólo lectura)
+        sync: false
+      - key: HIVE_CONSOLE_SUPABASE_URL
+        sync: false
+      - key: HIVE_CONSOLE_SUPABASE_ANON_KEY   # clave PÚBLICA; nunca la de servicio
+        sync: false
+      # ── modo de autenticación ────────────────────────────────────────────────
+      - key: HIVE_CONSOLE_AUTH_MODE
+        value: user            # user | allowlist | service (service = credencial privilegiada)
+      - key: HIVE_CONSOLE_SUPERADMIN_IDS
+        sync: false            # sólo necesario con allowlist
+      # ── orígenes permitidos por CORS (coma-separados) ────────────────────────
+      - key: HIVE_CONSOLE_ALLOWED_ORIGINS
+        sync: false
+      # ── fijos ────────────────────────────────────────────────────────────────
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: "8790"

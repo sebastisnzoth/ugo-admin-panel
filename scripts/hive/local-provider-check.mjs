@@ -3,11 +3,16 @@
 //
 //   HIVE_LOCAL_PROVIDER_URL=http://127.0.0.1:8123 \
 //   HIVE_LOCAL_PROVIDER_APPROVED=APROBADO \
+//   [HIVE_LOCAL_PROVIDER_SHAPE=hive|openai] \
+//   [HIVE_LOCAL_PROVIDER_MODEL=local/free] \
 //   node scripts/hive/local-provider-check.mjs [--out docs/ugo-hive/evidence/local-provider.json]
 //
 // Qué comprueba, con una única llamada:
 //   · el endpoint es loopback (un host remoto no es "local");
 //   · la respuesta declara coste numérico y es 0 (si no, NO se aprueba);
+//   · la forma del backend es la declarada: `hive` (/api/complete) u `openai`
+//     (/v1/chat/completions); con `openai` el backend DEBE añadir `cost` — si no, no hay
+//     aprobación porque «gratis» no se supone;
 //   · si declara un upstream remoto, declara también facturación gratuita;
 //   · nuestra propia petición no sale a ningún host que no sea loopback (guarda de egreso).
 //
@@ -57,6 +62,7 @@ try {
     ok: result.cost.state === 'VERIFIED_ZERO' && result.upstream?.state !== 'UPSTREAM_UNVERIFIED',
     code: result.cost.state === 'VERIFIED_ZERO' ? 'LOCAL_PROVIDER_VERIFIED' : 'LOCAL_COST_NOT_VERIFIED',
     endpoint: host,
+    shape: result.shape,
     model: result.model,
     latency_ms: Date.now() - started,
     text_chars: String(result.text ?? '').length,
@@ -71,6 +77,7 @@ try {
       upstream_not_unverified: result.upstream?.state !== 'UPSTREAM_UNVERIFIED',
       no_external_egress: (result.egress_blocked ?? 0) === 0,
       produced_text: String(result.text ?? '').trim().length > 0,
+      declared_shape: ['hive', 'openai'].includes(config.localProviderShape ?? 'hive'),
     },
   }
   report.ok = Object.values(report.checks).every(Boolean)

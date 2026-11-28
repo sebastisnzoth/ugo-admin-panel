@@ -128,6 +128,15 @@ upstream → LOCAL (ninguno)
 egress_blocked → 0
 ```
 
+Dos formas de hablar con el backend local, con las mismas guardas:
+
+| `HIVE_LOCAL_PROVIDER_SHAPE` | Petición | Respuesta esperada |
+|---|---|---|
+| `hive` (por defecto) | `POST /api/complete` | `{text, cost}` |
+| `openai` | `POST /v1/chat/completions` | `choices[0].message.content` **y** `cost: 0` (un servidor OpenAI puro no lo envía: hay que añadirlo en el envoltorio local) |
+
+Sin `cost` la tarea se rechaza (`UNVERIFIED`): «gratis» no se supone, se declara.
+
 La comprobación contra el backend **de la máquina del fundador** sigue pendiente: se ejecuta
 con `npm run hive:local-check` y **falla cerrado** si el backend no declara `cost = 0`.
 

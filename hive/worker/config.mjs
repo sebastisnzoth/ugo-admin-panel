@@ -62,6 +62,10 @@ export function loadConfig(env = process.env, argv = []) {
     localProviderUrl: env.HIVE_LOCAL_PROVIDER_URL || '',
     localProviderApproved: env.HIVE_LOCAL_PROVIDER_APPROVED || '',
     localProviderModel: env.HIVE_LOCAL_PROVIDER_MODEL || 'local/free',
+    // Forma del backend local: `hive` = POST /api/complete ({text, cost}) — nuestro contrato;
+    // `openai` = POST /v1/chat/completions (compatible con FreeLLMAPI/OpenClaw y cualquier
+    // servidor OpenAI-like en loopback).
+    localProviderShape: env.HIVE_LOCAL_PROVIDER_SHAPE || 'hive',
   }
   if (config.once) { config.maxIterations = Math.max(1, Math.min(config.maxIterations, 1000)) }
   return config

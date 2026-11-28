@@ -1,6 +1,13 @@
 {
-  "generated_at": "2026-11-28T00:45:47.409Z",
+  "generated_at": "2026-11-28T04:39:45.562Z",
   "package_version": "2.2.0",
+  "disclosure": {
+    "kind": "CONTRACT_TEST",
+    "real_operation": false,
+    "database": "réplica local del esquema de Neon TEST",
+    "provider": "no aplica (sin inferencia)",
+    "cost_usd": 0
+  },
   "environment": {
     "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
     "touches_neon": false,
@@ -9,26 +16,26 @@
   },
   "steps": [
     {
-      "at": "2026-11-28T00:45:47.560Z",
+      "at": "2026-11-28T04:39:45.671Z",
       "step": "paquete 2.2.0 sobre la réplica",
       "agentes": 127,
       "departamentos": 13
     },
     {
-      "at": "2026-11-28T00:45:47.591Z",
+      "at": "2026-11-28T04:39:45.692Z",
       "step": "logins separados verificados",
       "worker_checks": 12,
       "reader_checks": 11,
       "failed": 0
     },
     {
-      "at": "2026-11-28T00:45:47.598Z",
+      "at": "2026-11-28T04:39:45.697Z",
       "step": "rol de lectura reconocido",
       "ok": true,
       "violations": []
     },
     {
-      "at": "2026-11-28T00:45:47.623Z",
+      "at": "2026-11-28T04:39:45.715Z",
       "step": "el rol de lectura no puede escribir ni ejecutar la cola",
       "insert": "DENIED",
       "update": "DENIED",
@@ -37,21 +44,21 @@
       "reserve": "DENIED"
     },
     {
-      "at": "2026-11-28T00:45:47.689Z",
+      "at": "2026-11-28T04:39:45.765Z",
       "step": "agente verificado contra el catálogo real",
       "agent_key": "hugo-orchestrator",
       "state": "OPERATIVE",
       "exit": 0
     },
     {
-      "at": "2026-11-28T00:45:47.837Z",
+      "at": "2026-11-28T04:39:45.864Z",
       "step": "coste declarado por el proveedor, no asumido",
       "action": "DONE",
       "cost_state": "VERIFIED_ZERO",
       "source": "mock.cost"
     },
     {
-      "at": "2026-11-28T00:45:47.947Z",
+      "at": "2026-11-28T04:39:45.937Z",
       "step": "sin coste declarado no hay PASS",
       "action": "REJECTED",
       "code": "JUDGE_REJECTED",
@@ -62,7 +69,7 @@
       "result_stored": false
     },
     {
-      "at": "2026-11-28T00:45:47.969Z",
+      "at": "2026-11-28T04:39:45.954Z",
       "step": "endpoint real",
       "anonymous": 401,
       "admin": 403,
@@ -70,7 +77,7 @@
       "superadmin": 200
     },
     {
-      "at": "2026-11-28T00:45:47.992Z",
+      "at": "2026-11-28T04:39:45.971Z",
       "step": "ventana de vigilancia real",
       "window_hours": 0.001,
       "samples": 2,
@@ -80,7 +87,7 @@
       "jsonl_contains_connection_string": false
     },
     {
-      "at": "2026-11-28T00:45:47.993Z",
+      "at": "2026-11-28T04:39:45.972Z",
       "step": "mecanismo de secretos validado en forma",
       "valid_shape": true,
       "rejects_supabase": true,
@@ -89,7 +96,7 @@
       "note": "se comprueba la forma; el valor real se envía por stdin a gh secret set y nunca se imprime"
     },
     {
-      "at": "2026-11-28T00:45:48.017Z",
+      "at": "2026-11-28T04:39:45.990Z",
       "step": "interruptor de emergencia",
       "on_exit": 0,
       "creates_file": true,
@@ -258,7 +265,7 @@
       "model": "mock/free",
       "cost_usd": 0,
       "provider": "mock",
-      "latency_ms": 60,
+      "latency_ms": 40,
       "text_chars": 49,
       "total_tokens": 52,
       "prompt_tokens": 44,

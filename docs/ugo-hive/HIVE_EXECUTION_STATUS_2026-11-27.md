@@ -641,3 +641,57 @@ privilegiadas · proveedor local auditado (loopback + coste declarado) · una ta
 agente real en local · consola con los 13 departamentos y 127 agentes reales · emergencia en
 dos niveles · alojamiento TEST decidido sin desplegar.** Puntos 6 y 13 siguen bloqueados por
 credenciales del lado humano. **USD 0 · sin deploy · sin merge · PROD intacta.**
+
+---
+
+## 18. Fase 9 — puesta en marcha real (10 objetivos)
+
+Punto de partida confirmado por el fundador: Neon **2.2.0** aplicado, 13 departamentos,
+127 agentes, `hive_app` y `hive_console_ro` creados (NOLOGIN), 158 pruebas Hive aprobadas,
+procesamiento local preparado.
+
+**Puerta única de comprobación:** `npm run hive:go-live` (sólo lee; no escribe, no despliega,
+no gasta). Evidencia: `docs/ugo-hive/evidence/go-live-readiness.json`.
+Resultado en este entorno: **`BLOCKED`** — 1 `VERIFIED`, 2 `READY`, 5 `BLOCKED`, **0 `FAIL`**.
+
+| # | Objetivo | Estado | Detalle |
+|---|---|---|---|
+| 1 | Almacenamiento seguro de credenciales | **HECHO** | `activate-logins.mjs --apply` deja las dos URLs en `~/.ugo-hive/secrets` con modo **600**, fuera del repo, sin imprimirlas; `--set-github-secrets` las publica por stdin. Auditoría del árbol: **2 734 archivos versionados**, 0 con cadena de conexión real (se encontró y **sanitizó** un ejemplo con credenciales inventadas en `design/stitch/…/checklist_de_despliegue…md`) |
+| 2 | Un único despliegue Render Free | **PREPARADO, sin desplegar** | `render.yaml` (1 servicio, `plan: free`, `autoDeploy: false`, sin credencial privilegiada) + `Dockerfile` + `docs/ugo-hive/RENDER_DEPLOY.md`. La puerta valida el blueprint en seco |
+| 3 | Conectar OpenClaw y FreeLLMAPI | **PREPARADO** | nuevas formas del backend local: `HIVE_LOCAL_PROVIDER_SHAPE=hive` (nuestro `/api/complete`) o **`openai`** (`/v1/chat/completions`), con las mismas guardas: loopback, egreso bloqueado y **coste declarado**. Con `openai` el backend debe añadir `cost: 0`; si no, no hay aprobación |
+| 4 | Tarea real con un único agente | **BLOQUEADO** | requiere Neon con los roles en LOGIN y un proveedor local real. `run-single-task.mjs` está probado de punta a punta contra la réplica |
+| 5 | Sentinel y Judge | **BLOQUEADO (real)** | lógica verificada: rechazan coste no declarado y efecto múltiple; el PASS real depende del objetivo 4 |
+| 6 | Super Admin Hive Console | **BLOQUEADO** | necesita la URL del endpoint; hoy la consola no hace ninguna petición (`VITE_HIVE_CONSOLE_API` ausente, por diseño) |
+| 7 | URL TEST | **NO VERIFICABLE AÚN** | la puerta comprobará `/healthz` + 401 anónimo en cuanto exista `HIVE_CONSOLE_API_URL` |
+| 8 | Vigilancia real de 24 h | **BLOQUEADA** | no se vigila lo que no corre; `watch-24h.mjs` está probado con ventana corta real |
+| 9 | Consumo y estabilidad | **BLOQUEADO** | sin servicio desplegado no hay nada que medir; el coste sigue siendo **USD 0 comprobado** (no hay proveedor remoto ni plan de pago) |
+| 10 | Evidencia operativa completa | **HECHA la parte honesta** | 4 evidencias con **declaración de procedencia** (`disclosure.kind = CONTRACT_TEST`, `real_operation: false`) y la puerta que exige esa declaración en todos los JSON |
+
+### Lo nuevo en esta fase
+
+- `scripts/hive/go-live.mjs` — puerta de 10 comprobaciones con tres veredictos honestos
+  (`VERIFIED` / `READY` / `BLOCKED`, más `FAIL` sólo para lo comprobable que está mal) y la
+  lista de **intervenciones humanas imprescindibles** con el comando exacto.
+- `render.yaml` + `docs/ugo-hive/RENDER_DEPLOY.md` — despliegue declarado, no ejecutado.
+- Forma **`openai`** del proveedor local (`hive/worker/providers.mjs`), con 3 pruebas nuevas;
+  `local-provider-check.mjs` informa la forma y la valida.
+- Orígenes CORS ampliables con `HIVE_CONSOLE_ALLOWED_ORIGINS` (validados: sin `*`, sin rutas,
+  sólo http/https; una entrada inválida impide el arranque) — necesario para el host de Render.
+- `disclosure` obligatoria en la evidencia: la puerta falla si una evidencia usa un servidor de
+  pruebas sin declararlo.
+
+### Intervenciones humanas imprescindibles (las únicas 5)
+
+1. **Activar los logins en Neon** (rol de migraciones): `HIVE_MIGRATOR_DATABASE_URL=… HIVE_CONFIRM_ACTIVATION=APLICAR node scripts/hive/activate-logins.mjs --apply`.
+2. **Proveedor local en tu máquina**: `HIVE_LOCAL_PROVIDER_URL=http://127.0.0.1:PORT HIVE_LOCAL_PROVIDER_APPROVED=APROBADO node scripts/hive/local-provider-check.mjs` (con `HIVE_LOCAL_PROVIDER_SHAPE=openai` si el backend es OpenAI-compatible, y `cost: 0` en su respuesta).
+3. **Crear el servicio en Render** con el blueprint (una cuenta, un clic; sin plan de pago).
+4. **Definir `VITE_HIVE_CONSOLE_API`** con la URL del servicio y reconstruir el frontend.
+5. **Lanzar la vigilancia de 24 h** cuando el endpoint responda y exista la primera tarea real.
+
+### Veredicto de la fase
+
+**Todo lo que se puede hacer sin las credenciales ni la máquina del fundador está hecho y
+probado: credenciales seguras, despliegue declarado y validado en seco, dos formas de backend
+local, puerta de puesta en marcha y evidencia con procedencia declarada.** Lo demás está
+bloqueado por esas cinco acciones humanas, no por código pendiente.
+**USD 0 · sin deploy · sin merge · PROD intacta.**

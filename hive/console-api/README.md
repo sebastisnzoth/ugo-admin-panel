@@ -57,6 +57,7 @@ La cuota mensual real sigue siendo **UNKNOWN**: el endpoint lo declara así en v
 | `HIVE_CONSOLE_AUTH_MODE` | no | `user` (por defecto) · `allowlist` · `service` |
 | `HIVE_CONSOLE_SUPERADMIN_IDS` | en `allowlist` | ids de usuario superadmin (coma-separados) |
 | `HIVE_CONSOLE_SUPABASE_SERVICE_KEY` | sólo en `service` | credencial privilegiada; el arranque lo anuncia como `PRIVILEGED_MODE` |
+| `HIVE_CONSOLE_ALLOWED_ORIGINS` | no | orígenes extra (coma-separados). Sin `*` ni rutas; una entrada inválida impide arrancar (`CONFIG_ERROR`) |
 | `PORT` / `HOST` | no | `8790` / `0.0.0.0` |
 
 ### Modos de autenticación (ninguno confía en el cliente)
@@ -111,5 +112,7 @@ completa en `docs/ugo-hive/evidence/hive-ops-fase8.json`
 ## Despliegue (TEST, todavía sin ejecutar)
 
 `Dockerfile` incluido (Node 22 + `psql`, usuario sin privilegios, healthcheck a `/healthz`).
-Host elegido y por qué, con el checklist y el coste: `docs/ugo-hive/TEST_HOST_EVALUATION.md`.
+Host elegido y por qué: `docs/ugo-hive/TEST_HOST_EVALUATION.md`.
+Procedimiento paso a paso, condiciones del plan gratuito y reversión: `docs/ugo-hive/RENDER_DEPLOY.md`
+(blueprint en `render.yaml`). Puerta de comprobación: `npm run hive:go-live`.
 Vercel **no** sirve para este proceso (necesita `psql` y estado en memoria).

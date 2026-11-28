@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-28T01:17:41.721Z",
+  "generated_at": "2026-11-28T04:39:44.350Z",
   "package_version": "2.2.0",
   "environment": {
     "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
@@ -7,22 +7,29 @@
     "cost_usd": 0,
     "external_inference": false
   },
+  "disclosure": {
+    "kind": "CONTRACT_TEST",
+    "real_operation": false,
+    "database": "réplica local del esquema de Neon TEST",
+    "provider": "servidor local de pruebas (mock determinista)",
+    "cost_usd": 0
+  },
   "steps": [
     {
-      "at": "2026-11-28T01:17:41.905Z",
+      "at": "2026-11-28T04:39:44.460Z",
       "step": "roles existentes en NOLOGIN (sin crearlos aquí)",
       "hive_app": false,
       "hive_console_ro": false
     },
     {
-      "at": "2026-11-28T01:17:41.996Z",
+      "at": "2026-11-28T04:39:44.522Z",
       "step": "logins activados y verificados",
       "ok": true,
       "checks": 12,
       "dsn_leaked": false
     },
     {
-      "at": "2026-11-28T01:17:42.104Z",
+      "at": "2026-11-28T04:39:44.598Z",
       "step": "proveedor local verificado",
       "exit": 0,
       "checks": {
@@ -31,11 +38,12 @@
         "cost_is_zero": true,
         "upstream_not_unverified": true,
         "no_external_egress": true,
-        "produced_text": true
+        "produced_text": true,
+        "declared_shape": true
       }
     },
     {
-      "at": "2026-11-28T01:17:42.392Z",
+      "at": "2026-11-28T04:39:44.770Z",
       "step": "tarea única ejecutada",
       "exit": 0,
       "state": "SUCCEEDED",
@@ -43,7 +51,7 @@
       "events": "ENQUEUED → LEASED → SUCCEEDED"
     },
     {
-      "at": "2026-11-28T01:17:42.406Z",
+      "at": "2026-11-28T04:39:44.778Z",
       "step": "instantánea real",
       "departments": 13,
       "department_ids": [
@@ -76,7 +84,7 @@
       "quota_monthly": "UNKNOWN"
     },
     {
-      "at": "2026-11-28T01:17:42.444Z",
+      "at": "2026-11-28T04:39:44.803Z",
       "step": "endpoint autenticado",
       "anonymous": 401,
       "not_superadmin": 403,
@@ -87,7 +95,7 @@
       "read_only": true
     },
     {
-      "at": "2026-11-28T01:17:42.446Z",
+      "at": "2026-11-28T04:39:44.805Z",
       "step": "auth sin clave de servicio",
       "mode": "user",
       "identity": {
@@ -101,7 +109,7 @@
       "privileged_credentials_used": false
     },
     {
-      "at": "2026-11-28T01:17:42.474Z",
+      "at": "2026-11-28T04:39:44.822Z",
       "step": "interruptor de emergencia en sus dos niveles",
       "database_level": {
         "action": "STOPPED",
@@ -113,7 +121,7 @@
       }
     },
     {
-      "at": "2026-11-28T01:17:42.499Z",
+      "at": "2026-11-28T04:39:44.838Z",
       "step": "vigilancia preparada",
       "samples": 2,
       "read_failures": 0,
@@ -121,7 +129,7 @@
       "jsonl_contains_dsn": false
     },
     {
-      "at": "2026-11-28T01:17:42.553Z",
+      "at": "2026-11-28T04:39:44.871Z",
       "step": "frontend sin credenciales ni polling",
       "files": 296,
       "dsn": 0
@@ -203,9 +211,10 @@
   "local_provider": {
     "ok": true,
     "code": "LOCAL_PROVIDER_VERIFIED",
-    "endpoint": "http://127.0.0.1:37859",
+    "endpoint": "http://127.0.0.1:37791",
+    "shape": "hive",
     "model": "mock/free",
-    "latency_ms": 52,
+    "latency_ms": 38,
     "text_chars": 51,
     "usage": {
       "prompt_tokens": 65,
@@ -227,7 +236,8 @@
       "cost_is_zero": true,
       "upstream_not_unverified": true,
       "no_external_egress": true,
-      "produced_text": true
+      "produced_text": true,
+      "declared_shape": true
     }
   },
   "single_task": {
@@ -239,7 +249,7 @@
       "department_id": null
     },
     "job": {
-      "id": "1be860d1-2b46-4c23-92d0-254457d2e805",
+      "id": "db739423-6630-4db3-a73b-90f15930ff5c",
       "state": "SUCCEEDED",
       "status": "DONE",
       "attempts": 1,
@@ -254,7 +264,7 @@
         "model": "mock/free",
         "cost_usd": 0,
         "provider": "local",
-        "latency_ms": 92,
+        "latency_ms": 49,
         "text_chars": 51,
         "total_tokens": 89,
         "prompt_tokens": 81,

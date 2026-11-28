@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
-import { createHiveConsoleApi, ALLOWED_ORIGINS, supabaseVerifier, AUTH_MODES } from '../../hive/console-api/server.mjs'
+import { createHiveConsoleApi, ALLOWED_ORIGINS, DEFAULT_ALLOWED_ORIGINS, parseAllowedOrigins, supabaseVerifier, AUTH_MODES } from '../../hive/console-api/server.mjs'
 import { normalizeSnapshot, SnapshotError } from '../../hive/console-api/snapshot.mjs'
 
 const VALID = {
@@ -226,4 +226,48 @@ test('una respuesta incompleta se rechaza en vez de rellenarse con ceros', () =>
   assert.throws(() => normalizeSnapshot({ ...VALID, census: { total: 1 } }), SnapshotError)
   assert.throws(() => normalizeSnapshot({ ...VALID, emergency_stop: 'false' }), SnapshotError)
   assert.throws(() => normalizeSnapshot(null), SnapshotError)
+})
+
+test('orígenes: sólo se aceptan orígenes http(s) exactos, sin comodines ni rutas', () => {
+  const good = parseAllowedOrigins('https://ugo-test.onrender.com, http://localhost:5199')
+  assert.deepEqual(good.origins, ['https://ugo-test.onrender.com', 'http://localhost:5199'])
+  assert.deepEqual(good.problems, [])
+
+  const bad = parseAllowedOrigins('*, https://con.ruta/x, ftp://otro.host, no-es-una-url')
+  assert.deepEqual(bad.origins, [])
+  assert.equal(bad.problems.length, 4)
+  assert.deepEqual(parseAllowedOrigins(''), { origins: [], problems: [] })
+})
+
+test('orígenes: la lista por defecto sigue siendo sólo la del frontend real', () => {
+  assert.ok(DEFAULT_ALLOWED_ORIGINS.includes('https://sebastisnzoth.github.io'))
+  const handler = createHiveConsoleApi({ reader: readerOf(normalizeSnapshot(VALID)), verifyToken: superadmin })
+  assert.equal(ALLOWED_ORIGINS.has('https://evil.example'), false)
+  assert.equal(typeof handler, 'function')
+})
+
+test('orígenes: una lista extra configurada se aplica y el resto se rechaza', async () => {
+  const handler = createHiveConsoleApi({
+    reader: readerOf(normalizeSnapshot(VALID)),
+    verifyToken: superadmin,
+    allowedOrigins: ['https://ugo-test.onrender.com'],
+  })
+  await withServer(handler, async base => {
+    const allowed = await fetch(`${base}/api/hive/snapshot`, {
+      headers: { authorization: token, origin: 'https://ugo-test.onrender.com' },
+    })
+    assert.equal(allowed.status, 200)
+    assert.equal(allowed.headers.get('access-control-allow-origin'), 'https://ugo-test.onrender.com')
+
+    const denied = await fetch(`${base}/api/hive/snapshot`, {
+      headers: { authorization: token, origin: 'https://evil.example' },
+    })
+    assert.equal(denied.status, 403)
+    assert.equal((await denied.json()).code, 'ORIGIN_DENIED')
+
+    const preflightDenied = await fetch(`${base}/api/hive/snapshot`, {
+      method: 'OPTIONS', headers: { origin: 'https://evil.example' },
+    })
+    assert.equal(preflightDenied.status, 403)
+  })
 })

@@ -1,6 +1,13 @@
 {
-  "generated_at": "2026-11-28T00:46:27.739Z",
+  "generated_at": "2026-11-28T04:39:46.707Z",
   "package_version": "2.2.0",
+  "disclosure": {
+    "kind": "CONTRACT_TEST",
+    "real_operation": false,
+    "database": "réplica local del esquema de Neon TEST",
+    "provider": "servidor local de pruebas (mock determinista)",
+    "cost_usd": 0
+  },
   "environment": {
     "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
     "target": "réplica local del esquema real de Neon (dry-heart-24391962/hive)",
@@ -10,27 +17,27 @@
   },
   "steps": [
     {
-      "at": "2026-11-28T00:46:27.767Z",
+      "at": "2026-11-28T04:39:46.731Z",
       "step": "réplica cargada",
       "agents_legacy": 9,
       "jobs_legacy": 1,
       "status_check": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'RUNNING'::text, 'DONE'::text, 'FAILED'::text])))"
     },
     {
-      "at": "2026-11-28T00:46:27.917Z",
+      "at": "2026-11-28T04:39:46.832Z",
       "step": "paquete 2.2.0 aplicado",
       "agentes": 127,
       "departamentos": 13,
       "tareas_historicas": 1
     },
     {
-      "at": "2026-11-28T00:46:27.935Z",
+      "at": "2026-11-28T04:39:46.845Z",
       "step": "rol de ejecución verificado",
       "checks_ok": 12,
       "failed": []
     },
     {
-      "at": "2026-11-28T00:46:27.959Z",
+      "at": "2026-11-28T04:39:46.864Z",
       "step": "un único agente operativo",
       "agent_key": "hugo-orchestrator",
       "name": "Hugo Orchestrator",
@@ -38,22 +45,22 @@
       "max_operative": 1
     },
     {
-      "at": "2026-11-28T00:46:27.973Z",
+      "at": "2026-11-28T04:39:46.874Z",
       "step": "tarea encolada",
-      "job_id": "b24de762-517a-4702-825e-d5178b98a92b",
+      "job_id": "7a610e42-4002-4543-a31c-e4310422df04",
       "state": "QUEUED",
       "prompt_chars": 69,
       "agent": "hugo-orchestrator"
     },
     {
-      "at": "2026-11-28T00:46:28.094Z",
+      "at": "2026-11-28T04:39:46.959Z",
       "step": "ciclo ejecutado",
       "action": "DONE",
       "code": "SUCCEEDED",
       "effect_applied": true
     },
     {
-      "at": "2026-11-28T00:46:28.377Z",
+      "at": "2026-11-28T04:39:47.177Z",
       "step": "entrypoint real por CLI",
       "self_check": {
         "exit": 0,
@@ -121,7 +128,7 @@
       "prompt_tokens": 69,
       "completion_tokens": 8,
       "total_tokens": 77,
-      "latency_ms": 54,
+      "latency_ms": 41,
       "text_chars": 88,
       "cost": {
         "state": "VERIFIED_ZERO",
@@ -132,7 +139,7 @@
     }
   },
   "job": {
-    "id": "b24de762-517a-4702-825e-d5178b98a92b",
+    "id": "7a610e42-4002-4543-a31c-e4310422df04",
     "state": "SUCCEEDED",
     "status": "DONE",
     "legacy_status": "PENDING",
@@ -149,7 +156,7 @@
         "model": "mock/free",
         "cost_usd": 0,
         "provider": "mock",
-        "latency_ms": 54,
+        "latency_ms": 41,
         "text_chars": 88,
         "total_tokens": 77,
         "prompt_tokens": 69,
@@ -194,7 +201,7 @@
       "level": "info",
       "event": "LEASED",
       "extra": {
-        "job": "b24de762-517a-4702-825e-d5178b98a92b",
+        "job": "7a610e42-4002-4543-a31c-e4310422df04",
         "attempt": 1,
         "agent": "hugo-orchestrator",
         "lease_token": 1
@@ -204,7 +211,7 @@
       "level": "info",
       "event": "JOB_DONE",
       "extra": {
-        "job": "b24de762-517a-4702-825e-d5178b98a92b",
+        "job": "7a610e42-4002-4543-a31c-e4310422df04",
         "server": "SUCCEEDED",
         "effect_applied": true,
         "judge": {
@@ -213,7 +220,7 @@
           "prompt_tokens": 69,
           "completion_tokens": 8,
           "total_tokens": 77,
-          "latency_ms": 54,
+          "latency_ms": 41,
           "text_chars": 88,
           "cost": {
             "state": "VERIFIED_ZERO",
@@ -248,7 +255,7 @@
       "jobs_failed_zero": true
     },
     "job": {
-      "id": "b72e4de6-c77c-43f3-8588-e02e5b88c2d9",
+      "id": "1632d807-7261-4e16-8691-0e055b66eb29",
       "state": "SUCCEEDED",
       "status": "DONE",
       "effect": 1

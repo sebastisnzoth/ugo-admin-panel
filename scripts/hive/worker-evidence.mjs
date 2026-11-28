@@ -37,6 +37,14 @@ const server = await startPostgres()
 const record = {
   generated_at: new Date().toISOString(),
   package_version: '2.2.0',
+  // Declaración de procedencia: ensayo de contrato, no operación real en Neon.
+  disclosure: {
+    kind: 'CONTRACT_TEST',
+    real_operation: false,
+    database: 'réplica local del esquema de Neon TEST',
+    provider: 'servidor local de pruebas (mock determinista)',
+    cost_usd: 0,
+  },
   environment: {
     engine: server.psql('select version()').split(',')[0],
     target: 'réplica local del esquema real de Neon (dry-heart-24391962/hive)',

@@ -41,6 +41,14 @@ const tmp = mkdtempSync(join(tmpdir(), 'ugo-hive-console-evidence-'))
 const record = {
   generated_at: new Date().toISOString(),
   package_version: '2.2.0',
+  // Declaración de procedencia: ensayo de contrato, no operación real en Neon.
+  disclosure: {
+    kind: 'CONTRACT_TEST',
+    real_operation: false,
+    database: 'réplica local del esquema de Neon TEST',
+    provider: 'no aplica (sin inferencia)',
+    cost_usd: 0,
+  },
   environment: { engine: server.psql('select version()').split(',')[0], touches_neon: false, cost_usd: 0, external_inference: false },
   steps: [],
 }

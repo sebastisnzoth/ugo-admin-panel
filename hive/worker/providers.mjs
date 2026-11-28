@@ -22,6 +22,10 @@ const FREE_ROUTE_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
 // Un "proveedor local" sólo puede ser loopback: si apunta a internet, no es local.
 const LOOPBACK = /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d{2,5})?$/
 
+// Formas soportadas del backend local. `hive` es nuestro contrato mínimo; `openai` permite
+// enchufar FreeLLMAPI/OpenClaw si exponen /v1/chat/completions en loopback.
+export const LOCAL_SHAPES = ['hive', 'openai']
+
 /**
  * El coste NO se asume: se lee de lo que declara el proveedor y se clasifica.
  *   VERIFIED_ZERO → el proveedor informó un coste numérico igual a 0
@@ -201,18 +205,37 @@ const adapters = {
         throw new ProviderError('LOCAL_PROVIDER_NOT_LOOPBACK',
           'sólo http(s)://127.0.0.1, localhost o [::1]: un endpoint remoto nunca es "local"')
       }
+      const shape = config.localProviderShape || 'hive'
+      if (!LOCAL_SHAPES.includes(shape)) {
+        throw new ProviderError('LOCAL_PROVIDER_SHAPE_UNSUPPORTED',
+          `forma desconocida "${shape}"; válidas: ${LOCAL_SHAPES.join(', ')}`)
+      }
       const guarded = localFetchGuard(fetchImpl)
-      const body = await postJson(`${config.localProviderUrl.replace(/\/$/, '')}/api/complete`,
-        { prompt, model: config.localProviderModel, max_tokens: 512 }, {}, config.requestTimeoutMs, guarded)
+      const base = config.localProviderUrl.replace(/\/$/, '')
+      // Dos formas de hablar con un backend local. Ninguna relaja las guardas: loopback,
+      // egreso bloqueado y coste declarado se aplican igual en ambas.
+      const body = shape === 'openai'
+        ? await postJson(`${base}/v1/chat/completions`, {
+            model: config.localProviderModel,
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 512,
+            stream: false,
+          }, {}, config.requestTimeoutMs, guarded)
+        : await postJson(`${base}/api/complete`,
+            { prompt, model: config.localProviderModel, max_tokens: 512 }, {}, config.requestTimeoutMs, guarded)
       const upstream = classifyUpstream(body.upstream ?? body.provider_upstream, body.upstream_billing ?? body.billing)
       if (upstream.state === 'UPSTREAM_UNVERIFIED') {
         throw new ProviderError('LOCAL_PROVIDER_UPSTREAM_UNVERIFIED',
           `el servidor local declara upstream "${upstream.upstream}" sin facturación gratuita verificable`)
       }
+      // En la forma OpenAI manda `choices[].message.content`; en la nuestra, `text`.
+      const text = String(body.choices?.[0]?.message?.content ?? body.text ?? body.completion ?? '')
+      if (!text.trim()) throw new ProviderError('LOCAL_PROVIDER_EMPTY_COMPLETION', `forma ${shape}`)
       return {
-        text: String(body.text ?? body.completion ?? ''),
+        text,
         model: String(body.model ?? config.localProviderModel),
         provider: 'local',
+        shape,
         usage: { prompt_tokens: Number(body.usage?.prompt_tokens ?? 0), completion_tokens: Number(body.usage?.completion_tokens ?? 0) },
         cost: classifyCost(body.cost ?? body.usage?.cost, 'local.cost'),
         upstream,
