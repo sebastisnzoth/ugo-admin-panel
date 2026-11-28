@@ -1,0 +1,112 @@
+name: UGO Hive Neon migrate TEST
+
+# Manual only. Never runs on push, pull_request or schedule: applying schema to the
+# Hive database is an explicit, reviewed operation, never a side effect of a commit.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Escribí APLICAR para confirmar la migración idempotente en Hive TEST'
+        required: true
+        type: string
+      first_apply:
+        description: 'Escribí APLICAR sólo si esta base aún no está registrada (primera aplicación). Dejar vacío si ya se aplicó alguna vez.'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hive-neon-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Apply hive/neon/migrations (versioned package, one transaction)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Refuse to run without explicit confirmation
+        if: inputs.confirm != 'APLICAR'
+        run: |
+          echo "::error::Confirmación inválida. Este workflow nunca migra por accidente."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Refuse to run without the Hive credential
+        env:
+          HIVE_TEST_DATABASE_URL: ${{ secrets.HIVE_TEST_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HIVE_TEST_DATABASE_URL:-}" ]; then
+            echo "::error::Falta el secreto HIVE_TEST_DATABASE_URL. No se migra nada."
+            exit 1
+          fi
+          # Isolation gate: this target must never be an Arena/Supabase database.
+          case "$HIVE_TEST_DATABASE_URL" in
+            *supabase.co*|*supabase.com*|*trfsjuseqjxlhrxuvdsm*|*tmossnqfwfwjrtzwcbmm*)
+              echo "::error::El destino apunta a Arena/Supabase. Abortado: Hive no usa Arena."
+              exit 1;;
+          esac
+          case "$HIVE_TEST_DATABASE_URL" in
+            *neon.tech*) ;;
+            *) echo "::error::El destino no parece una base Neon. Abortado por precaución."; exit 1;;
+          esac
+          echo "Destino validado: base Neon, no Arena."
+
+      - name: Install psql
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+
+      - name: Preflight inventory (read-only, never writes)
+        env:
+          HIVE_TEST_DATABASE_URL: ${{ secrets.HIVE_TEST_DATABASE_URL }}
+        run: hive/neon/apply.sh preflight
+
+      - name: Apply the package in one transaction and verify invariants
+        env:
+          HIVE_TEST_DATABASE_URL: ${{ secrets.HIVE_TEST_DATABASE_URL }}
+          HIVE_PROJECT_ID: dry-heart-24391962
+          HIVE_DATABASE_NAME: hive
+          HIVE_CONFIRM_FIRST_APPLY: ${{ inputs.first_apply }}
+        run: |
+          set -euo pipefail
+          # Non-destructive by construction: no drop table / drop schema exists in the package.
+          if grep -rniE 'drop\s+(table|schema)' hive/neon/migrations/ ; then
+            echo "::error::El paquete contiene una sentencia destructiva. Abortado."
+            exit 1
+          fi
+          hive/neon/apply.sh apply
+
+      - name: Verify the schema and record non-sensitive evidence
+        env:
+          HIVE_TEST_DATABASE_URL: ${{ secrets.HIVE_TEST_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          psql "$HIVE_TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -At -F' | ' \
+            -c "select 'departments', count(*) from hive.departments" \
+            -c "select 'agents', count(*) from hive.agents" \
+            -c "select 'jobs', count(*) from hive.jobs" \
+            -c "select 'settings', count(*) from hive.settings" \
+            -c "select 'functions', count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='hive'" \
+            -c "select 'queue', hive.queue_metrics()::text" \
+            | tee artifacts/hive-neon-verify.txt
+          # The credential is never printed: only names and counts.
+          test -s artifacts/hive-neon-verify.txt
+          grep -q '^departments | 13$' artifacts/hive-neon-verify.txt
+          if grep -qiE 'postgres(ql)?://' artifacts/hive-neon-verify.txt; then
+            echo "::error::La evidencia contiene una cadena de conexión. Abortado."
+            exit 1
+          fi
+
+      - name: Keep the verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hive-neon-verify-${{ github.sha }}
+          path: artifacts/hive-neon-verify.txt
+          retention-days: 30
+          if-no-files-found: warn

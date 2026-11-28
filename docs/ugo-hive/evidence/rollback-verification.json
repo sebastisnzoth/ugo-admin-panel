@@ -1,0 +1,94 @@
+{
+  "check": "HIVE_PR_ROLLBACK_VERIFIED",
+  "base": "d2fe61e9ecc85e491d3839cb6885d3802d9c06de",
+  "head": "d294b3a",
+  "base_tree": "2c06f6da6fc5afba3684fd87ea4fb4aa1dd1ebf1",
+  "commits": [
+    "67299aa7ed61dced17e4a0193f8cf53206fc7c2c",
+    "b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd",
+    "0af0912060c6ec03b963c9d0a351639050cbc8ab",
+    "d294b3afa24f2183b5f73c16b6a8f565aaf7ccae"
+  ],
+  "merge_commits": [],
+  "changed_files": [
+    {
+      "status": "A",
+      "path": ".github/workflows/hive-independence-guard.yml"
+    },
+    {
+      "status": "A",
+      "path": ".github/workflows/hive-neon-migrate.yml"
+    },
+    {
+      "status": "M",
+      "path": "docs/UGO_CAMINO_MAESTRO.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/UGO_ROADMAP_MASTER.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ugo-hive/HIVE_EXECUTION_STATUS_2026-11-27.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ugo-hive/HIVE_ISOLATION.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/ugo-hive/IMPLEMENTATION_STATUS.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ugo-hive/evidence/isolation-audit.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/ugo-hive/evidence/rollback-verification.json"
+    },
+    {
+      "status": "A",
+      "path": "hive/neon/001_hive_core.sql"
+    },
+    {
+      "status": "A",
+      "path": "hive/neon/README.md"
+    },
+    {
+      "status": "A",
+      "path": "scripts/hive/isolation-audit.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/hive/rollback-verify.mjs"
+    },
+    {
+      "status": "M",
+      "path": "src/mvp/HiveConsole.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/mvp/hiveCatalog.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/contracts/hive-superadmin-console.test.mjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/hive/isolation-audit.test.mjs"
+    },
+    {
+      "status": "A",
+      "path": "tests/hive/neon-queue.test.mjs"
+    }
+  ],
+  "revert_commit": "457d908bb244b1b03aae1d0732988f110399180d",
+  "tree_restored": true,
+  "conflict": null,
+  "procedure": "git revert d294b3afa24f2183b5f73c16b6a8f565aaf7ccae 0af0912060c6ec03b963c9d0a351639050cbc8ab b1f7d9a9aab5113d9bf1a80d5ee9bed9c3d3dedd 67299aa7ed61dced17e4a0193f8cf53206fc7c2c",
+  "destructive_commands_used": false,
+  "note": "rango verificado en el momento de generar la evidencia; volver a ejecutar antes de revertir",
+  "verdict": "PASS"
+}

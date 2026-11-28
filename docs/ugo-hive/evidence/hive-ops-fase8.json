@@ -1,0 +1,401 @@
+{
+  "generated_at": "2026-11-28T04:39:44.350Z",
+  "package_version": "2.2.0",
+  "environment": {
+    "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
+    "touches_neon": false,
+    "cost_usd": 0,
+    "external_inference": false
+  },
+  "disclosure": {
+    "kind": "CONTRACT_TEST",
+    "real_operation": false,
+    "database": "réplica local del esquema de Neon TEST",
+    "provider": "servidor local de pruebas (mock determinista)",
+    "cost_usd": 0
+  },
+  "steps": [
+    {
+      "at": "2026-11-28T04:39:44.460Z",
+      "step": "roles existentes en NOLOGIN (sin crearlos aquí)",
+      "hive_app": false,
+      "hive_console_ro": false
+    },
+    {
+      "at": "2026-11-28T04:39:44.522Z",
+      "step": "logins activados y verificados",
+      "ok": true,
+      "checks": 12,
+      "dsn_leaked": false
+    },
+    {
+      "at": "2026-11-28T04:39:44.598Z",
+      "step": "proveedor local verificado",
+      "exit": 0,
+      "checks": {
+        "loopback_endpoint": true,
+        "cost_declared": true,
+        "cost_is_zero": true,
+        "upstream_not_unverified": true,
+        "no_external_egress": true,
+        "produced_text": true,
+        "declared_shape": true
+      }
+    },
+    {
+      "at": "2026-11-28T04:39:44.770Z",
+      "step": "tarea única ejecutada",
+      "exit": 0,
+      "state": "SUCCEEDED",
+      "cost": "VERIFIED_ZERO",
+      "events": "ENQUEUED → LEASED → SUCCEEDED"
+    },
+    {
+      "at": "2026-11-28T04:39:44.778Z",
+      "step": "instantánea real",
+      "departments": 13,
+      "department_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        14
+      ],
+      "agents_total": 127,
+      "agents_unassigned": 9,
+      "states": {
+        "operative": 1,
+        "connected": 0,
+        "registered": 123,
+        "disabled": 3
+      },
+      "emergency": {
+        "stop": false,
+        "code": null
+      },
+      "quota_monthly": "UNKNOWN"
+    },
+    {
+      "at": "2026-11-28T04:39:44.803Z",
+      "step": "endpoint autenticado",
+      "anonymous": 401,
+      "not_superadmin": 403,
+      "superadmin": 200,
+      "cache_control": "no-store",
+      "departments_in_payload": 13,
+      "agents_in_payload": 127,
+      "read_only": true
+    },
+    {
+      "at": "2026-11-28T04:39:44.805Z",
+      "step": "auth sin clave de servicio",
+      "mode": "user",
+      "identity": {
+        "userId": "u-super",
+        "superadmin": true,
+        "active": true
+      },
+      "requests": 2,
+      "uses_only_public_key": true,
+      "forwards_user_token_to_profile": true,
+      "privileged_credentials_used": false
+    },
+    {
+      "at": "2026-11-28T04:39:44.822Z",
+      "step": "interruptor de emergencia en sus dos niveles",
+      "database_level": {
+        "action": "STOPPED",
+        "reason": "EMERGENCY_STOP"
+      },
+      "file_level": {
+        "action": "STOPPED",
+        "reason": "EMERGENCY_STOP_FILE"
+      }
+    },
+    {
+      "at": "2026-11-28T04:39:44.838Z",
+      "step": "vigilancia preparada",
+      "samples": 2,
+      "read_failures": 0,
+      "verdict": "HEALTHY",
+      "jsonl_contains_dsn": false
+    },
+    {
+      "at": "2026-11-28T04:39:44.871Z",
+      "step": "frontend sin credenciales ni polling",
+      "files": 296,
+      "dsn": 0
+    }
+  ],
+  "roles_before": {
+    "hive_app": false,
+    "hive_console_ro": false
+  },
+  "activation": {
+    "ok": true,
+    "checks": {
+      "worker_login": true,
+      "reader_login": true,
+      "worker_not_superuser": true,
+      "reader_not_superuser": true,
+      "worker_no_ddl": true,
+      "reader_no_ddl": true,
+      "worker_conn_limit": true,
+      "reader_conn_limit": true,
+      "worker_cannot_insert": true,
+      "reader_cannot_insert": true,
+      "reader_cannot_reserve": true,
+      "worker_can_reserve": true
+    },
+    "roles": {
+      "worker": {
+        "role": "hive_app",
+        "group": "hive_worker",
+        "connection_limit": 5,
+        "statement_timeout": "30s"
+      },
+      "reader": {
+        "role": "hive_console_ro",
+        "group": "hive_reader",
+        "connection_limit": 3,
+        "statement_timeout": "10s",
+        "read_only_transactions": true
+      }
+    },
+    "connection_checks": {
+      "worker": {
+        "current_user": "hive_app",
+        "is_superuser": false,
+        "worker_member": true
+      },
+      "reader": {
+        "read_only": true,
+        "can_insert": false,
+        "can_select": true,
+        "current_user": "hive_console_ro"
+      }
+    },
+    "secret_files_mode": [
+      "600",
+      "600"
+    ],
+    "stdout_contains_dsn": false
+  },
+  "reader": {
+    "can_reserve": false,
+    "can_complete": false,
+    "current_user": "hive_console_ro",
+    "is_superuser": false,
+    "can_delete_jobs": false,
+    "can_insert_jobs": false,
+    "can_select_jobs": true,
+    "can_update_jobs": false,
+    "can_read_metrics": true,
+    "is_reader_member": true,
+    "ok": true,
+    "violations": []
+  },
+  "worker_identity": {
+    "current_user": "hive_app",
+    "is_superuser": false,
+    "worker_member": true
+  },
+  "local_provider": {
+    "ok": true,
+    "code": "LOCAL_PROVIDER_VERIFIED",
+    "endpoint": "http://127.0.0.1:37791",
+    "shape": "hive",
+    "model": "mock/free",
+    "latency_ms": 38,
+    "text_chars": 51,
+    "usage": {
+      "prompt_tokens": 65,
+      "completion_tokens": 8
+    },
+    "cost": {
+      "state": "VERIFIED_ZERO",
+      "value": 0,
+      "source": "local.cost"
+    },
+    "upstream": {
+      "state": "LOCAL",
+      "upstream": null
+    },
+    "egress_blocked": 0,
+    "checks": {
+      "loopback_endpoint": true,
+      "cost_declared": true,
+      "cost_is_zero": true,
+      "upstream_not_unverified": true,
+      "no_external_egress": true,
+      "produced_text": true,
+      "declared_shape": true
+    }
+  },
+  "single_task": {
+    "ok": true,
+    "mode": "EXECUTE",
+    "agent": {
+      "agent_key": "hugo-orchestrator",
+      "state": "OPERATIVE",
+      "department_id": null
+    },
+    "job": {
+      "id": "db739423-6630-4db3-a73b-90f15930ff5c",
+      "state": "SUCCEEDED",
+      "status": "DONE",
+      "attempts": 1,
+      "events": "ENQUEUED → LEASED → SUCCEEDED",
+      "effects": 1,
+      "judge": {
+        "cost": {
+          "state": "VERIFIED_ZERO",
+          "value": 0,
+          "source": "local.cost"
+        },
+        "model": "mock/free",
+        "cost_usd": 0,
+        "provider": "local",
+        "latency_ms": 49,
+        "text_chars": 51,
+        "total_tokens": 89,
+        "prompt_tokens": 81,
+        "completion_tokens": 8
+      },
+      "provider": "local",
+      "last_error": null
+    },
+    "worker_outcome": {
+      "action": "DONE",
+      "code": "SUCCEEDED",
+      "effect_applied": true
+    },
+    "queue_before": {
+      "queued": 0,
+      "leased": 0
+    },
+    "queue_after": {
+      "queued": 0,
+      "leased": 0,
+      "succeeded": 2,
+      "failed": 0
+    },
+    "cost": {
+      "state": "VERIFIED_ZERO",
+      "value": 0,
+      "source": "local.cost"
+    },
+    "log_events": [
+      "LEASED",
+      "JOB_DONE"
+    ],
+    "secrets_exposed": false
+  },
+  "snapshot": {
+    "departments": 13,
+    "department_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14
+    ],
+    "agents_total": 127,
+    "agents_unassigned": 9,
+    "states": {
+      "operative": 1,
+      "connected": 0,
+      "registered": 123,
+      "disabled": 3
+    },
+    "emergency": {
+      "stop": false,
+      "code": null
+    },
+    "quota_monthly": "UNKNOWN"
+  },
+  "api": {
+    "anonymous": 401,
+    "not_superadmin": 403,
+    "superadmin": 200,
+    "cache_control": "no-store",
+    "departments_in_payload": 13,
+    "agents_in_payload": 127,
+    "read_only": true
+  },
+  "auth": {
+    "mode": "user",
+    "identity": {
+      "userId": "u-super",
+      "superadmin": true,
+      "active": true
+    },
+    "requests": 2,
+    "uses_only_public_key": true,
+    "forwards_user_token_to_profile": true,
+    "privileged_credentials_used": false
+  },
+  "emergency": {
+    "database_level": {
+      "action": "STOPPED",
+      "reason": "EMERGENCY_STOP"
+    },
+    "file_level": {
+      "action": "STOPPED",
+      "reason": "EMERGENCY_STOP_FILE"
+    }
+  },
+  "watch": {
+    "samples": 2,
+    "read_failures": 0,
+    "verdict": "HEALTHY",
+    "jsonl_contains_dsn": false
+  },
+  "frontend": {
+    "files_scanned": 296,
+    "files_with_dsn": [],
+    "hive_vite_variables": [
+      "VITE_HIVE_CONSOLE_API"
+    ],
+    "polling_calls": 0
+  },
+  "preservation": {
+    "legacy_job": "SUCCEEDED/DONE",
+    "agents_total": 127,
+    "departments_total": 13,
+    "status_check_intact": true
+  },
+  "verdict": {
+    "activation_without_recreating_roles": true,
+    "both_logins_least_privilege": true,
+    "local_provider_cost_declared": true,
+    "local_provider_no_external_egress": true,
+    "single_task_done": true,
+    "single_agent": true,
+    "judge_pass_with_real_result": true,
+    "endpoint_authenticated": true,
+    "console_shows_13_departments_and_127_agents": true,
+    "auth_without_privileged_credentials": true,
+    "emergency_both_levels": true,
+    "no_credentials_in_frontend": true,
+    "no_polling_in_console": true,
+    "watch_ready": true,
+    "legacy_preserved": true
+  }
+}

@@ -1,0 +1,375 @@
+{
+  "generated_at": "2026-11-28T04:39:45.562Z",
+  "package_version": "2.2.0",
+  "disclosure": {
+    "kind": "CONTRACT_TEST",
+    "real_operation": false,
+    "database": "réplica local del esquema de Neon TEST",
+    "provider": "no aplica (sin inferencia)",
+    "cost_usd": 0
+  },
+  "environment": {
+    "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
+    "touches_neon": false,
+    "cost_usd": 0,
+    "external_inference": false
+  },
+  "steps": [
+    {
+      "at": "2026-11-28T04:39:45.671Z",
+      "step": "paquete 2.2.0 sobre la réplica",
+      "agentes": 127,
+      "departamentos": 13
+    },
+    {
+      "at": "2026-11-28T04:39:45.692Z",
+      "step": "logins separados verificados",
+      "worker_checks": 12,
+      "reader_checks": 11,
+      "failed": 0
+    },
+    {
+      "at": "2026-11-28T04:39:45.697Z",
+      "step": "rol de lectura reconocido",
+      "ok": true,
+      "violations": []
+    },
+    {
+      "at": "2026-11-28T04:39:45.715Z",
+      "step": "el rol de lectura no puede escribir ni ejecutar la cola",
+      "insert": "DENIED",
+      "update": "DENIED",
+      "delete": "DENIED",
+      "ddl": "DENIED",
+      "reserve": "DENIED"
+    },
+    {
+      "at": "2026-11-28T04:39:45.765Z",
+      "step": "agente verificado contra el catálogo real",
+      "agent_key": "hugo-orchestrator",
+      "state": "OPERATIVE",
+      "exit": 0
+    },
+    {
+      "at": "2026-11-28T04:39:45.864Z",
+      "step": "coste declarado por el proveedor, no asumido",
+      "action": "DONE",
+      "cost_state": "VERIFIED_ZERO",
+      "source": "mock.cost"
+    },
+    {
+      "at": "2026-11-28T04:39:45.937Z",
+      "step": "sin coste declarado no hay PASS",
+      "action": "REJECTED",
+      "code": "JUDGE_REJECTED",
+      "reasons": [
+        "COST_UNVERIFIED"
+      ],
+      "job_state": "FAILED",
+      "result_stored": false
+    },
+    {
+      "at": "2026-11-28T04:39:45.954Z",
+      "step": "endpoint real",
+      "anonymous": 401,
+      "admin": 403,
+      "foreign_origin": 403,
+      "superadmin": 200
+    },
+    {
+      "at": "2026-11-28T04:39:45.971Z",
+      "step": "ventana de vigilancia real",
+      "window_hours": 0.001,
+      "samples": 2,
+      "read_failures": 0,
+      "verdict": "HEALTHY",
+      "lines_written": 2,
+      "jsonl_contains_connection_string": false
+    },
+    {
+      "at": "2026-11-28T04:39:45.972Z",
+      "step": "mecanismo de secretos validado en forma",
+      "valid_shape": true,
+      "rejects_supabase": true,
+      "rejects_missing_ssl": true,
+      "rejects_privileged_user": true,
+      "note": "se comprueba la forma; el valor real se envía por stdin a gh secret set y nunca se imprime"
+    },
+    {
+      "at": "2026-11-28T04:39:45.990Z",
+      "step": "interruptor de emergencia",
+      "on_exit": 0,
+      "creates_file": true,
+      "worker_action_while_active": "STOPPED",
+      "reason": "EMERGENCY_STOP_FILE",
+      "off_exit": 0,
+      "off_removes_file": true,
+      "worker_emergency_actions_avoided": true
+    }
+  ],
+  "roles": {
+    "worker": [
+      {
+        "name": "worker_member",
+        "ok": true
+      },
+      {
+        "name": "not_superuser",
+        "ok": true
+      },
+      {
+        "name": "cannot_create_db",
+        "ok": true
+      },
+      {
+        "name": "cannot_create_role",
+        "ok": true
+      },
+      {
+        "name": "no_insert_jobs",
+        "ok": true
+      },
+      {
+        "name": "no_update_jobs",
+        "ok": true
+      },
+      {
+        "name": "no_delete_jobs",
+        "ok": true
+      },
+      {
+        "name": "no_truncate_jobs",
+        "ok": true
+      },
+      {
+        "name": "can_select_jobs",
+        "ok": true
+      },
+      {
+        "name": "can_reserve",
+        "ok": true
+      },
+      {
+        "name": "can_complete",
+        "ok": true
+      },
+      {
+        "name": "can_record_budget",
+        "ok": true
+      }
+    ],
+    "reader": [
+      {
+        "name": "reader_member",
+        "ok": true
+      },
+      {
+        "name": "not_superuser",
+        "ok": true
+      },
+      {
+        "name": "read_only_transactions",
+        "ok": true
+      },
+      {
+        "name": "no_insert_jobs",
+        "ok": true
+      },
+      {
+        "name": "no_update_jobs",
+        "ok": true
+      },
+      {
+        "name": "no_delete_jobs",
+        "ok": true
+      },
+      {
+        "name": "can_select_jobs",
+        "ok": true
+      },
+      {
+        "name": "cannot_reserve",
+        "ok": true
+      },
+      {
+        "name": "cannot_complete",
+        "ok": true
+      },
+      {
+        "name": "can_read_metrics",
+        "ok": true
+      },
+      {
+        "name": "can_read_census",
+        "ok": true
+      }
+    ],
+    "worker_failed": [],
+    "reader_failed": []
+  },
+  "reader": {
+    "can_reserve": false,
+    "can_complete": false,
+    "current_user": "hive_console_ro",
+    "is_superuser": false,
+    "can_delete_jobs": false,
+    "can_insert_jobs": false,
+    "can_select_jobs": true,
+    "can_update_jobs": false,
+    "can_read_metrics": true,
+    "is_reader_member": true,
+    "ok": true,
+    "violations": [],
+    "denied_operations": {
+      "insert": "DENIED",
+      "update": "DENIED",
+      "delete": "DENIED",
+      "ddl": "DENIED",
+      "reserve": "DENIED"
+    }
+  },
+  "agent": {
+    "exit": 0,
+    "report": {
+      "ok": true,
+      "requested": "hugo-orchestrator",
+      "found": true,
+      "agent": {
+        "agent_key": "hugo-orchestrator",
+        "name": "Hugo Orchestrator",
+        "state": "OPERATIVE",
+        "department": null
+      },
+      "census": {
+        "total": 127,
+        "disabled": 3,
+        "connected": 0,
+        "operative": 1,
+        "registered": 123,
+        "max_operative_agents": 1,
+        "legacy_status_preserved": 9
+      },
+      "limits": {
+        "max_operative_agents": 1,
+        "operative_now": 1
+      }
+    }
+  },
+  "cost": {
+    "judge": {
+      "cost": {
+        "state": "VERIFIED_ZERO",
+        "value": 0,
+        "source": "mock.cost"
+      },
+      "model": "mock/free",
+      "cost_usd": 0,
+      "provider": "mock",
+      "latency_ms": 40,
+      "text_chars": 49,
+      "total_tokens": 52,
+      "prompt_tokens": 44,
+      "completion_tokens": 8
+    },
+    "provider": "mock",
+    "verdict": "VERIFIED_ZERO"
+  },
+  "cost_verification": {
+    "without_declaration": {
+      "action": "REJECTED",
+      "code": "JUDGE_REJECTED",
+      "reasons": [
+        "COST_UNVERIFIED"
+      ],
+      "job_state": "FAILED",
+      "result_stored": false
+    }
+  },
+  "api": {
+    "anonymous_status": 401,
+    "admin_status": 403,
+    "foreign_origin_status": 403,
+    "superadmin_status": 200,
+    "cache_control": "no-store",
+    "cors": "http://localhost:5173",
+    "payload": {
+      "environment": "TEST",
+      "source": "hive_reader",
+      "read_only": true,
+      "schema_version": "2.2.0",
+      "queue": {
+        "failed": 1,
+        "leased": 0,
+        "queued": 0,
+        "cancelled": 0,
+        "succeeded": 2,
+        "stale_leases": 0,
+        "agents_disabled": 3,
+        "effects_applied": 1,
+        "agents_connected": 0,
+        "agents_operative": 1,
+        "agents_registered": 123,
+        "skipped_unauthorized": 0
+      },
+      "census": {
+        "total": 127,
+        "disabled": 3,
+        "connected": 0,
+        "operative": 1,
+        "registered": 123,
+        "max_operative_agents": 1,
+        "legacy_status_preserved": 9
+      },
+      "emergency": {
+        "stop": false,
+        "code": null
+      },
+      "quota_monthly": "UNKNOWN",
+      "recent_events": 6
+    }
+  },
+  "watch": {
+    "window_hours": 0.001,
+    "samples": 2,
+    "read_failures": 0,
+    "verdict": "HEALTHY",
+    "lines_written": 2,
+    "jsonl_contains_connection_string": false
+  },
+  "secret_setup": {
+    "valid_shape": true,
+    "rejects_supabase": true,
+    "rejects_missing_ssl": true,
+    "rejects_privileged_user": true,
+    "note": "se comprueba la forma; el valor real se envía por stdin a gh secret set y nunca se imprime"
+  },
+  "emergency": {
+    "on_exit": 0,
+    "creates_file": true,
+    "worker_action_while_active": "STOPPED",
+    "reason": "EMERGENCY_STOP_FILE",
+    "off_exit": 0,
+    "off_removes_file": true,
+    "worker_emergency_actions_avoided": true
+  },
+  "preservation": {
+    "legacy_job": "SUCCEEDED/DONE",
+    "agents_total": 127,
+    "departments_total": 13,
+    "status_check_intact": true
+  },
+  "verdict": {
+    "endpoint_implemented": true,
+    "endpoint_denies_anonymous": true,
+    "endpoint_denies_non_superadmin": true,
+    "endpoint_denies_foreign_origin": true,
+    "reader_read_only": true,
+    "agent_exists_in_real_catalog": true,
+    "cost_verified_zero_from_provider": true,
+    "cost_not_assumed": true,
+    "emergency_stop_works": true,
+    "watch_ready": true,
+    "secrets_never_printed": true,
+    "legacy_preserved": true
+  }
+}

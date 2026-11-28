@@ -1,0 +1,89 @@
+name: UGO Hive worker TEST (self-check + one job)
+
+# Manual only. The worker runs against Hive TEST with the least-privileged login, executes
+# at most ONE job with ONE agent, and never merges, deploys or touches PROD.
+# Without the secrets below it stops with a clear message instead of pretending.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Escribí EJECUTAR para confirmar una única tarea real en Hive TEST'
+        required: true
+        type: string
+      provider:
+        description: 'Proveedor: mock (por defecto, coste 0) u openrouter (requiere aprobación vigente)'
+        required: false
+        type: string
+        default: 'mock'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hive-worker-test
+  cancel-in-progress: false
+
+jobs:
+  worker:
+    name: self-check → una tarea, un agente
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Refuse to run without explicit confirmation
+        if: inputs.confirm != 'EJECUTAR'
+        run: |
+          echo "::error::Confirmación inválida. Este workflow nunca ejecuta tareas por accidente."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Refuse to run without the worker credential
+        env:
+          HIVE_WORKER_DATABASE_URL: ${{ secrets.HIVE_WORKER_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HIVE_WORKER_DATABASE_URL:-}" ]; then
+            echo "::error::Falta el secreto HIVE_WORKER_DATABASE_URL (login miembro de hive_worker). No se ejecuta nada."
+            exit 1
+          fi
+          case "$HIVE_WORKER_DATABASE_URL" in
+            *supabase.co*|*supabase.com*|*trfsjuseqjxlhrxuvdsm*|*tmossnqfwfwjrtzwcbmm*)
+              echo "::error::El destino apunta a Arena/Supabase. Abortado: Hive no usa Arena."
+              exit 1;;
+          esac
+          case "$HIVE_WORKER_DATABASE_URL" in
+            *neon.tech*) ;;
+            *) echo "::error::El destino no parece una base Neon. Abortado por precaución."; exit 1;;
+          esac
+
+      - name: Install psql 16
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16 >/dev/null
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Worker self-check (identity, role, emergency switch)
+        env:
+          HIVE_WORKER_DATABASE_URL: ${{ secrets.HIVE_WORKER_DATABASE_URL }}
+        run: node hive/worker/worker.mjs --self-check
+
+      - name: One job, one agent (burn after reading)
+        env:
+          HIVE_WORKER_DATABASE_URL: ${{ secrets.HIVE_WORKER_DATABASE_URL }}
+          HIVE_WORKER_PROVIDER: ${{ inputs.provider }}
+          HIVE_WORKER_MAX_ITERATIONS: '1'
+          HIVE_WORKER_MAX_JOBS: '1'
+          HIVE_OPENROUTER_MODEL: ${{ vars.HIVE_OPENROUTER_MODEL }}
+          HIVE_OPENROUTER_APPROVAL: ${{ secrets.HIVE_OPENROUTER_APPROVAL }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: node hive/worker/worker.mjs --once
+
+      - name: Never leave a token behind
+        if: always()
+        run: echo "Sin credenciales persistidas: la URL sólo existió en el entorno del paso."

@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-11-28T04:46:40.111Z",
+  "mode": "READ_ONLY",
+  "writes_to_database": false,
+  "deploy": false,
+  "cost_usd": 0,
+  "secret_dir": "[fuera del repo]",
+  "checks": [
+    {
+      "id": "repo",
+      "step": "ningún archivo versionado contiene una cadena de conexión con contraseña",
+      "status": "VERIFIED",
+      "files": 2734,
+      "offenders": []
+    },
+    {
+      "id": "credentials",
+      "step": "credenciales guardadas fuera del repositorio",
+      "status": "BLOCKED",
+      "action": {
+        "why": "No hay URLs de base de datos en el entorno ni en el directorio de secretos.",
+        "command": "HIVE_MIGRATOR_DATABASE_URL=… HIVE_CONFIRM_ACTIVATION=APLICAR node scripts/hive/activate-logins.mjs --apply",
+        "then": "las URLs quedan en ~/.ugo-hive/secrets con modo 600"
+      }
+    },
+    {
+      "id": "database",
+      "step": "lector real contra Neon TEST",
+      "status": "BLOCKED",
+      "detail": "falta HIVE_READER_DATABASE_URL"
+    },
+    {
+      "id": "database.worker",
+      "step": "rol de ejecución utilizable (LOGIN)",
+      "status": "BLOCKED",
+      "detail": "falta HIVE_WORKER_DATABASE_URL"
+    },
+    {
+      "id": "provider",
+      "step": "backend local (OpenClaw / FreeLLMAPI)",
+      "status": "BLOCKED",
+      "action": {
+        "why": "No hay backend local configurado en esta máquina; el proveedor remoto sigue cerrado por política.",
+        "command": "HIVE_LOCAL_PROVIDER_URL=http://127.0.0.1:PORT HIVE_LOCAL_PROVIDER_APPROVED=APROBADO [HIVE_LOCAL_PROVIDER_SHAPE=openai] node scripts/hive/local-provider-check.mjs",
+        "note": "Con forma `openai` el backend debe añadir `cost: 0` a la respuesta; si no lo hace, no se aprueba."
+      }
+    },
+    {
+      "id": "render",
+      "step": "despliegue TEST declarado sin plan de pago ni credencial privilegiada",
+      "status": "READY",
+      "blueprint": "render.yaml",
+      "dockerfile": "hive/console-api/Dockerfile",
+      "issues": [],
+      "deployed": false
+    },
+    {
+      "id": "endpoint",
+      "step": "endpoint TEST accesible y protegido",
+      "status": "BLOCKED",
+      "action": {
+        "why": "No hay endpoint desplegado (Render Free) ni URL configurada.",
+        "command": "Render → New Blueprint → repo + rama; requiere la credencial del paso 1 y autorización humana"
+      }
+    },
+    {
+      "id": "console",
+      "step": "consola apuntando al endpoint real",
+      "status": "BLOCKED",
+      "action": {
+        "why": "Sin VITE_HIVE_CONSOLE_API la consola no hace ninguna petición (por diseño).",
+        "command": "definir VITE_HIVE_CONSOLE_API cuando exista el endpoint"
+      }
+    },
+    {
+      "id": "watch",
+      "step": "vigilancia de 24 h",
+      "status": "BLOCKED",
+      "action": {
+        "why": "La vigilancia necesita el lector real; se lanza después del despliegue.",
+        "command": "HIVE_READER_DATABASE_URL=… node scripts/hive/watch-24h.mjs --hours 24 --interval-seconds 300 --out docs/ugo-hive/evidence/hive-watch-24h.jsonl"
+      }
+    },
+    {
+      "id": "evidence",
+      "step": "toda evidencia declara su procedencia (real vs contrato)",
+      "status": "READY",
+      "files": [
+        "checkpoint.json",
+        "go-live-readiness.json",
+        "hive-console-api.json",
+        "hive-neon-package.json",
+        "hive-ops-fase8.json",
+        "hive-worker-e2e.json",
+        "isolation-audit.json",
+        "results.json",
+        "rollback-verification.json",
+        "source-manifest.json"
+      ],
+      "undeclared": []
+    }
+  ],
+  "human_actions": [
+    {
+      "id": "credentials",
+      "why": "No hay URLs de base de datos en el entorno ni en el directorio de secretos.",
+      "command": "HIVE_MIGRATOR_DATABASE_URL=… HIVE_CONFIRM_ACTIVATION=APLICAR node scripts/hive/activate-logins.mjs --apply",
+      "then": "las URLs quedan en ~/.ugo-hive/secrets con modo 600"
+    },
+    {
+      "id": "provider",
+      "why": "No hay backend local configurado en esta máquina; el proveedor remoto sigue cerrado por política.",
+      "command": "HIVE_LOCAL_PROVIDER_URL=http://127.0.0.1:PORT HIVE_LOCAL_PROVIDER_APPROVED=APROBADO [HIVE_LOCAL_PROVIDER_SHAPE=openai] node scripts/hive/local-provider-check.mjs",
+      "note": "Con forma `openai` el backend debe añadir `cost: 0` a la respuesta; si no lo hace, no se aprueba."
+    },
+    {
+      "id": "endpoint",
+      "why": "No hay endpoint desplegado (Render Free) ni URL configurada.",
+      "command": "Render → New Blueprint → repo + rama; requiere la credencial del paso 1 y autorización humana"
+    },
+    {
+      "id": "console",
+      "why": "Sin VITE_HIVE_CONSOLE_API la consola no hace ninguna petición (por diseño).",
+      "command": "definir VITE_HIVE_CONSOLE_API cuando exista el endpoint"
+    },
+    {
+      "id": "watch",
+      "why": "La vigilancia necesita el lector real; se lanza después del despliegue.",
+      "command": "HIVE_READER_DATABASE_URL=… node scripts/hive/watch-24h.mjs --hours 24 --interval-seconds 300 --out docs/ugo-hive/evidence/hive-watch-24h.jsonl"
+    }
+  ],
+  "verdict": "BLOCKED"
+}
