@@ -1,7 +1,7 @@
 import test, { after } from 'node:test'
 import assert from 'node:assert/strict'
 import { loadConfig, redact, describeConfig, jitter } from '../../hive/worker/config.mjs'
-import { approvedOpenRouterRoute, resolveProvider, ProviderError, classifyCost } from '../../hive/worker/providers.mjs'
+import { approvedOpenRouterRoute, resolveProvider, ProviderError, classifyCost, localFetchGuard, classifyUpstream } from '../../hive/worker/providers.mjs'
 import { inspect } from '../../hive/worker/sentinel.mjs'
 import { verdict } from '../../hive/worker/judge.mjs'
 import { startMockProvider } from './fixtures/mock-provider.mjs'
@@ -159,6 +159,42 @@ test('local: http://localhost:8123 y [::1] son válidos; http://10.0.0.5 no', as
   assert.equal(await rejects('https://openclaw.example.com'), true)
   assert.equal(await rejects('http://localhost:8080'), false)
   assert.equal(await rejects('http://[::1]:8080'), false)
+})
+
+test('local: la guarda de egreso bloquea cualquier salida que no sea loopback', async () => {
+  const attempts = []
+  const guarded = localFetchGuard(async url => { attempts.push(String(url)); return new Response('{}', { status: 200 }) })
+  await assert.rejects(guarded('https://openrouter.ai/api/v1/chat/completions', {}), error => error.code === 'EGRESS_BLOCKED')
+  await assert.rejects(guarded('https://api.openai.com/v1/chat/completions', {}), error => error.code === 'EGRESS_BLOCKED')
+  assert.deepEqual(guarded.blocked.sort(), ['https://api.openai.com', 'https://openrouter.ai'])
+  // Y deja pasar lo local sin tocarlo.
+  const response = await guarded('http://127.0.0.1:9999/api/complete', {})
+  assert.equal(response.status, 200)
+  assert.equal(attempts.length, 1)
+})
+
+test('local: un upstream remoto sólo se acepta si declara facturación gratuita', async () => {
+  assert.deepEqual(classifyUpstream(null), { state: 'LOCAL', upstream: null })
+  assert.deepEqual(classifyUpstream('local'), { state: 'LOCAL', upstream: 'local' })
+  assert.equal(classifyUpstream('openrouter').state, 'UPSTREAM_UNVERIFIED')
+  assert.equal(classifyUpstream('openrouter', 'paid').state, 'UPSTREAM_UNVERIFIED')
+  assert.deepEqual(classifyUpstream('openrouter', 'free'), { state: 'UPSTREAM_FREE_DECLARED', upstream: 'openrouter' })
+})
+
+test('local: el adaptador rechaza un upstream remoto sin facturación gratuita declarada', async () => {
+  const localServer = await startMockProvider({ path: '/api/complete', extra: { upstream: 'openrouter' } })
+  try {
+    const config = baseConfig({ provider: 'local', localProviderApproved: 'APROBADO', localProviderUrl: `http://127.0.0.1:${new URL(localServer.url).port}` })
+    await assert.rejects(resolveProvider('local').complete({ config, prompt: 'x' }),
+      error => error.code === 'LOCAL_PROVIDER_UPSTREAM_UNVERIFIED')
+    localServer.setExtra({ upstream: 'openrouter', upstream_billing: 'free' })
+    const result = await resolveProvider('local').complete({ config, prompt: 'x' })
+    assert.equal(result.upstream.state, 'UPSTREAM_FREE_DECLARED')
+    assert.equal(result.egress_blocked, 0)
+    localServer.setExtra({})
+  } finally {
+    await localServer.close()
+  }
 })
 
 // ── Sentinel ────────────────────────────────────────────────────────────────────

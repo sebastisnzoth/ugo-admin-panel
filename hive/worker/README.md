@@ -97,7 +97,7 @@ sólo `workflow_dispatch`, exige `confirm=EJECUTAR` y el secreto `HIVE_WORKER_DA
 | Ruta | Estado | Motivo |
 | --- | --- | --- |
 | `mock` | ✅ pruebas | servidor HTTP local determinista; `cost 0` declarado, sin red externa |
-| `local` | ✅ loopback | FreeLLMAPI/OpenClaw **en la propia máquina**; exige `HIVE_LOCAL_PROVIDER_APPROVED=APROBADO` y URL `127.0.0.1`/`localhost`/`[::1]` |
+| `local` | ✅ loopback | FreeLLMAPI/OpenClaw **en la propia máquina**; exige `HIVE_LOCAL_PROVIDER_APPROVED=APROBADO` y URL `127.0.0.1`/`localhost`/`[::1]`. Además `localFetchGuard` bloquea cualquier salida que no sea loopback (`EGRESS_BLOCKED`) y `classifyUpstream` convierte un `upstream` remoto no declarado en `LOCAL_PROVIDER_UPSTREAM_UNVERIFIED` (error). Comprobación: `npm run hive:local-check` |
 | `openrouter` | ⛔ cerrado | exige modelo `:free`, precios en cero, evidencia de facturación y aprobación < 1 h (`policy.mjs`) |
 | `openclaw` | ⛔ cerrado | sin endpoint aprobado (`HIVE_OPENCLAW_APPROVED=APROBADO` no existe todavía) |
 | `freellmapi` | ⛔ cerrado | su pinning de proveedor no es verificable |
@@ -118,6 +118,32 @@ HIVE_WORKER_DATABASE_URL_FILE=./worker.url node scripts/hive/secret-setup.mjs --
 
 Rechaza: hosts que no son `*.neon.tech`, Supabase/Arena, falta de `sslmode=require`, usuarios
 privilegiados (`postgres`, `neondb_owner`, …) y contraseñas en parámetros.
+
+## Activar los dos logins (sin recrear roles)
+
+Neon TEST ya tiene `hive_app` y `hive_console_ro` creados y **NOLOGIN**. El procedimiento
+definitivo no crea usuarios: les pone contraseña, los deja `LOGIN` con sus límites y verifica
+que siguen siendo mínimos.
+
+```bash
+node scripts/hive/activate-logins.mjs          # simulación (por defecto)
+HIVE_CONFIRM_ACTIVATION=APLICAR node scripts/hive/activate-logins.mjs --apply \
+  [--set-github-secrets]                      # publica las DOS URLs por stdin
+```
+
+Escribe `~/.ugo-hive/secrets/*-database-url.url` con modo **600**, nunca imprime la cadena y
+se niega si el directorio de secretos cae dentro del repositorio.
+
+## Una sola tarea con un solo agente
+
+```bash
+HIVE_CONFIRM_SINGLE_TASK=APLICAR node scripts/hive/run-single-task.mjs \
+  --agent hugo-orchestrator --prompt "…" --out /tmp/tarea.json
+```
+
+Sin `HIVE_CONFIRM_SINGLE_TASK` sólo muestra el plan. Exige: agente existente y **OPERATIVE**,
+**exactamente un** agente operativo, cola vacía, y después verifica `SUCCEEDED/DONE`, un único
+efecto, la secuencia de eventos y el coste `VERIFIED_ZERO`.
 
 ## Vigilancia (24 h, sólo lectura)
 
@@ -145,9 +171,9 @@ la consola; el worker lo lee en **cada** iteración.
 ## Pruebas
 
 ```bash
-node --test tests/hive/worker-unit.test.mjs          # 21 · sin base de datos
+node --test tests/hive/worker-unit.test.mjs          # 31 · sin base de datos (incluye egreso)
 HIVE_REQUIRE_REAL_POSTGRES=1 PG_VENV=/tmp/pgenv \
-  node --test tests/hive/worker-runtime.test.mjs      # 11 · PostgreSQL real + réplica exacta
+  node --test tests/hive/worker-runtime.test.mjs      # 13 · tarea única, emergencia nivel 2
 PG_VENV=/tmp/pgenv node scripts/hive/worker-evidence.mjs
   # → docs/ugo-hive/evidence/hive-worker-e2e.json
 ```
@@ -161,5 +187,5 @@ durante la llamada → sin `SUCCEEDED`), proveedor caído (reprogramación con b
 
 - No despliega, no fusiona `main`, no toca PROD, no crea bases.
 - No llama a inferencia externa hasta que exista una ruta aprobada.
-- No sustituye a la consola: `HiveConsole` sigue en `READ_ONLY` hasta que exista endpoint
-  TEST (ver `docs/ugo-hive/HIVE_EXECUTION_STATUS_2026-11-27.md`, sección 15).
+- No sustituye a la consola: `HiveConsole` muestra datos reales **sólo** si existe
+  `VITE_HIVE_CONSOLE_API` (estado en `docs/ugo-hive/HIVE_EXECUTION_STATUS_2026-11-27.md`, §17).

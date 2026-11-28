@@ -20,6 +20,11 @@ const valid = {
     openrouter: { provider: 'openrouter', calls: 0, tokens: 0, percent_used: 0, level: 'NORMAL', allow_new_secondary_tasks: true, monthly_quota: 'UNKNOWN' },
     openclaw: { provider: 'openclaw', calls: 0, tokens: 0, percent_used: 0, level: 'NORMAL', allow_new_secondary_tasks: true, monthly_quota: 'UNKNOWN' },
   },
+  departments: [
+    { id: 1, key: 'executive', name: 'Dirección ejecutiva', agents_total: 6, operative: 1, connected: 0, registered: 5, disabled: 0 },
+    { id: 2, key: 'operations', name: 'Operaciones', agents_total: 11, operative: 0, connected: 0, registered: 11, disabled: 0 },
+  ],
+  agents_unassigned: 110,
   circuits: [],
   recent_events: [],
 }
@@ -33,6 +38,9 @@ check('rechaza censo incompleto', parseHiveSnapshot({ ...valid, census: { total:
 check('rechaza emergencia no booleana', parseHiveSnapshot({ ...valid, emergency: { stop: 'no' } }) === null)
 check('no inventa cuota mensual', parseHiveSnapshot({ ...valid, quotas: { ...valid.quotas, openrouter: { ...valid.quotas.openrouter, monthly_quota: undefined } } })?.quotas.openrouter.monthly_quota === 'UNKNOWN')
 check('descarta campos desconocidos', !('secret' in (parseHiveSnapshot({ ...valid, secret: 'x' }) ?? {})))
+check('lee departamentos con sus estados', parseHiveSnapshot(valid)?.departments?.[1]?.registered === 11)
+check('declara agentes sin departamento', parseHiveSnapshot(valid)?.agents_unassigned === 110)
+check('sin departamentos no inventa filas', (parseHiveSnapshot({ ...valid, departments: undefined })?.departments.length ?? -1) === 0)
 
 let receivedAuth = null
 const server = createServer((req, res) => {

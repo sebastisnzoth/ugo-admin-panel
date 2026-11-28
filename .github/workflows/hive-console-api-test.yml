@@ -62,8 +62,8 @@ jobs:
 
       - run: npm ci --include=dev --no-audit --no-fund
 
-      - name: Endpoint y cliente (sin base de datos)
-        run: node --test tests/hive/console-api.test.mjs tests/hive/console-client.test.mjs
+      - name: Endpoint, cliente y guarda de secretos (sin base de datos)
+        run: node --test tests/hive/console-api.test.mjs tests/hive/console-client.test.mjs tests/hive/frontend-secret-guard.test.mjs
 
       - name: Forma de la URL + identidad real (sin imprimir la URL)
         env:
@@ -75,7 +75,10 @@ jobs:
           HIVE_READER_DATABASE_URL: ${{ secrets.HIVE_READER_DATABASE_URL }}
           HIVE_CONSOLE_SUPABASE_URL: ${{ vars.HIVE_CONSOLE_SUPABASE_URL }}
           HIVE_CONSOLE_SUPABASE_ANON_KEY: ${{ secrets.HIVE_CONSOLE_SUPABASE_ANON_KEY }}
-          HIVE_CONSOLE_SUPABASE_SERVICE_KEY: ${{ secrets.HIVE_CONSOLE_SUPABASE_SERVICE_KEY }}
+          # Nunca la clave de servicio: el arranque en modo `service` lo anuncia como
+          # PRIVILEGED_MODE y el preflight debe usar el camino que usa el usuario real.
+          HIVE_CONSOLE_AUTH_MODE: ${{ vars.HIVE_CONSOLE_AUTH_MODE || 'user' }}
+          HIVE_CONSOLE_SUPERADMIN_IDS: ${{ vars.HIVE_CONSOLE_SUPERADMIN_IDS }}
         run: |
           set -euo pipefail
           node hive/console-api/server.mjs &

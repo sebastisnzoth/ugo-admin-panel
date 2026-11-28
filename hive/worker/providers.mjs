@@ -41,6 +41,39 @@ export function classifyCost(reported, source = 'provider_usage.cost') {
     : { state: 'COST_NON_ZERO', value, source }
 }
 
+/**
+ * Guarda de egreso: durante una llamada al proveedor local, cualquier petición que no vaya
+ * a loopback se bloquea antes de salir. No demuestra qué hace el servidor local por dentro,
+ * pero garantiza que NUESTRO proceso no contacta ningún servicio remoto en esa ruta.
+ */
+export function localFetchGuard(fetchImpl = globalThis.fetch, allow = LOOPBACK) {
+  const blocked = []
+  const guarded = (input, init) => {
+    const raw = typeof input === 'string' ? input : input?.url ?? String(input)
+    let origin
+    try { origin = new URL(raw).origin } catch { origin = '' }
+    if (!allow.test(origin)) {
+      blocked.push(origin || 'invalid-url')
+      return Promise.reject(new ProviderError('EGRESS_BLOCKED', `el proveedor local intentó salir a ${origin || 'una URL inválida'}`))
+    }
+    return fetchImpl(input, init)
+  }
+  guarded.blocked = blocked
+  return guarded
+}
+
+/**
+ * Un servidor local puede reenviar a un proveedor gratuito upstream. Se acepta sólo si lo
+ * declara y si además declara facturación gratuita; si no, se trata como no verificado.
+ */
+export function classifyUpstream(declared, billing) {
+  if (!declared) return { state: 'LOCAL', upstream: null }
+  const name = String(declared)
+  if (/^(local|loopback|self)$/i.test(name)) return { state: 'LOCAL', upstream: name }
+  const free = ['free', 'none', 'no_billing'].includes(String(billing ?? '').toLowerCase())
+  return free ? { state: 'UPSTREAM_FREE_DECLARED', upstream: name } : { state: 'UPSTREAM_UNVERIFIED', upstream: name }
+}
+
 export class ProviderError extends Error {
   constructor(code, detail = '') {
     super(detail ? `${code}: ${detail}` : code)
@@ -168,14 +201,22 @@ const adapters = {
         throw new ProviderError('LOCAL_PROVIDER_NOT_LOOPBACK',
           'sólo http(s)://127.0.0.1, localhost o [::1]: un endpoint remoto nunca es "local"')
       }
+      const guarded = localFetchGuard(fetchImpl)
       const body = await postJson(`${config.localProviderUrl.replace(/\/$/, '')}/api/complete`,
-        { prompt, model: config.localProviderModel, max_tokens: 512 }, {}, config.requestTimeoutMs, fetchImpl)
+        { prompt, model: config.localProviderModel, max_tokens: 512 }, {}, config.requestTimeoutMs, guarded)
+      const upstream = classifyUpstream(body.upstream ?? body.provider_upstream, body.upstream_billing ?? body.billing)
+      if (upstream.state === 'UPSTREAM_UNVERIFIED') {
+        throw new ProviderError('LOCAL_PROVIDER_UPSTREAM_UNVERIFIED',
+          `el servidor local declara upstream "${upstream.upstream}" sin facturación gratuita verificable`)
+      }
       return {
         text: String(body.text ?? body.completion ?? ''),
         model: String(body.model ?? config.localProviderModel),
         provider: 'local',
         usage: { prompt_tokens: Number(body.usage?.prompt_tokens ?? 0), completion_tokens: Number(body.usage?.completion_tokens ?? 0) },
         cost: classifyCost(body.cost ?? body.usage?.cost, 'local.cost'),
+        upstream,
+        egress_blocked: guarded.blocked.length,
       }
     },
   },

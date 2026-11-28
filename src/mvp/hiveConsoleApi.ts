@@ -33,6 +33,17 @@ export type HiveQuotaView = {
   monthly_quota: string
 }
 
+export type HiveDepartmentView = {
+  id: number | null
+  key: string
+  name: string
+  agents_total: number
+  operative: number
+  connected: number
+  registered: number
+  disabled: number
+}
+
 export type HiveSnapshot = {
   environment: 'TEST'
   read_only: true
@@ -42,6 +53,8 @@ export type HiveSnapshot = {
   queue: HiveQueueMetrics
   census: HiveCensus
   emergency: { stop: boolean; code: string | null }
+  departments: HiveDepartmentView[]
+  agents_unassigned: number
   quotas: { openrouter: HiveQuotaView; openclaw: HiveQuotaView }
   circuits: Array<{ provider: string; failures: number; blocked_until: string | null }>
   recent_events: Array<{ job_id: string; event: string; actor: string | null; created_at: string }>
@@ -110,6 +123,19 @@ export function parseHiveSnapshot(payload: unknown): HiveSnapshot | null {
       max_operative_agents: census.max_operative_agents as number,
     },
     emergency: { stop: emergency.stop, code: typeof emergency.code === 'string' ? emergency.code : null },
+    departments: Array.isArray(payload.departments)
+      ? payload.departments.filter(isObject).map(item => ({
+          id: Number.isInteger(item.id) ? (item.id as number) : null,
+          key: typeof item.key === 'string' ? item.key : 'UNKNOWN',
+          name: typeof item.name === 'string' ? item.name : 'UNKNOWN',
+          agents_total: isCount(item.agents_total) ? item.agents_total : 0,
+          operative: isCount(item.operative) ? item.operative : 0,
+          connected: isCount(item.connected) ? item.connected : 0,
+          registered: isCount(item.registered) ? item.registered : 0,
+          disabled: isCount(item.disabled) ? item.disabled : 0,
+        }))
+      : [],
+    agents_unassigned: isCount(payload.agents_unassigned) ? payload.agents_unassigned : 0,
     quotas: { openrouter, openclaw },
     circuits: Array.isArray(payload.circuits)
       ? payload.circuits.filter(isObject).map(item => ({

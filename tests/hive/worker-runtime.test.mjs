@@ -1,6 +1,7 @@
 import test, { after, before, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { spawn } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { startPostgres, postgresAvailable, migrationFiles } from '../../scripts/hive/pg-harness.mjs'
@@ -274,6 +275,87 @@ test('el agente configurado se verifica contra el catálogo real antes de ejecut
   const listed = JSON.parse(list.stdout)
   assert.equal(listed.census.total, 127)
   assert.ok(listed.agents.some(agent => agent.agent_key === 'hugo-orchestrator'))
+})
+
+test('emergencia nivel 2 (en base): el worker no reserva ni ejecuta', { skip: unavailable(), timeout: 120000 }, async () => {
+  const key = `worker-db-emergency-${Date.now()}`
+  const enqueued = JSON.parse(await enqueue(key))
+  server.psql(`insert into hive.settings(key, value) values ('emergency_stop', 'true'::jsonb)
+               on conflict (key) do update set value = 'true'::jsonb`)
+  try {
+    const worker = createWorker({ config: config(), client, logger: () => {} })
+    const outcome = await worker.runOnce()
+    assert.equal(outcome.action, 'STOPPED')
+    assert.equal(outcome.reason, 'EMERGENCY_STOP')
+    assert.equal(await jobState(enqueued.job_id), 'QUEUED/PENDING')
+  } finally {
+    server.psql(`update hive.settings set value = 'false'::jsonb where key = 'emergency_stop'`)
+  }
+  // Retirado el nivel 2, el trabajo vuelve a ejecutarse.
+  const resumed = await createWorker({ config: config(), client, logger: () => {} }).runOnce()
+  assert.equal(resumed.action, 'DONE')
+})
+
+test('runner de una sola tarea: plan, ejecución real y verificaciones', { skip: unavailable(), timeout: 240000 }, async () => {
+  const env = {
+    ...process.env,
+    PATH: `${server.bin}:${process.env.PATH}`,
+    HIVE_WORKER_DATABASE_URL: client.databaseUrl,
+    HIVE_WORKER_PROVIDER: 'mock',
+    HIVE_WORKER_TEST_MODE: '1',
+    HIVE_MOCK_PROVIDER_URL: mock.url,
+    HIVE_WORKER_MAX_JOBS: '1',
+    HIVE_WORKER_MAX_ITERATIONS: '1',
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'ugo-single-task-'))
+  const out = join(dir, 'single-task.json')
+  const runAsync = (args, runEnv = env) => new Promise(resolveRun => {
+    const child = spawn('node', ['scripts/hive/run-single-task.mjs', ...args], { env: runEnv })
+    let stdout = ''
+    let stderr = ''
+    child.stdout.on('data', chunk => { stdout += chunk })
+    child.stderr.on('data', chunk => { stderr += chunk })
+    child.on('close', status => resolveRun({ status, stdout, stderr }))
+  })
+
+  try {
+    // 1 · sin confirmación: sólo plan, sin tocar la cola
+    const planned = await runAsync(['--agent', AGENT, '--prompt', 'Informe de estado', '--out', out])
+    assert.equal(planned.status, 0, planned.stderr)
+    assert.equal(JSON.parse(planned.stdout).mode, 'PLAN')
+    assert.equal(server.psql(`select count(*) from hive.jobs where idempotency_key like 'single-task-%'`), '0')
+
+    // 2 · ejecución real de UNA tarea con UN agente
+    const execEnv = { ...env, HIVE_CONFIRM_SINGLE_TASK: 'APLICAR' }
+    const executed = await runAsync(['--agent', AGENT, '--prompt', 'Informe de estado de la cola', '--out', out], execEnv)
+    assert.equal(executed.status, 0, executed.stderr + executed.stdout.slice(0, 500))
+    const report = JSON.parse(readFileSync(out, 'utf8'))
+    assert.equal(report.job.state, 'SUCCEEDED')
+    assert.equal(report.job.status, 'DONE')
+    assert.equal(report.job.effects, 1)
+    assert.equal(report.job.events, 'ENQUEUED → LEASED → SUCCEEDED')
+    assert.equal(report.cost.state, 'VERIFIED_ZERO')
+    assert.equal(report.secrets_exposed, false)
+    assert.equal(server.psql(`select count(*) from hive.jobs where idempotency_key like 'single-task-%'`), '1')
+
+    // 3 · con cola ocupada no ejecuta nada
+    await enqueue(`single-block-${Date.now()}`)
+    const blocked = await runAsync(['--agent', AGENT, '--prompt', 'otra'], execEnv)
+    assert.equal(blocked.status, 3)
+    assert.match(blocked.stderr, /QUEUE_NOT_EMPTY/)
+    server.psql(`update hive.jobs set state = 'CANCELLED' where state in ('QUEUED','LEASED')`)
+
+    // 4 · con dos agentes operativos se niega (la misión pide uno)
+    server.psql(`insert into hive.settings(key, value) values ('max_operative_agents', '2'::jsonb)
+                 on conflict (key) do update set value = '2'::jsonb`)
+    server.psql(`select hive.activate_agent('Agente de Precios', true)`)
+    const twoAgents = await runAsync(['--agent', AGENT, '--prompt', 'tercera'], execEnv)
+    assert.equal(twoAgents.status, 3)
+    assert.match(twoAgents.stderr, /NOT_EXACTLY_ONE_OPERATIVE_AGENT/)
+    server.psql(`select hive.deactivate_agent('agente-de-precios')`)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
 
 test('los trabajos de caminos felices preservan la tarea histórica DONE', { skip: unavailable(), timeout: 60000 }, () => {

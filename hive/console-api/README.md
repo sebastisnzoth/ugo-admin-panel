@@ -53,25 +53,38 @@ La cuota mensual real sigue siendo **UNKNOWN**: el endpoint lo declara así en v
 |---|---|---|
 | `HIVE_READER_DATABASE_URL` | sí | login **miembro de `hive_reader`** (no el del worker) |
 | `HIVE_CONSOLE_SUPABASE_URL` | sí | proyecto TEST usado para verificar la sesión |
-| `HIVE_CONSOLE_SUPABASE_ANON_KEY` | sí | sólo para `GET /auth/v1/user` |
-| `HIVE_CONSOLE_SUPABASE_SERVICE_KEY` | sí | lectura del perfil (`usuarios`); vive **sólo** en el servidor |
+| `HIVE_CONSOLE_SUPABASE_ANON_KEY` | sí | clave **pública**: todo lo que hace el servidor con ella está sujeto a RLS |
+| `HIVE_CONSOLE_AUTH_MODE` | no | `user` (por defecto) · `allowlist` · `service` |
+| `HIVE_CONSOLE_SUPERADMIN_IDS` | en `allowlist` | ids de usuario superadmin (coma-separados) |
+| `HIVE_CONSOLE_SUPABASE_SERVICE_KEY` | sólo en `service` | credencial privilegiada; el arranque lo anuncia como `PRIVILEGED_MODE` |
 | `PORT` / `HOST` | no | `8790` / `0.0.0.0` |
+
+### Modos de autenticación (ninguno confía en el cliente)
+
+| Modo | Cómo autoriza | Credenciales que usa |
+|---|---|---|
+| `user` (recomendado) | token del usuario → `/auth/v1/user`; luego `GET /rest/v1/usuarios` **con ese token**, y RLS decide | clave anónima + token del usuario |
+| `allowlist` | el id verificado debe estar en `HIVE_CONSOLE_SUPERADMIN_IDS`; no consulta tablas de perfil | clave anónima + token del usuario |
+| `service` | perfil leído con clave de servicio | **privilegiada** — se anuncia `PRIVILEGED_MODE` al arrancar |
+
+Si el perfil no se puede leer, la respuesta es **503 `AUTH_UNAVAILABLE`**, nunca un 200 con
+datos. El modo `service` existe para una urgencia puntual, no es la ruta normal: el usuario
+del endpoint en TEST es el rol de lectura + la clave pública.
 
 ## Puesta en marcha
 
 ```bash
-# 1 · crear el login de lectura (una vez, con el rol de migraciones)
-psql "$HIVE_MIGRATOR_DATABASE_URL" -v hive_confirm=APLICAR \
-     -v hive_password="$(openssl rand -base64 32)" -v hive_login=hive_console_ro \
-     -f hive/reader/sql/reader_login.sql
+# 1 · activar los roles ya creados en Neon (NOLOGIN → LOGIN) sin recrearlos
+node scripts/hive/activate-logins.mjs                    # simulación: dice qué haría
+HIVE_CONFIRM_ACTIVATION=APLICAR node scripts/hive/activate-logins.mjs --apply
+#    (opcional --set-github-secrets: publica las dos URLs por stdin)
 
 # 2 · secretos de GitHub (por stdin, sin imprimirlos)
 HIVE_READER_DATABASE_URL_FILE=./reader.url node scripts/hive/secret-setup.mjs --set-github-secret
 
-# 3 · arranque local
+# 3 · arranque local (sin credenciales privilegiadas)
 HIVE_READER_DATABASE_URL=… HIVE_CONSOLE_SUPABASE_URL=https://…supabase.co \
-HIVE_CONSOLE_SUPABASE_ANON_KEY=… HIVE_CONSOLE_SUPABASE_SERVICE_KEY=… \
-node hive/console-api/server.mjs
+HIVE_CONSOLE_SUPABASE_ANON_KEY=… node hive/console-api/server.mjs
 
 # 4 · la consola lo usa sólo si está configurado
 VITE_HIVE_CONSOLE_API=https://<host-del-endpoint>
@@ -83,11 +96,20 @@ Sin `VITE_HIVE_CONSOLE_API` el frontend **no hace ninguna petición** y muestra
 ## Pruebas
 
 ```bash
-node --test tests/hive/console-api.test.mjs        # 8 · auth, CORS, cuotas, validación
+node --test tests/hive/console-api.test.mjs          # 12 · modos de auth, CORS, cuotas, 503
 HIVE_REQUIRE_REAL_POSTGRES=1 PG_VENV=/tmp/pgenv \
-  node --test tests/hive/console-api-db.test.mjs   # 7 · rol real + HTTP + vigilancia
-node --test tests/hive/console-client.test.mjs     # 2 · cliente TS real (16 comprobaciones)
+  node --test tests/hive/console-api-db.test.mjs     # 9 · rol real, 13 departamentos, HTTP
+node --test tests/hive/console-client.test.mjs       # 2 · cliente TS real (19 comprobaciones)
+node --test tests/hive/frontend-secret-guard.test.mjs # 6 · ni credenciales ni polling en el cliente
 ```
 
 Evidencia: `docs/ugo-hive/evidence/hive-console-api.json`
-(`PG_VENV=/tmp/pgenv node scripts/hive/console-evidence.mjs`).
+(`PG_VENV=/tmp/pgenv node scripts/hive/console-evidence.mjs`) y la de la fase operativa
+completa en `docs/ugo-hive/evidence/hive-ops-fase8.json`
+(`PG_VENV=/tmp/pgenv npm run hive:ops-evidence`).
+
+## Despliegue (TEST, todavía sin ejecutar)
+
+`Dockerfile` incluido (Node 22 + `psql`, usuario sin privilegios, healthcheck a `/healthz`).
+Host elegido y por qué, con el checklist y el coste: `docs/ugo-hive/TEST_HOST_EVALUATION.md`.
+Vercel **no** sirve para este proceso (necesita `psql` y estado en memoria).

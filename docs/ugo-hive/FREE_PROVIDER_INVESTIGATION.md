@@ -108,7 +108,35 @@ export HIVE_WORKER_MAX_JOBS=1 HIVE_WORKER_MAX_ITERATIONS=1
 node hive/worker/worker.mjs --once
 ```
 
-## 5. Veredicto
+## 5. Guarda de egreso y clasificación de `upstream` (Fase 8)
+
+Dos comprobaciones nuevas, porque «loopback» no basta: un backend local puede reenviar la
+petición a un servicio pago sin que se vea desde fuera.
+
+| Comprobación | Dónde | Qué impide |
+|---|---|---|
+| `localFetchGuard` | `hive/worker/providers.mjs` | Cualquier `fetch` que no sea `127.0.0.1`/`localhost`/`[::1]` → `EGRESS_BLOCKED`, la tarea falla |
+| `classifyUpstream` | `hive/worker/providers.mjs` | `upstream` remoto declarado como `free` → `UPSTREAM_FREE_DECLARED`; remoto sin declarar → `UPSTREAM_UNVERIFIED` → error `LOCAL_PROVIDER_UPSTREAM_UNVERIFIED` |
+| `local-provider-check.mjs` | `scripts/hive/` | 6 comprobaciones sobre el backend real: loopback, coste declarado, coste 0, upstream no dudoso, 0 egresos, texto producido |
+
+Resultado de la evidencia de Fase 8 (servidor local de pruebas):
+
+```
+LOCAL_PROVIDER_VERIFIED · http://127.0.0.1:<puerto> · mock/free · 52 ms
+cost   → VERIFIED_ZERO (0, declarado por el proveedor)
+upstream → LOCAL (ninguno)
+egress_blocked → 0
+```
+
+La comprobación contra el backend **de la máquina del fundador** sigue pendiente: se ejecuta
+con `npm run hive:local-check` y **falla cerrado** si el backend no declara `cost = 0`.
+
+## 6. Alojamiento del endpoint TEST
+
+Vercel no ejecuta este servicio (necesita `psql` y un proceso con estado); Render Free sí.
+Comparación y checklist: `docs/ugo-hive/TEST_HOST_EVALUATION.md`. **Sin desplegar.**
+
+## 7. Veredicto
 
 - **Proveedores pagados: 0 configurados, 0 posibles por código.**
 - **Ruta local: implementada y probada** (loopback + aprobación + coste declarado).

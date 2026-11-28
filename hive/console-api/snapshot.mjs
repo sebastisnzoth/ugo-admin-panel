@@ -15,6 +15,21 @@ export const SNAPSHOT_SQL = `
     'quotas', jsonb_build_object(
       'openrouter', hive.quota_state('openrouter'),
       'openclaw',   hive.quota_state('openclaw')),
+    'departments', coalesce((select jsonb_agg(jsonb_build_object(
+        'id', d.id, 'key', d.key, 'name', d.name,
+        'agents_total', coalesce(a.total, 0),
+        'operative', coalesce(a.operative, 0),
+        'connected', coalesce(a.connected, 0),
+        'registered', coalesce(a.registered, 0),
+        'disabled', coalesce(a.disabled, 0)) order by d.id)
+      from hive.departments d
+      left join (select department_id,
+                        count(*) total,
+                        count(*) filter (where state = 'OPERATIVE')  operative,
+                        count(*) filter (where state = 'CONNECTED')  connected,
+                        count(*) filter (where state = 'REGISTERED') registered,
+                        count(*) filter (where state = 'DISABLED')   disabled
+                   from hive.agents group by department_id) a on a.department_id = d.id), '[]'::jsonb),
     'circuits', coalesce((select jsonb_agg(jsonb_build_object(
         'provider', provider, 'failures', failures, 'blocked_until', blocked_until))
       from hive.provider_circuits), '[]'::jsonb),
@@ -53,6 +68,19 @@ export function normalizeSnapshot(raw) {
   }
   if (typeof raw.emergency_stop !== 'boolean') throw new SnapshotError('SNAPSHOT_INVALID', 'emergency_stop')
   const quotas = isObject(raw.quotas) ? raw.quotas : {}
+  const departments = Array.isArray(raw.departments)
+    ? raw.departments.filter(isObject).map(item => ({
+        id: Number.isInteger(item.id) ? item.id : null,
+        key: typeof item.key === 'string' ? item.key : 'UNKNOWN',
+        name: typeof item.name === 'string' ? item.name : 'UNKNOWN',
+        agents_total: isCount(item.agents_total) ? item.agents_total : 0,
+        operative: isCount(item.operative) ? item.operative : 0,
+        connected: isCount(item.connected) ? item.connected : 0,
+        registered: isCount(item.registered) ? item.registered : 0,
+        disabled: isCount(item.disabled) ? item.disabled : 0,
+      }))
+    : []
+  const assigned = departments.reduce((total, item) => total + item.agents_total, 0)
   return {
     environment: 'TEST',
     read_only: true,
@@ -66,6 +94,8 @@ export function normalizeSnapshot(raw) {
       openrouter: sanitizeQuota(quotas.openrouter),
       openclaw: sanitizeQuota(quotas.openclaw),
     },
+    departments,
+    agents_unassigned: Math.max(0, (census.total ?? 0) - assigned),
     circuits: Array.isArray(raw.circuits) ? raw.circuits.slice(0, 20) : [],
     recent_events: Array.isArray(raw.recent_events) ? raw.recent_events.slice(0, 10) : [],
   }

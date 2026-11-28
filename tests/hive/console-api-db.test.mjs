@@ -100,6 +100,20 @@ test('la instantánea refleja el estado real de la cola', { skip: unavailable(),
   assert.equal(withJob.queue.queued, empty.queue.queued + 1)
   assert.ok(withJob.recent_events.some(event => event.event === 'ENQUEUED'))
   assert.equal(withJob.quotas.openrouter.monthly_quota, 'UNKNOWN')
+
+  // Los 13 departamentos reales, con sus agentes por estado, y el resto sin departamento.
+  assert.equal(withJob.departments.length, 13)
+  assert.deepEqual(withJob.departments.map(department => department.id), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14])
+  const assigned = withJob.departments.reduce((total, department) => total + department.agents_total, 0)
+  assert.equal(assigned + withJob.agents_unassigned, withJob.census.total)
+  assert.equal(withJob.departments.reduce((total, department) => total + department.operative, 0), withJob.census.operative)
+  // Cada departamento cuadra consigo mismo; los 9 agentes heredados no tienen departamento,
+  // y eso se declara aparte en lugar de repartirse a la fuerza.
+  for (const department of withJob.departments) {
+    assert.equal(department.operative + department.connected + department.registered + department.disabled,
+      department.agents_total)
+  }
+  assert.ok(withJob.agents_unassigned >= 9)
 })
 
 test('HTTP: un superadmin recibe datos reales; un usuario normal, 403', { skip: unavailable(), timeout: 120000 }, async () => {
@@ -126,6 +140,18 @@ test('HTTP: un superadmin recibe datos reales; un usuario normal, 403', { skip: 
   } finally {
     await new Promise(resolve => httpServer.close(resolve))
   }
+})
+
+test('la consola ve el interruptor de emergencia de la base', { skip: unavailable(), timeout: 60000 }, () => {
+  server.psql(`insert into hive.settings(key, value) values ('emergency_stop', 'true'::jsonb)
+               on conflict (key) do update set value = 'true'::jsonb`)
+  try {
+    const snapshot = readSnapshot(client)
+    assert.equal(snapshot.emergency.stop, true)
+  } finally {
+    server.psql(`update hive.settings set value = 'false'::jsonb where key = 'emergency_stop'`)
+  }
+  assert.equal(readSnapshot(client).emergency.stop, false)
 })
 
 test('vigilancia: una ventana corta contra la base real no escribe nada', { skip: unavailable(), timeout: 120000 }, async () => {

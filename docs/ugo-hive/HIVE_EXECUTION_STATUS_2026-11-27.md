@@ -565,3 +565,79 @@ preservación      → tarea histórica SUCCEEDED/DONE · CHECK intacto · 127 a
 verificado (no asumido) · rol de lectura separado y probado · agente verificado contra el
 catálogo real · emergencia probada · vigilancia lista.**
 Sin escrituras en Neon · sin deploy · sin merge · USD 0 · PROD intacta.
+
+---
+
+## 17. Fase 8 — integración operativa (13 puntos)
+
+Ejecutada sobre el mismo commit base, contra **PostgreSQL 16.2 real** y la **réplica exacta**
+del esquema de Neon TEST (`tests/hive/fixtures/neon_existing_schema.sql`). Los roles se crean
+primero **NOLOGIN**, igual que están en Neon, para demostrar que la activación **no los
+recrea**. Evidencia reproducible: `docs/ugo-hive/evidence/hive-ops-fase8.json`
+(`PG_VENV=/tmp/pgenv npm run hive:ops-evidence`).
+
+### Punto por punto
+
+| # | Punto | Estado | Cómo se comprobó (no razonando: ejecutando) |
+|---|---|---|---|
+| 1 | Procedimiento definitivo de activación de los dos logins | **HECHO** | `scripts/hive/activate-logins.mjs`: simulación por defecto, `--apply` exige `HIVE_CONFIRM_ACTIVATION=APLICAR`, **12/12 checks**, escribe las URLs en `~/.ugo-hive/secrets` con modo **600**, rechaza un directorio dentro del repo y **nunca imprime la cadena** (`stdout_contains_dsn: false`) |
+| 2 | `HIVE_WORKER_DATABASE_URL` / `HIVE_READER_DATABASE_URL` por secretos | **HECHO** | el script las publica opcionalmente con `--set-github-secrets` (stdin, vía `secret-setup.mjs`); nunca aparecen en el repositorio, ni en argv, ni en logs |
+| 3 | Vercel Preview vs Render Free | **DECIDIDO, sin desplegar** | `docs/ugo-hive/TEST_HOST_EVALUATION.md`: Vercel no ejecuta un proceso con `psql` ni conserva estado; Render Free sí (750 h ≈ un servicio, se duerme a los 15 min). **Sin crear servicio** |
+| 4 | Priorizar procesamiento local (OpenClaw/FreeLLMAPI) | **SÓLO RUTA LOCAL** | proveedor `local` = loopback + `HIVE_LOCAL_PROVIDER_APPROVED=APROBADO` + contrato `POST /api/complete`; ninguna ruta remota se abre «porque el worker la pida» |
+| 5 | El proveedor local no redirige a servicios pagos | **VERIFICADO CON GUARDA** | `localFetchGuard` bloquea todo lo que no sea loopback (`EGRESS_BLOCKED`) y `classifyUpstream` convierte un `upstream` remoto sin declarar en `LOCAL_PROVIDER_UPSTREAM_UNVERIFIED` (error, no aviso). Evidencia: 0 conexiones externas, `cost.state = VERIFIED_ZERO` |
+| 6 | Una tarea con un agente real en Neon | **BLOQUEADO** | los roles siguen **NOLOGIN** en Neon y no hay URL del endpoint: no hay a dónde conectarse. Ejecutado y verificado en local (ver más abajo) |
+| 7 | Sentinel y Judge contra el resultado real | **HECHO en local** | tarea `SUCCEEDED` con efecto 1, eventos `ENQUEUED → LEASED → SUCCEEDED`; Judge **PASS** y coste `VERIFIED_ZERO`; con coste no declarado el Judge rechaza (`FAILED`, `result = null`) |
+| 8 | Consola conectada al endpoint autenticado | **HECHO** | anónimo **401** · no superadmin **403** · superadmin **200** · `cache-control: no-store` · CORS sólo orígenes de la lista |
+| 9 | 13 departamentos y 127 agentes con estados reales | **HECHO** | instantánea: 13 departamentos (ids `1..12,14`), **127** agentes, `agents_unassigned: 9` (agentes heredados sin departamento, declarados aparte en vez de repartidos), estados `1 operativo · 123 registrados · 0 conectados · 3 desactivados` |
+| 10 | Interruptor de emergencia | **HECHO, dos niveles** | base (`hive.settings.emergency_stop`) → `STOPPED / EMERGENCY_STOP`; archivo (`EMERGENCY-STOP`) → `STOPPED / EMERGENCY_STOP_FILE`; visible en la consola (`emergency.stop`) |
+| 11 | Pruebas E2E pendientes | **HECHO lo ejecutable** | suite Hive completa en verde (ver cifras abajo) + evidencia Fase 8 con 15 veredictos, todos `true` |
+| 12 | Un único despliegue TEST | **PREPARADO, no desplegado** | `hive/console-api/Dockerfile` (Node 22 + `psql`, usuario sin privilegios, healthcheck) + checklist en `TEST_HOST_EVALUATION.md`; el despliegue espera al secretos y a la autorización |
+| 13 | Vigilancia 24 h | **BLOQUEADA** | exige runtime funcional: sólo hay endpoint local. El vigilante está probado (ventana corta real, `HEALTHY`, 0 cadenas en el JSONL) y se lanzará cuando punto 12 esté arriba |
+
+### Lo que cambió en el código (Fase 8)
+
+- **Verificador de la consola reescrito**: `HIVE_CONSOLE_AUTH_MODE ∈ user | allowlist | service`.
+  `user` es la ruta por defecto: clave **anónima** + token del usuario contra `/auth/v1/user` y
+  `/rest/v1/usuarios` (RLS decide). `allowlist` no toca tablas. `service` es la única que usa
+  clave privilegiada y el arranque lo anuncia como `PRIVILEGED_MODE`. Si el perfil no se puede
+  leer, responde **503 `AUTH_UNAVAILABLE`**, nunca 200. Evidencia: `privileged_credentials_used: false`.
+- **Guarda de egreso del proveedor local** y clasificación de `upstream` (arriba).
+- **Tres scripts nuevos** (activación, comprobación de proveedor local, tarea única) y
+  **dos suites nuevas** (`activation` 6/6, `frontend-secret-guard` 6/6).
+- **Consola**: panel de los 13 departamentos con sus estados y `agents_unassigned`, sin polling
+  (`polling_calls: 0`) y sin ninguno de los 296 archivos de cliente con cadena de conexión
+  (`files_with_dsn: []`). La única variable `VITE_HIVE_*` es `VITE_HIVE_CONSOLE_API`.
+
+### Cifras de la evidencia (`hive-ops-fase8.json`)
+
+```
+roles previos        → hive_app NOLOGIN · hive_console_ro NOLOGIN (no se recrean)
+activación           → 12/12 checks · secretos 600 · DSN en stdout: no
+conexiones           → worker hive_app (miembro de hive_worker, sin superusuario)
+                       reader hive_console_ro (read_only, insert DENIED, select OK)
+proveedor local      → LOCAL · VERIFIED_ZERO · latencia 52 ms · egreso externo 0
+tarea única          → SUCCEEDED/DONE · efecto 1 · Judge PASS · 1 agente OPERATIVE
+endpoint             → 401 / 403 / 200 no-store · 13 departamentos · 127 agentes
+auth                 → 2 peticiones, sólo clave pública, token del usuario reenviado
+emergencia           → base STOPPED · archivo STOPPED
+vigilancia           → HEALTHY · 0 cadenas de conexión en el JSONL
+preservación         → tarea histórica SUCCEEDED/DONE · CHECK intacto · 127 agentes
+```
+
+### Bloqueos vigentes (sin cambios, y son humanos)
+
+1. `hive_app` y `hive_console_ro` **NOLOGIN en Neon**: falta que ChatGPT ejecute la activación
+   (o la rote) — el procedimiento ya existe y está probado.
+2. **Proveedor gratuito de la máquina del fundador sin verificar**: el contrato está probado
+   contra un servidor local de pruebas; la verificación real es
+   `npm run hive:local-check` en su equipo, que falla cerrado si el backend no declara coste 0.
+3. **Coste cero remoto**: `openrouter` / `openclaw` / `freellmapi` siguen cerrados. No se abre
+   ninguna ruta paga.
+
+### Veredicto de la fase
+
+**Procedimiento de activación definitivo y probado · endpoint que no usa credenciales
+privilegiadas · proveedor local auditado (loopback + coste declarado) · una tarea con un
+agente real en local · consola con los 13 departamentos y 127 agentes reales · emergencia en
+dos niveles · alojamiento TEST decidido sin desplegar.** Puntos 6 y 13 siguen bloqueados por
+credenciales del lado humano. **USD 0 · sin deploy · sin merge · PROD intacta.**

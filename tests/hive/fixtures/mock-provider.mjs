@@ -3,8 +3,9 @@
 // respuestas inválidas) sin depender de ninguna API ni de ninguna clave.
 import { createServer } from 'node:http'
 
-export async function startMockProvider({ mode = 'ok', delayMs = 0, text = null, path = '/complete' } = {}) {
+export async function startMockProvider({ mode = 'ok', delayMs = 0, text = null, path = '/complete', extra = {} } = {}) {
   const requests = []
+  let extraFields = { ...extra }
   const server = createServer((req, res) => {
     const send = (status, body) => {
       res.writeHead(status, { 'content-type': 'application/json' }).end(JSON.stringify(body))
@@ -26,6 +27,7 @@ export async function startMockProvider({ mode = 'ok', delayMs = 0, text = null,
         if (mode === 'empty') return send(200, { text: '   ', model: 'mock/free', cost: 0, usage: { prompt_tokens: 5, completion_tokens: 2 } })
         const prompt = String(body.prompt ?? '')
         return send(200, {
+          ...extraFields,
           text: text ?? `eco: ${prompt.slice(0, 120)}`,
           model: 'mock/free',
           // Coste declarado explícitamente por el proveedor: es la única fuente válida.
@@ -43,6 +45,7 @@ export async function startMockProvider({ mode = 'ok', delayMs = 0, text = null,
     url: `http://127.0.0.1:${port}`,
     requests,
     setMode(next) { mode = next },
+    setExtra(next) { extraFields = { ...next } },
     async close() { await new Promise(resolve => server.close(resolve)) },
   }
 }

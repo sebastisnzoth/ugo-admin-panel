@@ -110,10 +110,26 @@ export function createHiveConsoleApi({ reader, verifyToken, clock = () => Date.n
   }
 }
 
-/** Verificador real: Supabase Auth + tabla `usuarios` (rol superadmin y cuenta activa). */
-export function supabaseVerifier({ url, anonKey, serviceKey, fetchImpl = globalThis.fetch, timeoutMs = 8000 }) {
-  if (!url || !anonKey || !serviceKey) throw new Error('SUPABASE_VERIFIER_NOT_CONFIGURED')
+/**
+ * Verificador real. La identidad la confirma Supabase Auth con la clave **pública** (anon);
+ * la autorización de Super Admin se decide SIN credenciales privilegiadas:
+ *
+ *   user      (por defecto) → lee `usuarios` con el token del propio usuario (RLS decide)
+ *   allowlist               → lista blanca en el servidor (HIVE_CONSOLE_SUPERADMIN_IDS)
+ *   service                 → clave de servicio; sólo si se pide explícitamente
+ */
+export const AUTH_MODES = Object.freeze(['user', 'allowlist', 'service'])
+
+export function supabaseVerifier({
+  mode = 'user', url, anonKey, serviceKey = '', superadminIds = [], fetchImpl = globalThis.fetch, timeoutMs = 8000,
+}) {
+  if (!AUTH_MODES.includes(mode)) throw new Error('AUTH_MODE_INVALID')
+  if (!url || !anonKey) throw new Error('SUPABASE_VERIFIER_NOT_CONFIGURED')
+  if (mode === 'service' && !serviceKey) throw new Error('SERVICE_KEY_REQUIRED_FOR_SERVICE_MODE')
+  const allowed = new Set(superadminIds.map(id => String(id).trim().toLowerCase()).filter(Boolean))
+
   return async token => {
+    // 1 · identidad: siempre con la clave pública y el token del usuario.
     const userResponse = await fetchImpl(`${url}/auth/v1/user`, {
       headers: { apikey: anonKey, authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(timeoutMs),
@@ -123,17 +139,29 @@ export function supabaseVerifier({ url, anonKey, serviceKey, fetchImpl = globalT
     if (!userResponse.ok) throw new Error('AUTH_UNAVAILABLE')
     const user = await userResponse.json()
     if (!user?.id) return { userId: null, superadmin: false, active: false }
+    const active = !user.banned_until && user.deleted_at === undefined
+
+    // 2a · lista blanca decidida en el servidor: sin tocar tablas ni usar claves privadas.
+    if (mode === 'allowlist') {
+      return { userId: user.id, superadmin: active && allowed.has(String(user.id).toLowerCase()), active }
+    }
+
+    // 2b · perfil. En modo `user` la consulta viaja con el token del usuario (RLS); en modo
+    // `service` (explícito) con la clave de servicio.
+    const bearer = mode === 'service' ? serviceKey : token
+    const apikey = mode === 'service' ? serviceKey : anonKey
     const profileResponse = await fetchImpl(
       `${url}/rest/v1/usuarios?select=tipo,activo&id=eq.${encodeURIComponent(user.id)}&limit=1`,
-      { headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
+      { headers: { apikey, authorization: `Bearer ${bearer}` },
         signal: AbortSignal.timeout(timeoutMs), redirect: 'error' })
+    if (profileResponse.status === 401 || profileResponse.status === 403) throw new Error('PROFILE_FORBIDDEN')
     if (!profileResponse.ok) throw new Error('PROFILE_UNAVAILABLE')
     const rows = await profileResponse.json()
     const profile = Array.isArray(rows) ? rows[0] : null
     return {
       userId: user.id,
       superadmin: profile?.activo === true && String(profile?.tipo).toLowerCase() === 'superadmin',
-      active: profile?.activo === true,
+      active: profile?.activo === true && active,
     }
   }
 }
@@ -144,18 +172,29 @@ async function main() {
   const supabaseUrl = process.env.HIVE_CONSOLE_SUPABASE_URL || ''
   const anonKey = process.env.HIVE_CONSOLE_SUPABASE_ANON_KEY || ''
   const serviceKey = process.env.HIVE_CONSOLE_SUPABASE_SERVICE_KEY || ''
+  const mode = process.env.HIVE_CONSOLE_AUTH_MODE || 'user'
+  const superadminIds = (process.env.HIVE_CONSOLE_SUPERADMIN_IDS || '').split(',').map(id => id.trim()).filter(Boolean)
   const port = Number(process.env.PORT || 8790)
   const host = process.env.HOST || '0.0.0.0'
 
+  if (!AUTH_MODES.includes(mode)) {
+    process.stderr.write(`${JSON.stringify({ event: 'CONFIG_ERROR', reason: 'AUTH_MODE_INVALID', mode })}\n`)
+    process.exit(2)
+  }
   const missing = [
     !readerUrl && 'HIVE_READER_DATABASE_URL',
     !supabaseUrl && 'HIVE_CONSOLE_SUPABASE_URL',
     !anonKey && 'HIVE_CONSOLE_SUPABASE_ANON_KEY',
-    !serviceKey && 'HIVE_CONSOLE_SUPABASE_SERVICE_KEY',
+    mode === 'allowlist' && superadminIds.length === 0 && 'HIVE_CONSOLE_SUPERADMIN_IDS',
+    mode === 'service' && !serviceKey && 'HIVE_CONSOLE_SUPABASE_SERVICE_KEY',
   ].filter(Boolean)
   if (missing.length) {
     process.stderr.write(`${JSON.stringify({ event: 'CONFIG_ERROR', reason: 'missing', variables: missing })}\n`)
     process.exit(2)
+  }
+  if (mode === 'service') {
+    // Modo privilegiado: se permite, pero nunca en silencio.
+    process.stderr.write(`${JSON.stringify({ event: 'PRIVILEGED_MODE', mode, note: 'usa una clave de servicio de Supabase; preferir user/allowlist' })}\n`)
   }
 
   const client = new PsqlClient({ databaseUrl: readerUrl })
@@ -167,7 +206,7 @@ async function main() {
 
   const handler = createHiveConsoleApi({
     reader: { readSnapshot: () => readSnapshot(client) },
-    verifyToken: supabaseVerifier({ url: supabaseUrl, anonKey, serviceKey }),
+    verifyToken: supabaseVerifier({ mode, url: supabaseUrl, anonKey, serviceKey, superadminIds }),
   })
   const server = createServer((req, res) => {
     handler(req, res).catch(() => {
@@ -176,7 +215,8 @@ async function main() {
   })
   server.listen(port, host, () => {
     process.stdout.write(`${JSON.stringify({
-      event: 'CONSOLE_API_LISTENING', port, host,
+      event: 'CONSOLE_API_LISTENING', port, host, auth_mode: mode,
+      privileged_credentials: mode === 'service',
       reader: { user: facts.current_user, read_only: true, can_select_jobs: facts.can_select_jobs },
     })}\n`)
   })

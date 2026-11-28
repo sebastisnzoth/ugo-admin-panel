@@ -63,7 +63,7 @@ export function readSecret(name, env = process.env) {
   return (env[name] || '').trim()
 }
 
-function setGithubSecret(name, value, { repo = process.env.GITHUB_REPOSITORY || 'sebastisnzoth/ugo-admin-panel' } = {}) {
+export function setGithubSecret(name, value, { repo = process.env.GITHUB_REPOSITORY || 'sebastisnzoth/ugo-admin-panel' } = {}) {
   // `gh` lee el secreto de stdin: el valor no aparece en `ps` ni en el historial.
   const result = spawnSync('gh', ['secret', 'set', name, '--repo', repo], { input: value, encoding: 'utf8' })
   return {

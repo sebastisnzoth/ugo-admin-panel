@@ -13,7 +13,7 @@ test('el cliente de la consola se ejecuta y devuelve resultados', () => {
   assert.equal(probe.status, 0, probe.stderr.slice(0, 2000))
   const payload = JSON.parse(probe.stdout.trim().split('\n').pop())
   assert.ok(Array.isArray(payload.results))
-  assert.equal(payload.results.length, 16)
+  assert.equal(payload.results.length, 19)
   const failed = payload.results.filter(result => !result.ok)
   assert.deepEqual(failed, [], JSON.stringify(failed))
 })

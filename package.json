@@ -15,7 +15,11 @@
     "preview": "vite preview",
     "bootstrap:test-auth": "node scripts/bootstrap-test-auth.mjs",
     "audit:i18n": "node scripts/audit-i18n.mjs --json",
-    "audit:i18n:keys": "node scripts/audit-i18n-keys.mjs"
+    "audit:i18n:keys": "node scripts/audit-i18n-keys.mjs",
+    "hive:activate": "node scripts/hive/activate-logins.mjs",
+    "hive:local-check": "node scripts/hive/local-provider-check.mjs",
+    "hive:run-task": "node scripts/hive/run-single-task.mjs",
+    "hive:ops-evidence": "node scripts/hive/ops-evidence.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",

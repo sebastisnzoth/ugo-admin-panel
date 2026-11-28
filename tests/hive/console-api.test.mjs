@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
-import { createHiveConsoleApi, ALLOWED_ORIGINS } from '../../hive/console-api/server.mjs'
+import { createHiveConsoleApi, ALLOWED_ORIGINS, supabaseVerifier, AUTH_MODES } from '../../hive/console-api/server.mjs'
 import { normalizeSnapshot, SnapshotError } from '../../hive/console-api/snapshot.mjs'
 
 const VALID = {
@@ -133,6 +133,82 @@ test('límite de peticiones por usuario', async () => {
       codes.push(response.status)
     }
     assert.deepEqual(codes, [200, 200, 200, 429])
+  })
+})
+
+// ── Verificador: sin credenciales privilegiadas por defecto ────────────────────
+const authUser = { id: 'u-abc', banned_until: null }
+const profileRow = { tipo: 'superadmin', activo: true }
+
+function recorder(handler) {
+  const calls = []
+  const fetchImpl = async (url, init = {}) => {
+    calls.push({ url: String(url), headers: init.headers ?? {} })
+    return handler(String(url), init)
+  }
+  return { calls, fetchImpl }
+}
+
+test('verificador: el modo por defecto confirma identidad con la clave pública', async () => {
+  const { calls, fetchImpl } = recorder(url => {
+    if (url.endsWith('/auth/v1/user')) return new Response(JSON.stringify(authUser), { status: 200 })
+    return new Response(JSON.stringify([profileRow]), { status: 200 })
+  })
+  const verify = supabaseVerifier({ url: 'https://x.supabase.co', anonKey: 'anon-publica', fetchImpl })
+  const identity = await verify('jwt-del-usuario')
+  assert.deepEqual(identity, { userId: 'u-abc', superadmin: true, active: true })
+  assert.equal(calls.length, 2)
+  for (const call of calls) {
+    assert.equal(call.headers.apikey, 'anon-publica')
+    assert.match(call.headers.authorization, /^Bearer (jwt-del-usuario|anon-publica)$/)
+  }
+  assert.equal(calls[1].headers.authorization, 'Bearer jwt-del-usuario')
+  assert.equal(JSON.stringify(calls).includes('service'), false)
+})
+
+test('verificador: modo allowlist no consulta ninguna tabla', async () => {
+  const { calls, fetchImpl } = recorder(url => {
+    if (url.endsWith('/auth/v1/user')) return new Response(JSON.stringify(authUser), { status: 200 })
+    throw new Error('no debería consultar el perfil')
+  })
+  const verify = supabaseVerifier({ mode: 'allowlist', url: 'https://x.supabase.co', anonKey: 'anon-publica',
+    superadminIds: ['U-ABC'], fetchImpl })
+  assert.deepEqual(await verify('jwt'), { userId: 'u-abc', superadmin: true, active: true })
+  assert.equal(calls.length, 1)
+
+  const outsider = supabaseVerifier({ mode: 'allowlist', url: 'https://x.supabase.co', anonKey: 'anon-publica',
+    superadminIds: ['otro-id'], fetchImpl })
+  assert.equal((await outsider('jwt')).superadmin, false)
+})
+
+test('verificador: el modo service exige clave y sólo entonces la usa', async () => {
+  assert.throws(() => supabaseVerifier({ mode: 'service', url: 'https://x.supabase.co', anonKey: 'a' }),
+    /SERVICE_KEY_REQUIRED_FOR_SERVICE_MODE/)
+  assert.throws(() => supabaseVerifier({ mode: 'otro', url: 'https://x.supabase.co', anonKey: 'a' }), /AUTH_MODE_INVALID/)
+
+  const { calls, fetchImpl } = recorder(url => {
+    if (url.endsWith('/auth/v1/user')) return new Response(JSON.stringify(authUser), { status: 200 })
+    return new Response(JSON.stringify([profileRow]), { status: 200 })
+  })
+  const verify = supabaseVerifier({ mode: 'service', url: 'https://x.supabase.co', anonKey: 'a', serviceKey: 'clave-servicio', fetchImpl })
+  await verify('jwt')
+  assert.equal(calls[1].headers.apikey, 'clave-servicio')
+  assert.deepEqual(AUTH_MODES, ['user', 'allowlist', 'service'])
+})
+
+test('verificador: si RLS impide leer el perfil, es 503 y no un "sin permiso" silencioso', async () => {
+  const { fetchImpl } = recorder(url => {
+    if (url.endsWith('/auth/v1/user')) return new Response(JSON.stringify(authUser), { status: 200 })
+    return new Response('{}', { status: 403 })
+  })
+  const handler = createHiveConsoleApi({
+    reader: readerOf(normalizeSnapshot(VALID)),
+    verifyToken: supabaseVerifier({ url: 'https://x.supabase.co', anonKey: 'a', fetchImpl }),
+  })
+  await withServer(handler, async base => {
+    const response = await fetch(`${base}/api/hive/snapshot`, { headers: { authorization: token } })
+    assert.equal(response.status, 503)
+    assert.deepEqual(await response.json(), { code: 'AUTH_UNAVAILABLE' })
   })
 })
 
