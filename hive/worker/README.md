@@ -18,7 +18,7 @@ marca nada como hecho.
 | `worker.mjs` | bucle acotado, health opcional, SIGTERM/SIGINT, `--self-check`, `--dry-run`, `--once` |
 | `db.mjs` | cliente `psql` (credencial por entorno, `:'var'` en vez de concatenar SQL) |
 | `config.mjs` | configuración por entorno, límites duros, `redact()` de secretos |
-| `providers.mjs` | `mock` (sólo pruebas), `openrouter` y `openclaw` (cerrados), `freellmapi` (cerrado por política) |
+| `providers.mjs` | `mock` (sólo pruebas), `local` (loopback aprobado), `openrouter`/`openclaw` (cerrados), `freellmapi` (cerrado por política) |
 | `sentinel.mjs` | guardas deterministas **antes** de ejecutar |
 | `judge.mjs` | veredicto determinista **sobre** el resultado |
 | `emergency.sh` | interruptor de emergencia (archivo local + ajuste en base) |
@@ -35,7 +35,14 @@ marca nada como hecho.
   sólo `EXECUTE` de las funciones de cola. Lo comprueba `sql/worker_login.sql` (12 checks)
   y las pruebas (`tests/hive/worker-runtime.test.mjs`).
 - **Fallo cerrado.** Sin ruta gratuita aprobada no hay llamada:
-  `NO_VERIFIED_FREE_ROUTE`. `mock` exige `HIVE_WORKER_TEST_MODE=1`.
+  `NO_VERIFIED_FREE_ROUTE`. `mock` exige `HIVE_WORKER_TEST_MODE=1`; `local` exige loopback
+  y aprobación explícita.
+- **Coste verificado, no asumido.** El Judge exige que el proveedor declare `cost` numérico:
+  `VERIFIED_ZERO` aprueba, `COST_NON_ZERO` y `UNVERIFIED` rechazan (`COST_NOT_ZERO`,
+  `COST_UNVERIFIED`). Sin declaración, la tarea queda `FAILED` y `result = null`.
+- **Agente verificado antes de ejecutar.** `--self-check` comprueba que el agente existe en
+  `hive.agents` y está `OPERATIVE`; `scripts/hive/agent-preflight.mjs` lo informa sin
+  ejecutar nada.
 - **Consumo acotado.** `maxIterations`/`maxJobs` (por defecto **1 y 1**), lease 120 s,
   latido cada lease/3, backoff con jitter, y presupuesto del servidor
   (`hive.quota_state` + `record_provider_call`): al 85 % se suspende, al 95 % se bloquea.
@@ -89,13 +96,39 @@ sólo `workflow_dispatch`, exige `confirm=EJECUTAR` y el secreto `HIVE_WORKER_DA
 
 | Ruta | Estado | Motivo |
 | --- | --- | --- |
-| `mock` | ✅ pruebas | servidor HTTP local determinista; `cost 0`, sin red externa |
+| `mock` | ✅ pruebas | servidor HTTP local determinista; `cost 0` declarado, sin red externa |
+| `local` | ✅ loopback | FreeLLMAPI/OpenClaw **en la propia máquina**; exige `HIVE_LOCAL_PROVIDER_APPROVED=APROBADO` y URL `127.0.0.1`/`localhost`/`[::1]` |
 | `openrouter` | ⛔ cerrado | exige modelo `:free`, precios en cero, evidencia de facturación y aprobación < 1 h (`policy.mjs`) |
 | `openclaw` | ⛔ cerrado | sin endpoint aprobado (`HIVE_OPENCLAW_APPROVED=APROBADO` no existe todavía) |
 | `freellmapi` | ⛔ cerrado | su pinning de proveedor no es verificable |
 
 Ninguna de esas tres se abre "porque el worker lo pida": la elegibilidad la decide la
 política ya revisada del repositorio, no una variable declarada por el cliente.
+
+## Configurar la credencial sin exponerla
+
+```bash
+# comprobar la forma (no conecta, no imprime la URL)
+HIVE_WORKER_DATABASE_URL='postgresql://…' node scripts/hive/secret-setup.mjs --check
+# comprobar además la identidad real y que no sea superusuario
+HIVE_WORKER_DATABASE_URL='postgresql://…' node scripts/hive/secret-setup.mjs --connect
+# publicar en GitHub por STDIN (nunca por argv ni en logs)
+HIVE_WORKER_DATABASE_URL_FILE=./worker.url node scripts/hive/secret-setup.mjs --set-github-secret
+```
+
+Rechaza: hosts que no son `*.neon.tech`, Supabase/Arena, falta de `sslmode=require`, usuarios
+privilegiados (`postgres`, `neondb_owner`, …) y contraseñas en parámetros.
+
+## Vigilancia (24 h, sólo lectura)
+
+```bash
+HIVE_READER_DATABASE_URL='postgresql://…' node scripts/hive/watch-24h.mjs \
+  --hours 24 --interval-seconds 300 --out docs/ugo-hive/evidence/hive-watch-24h.jsonl
+```
+
+Una muestra por intervalo; alertas críticas para leases vencidos, emergencia activa, cuota
+suspendida, circuito abierto y lectura caída. Escribe `.jsonl` + `.summary.json` y sale con
+código 1 si hay alguna alerta crítica.
 
 ## Interruptor de emergencia
 

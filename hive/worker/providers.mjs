@@ -19,6 +19,28 @@ export const MAX_COMPLETION_CHARS = 20000
 
 const FREE_ROUTE_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions'
 
+// Un "proveedor local" sólo puede ser loopback: si apunta a internet, no es local.
+const LOOPBACK = /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d{2,5})?$/
+
+/**
+ * El coste NO se asume: se lee de lo que declara el proveedor y se clasifica.
+ *   VERIFIED_ZERO → el proveedor informó un coste numérico igual a 0
+ *   COST_NON_ZERO → el proveedor informó un coste mayor que 0
+ *   UNVERIFIED    → no informó nada: no se puede afirmar "gratis"
+ */
+export function classifyCost(reported, source = 'provider_usage.cost') {
+  if (reported === null || reported === undefined || reported === '') {
+    return { state: 'UNVERIFIED', value: null, source, reason: 'COST_NOT_REPORTED' }
+  }
+  const value = Number(reported)
+  if (!Number.isFinite(value) || value < 0) {
+    return { state: 'UNVERIFIED', value: null, source, reason: 'COST_NOT_NUMERIC' }
+  }
+  return value === 0
+    ? { state: 'VERIFIED_ZERO', value: 0, source }
+    : { state: 'COST_NON_ZERO', value, source }
+}
+
 export class ProviderError extends Error {
   constructor(code, detail = '') {
     super(detail ? `${code}: ${detail}` : code)
@@ -84,7 +106,8 @@ const adapters = {
         model: String(body.model ?? 'mock/free'),
         provider: 'mock',
         usage: { prompt_tokens: Number(body.usage?.prompt_tokens ?? 0), completion_tokens: Number(body.usage?.completion_tokens ?? 0) },
-        billed_usd: 0,
+        // El servidor de pruebas declara el coste; si no lo hace, queda UNVERIFIED.
+        cost: classifyCost(body.cost, 'mock.cost'),
       }
     },
   },
@@ -101,13 +124,16 @@ const adapters = {
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 512,
         stream: false,
-      }, { authorization: `Bearer ${config.openRouterKey}`, 'x-title': 'UGO Hive TEST' }, config.requestTimeoutMs, fetchImpl)
+      }, { authorization: `Bearer ${config.openRouterKey}`, 'x-title': 'UGO Hive TEST',
+        // El coste se pide explícitamente: sin pedirlo, OpenRouter no lo devuelve añadido.
+        'x-usage-accounting': 'true' }, config.requestTimeoutMs, fetchImpl)
       return {
         text: String(body.choices?.[0]?.message?.content ?? ''),
         model: String(body.model ?? route.model),
         provider: 'openrouter',
         usage: { prompt_tokens: Number(body.usage?.prompt_tokens ?? 0), completion_tokens: Number(body.usage?.completion_tokens ?? 0) },
-        billed_usd: 0,
+        // OpenRouter sólo devuelve `usage.cost` si se pide; sin ese dato no se afirma 0.
+        cost: classifyCost(body.usage?.cost ?? body.cost, 'openrouter.usage.cost'),
       }
     },
   },
@@ -124,7 +150,32 @@ const adapters = {
         model: String(body.model ?? config.openClawModel),
         provider: 'openclaw',
         usage: { prompt_tokens: Number(body.usage?.prompt_tokens ?? 0), completion_tokens: Number(body.usage?.completion_tokens ?? 0) },
-        billed_usd: 0,
+        cost: classifyCost(body.cost ?? body.usage?.cost, 'openclaw.cost'),
+      }
+    },
+  },
+
+  /**
+   * Integración LOCAL (FreeLLMAPI / OpenClaw en la propia máquina): sólo loopback, sólo con
+   * aprobación explícita y sólo si el servidor declara el coste. Pensado para probar el
+   * camino completo sin proveedores pagados ni red externa.
+   */
+  local: {
+    requiresBudget: false,
+    async complete({ config, prompt, fetchImpl }) {
+      if (config.localProviderApproved !== 'APROBADO') throw new ProviderError('LOCAL_PROVIDER_NOT_APPROVED')
+      if (!LOOPBACK.test(config.localProviderUrl)) {
+        throw new ProviderError('LOCAL_PROVIDER_NOT_LOOPBACK',
+          'sólo http(s)://127.0.0.1, localhost o [::1]: un endpoint remoto nunca es "local"')
+      }
+      const body = await postJson(`${config.localProviderUrl.replace(/\/$/, '')}/api/complete`,
+        { prompt, model: config.localProviderModel, max_tokens: 512 }, {}, config.requestTimeoutMs, fetchImpl)
+      return {
+        text: String(body.text ?? body.completion ?? ''),
+        model: String(body.model ?? config.localProviderModel),
+        provider: 'local',
+        usage: { prompt_tokens: Number(body.usage?.prompt_tokens ?? 0), completion_tokens: Number(body.usage?.completion_tokens ?? 0) },
+        cost: classifyCost(body.cost ?? body.usage?.cost, 'local.cost'),
       }
     },
   },

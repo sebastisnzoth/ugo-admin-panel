@@ -59,6 +59,9 @@ export function loadConfig(env = process.env, argv = []) {
     openClawUrl: env.HIVE_OPENCLAW_URL || '',
     openClawApproved: env.HIVE_OPENCLAW_APPROVED || '',
     openClawModel: env.HIVE_OPENCLAW_MODEL || 'openclaw-local',
+    localProviderUrl: env.HIVE_LOCAL_PROVIDER_URL || '',
+    localProviderApproved: env.HIVE_LOCAL_PROVIDER_APPROVED || '',
+    localProviderModel: env.HIVE_LOCAL_PROVIDER_MODEL || 'local/free',
   }
   if (config.once) { config.maxIterations = Math.max(1, Math.min(config.maxIterations, 1000)) }
   return config

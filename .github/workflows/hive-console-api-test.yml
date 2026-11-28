@@ -1,0 +1,91 @@
+name: UGO Hive console API TEST (preflight)
+
+# Manual only. Comprueba que el endpoint de la consola puede arrancar en TEST con el rol de
+# sólo lectura y que responde /healthz. No despliega nada, no escribe en la base y no toca
+# PROD. Sin los secretos se detiene con un mensaje claro.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Escribí COMPROBAR para validar el endpoint en TEST'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hive-console-api-test
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: reader role → arranque → /healthz
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Refuse to run without explicit confirmation
+        if: inputs.confirm != 'COMPROBAR'
+        run: |
+          echo "::error::Confirmación inválida. Este workflow nunca toca TEST por accidente."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Refuse to run without the reader credential
+        env:
+          HIVE_READER_DATABASE_URL: ${{ secrets.HIVE_READER_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HIVE_READER_DATABASE_URL:-}" ]; then
+            echo "::error::Falta HIVE_READER_DATABASE_URL (login de hive_reader). No se comprueba nada."
+            exit 1
+          fi
+          case "$HIVE_READER_DATABASE_URL" in
+            *supabase.co*|*supabase.com*|*trfsjuseqjxlhrxuvdsm*|*tmossnqfwfwjrtzwcbmm*)
+              echo "::error::El destino apunta a Arena/Supabase. Abortado."; exit 1;;
+          esac
+          case "$HIVE_READER_DATABASE_URL" in
+            *neon.tech*) ;;
+            *) echo "::error::El destino no parece una base Neon. Abortado por precaución."; exit 1;;
+          esac
+
+      - name: Install psql 16
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-16 >/dev/null
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Endpoint y cliente (sin base de datos)
+        run: node --test tests/hive/console-api.test.mjs tests/hive/console-client.test.mjs
+
+      - name: Forma de la URL + identidad real (sin imprimir la URL)
+        env:
+          HIVE_READER_DATABASE_URL: ${{ secrets.HIVE_READER_DATABASE_URL }}
+        run: node scripts/hive/secret-setup.mjs --connect HIVE_READER_DATABASE_URL
+
+      - name: Arranque y /healthz
+        env:
+          HIVE_READER_DATABASE_URL: ${{ secrets.HIVE_READER_DATABASE_URL }}
+          HIVE_CONSOLE_SUPABASE_URL: ${{ vars.HIVE_CONSOLE_SUPABASE_URL }}
+          HIVE_CONSOLE_SUPABASE_ANON_KEY: ${{ secrets.HIVE_CONSOLE_SUPABASE_ANON_KEY }}
+          HIVE_CONSOLE_SUPABASE_SERVICE_KEY: ${{ secrets.HIVE_CONSOLE_SUPABASE_SERVICE_KEY }}
+        run: |
+          set -euo pipefail
+          node hive/console-api/server.mjs &
+          server_pid=$!
+          trap 'kill $server_pid 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8790/healthz >/dev/null 2>&1; then
+              echo "healthz OK"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::El endpoint no respondió /healthz en 20 s."
+          exit 1

@@ -81,7 +81,15 @@ export function createWorker({ config, client, fetchImpl = fetch, logger = log, 
       return { action: 'DRY_RUN', snapshot }
     }
 
-    const reservation = reserve()
+    let reservation
+    try {
+      reservation = reserve()
+    } catch (error) {
+      // El servidor rechaza lo que no autoriza (AGENT_NOT_AUTHORIZED, AGENT_DISABLED…).
+      // No se reintenta a ciegas: se registra el código y se para este ciclo.
+      logger('error', 'RESERVE_FAILED', { code: error?.code ?? 'RESERVE_FAILED' })
+      return { action: 'ERROR', code: error?.code ?? 'RESERVE_FAILED' }
+    }
     if (!reservation?.leased) {
       logger('info', 'NO_JOB', { code: reservation?.code ?? 'UNKNOWN', skipped_unauthorized: reservation?.skipped_unauthorized ?? 0 })
       return { action: 'IDLE', code: reservation?.code ?? 'UNKNOWN' }
@@ -185,7 +193,7 @@ export function createWorker({ config, client, fetchImpl = fetch, logger = log, 
     let idleStreak = 0
     for (let i = 0; i < config.maxIterations && !state.stopping; i++) {
       const outcome = await runOnce()
-      if (outcome.action === 'STOPPED') break
+      if (outcome.action === 'STOPPED' || outcome.action === 'ERROR') break
       if (outcome.action === 'DONE' || outcome.action === 'FAILED' || outcome.action === 'REJECTED') {
         idleStreak = 0
         if (state.jobsDone + state.jobsFailed >= config.maxJobs) break
@@ -222,7 +230,32 @@ async function main() {
       const emergency = client.json(`select jsonb_build_object(
         'flag', coalesce((select (value #>> '{}')::boolean from hive.settings where key='emergency_stop'), false),
         'queue', hive.queue_metrics(), 'census', hive.agent_census())::text;`)
-      log('info', 'SELF_CHECK', { connection: facts, database: emergency })
+      // Un agente que no existe en el catálogo real nunca debe recibir trabajo.
+      let agent = null
+      if (config.agent) {
+        agent = client.json(`select to_jsonb(a)::text from (
+          select agent_key, name, state, department_id, legacy_status
+            from hive.agents where agent_key = :'agent' or name = :'agent') a`,
+          { agent: config.agent })
+        if (!agent) {
+          log('error', 'SELF_CHECK_FAILED', {
+            reason: 'AGENT_NOT_REGISTERED',
+            agent: config.agent,
+            hint: 'el agente debe existir en hive.agents; obtener la lista con scripts/hive/agent-preflight.mjs',
+          })
+          process.exit(3)
+        }
+        if (agent.state !== 'OPERATIVE') {
+          log('error', 'SELF_CHECK_FAILED', {
+            reason: 'AGENT_NOT_OPERATIVE',
+            agent: agent.agent_key,
+            state: agent.state,
+            hint: 'activar con hive.activate_agent(clave, true); max_operative_agents limita cuántos',
+          })
+          process.exit(3)
+        }
+      }
+      log('info', 'SELF_CHECK', { connection: facts, agent, database: emergency })
       const privileged = facts?.is_superuser && !config.allowUnprivileged
       const notWorker = !facts?.is_worker_member && !config.allowUnprivileged
       if (privileged || notWorker) {

@@ -134,7 +134,12 @@ try {
   record.job_events = server.psql(`select string_agg(event, ' → ' order by created_at, id) from hive.job_events where job_id = '${enqueued.job_id}'`)
   record.effects = Number(server.psql(`select count(*) from hive.job_effects where job_id = '${enqueued.job_id}'`))
   record.queue_after = JSON.parse(server.psql('select hive.queue_metrics()::text'))
-  record.provider_usage = { provider: 'mock', calls: 0, cost_usd: 0, note: 'el proveedor local no consume cuota real; requiresBudget=false' }
+  record.provider_usage = {
+    provider: 'mock',
+    calls: 0,
+    cost: record.job.result?.judge?.cost ?? null,
+    note: 'el proveedor local no consume cuota real; el coste es el declarado por el proveedor, no una suposición',
+  }
   record.logs = logs
   record.redaction = {
     checked_logs: logs.length,
@@ -212,7 +217,7 @@ try {
     job_done: record.job.state === 'SUCCEEDED' && record.job.status === 'DONE',
     judge_pass: Boolean(record.job.result?.judge),
     single_agent: record.agent.max_operative === 1,
-    cost_zero: true,
+    cost_zero: record.job.result?.judge?.cost?.state === 'VERIFIED_ZERO',
     external_inference: false,
     openrouter: 'CERRADO: sin ruta :free aprobada (no hay aprobación vigente)',
     openclaw: 'CERRADO: sin endpoint aprobado',

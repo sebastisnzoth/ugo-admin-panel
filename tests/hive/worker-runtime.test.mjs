@@ -8,6 +8,7 @@ import { PsqlClient, connectionFacts } from '../../hive/worker/db.mjs'
 import { loadConfig } from '../../hive/worker/config.mjs'
 import { createWorker } from '../../hive/worker/worker.mjs'
 import { startMockProvider } from './fixtures/mock-provider.mjs'
+import { spawnSync } from 'node:child_process'
 
 // Ciclo del worker contra PostgreSQL REAL y la réplica exacta del esquema de Neon:
 // el login es un miembro de hive_worker (nunca el de migraciones), de modo que si el
@@ -246,6 +247,33 @@ test('SIGTERM lógico: state.stopping evita seguir tomando trabajo', { skip: una
   const summary = await worker.run()
   assert.equal(summary.iterations, 0)
   assert.equal(summary.jobsDone, 0)
+})
+
+test('el agente configurado se verifica contra el catálogo real antes de ejecutar', { skip: unavailable(), timeout: 120000 }, () => {
+  const env = {
+    ...process.env,
+    PATH: `${server.bin}:${process.env.PATH}`,
+    HIVE_WORKER_DATABASE_URL: client.databaseUrl,
+  }
+  const run = args => spawnSync('node', ['scripts/hive/agent-preflight.mjs', ...args], { env, encoding: 'utf8' })
+
+  const ok = run(['--agent', AGENT])
+  assert.equal(ok.status, 0, ok.stderr)
+  const okReport = JSON.parse(ok.stdout)
+  assert.equal(okReport.ok, true)
+  assert.equal(okReport.agent.agent_key, 'hugo-orchestrator')
+  assert.equal(okReport.agent.state, 'OPERATIVE')
+  assert.equal(okReport.limits.max_operative_agents, 1)
+
+  const missing = run(['--agent', 'agente-inexistente'])
+  assert.equal(missing.status, 3)
+  assert.equal(JSON.parse(missing.stdout).code, 'AGENT_NOT_REGISTERED')
+
+  const list = run(['--list'])
+  assert.equal(list.status, 0)
+  const listed = JSON.parse(list.stdout)
+  assert.equal(listed.census.total, 127)
+  assert.ok(listed.agents.some(agent => agent.agent_key === 'hugo-orchestrator'))
 })
 
 test('los trabajos de caminos felices preservan la tarea histórica DONE', { skip: unavailable(), timeout: 60000 }, () => {

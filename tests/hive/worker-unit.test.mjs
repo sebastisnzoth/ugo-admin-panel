@@ -1,7 +1,7 @@
 import test, { after } from 'node:test'
 import assert from 'node:assert/strict'
 import { loadConfig, redact, describeConfig, jitter } from '../../hive/worker/config.mjs'
-import { approvedOpenRouterRoute, resolveProvider, ProviderError } from '../../hive/worker/providers.mjs'
+import { approvedOpenRouterRoute, resolveProvider, ProviderError, classifyCost } from '../../hive/worker/providers.mjs'
 import { inspect } from '../../hive/worker/sentinel.mjs'
 import { verdict } from '../../hive/worker/judge.mjs'
 import { startMockProvider } from './fixtures/mock-provider.mjs'
@@ -112,6 +112,55 @@ test('providers: la aprobación caduca (una evidencia vieja no sirve para siempr
   assert.equal(approvedOpenRouterRoute(config), null)
 })
 
+// ── Proveedor local (FreeLLMAPI / OpenClaw en loopback) ─────────────────────────
+test('local: un endpoint remoto no puede pasar por "proveedor local"', async () => {
+  const remote = baseConfig({ provider: 'local', localProviderApproved: 'APROBADO', localProviderUrl: 'https://freellmapi.example.com' })
+  await assert.rejects(resolveProvider('local').complete({ config: remote, prompt: 'x' }),
+    error => error.code === 'LOCAL_PROVIDER_NOT_LOOPBACK')
+})
+
+test('local: sin aprobación explícita no se llama a nada', async () => {
+  const config = baseConfig({ provider: 'local', localProviderApproved: '', localProviderUrl: 'http://127.0.0.1:8123' })
+  await assert.rejects(resolveProvider('local').complete({ config, prompt: 'x' }),
+    error => error.code === 'LOCAL_PROVIDER_NOT_APPROVED')
+})
+
+test('local: habla el contrato /api/complete y exige coste declarado', async () => {
+  const localServer = await startMockProvider({ path: '/api/complete' })
+  try {
+    const config = baseConfig({ provider: 'local', localProviderApproved: 'APROBADO',
+      localProviderUrl: localServer.url.replace('127.0.0.1', 'localhost'), localProviderModel: 'local/free' })
+    const result = await resolveProvider('local').complete({ config, prompt: 'hola' })
+    assert.match(result.text, /^eco: hola$/)
+    assert.equal(result.provider, 'local')
+    assert.equal(result.cost.state, 'VERIFIED_ZERO')
+
+    localServer.setMode('nocost')
+    const unverified = await resolveProvider('local').complete({ config, prompt: 'hola' })
+    assert.equal(unverified.cost.state, 'UNVERIFIED')
+    const judged = verdict({ result: unverified, job, config, latencyMs: 5 })
+    assert.equal(judged.code, 'JUDGE_REJECTED')
+    assert.deepEqual(judged.reasons.map(r => r.code), ['COST_UNVERIFIED'])
+    localServer.setMode('ok')
+  } finally {
+    await localServer.close()
+  }
+})
+
+test('local: http://localhost:8123 y [::1] son válidos; http://10.0.0.5 no', async () => {
+  const base = { provider: 'local', localProviderApproved: 'APROBADO' }
+  const rejects = async url => {
+    try {
+      await resolveProvider('local').complete({ config: baseConfig({ ...base, localProviderUrl: url }), prompt: 'x', fetchImpl: async () => new Response('{"text":"x","cost":0}', { status: 200 }) })
+      return false
+    } catch (error) { return error.code === 'LOCAL_PROVIDER_NOT_LOOPBACK' }
+  }
+  assert.equal(await rejects('http://10.0.0.5:8080'), true)
+  assert.equal(await rejects('https://openclaw.example.com'), true)
+  assert.equal(await rejects('http://localhost:8080'), false)
+  assert.equal(await rejects('http://[::1]:8080'), false)
+})
+
 // ── Sentinel ────────────────────────────────────────────────────────────────────
 const job = { id: '11111111-1111-1111-1111-111111111111', prompt: 'Resume el estado de la cola.', payload: {}, idempotency_key: 'k-123456789' }
 const clean = {
@@ -161,7 +210,7 @@ const goodResult = {
   model: 'mock/free',
   provider: 'mock',
   usage: { prompt_tokens: 12, completion_tokens: 8 },
-  billed_usd: 0,
+  cost: classifyCost(0, 'mock.cost'),
 }
 
 test('Judge: un resultado limpio pasa y deja evidencia', () => {
@@ -169,6 +218,17 @@ test('Judge: un resultado limpio pasa y deja evidencia', () => {
   assert.equal(result.verdict, 'PASS')
   assert.equal(result.evidence.total_tokens, 20)
   assert.equal(result.evidence.cost_usd, 0)
+})
+
+test('coste: sólo es GRATIS si el proveedor lo declara (no se asume 0)', () => {
+  assert.deepEqual(classifyCost(0), { state: 'VERIFIED_ZERO', value: 0, source: 'provider_usage.cost' })
+  assert.equal(classifyCost(undefined).state, 'UNVERIFIED')
+  assert.equal(classifyCost(null).state, 'UNVERIFIED')
+  assert.equal(classifyCost('n/a').state, 'UNVERIFIED')
+  assert.equal(classifyCost(-1).state, 'UNVERIFIED')
+  const paid = classifyCost(0.0004)
+  assert.equal(paid.state, 'COST_NON_ZERO')
+  assert.equal(paid.value, 0.0004)
 })
 
 test('Judge: texto vacío, fuga de secreto y coste no cero se rechazan', () => {
@@ -179,8 +239,15 @@ test('Judge: texto vacío, fuga de secreto y coste no cero se rechazan', () => {
   const leak = verdict({ result: { ...goodResult, text: 'usa postgresql://u:p@h/db' }, job, config, latencyMs: 10 })
   assert.ok(leak.reasons.some(r => r.code === 'SECRET_LEAK'))
 
-  const cost = verdict({ result: { ...goodResult, billed_usd: 0.002 }, job, config, latencyMs: 10 })
+  const cost = verdict({ result: { ...goodResult, cost: classifyCost(0.002) }, job, config, latencyMs: 10 })
   assert.ok(cost.reasons.some(r => r.code === 'COST_NOT_ZERO'))
+})
+
+test('Judge: coste sin declarar NO se interpreta como gratis', () => {
+  const unknown = verdict({ result: { ...goodResult, cost: undefined, billed_usd: 0 }, job, config, latencyMs: 10 })
+  assert.equal(unknown.verdict, 'REJECT')
+  assert.deepEqual(unknown.reasons.map(r => r.code), ['COST_UNVERIFIED'])
+  assert.equal(unknown.evidence, undefined)
 })
 
 test('Judge: el proveedor declarado no puede sustituir al configurado', () => {
@@ -210,8 +277,21 @@ test('mock: sólo existe en modo prueba y habla HTTP de verdad', async () => {
   const enabled = baseConfig({ provider: 'mock', testMode: true, mockProviderUrl: mock.url })
   const result = await resolveProvider('mock').complete({ config: enabled, prompt: 'estado de la cola' })
   assert.match(result.text, /^eco: estado de la cola$/)
-  assert.equal(result.billed_usd, 0)
+  assert.equal(result.cost.state, 'VERIFIED_ZERO')
+  assert.equal(result.cost.source, 'mock.cost')
   assert.equal(mock.requests.length, 1)
+})
+
+test('mock: si el servidor no declara coste, el resultado queda UNVERIFIED', async () => {
+  const config = baseConfig({ provider: 'mock', testMode: true, mockProviderUrl: mock.url })
+  mock.setMode('nocost')
+  const unverified = await resolveProvider('mock').complete({ config, prompt: 'x' })
+  assert.equal(unverified.cost.state, 'UNVERIFIED')
+  mock.setMode('paid')
+  const paid = await resolveProvider('mock').complete({ config, prompt: 'x' })
+  assert.equal(paid.cost.state, 'COST_NON_ZERO')
+  assert.equal(paid.cost.value, 0.0004)
+  mock.setMode('ok')
 })
 
 test('mock: los errores del proveedor se clasifican, no se silencian', async () => {

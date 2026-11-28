@@ -503,3 +503,65 @@ parte (migración 2.2.0 ya aplicada; no se ha escrito nada). Inferencia externa:
 USD 0. Sin deploy · sin merge · PROD intacta.** Los agentes operativos siguen siendo **0**
 en Neon: el worker puede ejecutar, pero sólo lo hará sobre una tarea encolada y con una ruta
 de inferencia aprobada.
+
+---
+
+## 16. Fase 7 — endpoint autenticado, consola con datos reales y coste verificado
+
+Punto de partida: ChatGPT creó y verificó `hive_app` en Neon TEST (miembro de `hive_worker`,
+privilegios mínimos, límites de conexión), **NOLOGIN** hasta configurar credenciales. No se
+creó ningún usuario de ejecución nuevo y no se repitió ninguna migración.
+
+### Lo implementado
+
+| Pieza | Estado | Evidencia |
+|---|---|---|
+| Endpoint `GET /api/hive/snapshot` | **OPERATIVO en local** | `hive/console-api/`; 8 pruebas de auth/CORS/cuotas + 7 contra PostgreSQL real |
+| Rol de lectura independiente | **VERIFICADO** | `hive/reader/sql/reader_login.sql`: 11/11 checks (miembro de `hive_reader`, `default_transaction_read_only`, sin escritura, sin `reserve_job`) |
+| HiveConsole con datos reales | **CONECTADA y condicional** | `src/mvp/hiveConsoleApi.ts` + `VITE_HIVE_CONSOLE_API`; sin endpoint no hace ninguna petición |
+| Coste del proveedor | **YA NO SE ASUME 0** | `classifyCost()` → `VERIFIED_ZERO` / `COST_NON_ZERO` / `UNVERIFIED`; el Judge rechaza los dos últimos |
+| Agente real | **VERIFICADO ANTES DE EJECUTAR** | `scripts/hive/agent-preflight.mjs` + `--self-check`; `AGENT_NOT_REGISTERED` / `AGENT_NOT_OPERATIVE` |
+| Integración local FreeLLMAPI/OpenClaw | **SÓLO LOOPBACK** | proveedor `local`: `127.0.0.1`/`localhost`/`[::1]` + aprobación explícita + coste declarado |
+| Configuración segura de secretos | **IMPLEMENTADA** | `scripts/hive/secret-setup.mjs` (`--check`, `--connect`, `--set-github-secret` por stdin) |
+| Vigilancia 24 h | **PREPARADA** | `scripts/hive/watch-24h.mjs` (JSONL + resumen + alertas; código 1 si hay críticas) |
+| Pruebas | **28 unitarias worker · 8 endpoint · 7 endpoint+BD · 9 vigilancia/secretos · 2 cliente** | `node --test tests/hive/*.test.mjs` |
+| Evidencia | `docs/ugo-hive/evidence/hive-console-api.json` | `scripts/hive/console-evidence.mjs` |
+
+### Prueba E2E (local, PostgreSQL 16.2, réplica exacta)
+
+```
+paquete 2.2.0     → 13 departamentos · 127 agentes
+logins separados  → worker 12/12 · lectura 11/11 · 0 fallos
+lectura           → INSERT/UPDATE/DELETE/DDL/reserve: DENIED
+agente            → hugo-orchestrator OPERATIVE · exit 0 · max_operative_agents = 1
+tarea             → SUCCEEDED/DONE · efecto 1 · Judge PASS
+coste             → VERIFIED_ZERO declarado por el proveedor (mock.cost)
+sin coste         → COST_UNVERIFIED → REJECTED · tarea FAILED · result = null
+endpoint          → anónimo 401 · admin 403 · origen ajeno 403 · superadmin 200 (no-store)
+vigilancia        → 2 muestras reales · HEALTHY · 0 cadenas de conexión en el JSONL
+emergencia        → archivo creado → worker STOPPED → archivo retirado
+preservación      → tarea histórica SUCCEEDED/DONE · CHECK intacto · 127 agentes
+```
+
+### Lo que sigue bloqueado
+
+1. **`hive_app` está NOLOGIN.** Para la tarea real en Neon hace falta que ChatGPT lo ponga
+   con contraseña (o rote la existente) y que entregue `HIVE_WORKER_DATABASE_URL` como
+   secreto de GitHub. El mecanismo para publicarlo sin exponerlo ya está probado
+   (`secret-setup.mjs --set-github-secret`).
+2. **Login de lectura en Neon.** `hive_console_ro` debe crearse allí con
+   `hive/reader/sql/reader_login.sql` (rol de migraciones). Sin él, el endpoint no puede
+   arrancar en TEST: se niega si el rol no es de sólo lectura.
+3. **Endpoint desplegado.** El workflow `hive-console-api-test.yml` comprueba forma de URL,
+   identidad real y `/healthz`; el alojamiento sigue sin definirse y no se simula.
+4. **Inferencia gratuita.** `openrouter` y `openclaw` siguen cerrados; `local` sólo loopback.
+   Ver `docs/ugo-hive/FREE_PROVIDER_INVESTIGATION.md`.
+5. **Vigilancia de 24 h.** Lista para ejecutarse en cuanto el endpoint tenga credenciales:
+   no se puede vigilar lo que todavía no corre.
+
+### Veredicto
+
+**Endpoint implementado y probado · consola conectada de forma condicional · coste
+verificado (no asumido) · rol de lectura separado y probado · agente verificado contra el
+catálogo real · emergencia probada · vigilancia lista.**
+Sin escrituras en Neon · sin deploy · sin merge · USD 0 · PROD intacta.

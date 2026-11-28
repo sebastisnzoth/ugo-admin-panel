@@ -2,12 +2,13 @@ import React,{useEffect,useState} from 'react'
 import{supabase}from'../lib/supabase'
 import{useLocale}from'../i18n/locale'
 import{HIVE_CATALOG,HIVE_QUOTA_POLICY}from'./hiveCatalog'
+import{HIVE_CONSOLE_ENDPOINT,loadHiveSnapshot,type HiveSnapshot}from'./hiveConsoleApi'
 import'./hive-console.css'
 
 const STATUS_TIMEOUT_MS=8000
 const translations={
  'pt-BR':{
- brand:'U.GO · SUPER ADMIN',statusUnavailable:'Status de TEST indisponível',backupLabel:'backup',navLabel:'Navegação Hive',overview:'Visão geral',chat:'Chat IA',departments:'Departamentos',heading:'Centro de inteligência',disabled:'INFERÊNCIA DESATIVADA',
+ brand:'U.GO · SUPER ADMIN', liveTitle:'Dados reais da fila',liveOff:'Endpoint de produção não configurado neste ambiente.',liveUnavailable:'API de Hive indisponível ou sem permissão para esta sessão.',liveWait:'Consultando a API autenticada…',liveQueued:'Na fila',liveLeased:'Em execução',liveDone:'Concluídas',liveFailed:'Falhas',liveAgentsLabel:'Agentes',liveOperative:'Operativos',liveEmergency:'Parada de emergência',liveEmergencyOn:'ATIVA',liveEmergencyOff:'inativa',liveMonthly:'Cota mensal',liveUpdated:'Atualizado',liveSchema:'esquema',statusUnavailable:'Status de TEST indisponível',backupLabel:'backup',navLabel:'Navegação Hive',overview:'Visão geral',chat:'Chat IA',departments:'Departamentos',heading:'Centro de inteligência',disabled:'INFERÊNCIA DESATIVADA',
  router:'Router Hive',prepared:'PREPARADO',routerInfo:'Código integrado; execução real ainda não verificada.',
  provider:'FreeLLMAPI / OpenRouter',unverified:'NÃO VERIFICADO',providerInfo:'Provedor, modelo, endpoint, pinning e custo pendentes de verificação.',
  remote:'Render / persistência',remoteInfo:'Disponibilidade remota não comprovada.',timeout:'SEM RESPOSTA EM 8 S',retry:'Tentar novamente',
@@ -20,7 +21,7 @@ const translations={
  quotaTitle:'Política de cotas',quotaUnknown:'Consumo real: DESCONHECIDO · aplicam-se limites conservadores',quotaNotUsed:'A escada abaixo é política declarada. Não é consumo medido.'
  },
  'es':{
- brand:'U.GO · SUPER ADMIN',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',departments:'Departamentos',heading:'Centro de inteligencia',disabled:'INFERENCIA DESACTIVADA',
+ brand:'U.GO · SUPER ADMIN', liveTitle:'Datos reales de la cola',liveOff:'Endpoint de producción no configurado en este entorno.',liveUnavailable:'API de Hive no disponible o sin permiso para esta sesión.',liveWait:'Consultando la API autenticada…',liveQueued:'En cola',liveLeased:'En ejecución',liveDone:'Completadas',liveFailed:'Fallidas',liveAgentsLabel:'Agentes',liveOperative:'Operativos',liveEmergency:'Parada de emergencia',liveEmergencyOn:'ACTIVA',liveEmergencyOff:'inactiva',liveMonthly:'Cuota mensual',liveUpdated:'Actualizado',liveSchema:'esquema',statusUnavailable:'Estado de TEST no disponible',backupLabel:'respaldo',navLabel:'Navegación Hive',overview:'Vista general',chat:'Chat IA',departments:'Departamentos',heading:'Centro de inteligencia',disabled:'INFERENCIA DESACTIVADA',
  router:'Router Hive',prepared:'PREPARADO',routerInfo:'Código integrado; ejecución real todavía no verificada.',
  provider:'FreeLLMAPI / OpenRouter',unverified:'NO VERIFICADO',providerInfo:'Proveedor, modelo, endpoint, pinning y costo pendientes de verificación.',
  remote:'Render / persistencia',remoteInfo:'Disponibilidad remota no comprobada.',timeout:'SIN RESPUESTA EN 8 S',retry:'Reintentar',
@@ -33,7 +34,7 @@ const translations={
  quotaTitle:'Política de cuotas',quotaUnknown:'Consumo real: DESCONOCIDO · se aplican límites conservadores',quotaNotUsed:'La escalera siguiente es política declarada. No es consumo medido.'
  },
  'en':{
- brand:'U.GO · SUPER ADMIN',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',departments:'Departments',heading:'Intelligence center',disabled:'INFERENCE DISABLED',
+ brand:'U.GO · SUPER ADMIN', liveTitle:'Real queue data',liveOff:'Production endpoint not configured in this environment.',liveUnavailable:'Hive API unavailable or not permitted for this session.',liveWait:'Querying the authenticated API…',liveQueued:'Queued',liveLeased:'Running',liveDone:'Completed',liveFailed:'Failed',liveAgentsLabel:'Agents',liveOperative:'Operative',liveEmergency:'Emergency stop',liveEmergencyOn:'ACTIVE',liveEmergencyOff:'inactive',liveMonthly:'Monthly quota',liveUpdated:'Updated',liveSchema:'schema',statusUnavailable:'TEST status unavailable',backupLabel:'backup',navLabel:'Hive navigation',overview:'Overview',chat:'AI Chat',departments:'Departments',heading:'Intelligence center',disabled:'INFERENCE DISABLED',
  router:'Hive Router',prepared:'PREPARED',routerInfo:'Code integrated; real runtime not yet verified.',
  provider:'FreeLLMAPI / OpenRouter',unverified:'NOT VERIFIED',providerInfo:'Provider, model, endpoint, pinning and cost require verification.',
  remote:'Render / persistence',remoteInfo:'Remote availability unverified.',timeout:'NO RESPONSE IN 8 S',retry:'Retry',
@@ -55,6 +56,8 @@ export function HiveConsole(){
  const[status,setStatus]=useState<HiveStatus|null>(null)
  const[statusError,setStatusError]=useState<''|'TIMEOUT'|'UNAVAILABLE'>('')
  const[attempt,setAttempt]=useState(0)
+ const[live,setLive]=useState<HiveSnapshot|null>(null)
+ const[liveState,setLiveState]=useState<'OFF'|'LOADING'|'READY'|'TIMEOUT'|'FORBIDDEN'|'ERROR'>(HIVE_CONSOLE_ENDPOINT?'LOADING':'OFF')
  useEffect(()=>{
   // One on-demand request per mount. No polling: Hive is event-driven, so an idle
   // console must stay idle. The abort keeps a stalled Hive from holding a socket.
@@ -62,6 +65,31 @@ export function HiveConsole(){
   const controller=new AbortController()
   const timer=setTimeout(()=>controller.abort(),STATUS_TIMEOUT_MS)
   const load=async()=>{try{const {data,error}=await supabase.functions.invoke<HiveStatus>('ugo-hive-status',{method:'GET',signal:controller.signal});if(!active)return;if(error||!data||data.environment!=='TEST')throw new Error('STATUS_UNAVAILABLE');setStatus(data);setStatusError('')}catch{if(!active)return;setStatus(null);setStatusError(controller.signal.aborted?'TIMEOUT':'UNAVAILABLE')}finally{clearTimeout(timer)}}
+  void load()
+  return()=>{active=false;clearTimeout(timer);controller.abort()}
+ },[attempt])
+ useEffect(()=>{
+  // Datos reales por el endpoint autenticado: una sola lectura acotada, sin sondeo. Sin
+  // endpoint configurado no se pide nada y la consola lo declara en vez de inventar cifras.
+  if(!HIVE_CONSOLE_ENDPOINT)return
+  let active=true
+  const controller=new AbortController()
+  const timer=setTimeout(()=>controller.abort(),STATUS_TIMEOUT_MS)
+  const load=async()=>{
+   try{
+    const{data}=await supabase.auth.getSession()
+    const token=data.session?.access_token
+    if(!token){if(active)setLiveState('FORBIDDEN');return}
+    const snapshot=await loadHiveSnapshot({token,signal:controller.signal})
+    if(!active)return
+    setLive(snapshot);setLiveState('READY')
+   }catch(error){
+    if(!active)return
+    const code=(error as{code?:string}).code
+    setLive(null)
+    setLiveState(controller.signal.aborted?'TIMEOUT':code==='FORBIDDEN'||code==='AUTH_REQUIRED'?'FORBIDDEN':'ERROR')
+   }finally{clearTimeout(timer)}
+  }
   void load()
   return()=>{active=false;clearTimeout(timer);controller.abort()}
  },[attempt])
@@ -81,6 +109,20 @@ export function HiveConsole(){
    <article><small>{tr.autonomy}</small><strong>{tr.off}</strong><p>{tr.autonomyInfo}</p></article>
   </div>
   <section className="ugo-hive-panel"><h2>{tr.operational}</h2><p>{tr.notice}</p><p role="status">{statusText}</p>
+   {liveState==='OFF'?<p><small>{tr.liveOff}</small></p>:null}
+   {liveState==='LOADING'?<p><small>{tr.liveWait}</small></p>:null}
+   {liveState==='TIMEOUT'||liveState==='ERROR'||liveState==='FORBIDDEN'?<p><small>{tr.liveUnavailable}</small></p>:null}
+   {liveState==='READY'&&live?<div className="ugo-hive-agents" data-source={live.source}>
+    <article><small>{tr.liveQueued}</small><strong>{live.queue.queued}</strong></article>
+    <article><small>{tr.liveLeased}</small><strong>{live.queue.leased}</strong></article>
+    <article><small>{tr.liveDone}</small><strong>{live.queue.succeeded}</strong></article>
+    <article><small>{tr.liveFailed}</small><strong>{live.queue.failed}</strong></article>
+    <article><small>{tr.liveAgentsLabel}</small><strong>{live.census.total}</strong></article>
+    <article><small>{tr.liveOperative}</small><strong>{live.census.operative} / {live.census.max_operative_agents}</strong></article>
+    <article><small>{tr.liveEmergency}</small><strong>{live.emergency.stop?tr.liveEmergencyOn:tr.liveEmergencyOff}</strong></article>
+    <article><small>{tr.liveMonthly}</small><strong>{live.quotas.openrouter.monthly_quota}</strong></article>
+    <small>{tr.liveTitle} · {tr.liveUpdated}: {live.generated_at??'—'} · {tr.liveSchema} {live.schema_version}</small>
+   </div>:null}
    {statusError?<button type="button" onClick={()=>setAttempt(value=>value+1)}>{tr.retry}</button>:null}
    <a href="https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/ugo-hive/HIVE_ISOLATION.md" target="_blank" rel="noopener noreferrer">{tr.docs}</a>
   </section>

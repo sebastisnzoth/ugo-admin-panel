@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-28T00:24:44.740Z",
+  "generated_at": "2026-11-28T00:46:27.739Z",
   "package_version": "2.2.0",
   "environment": {
     "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
@@ -10,27 +10,27 @@
   },
   "steps": [
     {
-      "at": "2026-11-28T00:24:44.771Z",
+      "at": "2026-11-28T00:46:27.767Z",
       "step": "réplica cargada",
       "agents_legacy": 9,
       "jobs_legacy": 1,
       "status_check": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'RUNNING'::text, 'DONE'::text, 'FAILED'::text])))"
     },
     {
-      "at": "2026-11-28T00:24:44.914Z",
+      "at": "2026-11-28T00:46:27.917Z",
       "step": "paquete 2.2.0 aplicado",
       "agentes": 127,
       "departamentos": 13,
       "tareas_historicas": 1
     },
     {
-      "at": "2026-11-28T00:24:44.929Z",
+      "at": "2026-11-28T00:46:27.935Z",
       "step": "rol de ejecución verificado",
       "checks_ok": 12,
       "failed": []
     },
     {
-      "at": "2026-11-28T00:24:44.952Z",
+      "at": "2026-11-28T00:46:27.959Z",
       "step": "un único agente operativo",
       "agent_key": "hugo-orchestrator",
       "name": "Hugo Orchestrator",
@@ -38,22 +38,22 @@
       "max_operative": 1
     },
     {
-      "at": "2026-11-28T00:24:44.966Z",
+      "at": "2026-11-28T00:46:27.973Z",
       "step": "tarea encolada",
-      "job_id": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+      "job_id": "b24de762-517a-4702-825e-d5178b98a92b",
       "state": "QUEUED",
       "prompt_chars": 69,
       "agent": "hugo-orchestrator"
     },
     {
-      "at": "2026-11-28T00:24:45.085Z",
+      "at": "2026-11-28T00:46:28.094Z",
       "step": "ciclo ejecutado",
       "action": "DONE",
       "code": "SUCCEEDED",
       "effect_applied": true
     },
     {
-      "at": "2026-11-28T00:24:45.378Z",
+      "at": "2026-11-28T00:46:28.377Z",
       "step": "entrypoint real por CLI",
       "self_check": {
         "exit": 0,
@@ -121,13 +121,18 @@
       "prompt_tokens": 69,
       "completion_tokens": 8,
       "total_tokens": 77,
-      "latency_ms": 57,
+      "latency_ms": 54,
       "text_chars": 88,
+      "cost": {
+        "state": "VERIFIED_ZERO",
+        "value": 0,
+        "source": "mock.cost"
+      },
       "cost_usd": 0
     }
   },
   "job": {
-    "id": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+    "id": "b24de762-517a-4702-825e-d5178b98a92b",
     "state": "SUCCEEDED",
     "status": "DONE",
     "legacy_status": "PENDING",
@@ -136,10 +141,15 @@
     "result": {
       "text": "Cola estable: 1 tarea finalizada, 0 pendientes, 0 agentes operativos antes de la prueba.",
       "judge": {
+        "cost": {
+          "state": "VERIFIED_ZERO",
+          "value": 0,
+          "source": "mock.cost"
+        },
         "model": "mock/free",
         "cost_usd": 0,
         "provider": "mock",
-        "latency_ms": 57,
+        "latency_ms": 54,
         "text_chars": 88,
         "total_tokens": 77,
         "prompt_tokens": 69,
@@ -172,15 +182,19 @@
   "provider_usage": {
     "provider": "mock",
     "calls": 0,
-    "cost_usd": 0,
-    "note": "el proveedor local no consume cuota real; requiresBudget=false"
+    "cost": {
+      "state": "VERIFIED_ZERO",
+      "value": 0,
+      "source": "mock.cost"
+    },
+    "note": "el proveedor local no consume cuota real; el coste es el declarado por el proveedor, no una suposición"
   },
   "logs": [
     {
       "level": "info",
       "event": "LEASED",
       "extra": {
-        "job": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+        "job": "b24de762-517a-4702-825e-d5178b98a92b",
         "attempt": 1,
         "agent": "hugo-orchestrator",
         "lease_token": 1
@@ -190,7 +204,7 @@
       "level": "info",
       "event": "JOB_DONE",
       "extra": {
-        "job": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+        "job": "b24de762-517a-4702-825e-d5178b98a92b",
         "server": "SUCCEEDED",
         "effect_applied": true,
         "judge": {
@@ -199,8 +213,13 @@
           "prompt_tokens": 69,
           "completion_tokens": 8,
           "total_tokens": 77,
-          "latency_ms": 57,
+          "latency_ms": 54,
           "text_chars": 88,
+          "cost": {
+            "state": "VERIFIED_ZERO",
+            "value": 0,
+            "source": "mock.cost"
+          },
           "cost_usd": 0
         }
       }
@@ -229,7 +248,7 @@
       "jobs_failed_zero": true
     },
     "job": {
-      "id": "fa78f038-1369-4e7d-97ec-5097e8c52d46",
+      "id": "b72e4de6-c77c-43f3-8588-e02e5b88c2d9",
       "state": "SUCCEEDED",
       "status": "DONE",
       "effect": 1

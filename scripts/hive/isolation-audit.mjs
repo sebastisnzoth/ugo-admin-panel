@@ -37,6 +37,9 @@ export const BOOT_FILES = Object.freeze(['index.html', 'src/main.tsx', 'src/App.
 export const HIVE_CLIENT_ALLOWLIST = Object.freeze([
   'src/mvp/HiveConsole.tsx',
   'src/mvp/hiveCatalog.ts', // data-only canonical catalog; no network calls
+  // Cliente del endpoint autenticado de Hive TEST: sólo se usa dentro de la consola Super
+  // Admin, manda el token de la sesión y tiene cota propia (AbortSignal.timeout).
+  'src/mvp/hiveConsoleApi.ts',
 ])
 
 const RUNTIME_ROOTS = Object.freeze(['src', 'api'])

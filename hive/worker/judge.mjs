@@ -13,7 +13,7 @@ export const JUDGE_RULES = {
   maxTextChars: MAX_COMPLETION_CHARS,
   maxTotalTokens: 20000,
   maxLatencyMs: 120000,
-  allowedProviders: ['mock', 'openrouter', 'openclaw'],
+  allowedProviders: ['mock', 'openrouter', 'openclaw', 'local'],
 }
 
 export function verdict({ result, job, config, latencyMs, budget }) {
@@ -36,7 +36,10 @@ export function verdict({ result, job, config, latencyMs, budget }) {
   const totalTokens = promptTokens + completionTokens
   if (!Number.isFinite(totalTokens) || totalTokens < 0) reject('USAGE_INVALID', 'tokens no numéricos')
   if (Number.isFinite(totalTokens) && totalTokens > JUDGE_RULES.maxTotalTokens) reject('USAGE_OVER_LIMIT', `${totalTokens}`)
-  if (Number(result.billed_usd ?? 0) > 0) reject('COST_NOT_ZERO', String(result.billed_usd))
+  // El coste no se asume: exige una declaración verificable del proveedor.
+  const cost = result.cost ?? { state: 'UNVERIFIED', value: null, source: 'missing' }
+  if (cost.state === 'COST_NON_ZERO') reject('COST_NOT_ZERO', `${cost.value} USD (${cost.source})`)
+  if (cost.state !== 'VERIFIED_ZERO') reject('COST_UNVERIFIED', cost.reason ?? 'el proveedor no declaró coste 0')
 
   if (!Number.isFinite(latencyMs) || latencyMs < 0 || latencyMs > JUDGE_RULES.maxLatencyMs) reject('LATENCY_INVALID', String(latencyMs))
   if (!job?.id || !job?.idempotency_key) reject('JOB_NOT_TRACEABLE', 'sin id/idempotency_key no hay evidencia')
@@ -67,7 +70,8 @@ export function verdict({ result, job, config, latencyMs, budget }) {
       total_tokens: totalTokens,
       latency_ms: Math.round(latencyMs),
       text_chars: text.length,
-      cost_usd: 0,
+      cost: { state: cost.state, value: cost.value, source: cost.source },
+      cost_usd: cost.state === 'VERIFIED_ZERO' ? 0 : null,
     },
   }
 }
