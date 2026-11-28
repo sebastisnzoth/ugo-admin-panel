@@ -92,11 +92,14 @@ export async function startPostgres({ database = 'hive' } = {}) {
     return result.stdout.trim()
   }
 
-  const psqlFile = (file, { target = database, vars = {}, singleTransaction = false } = {}) => {
+  // `vars` → ajustes de sesión (PGOPTIONS `-c`).  `psqlVars` → variables de psql (`-v`),
+  // necesarias para los scripts de operador que usan :'nombre' o \if.
+  const psqlFile = (file, { target = database, vars = {}, psqlVars = {}, singleTransaction = false } = {}) => {
     const env = { ...process.env, PGHOST: '127.0.0.1', PGPORT: String(port), PGUSER: 'postgres', PGDATABASE: target }
     const settings = Object.entries(vars).map(([key, value]) => `-c ${key}=${value}`).join(' ')
     if (settings) env.PGOPTIONS = settings
     const args = ['-X', '-q', '-v', 'ON_ERROR_STOP=1']
+    for (const [key, value] of Object.entries(psqlVars)) args.push('-v', `${key}=${value}`)
     if (singleTransaction) args.push('--single-transaction')
     args.push('-f', file)
     const result = spawnSync(join(bin, 'psql'), args, { encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 })

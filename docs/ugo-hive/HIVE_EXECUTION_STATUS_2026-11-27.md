@@ -439,3 +439,67 @@ reaplicar   → operativo de nuevo
 **0 agentes operativos · 0 departamentos funcionales · sin URL Hive TEST · USD 0 · sin
 deploy · sin merge · PROD intacta.** 127 agentes catalogados (9 reales + 118 del canon):
 catalogar no es operar.
+
+---
+
+## 15. Fase 6 — runtime real del worker
+
+La migración 2.2.0 ya está aplicada en Neon (ChatGPT). Lo que faltaba no era esquema: era
+**algo capaz de ejecutar la cola con permisos separados y sin coste**. Eso es lo que hay
+ahora en `hive/worker/` (detalle en `hive/worker/README.md`).
+
+### Piezas y su estado real
+
+| Pieza | Estado | Cómo se ha comprobado |
+|---|---|---|
+| Worker de cola (`worker.mjs`) | **OPERATIVO en local** | ciclo `QUEUED → LEASED → SUCCEEDED` contra PostgreSQL 16.2 y la réplica exacta |
+| Rol de ejecución (`sql/worker_login.sql`) | **VERIFICADO** | 12/12 comprobaciones: miembro de `hive_worker`, no superusuario, sin `INSERT/UPDATE/DELETE/TRUNCATE`, sin DDL, con `EXECUTE` de cola |
+| Sentinel | **ACTIVO** | rechaza superusuario, ausencia de rol, lease perdido, prompt vacío/largo, cuota suspendida, circuito abierto, emergencia |
+| Judge | **ACTIVO** | reglas deterministas: texto vacío, fuga de secreto, coste ≠ 0, proveedor distinto al configurado, presupuesto cerrado → `JUDGE_REJECTED` y `result = null` |
+| Interruptor de emergencia | **OPERATIVO** | archivo local (sin base ni permisos) + `hive.settings.emergency_stop` (nivel 2, rol de migraciones) |
+| Pruebas | **21 unitarias + 11 de runtime**, y 102/102 en `tests/hive/*` | `node --test`, PostgreSQL real obligatorio (`HIVE_REQUIRE_REAL_POSTGRES=1`) |
+| Evidencia | `docs/ugo-hive/evidence/hive-worker-e2e.json` | generada por `scripts/hive/worker-evidence.mjs` |
+| Ejecución en TEST desde GitHub | **PREPARADO, sin ejecutar** | `.github/workflows/hive-worker-test.yml` (sólo `workflow_dispatch`, exige `EJECUTAR` y el secreto `HIVE_WORKER_DATABASE_URL`) |
+| OpenRouter | **CERRADO** | `NO_VERIFIED_FREE_ROUTE`: no existe aprobación vigente (< 1 h) con precios en cero y evidencia de facturación |
+| OpenClaw | **CERRADO** | no hay endpoint aprobado que cumpla la política |
+| `freellmapi` | **CERRADO por política** | su pinning de proveedor no es verificable |
+| `HiveConsole` con datos reales | **BLOQUEADO** | requiere endpoint TEST desplegado con lectura de Neon; no se simula (ver abajo) |
+
+### Prueba E2E real, un único agente
+
+```
+réplica cargada   → 9 agentes · 1 tarea · CHECK status intacto
+paquete 2.2.0     → 13 departamentos · 127 agentes · 1 tarea histórica preservada
+rol worker        → 12/12 checks (sin escritura directa de tablas)
+agente            → hugo-orchestrator OPERATIVE (max_operative_agents = 1)
+tarea             → QUEUED → LEASED → SUCCEEDED / status DONE
+Judge             → PASS · 77 tokens · coste 0 · mock local
+efecto            → job_effects = 1 (idempotente)
+logs              → 0 cadenas de conexión, 0 contraseñas
+```
+
+Fencing añadido a la evidencia por prueba dedicada: se roba el `lease_token` **durante** la
+llamada al proveedor y el worker **no** completa (`LEASE_LOST`), la tarea sigue `LEASED` y
+`result` queda `null`. Un proveedor caído reprograma con backoff (`RETRY_SCHEDULED`) en vez
+de dejar la tarea colgada.
+
+### Lo que sigue bloqueado, y por qué
+
+- **Una tarea real contra Neon**: requiere una tarea encolada en la base `hive` y el secreto
+  `HIVE_WORKER_DATABASE_URL` con un login miembro de `hive_worker`. Ambas cosas son
+  operaciones con acceso directo a Neon → **coordinadas con ChatGPT** (crear el login con
+  `hive/worker/sql/worker_login.sql`, encolar una única tarea, lanzar el workflow).
+- **Inferencia gratuita**: hoy no hay ninguna ruta `:free` con aprobación vigente. El
+  worker no la inventa; devuelve `NO_VERIFIED_FREE_ROUTE`.
+- **`HiveConsole` con datos reales**: la consola lee de un endpoint, y ese endpoint
+  (`supabase/functions/ugo-hive-status`) no debe apuntar a Neon sin despliegue y sin
+  credenciales. Mientras eso no exista, la consola sigue en `READ_ONLY`/`TEST`: se prefirió
+  no mostrar datos simulados como si fueran reales.
+
+### Veredicto de la fase
+
+**Runtime: OPERATIVO y probado en local con el rol de ejecución. Neon: sin cambios por mi
+parte (migración 2.2.0 ya aplicada; no se ha escrito nada). Inferencia externa: CERRADA.
+USD 0. Sin deploy · sin merge · PROD intacta.** Los agentes operativos siguen siendo **0**
+en Neon: el worker puede ejecutar, pero sólo lo hará sobre una tarea encolada y con una ruta
+de inferencia aprobada.

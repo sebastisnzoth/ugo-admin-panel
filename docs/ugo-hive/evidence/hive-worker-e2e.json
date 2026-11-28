@@ -1,0 +1,257 @@
+{
+  "generated_at": "2026-11-28T00:24:44.740Z",
+  "package_version": "2.2.0",
+  "environment": {
+    "engine": "PostgreSQL 16.2 on x86_64-pc-linux-gnu",
+    "target": "réplica local del esquema real de Neon (dry-heart-24391962/hive)",
+    "touches_neon": false,
+    "external_inference": false,
+    "cost_usd": 0
+  },
+  "steps": [
+    {
+      "at": "2026-11-28T00:24:44.771Z",
+      "step": "réplica cargada",
+      "agents_legacy": 9,
+      "jobs_legacy": 1,
+      "status_check": "CHECK ((status = ANY (ARRAY['PENDING'::text, 'RUNNING'::text, 'DONE'::text, 'FAILED'::text])))"
+    },
+    {
+      "at": "2026-11-28T00:24:44.914Z",
+      "step": "paquete 2.2.0 aplicado",
+      "agentes": 127,
+      "departamentos": 13,
+      "tareas_historicas": 1
+    },
+    {
+      "at": "2026-11-28T00:24:44.929Z",
+      "step": "rol de ejecución verificado",
+      "checks_ok": 12,
+      "failed": []
+    },
+    {
+      "at": "2026-11-28T00:24:44.952Z",
+      "step": "un único agente operativo",
+      "agent_key": "hugo-orchestrator",
+      "name": "Hugo Orchestrator",
+      "state": "OPERATIVE",
+      "max_operative": 1
+    },
+    {
+      "at": "2026-11-28T00:24:44.966Z",
+      "step": "tarea encolada",
+      "job_id": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+      "state": "QUEUED",
+      "prompt_chars": 69,
+      "agent": "hugo-orchestrator"
+    },
+    {
+      "at": "2026-11-28T00:24:45.085Z",
+      "step": "ciclo ejecutado",
+      "action": "DONE",
+      "code": "SUCCEEDED",
+      "effect_applied": true
+    },
+    {
+      "at": "2026-11-28T00:24:45.378Z",
+      "step": "entrypoint real por CLI",
+      "self_check": {
+        "exit": 0,
+        "ok": true
+      },
+      "once": {
+        "exit": 0,
+        "jobs_done": true,
+        "jobs_failed_zero": true
+      },
+      "job": "SUCCEEDED"
+    }
+  ],
+  "role": {
+    "login": "hive_app",
+    "checks": [
+      "worker_member",
+      "not_superuser",
+      "cannot_create_db",
+      "cannot_create_role",
+      "no_insert_jobs",
+      "no_update_jobs",
+      "no_delete_jobs",
+      "no_truncate_jobs",
+      "can_select_jobs",
+      "can_reserve",
+      "can_complete",
+      "can_record_budget"
+    ],
+    "failed": []
+  },
+  "connection": {
+    "database": "hive",
+    "current_user": "hive_app",
+    "is_superuser": false,
+    "server_encoding": "UTF8",
+    "is_worker_member": true
+  },
+  "agent": {
+    "agent_key": "hugo-orchestrator",
+    "name": "Hugo Orchestrator",
+    "state": "OPERATIVE",
+    "max_operative": 1
+  },
+  "worker_config": {
+    "worker_id": "ugo-hive-worker-e2e",
+    "agent": "hugo-orchestrator",
+    "provider": "mock",
+    "max_iterations": 1,
+    "max_jobs": 1,
+    "lease_seconds": 120,
+    "request_timeout_ms": 20000,
+    "dry_run": false,
+    "test_mode": true,
+    "emergency_file": null,
+    "database_configured": false
+  },
+  "outcome": {
+    "action": "DONE",
+    "code": "SUCCEEDED",
+    "effect_applied": true,
+    "evidence": {
+      "provider": "mock",
+      "model": "mock/free",
+      "prompt_tokens": 69,
+      "completion_tokens": 8,
+      "total_tokens": 77,
+      "latency_ms": 57,
+      "text_chars": 88,
+      "cost_usd": 0
+    }
+  },
+  "job": {
+    "id": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+    "state": "SUCCEEDED",
+    "status": "DONE",
+    "legacy_status": "PENDING",
+    "attempts": 1,
+    "last_error": null,
+    "result": {
+      "text": "Cola estable: 1 tarea finalizada, 0 pendientes, 0 agentes operativos antes de la prueba.",
+      "judge": {
+        "model": "mock/free",
+        "cost_usd": 0,
+        "provider": "mock",
+        "latency_ms": 57,
+        "text_chars": 88,
+        "total_tokens": 77,
+        "prompt_tokens": 69,
+        "completion_tokens": 8
+      },
+      "model": "mock/free",
+      "usage": {
+        "prompt_tokens": 69,
+        "completion_tokens": 8
+      },
+      "provider": "mock"
+    }
+  },
+  "job_events": "ENQUEUED → LEASED → SUCCEEDED",
+  "effects": 1,
+  "queue_after": {
+    "failed": 0,
+    "leased": 0,
+    "queued": 0,
+    "cancelled": 0,
+    "succeeded": 2,
+    "stale_leases": 0,
+    "agents_disabled": 3,
+    "effects_applied": 1,
+    "agents_connected": 0,
+    "agents_operative": 1,
+    "agents_registered": 123,
+    "skipped_unauthorized": 0
+  },
+  "provider_usage": {
+    "provider": "mock",
+    "calls": 0,
+    "cost_usd": 0,
+    "note": "el proveedor local no consume cuota real; requiresBudget=false"
+  },
+  "logs": [
+    {
+      "level": "info",
+      "event": "LEASED",
+      "extra": {
+        "job": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+        "attempt": 1,
+        "agent": "hugo-orchestrator",
+        "lease_token": 1
+      }
+    },
+    {
+      "level": "info",
+      "event": "JOB_DONE",
+      "extra": {
+        "job": "8e669cd1-87f3-41d0-aad2-9f006dc0db82",
+        "server": "SUCCEEDED",
+        "effect_applied": true,
+        "judge": {
+          "provider": "mock",
+          "model": "mock/free",
+          "prompt_tokens": 69,
+          "completion_tokens": 8,
+          "total_tokens": 77,
+          "latency_ms": 57,
+          "text_chars": 88,
+          "cost_usd": 0
+        }
+      }
+    }
+  ],
+  "redaction": {
+    "checked_logs": 2,
+    "contains_connection_string": false,
+    "contains_password": false
+  },
+  "sentinel": {
+    "clean": {
+      "ok": true,
+      "violations": []
+    },
+    "privileged_connection_rejected": true
+  },
+  "cli": {
+    "self_check": {
+      "exit": 0,
+      "ok": true
+    },
+    "once": {
+      "exit": 0,
+      "jobs_done": true,
+      "jobs_failed_zero": true
+    },
+    "job": {
+      "id": "fa78f038-1369-4e7d-97ec-5097e8c52d46",
+      "state": "SUCCEEDED",
+      "status": "DONE",
+      "effect": 1
+    },
+    "logs_redacted": true
+  },
+  "preservation": {
+    "legacy_job_state": "SUCCEEDED",
+    "legacy_job_status": "DONE",
+    "agents_total": 127,
+    "departments_total": 13,
+    "status_check_intact": true
+  },
+  "verdict": {
+    "worker_runtime": "PASS",
+    "cli_entrypoint": "PASS",
+    "job_done": true,
+    "judge_pass": true,
+    "single_agent": true,
+    "cost_zero": true,
+    "external_inference": false,
+    "openrouter": "CERRADO: sin ruta :free aprobada (no hay aprobación vigente)",
+    "openclaw": "CERRADO: sin endpoint aprobado"
+  }
+}
